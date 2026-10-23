@@ -3,6 +3,7 @@
     <Import Project="..\..\..\props\netcore.props" />
     <Import Project="..\..\..\props\common.props" />
     <Import Project="..\..\..\props\version.props" />
+    <Import Project="..\..\..\props\framework.props" />
 
     <PropertyGroup>
         <Title>XiHan.BasicApp.WebHost</Title>
@@ -14,13 +15,19 @@
 		<OutputType>Exe</OutputType>
     </PropertyGroup>
 
+    <!-- 组合根：Full 组合包提供各能力的默认实现与四种协议，SqlSugar Provider 顶替默认的内存持久化 -->
+    <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
+      <PackageReference Include="XiHan.Framework.Profiles.Full" Version="$(XiHanFrameworkVersion)" />
+    </ItemGroup>
+    <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
+      <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Profiles.Full\XiHan.Framework.Profiles.Full.csproj" />
+    </ItemGroup>
+    <!-- P5-04 第一批：Saas、CodeGeneration、Printing、Chat；AI 与 Workflow 依赖 5.x 的 AI / Workflow 子系统，随 5.1 迁，暂不接入 -->
     <ItemGroup>
-      <ProjectReference Include="..\..\modules\XiHan.BasicApp.AI\XiHan.BasicApp.AI.csproj" />
       <ProjectReference Include="..\..\modules\XiHan.BasicApp.Chat\XiHan.BasicApp.Chat.csproj" />
       <ProjectReference Include="..\..\modules\XiHan.BasicApp.CodeGeneration\XiHan.BasicApp.CodeGeneration.csproj" />
       <ProjectReference Include="..\..\modules\XiHan.BasicApp.Printing\XiHan.BasicApp.Printing.csproj" />
       <ProjectReference Include="..\..\modules\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.csproj" />
-      <ProjectReference Include="..\..\modules\XiHan.BasicApp.Workflow\XiHan.BasicApp.Workflow.csproj" />
     </ItemGroup>
 
     <ItemGroup>

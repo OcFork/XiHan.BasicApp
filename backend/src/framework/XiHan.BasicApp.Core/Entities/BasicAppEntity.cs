@@ -349,7 +349,6 @@ public abstract class BasicAppAggregateRoot : IAggregateRoot<long>, IHasConcurre
     public string? DeletedBy { get; set; }
 
     /// <summary>领域事件缓冲；不映射到列。</summary>
-    [SugarColumn(IsIgnore = true)]
     private readonly DomainEventBuffer _events = new();
 
     /// <inheritdoc />

@@ -23,14 +23,27 @@
 		注：直接 dotnet build 单个 csproj（不经解决方案）时 SolutionName 为空，走 NuGet。
 	-->
 	<PropertyGroup>
+		<!-- 框架版本（5.0 下一代，源码在 XiHan.Framework 仓库的 next/ 下）；NuGet 模式的 PackageReference 用它 -->
+		<XiHanFrameworkVersion>5.0.0-preview.1</XiHanFrameworkVersion>
 		<!-- 框架源码目录，供 ProjectReference 拼路径 -->
-		<XiHanFrameworkSrc>$(MSBuildThisFileDirectory)..\..\..\XiHan.Framework\framework\src\</XiHanFrameworkSrc>
+		<XiHanFrameworkSrc>$(MSBuildThisFileDirectory)..\..\..\XiHan.Framework\next\src\</XiHanFrameworkSrc>
 		<!--
 			未显式指定时：仅当构建的是仓库根工作区解决方案（XiHanFun.slnx / XiHanFun.Local.slnx）
 			且框架源码确实在位，才走源码；其余一律 NuGet。
 		-->
-		<UseXiHanFrameworkSource Condition=" '$(UseXiHanFrameworkSource)' == '' AND $(SolutionName.StartsWith('XiHanFun')) AND Exists('$(XiHanFrameworkSrc)XiHan.Framework.Core\XiHan.Framework.Core.csproj') ">true</UseXiHanFrameworkSource>
+		<UseXiHanFrameworkSource Condition=" '$(UseXiHanFrameworkSource)' == '' AND $(SolutionName.StartsWith('XiHanFun')) AND Exists('$(XiHanFrameworkSrc)XiHan.Framework.Kernel\XiHan.Framework.Kernel.csproj') ">true</UseXiHanFrameworkSource>
 		<UseXiHanFrameworkSource Condition=" '$(UseXiHanFrameworkSource)' == '' ">false</UseXiHanFrameworkSource>
 	</PropertyGroup>
+
+	<!--
+		操作契约的源生成器（[Operation] → AddGeneratedOperations 与 JSON Schema）是分析器引用，不随 ProjectReference 传递，
+		所以在这里给每个导入本文件的工程挂上；没有 [Operation] 的工程它什么也不生成。
+	-->
+	<ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
+		<ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Kernel.Generators\XiHan.Framework.Kernel.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+	<ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
+		<PackageReference Include="XiHan.Framework.Kernel.Generators" Version="$(XiHanFrameworkVersion)" PrivateAssets="all" />
+	</ItemGroup>
 
 </Project>

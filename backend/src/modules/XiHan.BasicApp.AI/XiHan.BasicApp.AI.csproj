@@ -4,6 +4,7 @@
     <Import Project="..\..\..\props\common.props" />
     <Import Project="..\..\..\props\version.props" />
     <Import Project="..\..\..\props\nuget.props" />
+    <Import Project="..\..\..\props\framework.props" />
 
     <PropertyGroup>
         <Title>XiHan.BasicApp.AI</Title>
@@ -26,8 +27,5 @@
       <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.74.0-preview" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="XiHan.Framework.Kernel.Generators" Version="5.0.0-preview.1" PrivateAssets="all" />
-    </ItemGroup>
 
 </Project>

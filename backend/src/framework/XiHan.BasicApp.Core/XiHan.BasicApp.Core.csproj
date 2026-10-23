@@ -20,23 +20,39 @@
         全仓库的框架引用只集中在本工程与 XiHan.BasicApp.Web.Core，其余工程一律经这两者传递。
     -->
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
-        <PackageReference Include="XiHan.Framework.Kernel" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Auditing.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Security.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Caching.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Persistence.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Domain" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Messaging.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Localization.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Observability.OpenTelemetry" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Primitives" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.MultiTenancy.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.ObjectStorage.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Configuration.Abstractions" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Scheduling.Abstractions" Version="5.0.0-preview.1" />
+        <PackageReference Include="XiHan.Framework.Primitives" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Kernel" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Domain" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Persistence.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Persistence.SqlSugar" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Caching.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.MultiTenancy.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Security.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Messaging.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Localization.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.ObjectStorage.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Scheduling.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Configuration.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Auditing.Abstractions" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Observability.OpenTelemetry" Version="$(XiHanFrameworkVersion)" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Primitives\XiHan.Framework.Primitives.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Kernel\XiHan.Framework.Kernel.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Domain\XiHan.Framework.Domain.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Persistence.Abstractions\XiHan.Framework.Persistence.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Persistence.SqlSugar\XiHan.Framework.Persistence.SqlSugar.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Caching.Abstractions\XiHan.Framework.Caching.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.MultiTenancy.Abstractions\XiHan.Framework.MultiTenancy.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Security.Abstractions\XiHan.Framework.Security.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Messaging.Abstractions\XiHan.Framework.Messaging.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Localization.Abstractions\XiHan.Framework.Localization.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.ObjectStorage.Abstractions\XiHan.Framework.ObjectStorage.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Scheduling.Abstractions\XiHan.Framework.Scheduling.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Configuration.Abstractions\XiHan.Framework.Configuration.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Auditing.Abstractions\XiHan.Framework.Auditing.Abstractions.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Observability.OpenTelemetry\XiHan.Framework.Observability.OpenTelemetry.csproj" />
     </ItemGroup>
 
 </Project>

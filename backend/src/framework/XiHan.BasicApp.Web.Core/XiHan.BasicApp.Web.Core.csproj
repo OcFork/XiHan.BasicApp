@@ -17,13 +17,17 @@
 
     <!-- 曦寒框架 Web 相关引用：两组二选一，规则同 XiHan.BasicApp.Core（见 props\framework.props） -->
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
-        <PackageReference Include="XiHan.Framework.Hosting.AspNetCore" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Protocols.Http" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Protocols.Grpc" Version="5.0.0-preview.1" />
-        <PackageReference Include="XiHan.Framework.Protocols.Mcp" Version="5.0.0-preview.1" />
+        <PackageReference Include="XiHan.Framework.Hosting.AspNetCore" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Protocols.Http" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Protocols.Grpc" Version="$(XiHanFrameworkVersion)" />
+        <PackageReference Include="XiHan.Framework.Protocols.Mcp" Version="$(XiHanFrameworkVersion)" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Hosting.AspNetCore\XiHan.Framework.Hosting.AspNetCore.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Protocols.Http\XiHan.Framework.Protocols.Http.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Protocols.Grpc\XiHan.Framework.Protocols.Grpc.csproj" />
+        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Protocols.Mcp\XiHan.Framework.Protocols.Mcp.csproj" />
     </ItemGroup>
 
     <ItemGroup>

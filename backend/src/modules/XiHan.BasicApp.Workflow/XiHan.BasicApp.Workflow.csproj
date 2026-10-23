@@ -4,6 +4,7 @@
     <Import Project="..\..\..\props\common.props" />
     <Import Project="..\..\..\props\version.props" />
     <Import Project="..\..\..\props\nuget.props" />
+    <Import Project="..\..\..\props\framework.props" />
 
     <PropertyGroup>
         <Title>XiHan.BasicApp.Workflow</Title>
@@ -17,8 +18,5 @@
       <ProjectReference Include="..\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="XiHan.Framework.Kernel.Generators" Version="5.0.0-preview.1" PrivateAssets="all" />
-    </ItemGroup>
 
 </Project>
