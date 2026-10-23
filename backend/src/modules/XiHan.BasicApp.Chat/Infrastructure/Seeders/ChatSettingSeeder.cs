@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Chat.Domain.Configurations;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Chat.Infrastructure.Seeders;
 

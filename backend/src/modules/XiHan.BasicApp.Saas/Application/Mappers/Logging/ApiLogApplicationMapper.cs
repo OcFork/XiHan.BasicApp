@@ -22,7 +22,7 @@ public static class ApiLogApplicationMapper
 
         return new ApiLogListItemDto
         {
-            BasicId = apiLog.BasicId,
+            Id = apiLog.Id,
             UserId = apiLog.UserId,
             UserName = apiLog.UserName,
             SessionId = apiLog.UserSessionId,
@@ -59,7 +59,7 @@ public static class ApiLogApplicationMapper
             ExceptionStackTrace = apiLog.ExceptionStackTrace,
             ExtendData = apiLog.ExtendData,
             Remark = apiLog.Remark,
-            CreatedTime = apiLog.CreatedTime
+            CreatedAt = apiLog.CreatedAt
         };
     }
 
@@ -75,7 +75,7 @@ public static class ApiLogApplicationMapper
         var item = ToListItemDto(apiLog);
         return new ApiLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             SessionId = item.SessionId,
@@ -112,7 +112,7 @@ public static class ApiLogApplicationMapper
             ExceptionStackTrace = item.ExceptionStackTrace,
             ExtendData = item.ExtendData,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = apiLog.CreatedId,
             CreatedBy = apiLog.CreatedBy
         };

@@ -28,13 +28,13 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 租户隔离：严格——Webhook 地址里带着凭证，租户只看、只用自己的；不回退平台的机器人（租户的通知不能发进平台的群）。
 /// </remarks>
 [SugarTable(TableName = "Sys_Bot_Config", TableDescription = "系统机器人配置表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_CoCd", nameof(TenantId), OrderByType.Asc, nameof(ConfigCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_Prov", nameof(TenantId), OrderByType.Asc, nameof(Provider), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_Prov_IsDe_IsEn", nameof(TenantId), OrderByType.Asc, nameof(Provider), OrderByType.Asc, nameof(IsDefault), OrderByType.Desc, nameof(IsEnabled), OrderByType.Asc)]
-public partial class SysBotConfig : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysBotConfig : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 配置编码（租户内唯一标识）

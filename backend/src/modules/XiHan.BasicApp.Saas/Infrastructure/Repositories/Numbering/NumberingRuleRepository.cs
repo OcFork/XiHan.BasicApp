@@ -4,7 +4,6 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -67,7 +66,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
         cancellationToken.ThrowIfCancellationRequested();
         // 主键在独立租户库中可能重复，仍需组合 TenantId 保证共享库和独立库使用同一安全查询语义。
         return await CreateQueryable()
-            .Where(rule => rule.TenantId == ownerTenantId && rule.BasicId == id)
+            .Where(rule => rule.TenantId == ownerTenantId && rule.Id == id)
             .FirstAsync(cancellationToken);
     }
 
@@ -106,9 +105,9 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
                 CurrentValue = 0,
                 CurrentPeriod = periodKey,
                 CurrentPeriodOrdinal = periodOrdinal,
-                RowVersion = rule.RowVersion + 1
+                ConcurrencyStamp = rule.ConcurrencyStamp + 1
             },
-            rule => rule.BasicId == ruleId
+            rule => rule.Id == ruleId
                 && rule.TenantId == ownerTenantId
                 && !rule.IsDeleted
                 && rule.Status == EnableStatus.Enabled
@@ -159,9 +158,9 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
             {
                 CurrentValue = rule.CurrentValue + count,
                 HasAllocated = true,
-                RowVersion = rule.RowVersion + 1
+                ConcurrencyStamp = rule.ConcurrencyStamp + 1
             },
-            rule => rule.BasicId == ruleId
+            rule => rule.Id == ruleId
                 && rule.TenantId == ownerTenantId
                 && !rule.IsDeleted
                 && rule.Status == EnableStatus.Enabled
@@ -192,7 +191,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
         EnsureInDatabaseTransaction();
 
         var rule = await CreateQueryable()
-            .Where(rule => rule.TenantId == ownerTenantId && rule.BasicId == ruleId)
+            .Where(rule => rule.TenantId == ownerTenantId && rule.Id == ruleId)
             .FirstAsync(cancellationToken);
         return rule is null
             ? null

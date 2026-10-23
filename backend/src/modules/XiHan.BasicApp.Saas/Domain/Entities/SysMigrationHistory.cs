@@ -32,10 +32,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 灰度/回滚场景下记录分支迁移路径
 /// </remarks>
 [SugarTable(TableName = "Sys_Migration_History", TableDescription = "系统迁移历史表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_Ve", nameof(Version), OrderByType.Asc)]
-public partial class SysMigrationHistory : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysMigrationHistory : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 版本

@@ -72,8 +72,8 @@ public sealed class PositionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "岗位主键必须大于 0。");
-        var position = await GetPositionOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "岗位主键必须大于 0。");
+        var position = await GetPositionOrThrowAsync(command.Id, cancellationToken);
         position.PositionName = Required(command.PositionName, 100, nameof(command.PositionName), "岗位名称不能超过 100 个字符。");
         position.Sort = command.Sort;
         position.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。");
@@ -89,10 +89,10 @@ public sealed class PositionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "岗位主键必须大于 0。");
+        EnsureId(command.Id, "岗位主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var position = await GetPositionOrThrowAsync(command.BasicId, cancellationToken);
+        var position = await GetPositionOrThrowAsync(command.Id, cancellationToken);
         position.Status = command.Status;
         position.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? position.Remark;
 

@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
@@ -48,7 +49,7 @@ public sealed class UserDirectory(ICurrentTenant currentTenant, IUserRepository 
         }
 
         var accounts = await userRepository.GetListAsync(user => user.Status == EnableStatus.Enabled, cancellationToken);
-        return [.. accounts.Select(user => user.BasicId)];
+        return [.. accounts.Select(user => user.Id)];
     }
 
     /// <summary>

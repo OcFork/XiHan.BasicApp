@@ -6,17 +6,13 @@ using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 当前用户站内信应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户站内信")]
 public sealed class UserInboxAppService
     : SaasApplicationService, IUserInboxAppService
 {
@@ -40,13 +36,12 @@ public sealed class UserInboxAppService
     /// <summary>
     /// 确认通知
     /// </summary>
-    [UnitOfWork(true)]
     public async Task ConfirmAsync(UserInboxUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _userInboxDomainService.ConfirmAsync(input.BasicId, GetCurrentUserIdOrThrow(), cancellationToken);
+        await _userInboxDomainService.ConfirmAsync(input.Id, GetCurrentUserIdOrThrow(), cancellationToken);
     }
 
     /// <summary>
@@ -88,19 +83,17 @@ public sealed class UserInboxAppService
     /// <summary>
     /// 标记登录后弹窗已展示
     /// </summary>
-    [UnitOfWork(true)]
     public async Task MarkPopupShownAsync(UserInboxUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _userInboxDomainService.MarkPopupShownAsync(input.BasicId, GetCurrentUserIdOrThrow(), cancellationToken);
+        await _userInboxDomainService.MarkPopupShownAsync(input.Id, GetCurrentUserIdOrThrow(), cancellationToken);
     }
 
     /// <summary>
     /// 标记全部已读
     /// </summary>
-    [UnitOfWork(true)]
     public async Task MarkAllReadAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -110,13 +103,12 @@ public sealed class UserInboxAppService
     /// <summary>
     /// 标记已读
     /// </summary>
-    [UnitOfWork(true)]
     public async Task MarkReadAsync(UserInboxUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _userInboxDomainService.MarkReadAsync(input.BasicId, GetCurrentUserIdOrThrow(), cancellationToken);
+        await _userInboxDomainService.MarkReadAsync(input.Id, GetCurrentUserIdOrThrow(), cancellationToken);
     }
 
     private long GetCurrentUserIdOrThrow()

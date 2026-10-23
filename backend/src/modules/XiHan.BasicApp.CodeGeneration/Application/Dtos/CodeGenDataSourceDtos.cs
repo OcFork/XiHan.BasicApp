@@ -89,7 +89,7 @@ public class CodeGenDataSourceListItemDto : BasicAppDto
     public EnableStatus Status { get; set; }
     public int Sort { get; set; }
     public string? Remark { get; set; }
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>

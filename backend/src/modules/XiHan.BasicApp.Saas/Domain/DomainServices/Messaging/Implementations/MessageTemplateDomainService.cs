@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -80,7 +81,7 @@ public sealed class MessageTemplateDomainService
 
         ValidateCommon(command.TemplateName, command.Subject, command.Content, command.Description, command.Remark);
 
-        var template = await GetEditableOrThrowAsync(command.BasicId, cancellationToken);
+        var template = await GetEditableOrThrowAsync(command.Id, cancellationToken);
         template.TemplateName = command.TemplateName.Trim();
         template.Subject = NormalizeNullable(command.Subject);
         template.Content = command.Content;
@@ -102,7 +103,7 @@ public sealed class MessageTemplateDomainService
         cancellationToken.ThrowIfCancellationRequested();
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var template = await GetEditableOrThrowAsync(command.BasicId, cancellationToken);
+        var template = await GetEditableOrThrowAsync(command.Id, cancellationToken);
         template.Status = command.Status;
         template.Remark = NormalizeNullable(command.Remark) ?? template.Remark;
 

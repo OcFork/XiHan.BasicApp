@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -38,7 +37,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 对外开放 API 平台
 /// </remarks>
 [SugarTable(TableName = "Sys_OAuth_App", TableDescription = "系统OAuth应用表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_ClId", nameof(ClientId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]

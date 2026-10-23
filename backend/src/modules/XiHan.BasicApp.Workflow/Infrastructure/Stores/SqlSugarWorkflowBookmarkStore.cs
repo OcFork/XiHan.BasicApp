@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.Stores;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Stores;
 

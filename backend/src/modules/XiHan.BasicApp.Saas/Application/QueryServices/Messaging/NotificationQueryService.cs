@@ -13,8 +13,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -24,8 +22,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 系统通知查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统通知")]
 public sealed class NotificationQueryService
     : SaasApplicationService, INotificationQueryService
 {
@@ -70,8 +66,6 @@ public sealed class NotificationQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统通知分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<NotificationListItemDto>> GetNotificationPageAsync(NotificationPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -96,7 +90,6 @@ public sealed class NotificationQueryService
     /// <param name="id">系统通知主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统通知详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Read)]
     public async Task<NotificationDetailDto?> GetNotificationDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -116,8 +109,6 @@ public sealed class NotificationQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户通知分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<UserNotificationListItemDto>> GetUserNotificationPageAsync(UserNotificationPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -145,7 +136,6 @@ public sealed class NotificationQueryService
     /// <param name="id">用户通知主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户通知详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Read)]
     public async Task<UserNotificationDetailDto?> GetUserNotificationDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -168,7 +158,6 @@ public sealed class NotificationQueryService
     /// <summary>
     /// 获取通知阅读统计（发 N / 已读 M / 已确认 K）
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Read)]
     public async Task<NotificationReadStatsDto> GetNotificationReadStatsAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -198,8 +187,6 @@ public sealed class NotificationQueryService
     /// <summary>
     /// 获取通知未读人员分页（前端可经导出机制导 CSV）
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<NotificationUnreadUserDto>> GetNotificationUnreadUserPageAsync(NotificationUnreadUserPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -217,7 +204,7 @@ public sealed class NotificationQueryService
         };
         request.Conditions.AddFilter((SysUserNotification userNotification) => userNotification.NotificationId, input.NotificationId);
         request.Conditions.AddFilter((SysUserNotification userNotification) => userNotification.NotificationStatus, NotificationStatus.Unread);
-        request.Conditions.AddSort((SysUserNotification userNotification) => userNotification.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysUserNotification userNotification) => userNotification.CreatedAt, SortDirection.Descending, 0);
 
         var paged = await _userNotificationRepository.GetPagedAsync(request, cancellationToken);
         if (paged.Items.Count == 0)
@@ -228,7 +215,7 @@ public sealed class NotificationQueryService
         var userIds = paged.Items.Select(item => item.UserId).Distinct().ToArray();
         // 收件人可能是注册在别处的成员，按主键跨租户取来展示
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(userIds, cancellationToken);
-        var userMap = users.ToDictionary(user => user.BasicId);
+        var userMap = users.ToDictionary(user => user.Id);
         var items = paged.Items.Select(item =>
         {
             var user = userMap.GetValueOrDefault(item.UserId);
@@ -237,7 +224,7 @@ public sealed class NotificationQueryService
                 UserId = item.UserId,
                 UserName = user?.UserName ?? string.Empty,
                 RealName = user?.RealName,
-                ReceivedTime = item.CreatedTime
+                ReceivedTime = item.CreatedAt
             };
         }).ToList();
         return new PageResultDtoBase<NotificationUnreadUserDto>(items, paged.Page);
@@ -320,7 +307,7 @@ public sealed class NotificationQueryService
     private static void ApplyNotificationSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysNotification notification) => notification.SendTime, SortDirection.Descending, 0);
-        request.Conditions.AddSort((SysNotification notification) => notification.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysNotification notification) => notification.CreatedAt, SortDirection.Descending, 1);
     }
 
     /// <summary>
@@ -353,7 +340,7 @@ public sealed class NotificationQueryService
 
         AddTimeRange(request, nameof(SysUserNotification.ReadTime), input.ReadTimeStart, input.ReadTimeEnd);
         AddTimeRange(request, nameof(SysUserNotification.ConfirmTime), input.ConfirmTimeStart, input.ConfirmTimeEnd);
-        request.Conditions.AddSort((SysUserNotification userNotification) => userNotification.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysUserNotification userNotification) => userNotification.CreatedAt, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysUserNotification userNotification) => userNotification.UserId, SortDirection.Ascending, 1);
         return request;
     }
@@ -389,8 +376,8 @@ public sealed class NotificationQueryService
         }
 
         var notifications = await _notificationRepository.GetListAsync(
-            item => SqlFunc.ContainsArray(notificationIds, item.BasicId),
+            item => SqlFunc.ContainsArray(notificationIds, item.Id),
             cancellationToken);
-        return notifications.ToDictionary(item => item.BasicId);
+        return notifications.ToDictionary(item => item.Id);
     }
 }

@@ -8,17 +8,13 @@ using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Caching.Distributed.Abstracts;
-using XiHan.Framework.Security.Users;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 用户设置查询应用服务（读侧：按 用户 × 场景 × 设置键 读取，带分布式缓存；写后由失效器整体失效该用户设置）。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户设置")]
 public sealed class UserSettingQueryService
     : SaasApplicationService, IUserSettingQueryService
 {

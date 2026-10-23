@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Tasks.ScheduledJobs.Crons;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 

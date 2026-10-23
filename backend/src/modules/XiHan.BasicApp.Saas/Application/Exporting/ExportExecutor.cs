@@ -9,12 +9,10 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authorization.Permissions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Claims;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.Specifications;
-using XiHan.Framework.Security.Extensions;
 
 namespace XiHan.BasicApp.Saas.Application.Exporting;
 
@@ -83,10 +81,11 @@ public sealed class ExportExecutor : IExportExecutor
 
         var userId = task.CreatedId;
         var tenantId = task.TenantId;
-        var islandTaskId = $"export:{task.BasicId}";
+        var islandTaskId = $"export:{task.Id}";
 
         // 重建发起人上下文：租户 + 主体，与在线请求同一口径——会话声明（会话失效即拒绝）、
         // 角色（与签发令牌同一来源，按执行时的授权）、模仿者声明（模仿态禁用的权限照样禁用）
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(tenantId);
         var now = DateTimeOffset.UtcNow;
 
@@ -148,7 +147,7 @@ public sealed class ExportExecutor : IExportExecutor
             {
                 var total = context.Total;
                 var progress = total is > 0 ? (int)Math.Min(99L, processed * 100L / total.Value) : 50;
-                await _repository.UpdateProgressAsync(task.BasicId, processed, progress, cancellationToken);
+                await _repository.UpdateProgressAsync(task.Id, processed, progress, cancellationToken);
 
                 if (processed - lastNotified >= 1000 || progress >= 99)
                 {
@@ -163,7 +162,7 @@ public sealed class ExportExecutor : IExportExecutor
             var fileName = BuildFileName(task, actualFormat);
             var (fileId, fileSize) = await UploadAsync(buffer, fileName, task.TaskName, actualFormat, cancellationToken);
 
-            await _repository.MarkSuccessAsync(task.BasicId, fileId, fileName, fileSize, totalRows, DateTimeOffset.UtcNow, cancellationToken);
+            await _repository.MarkSuccessAsync(task.Id, fileId, fileName, fileSize, totalRows, DateTimeOffset.UtcNow, cancellationToken);
             await _notifier.NotifySucceededAsync(userId, islandTaskId, $"{task.TaskName} 导出完成", $"共 {totalRows} 行，可在导出中心下载", "/setting/export-center", cancellationToken);
         }
         catch (OperationCanceledException)
@@ -172,7 +171,7 @@ public sealed class ExportExecutor : IExportExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "导出任务执行失败：{TaskId}", task.BasicId);
+            _logger.LogError(ex, "导出任务执行失败：{TaskId}", task.Id);
             await FailAsync(task, userId, islandTaskId, ex.Message, CancellationToken.None);
         }
     }
@@ -262,6 +261,7 @@ public sealed class ExportExecutor : IExportExecutor
     private async Task<bool> IsTenantAvailableAsync(long tenantId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         SysTenant? tenant;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken);
@@ -273,7 +273,7 @@ public sealed class ExportExecutor : IExportExecutor
     private async Task FailAsync(SysExportTask task, long userId, string islandTaskId, string message, CancellationToken cancellationToken)
     {
         var trimmed = message.Length > 1000 ? message[..1000] : message;
-        await _repository.MarkFailedAsync(task.BasicId, trimmed, DateTimeOffset.UtcNow, cancellationToken);
+        await _repository.MarkFailedAsync(task.Id, trimmed, DateTimeOffset.UtcNow, cancellationToken);
         await _notifier.NotifyFailedAsync(userId, islandTaskId, $"{task.TaskName} 导出失败", trimmed, cancellationToken);
     }
 
@@ -296,6 +296,6 @@ public sealed class ExportExecutor : IExportExecutor
         };
 
         var result = await _fileTransferService.UploadAsync(uploadDto, cancellationToken);
-        return (result.File.BasicId, result.File.FileSize);
+        return (result.File.Id, result.File.FileSize);
     }
 }

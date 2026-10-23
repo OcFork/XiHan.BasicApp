@@ -2,16 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Globalization;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Workflow.Abstractions.Engine;
-using XiHan.Framework.Workflow.Abstractions.Exceptions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.Stores;
 
 namespace XiHan.BasicApp.Workflow.Application.AppServices;
 
@@ -21,7 +15,6 @@ namespace XiHan.BasicApp.Workflow.Application.AppServices;
 /// <remarks>
 /// 撤回只允许发起人对自己进行中的流程操作（登录即可，不设权限码）；审批业务流程撤回后回写单据状态。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "审批中心")]
 public sealed class WorkflowApprovalAppService : WorkflowApplicationService, IWorkflowApprovalAppService
 {
     private readonly IWorkflowEngine _engine;

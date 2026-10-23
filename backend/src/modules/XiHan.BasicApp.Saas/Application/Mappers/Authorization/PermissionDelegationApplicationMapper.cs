@@ -47,12 +47,12 @@ public static class PermissionDelegationApplicationMapper
 
         return new PermissionDelegationListItemDto
         {
-            BasicId = delegation.BasicId,
+            Id = delegation.Id,
             DelegatorUserId = delegation.DelegatorUserId,
-            DelegatorTenantMemberId = delegator?.BasicId,
+            DelegatorTenantMemberId = delegator?.Id,
             DelegatorDisplayName = TenantMemberApplicationMapper.ToDisplayName(delegator, delegatorAccount),
             DelegateeUserId = delegation.DelegateeUserId,
-            DelegateeTenantMemberId = delegatee?.BasicId,
+            DelegateeTenantMemberId = delegatee?.Id,
             DelegateeDisplayName = TenantMemberApplicationMapper.ToDisplayName(delegatee, delegateeAccount),
             PermissionId = delegation.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -65,8 +65,8 @@ public static class PermissionDelegationApplicationMapper
             ExpirationTime = delegation.ExpirationTime,
             IsExpired = delegation.ExpirationTime <= now,
             DelegationReason = delegation.DelegationReason,
-            CreatedTime = delegation.CreatedTime,
-            ModifiedTime = delegation.ModifiedTime
+            CreatedAt = delegation.CreatedAt,
+            ModifiedAt = delegation.ModifiedAt
         };
     }
 
@@ -87,12 +87,12 @@ public static class PermissionDelegationApplicationMapper
 
         return new PermissionDelegationDetailDto
         {
-            BasicId = delegation.BasicId,
+            Id = delegation.Id,
             DelegatorUserId = delegation.DelegatorUserId,
-            DelegatorTenantMemberId = delegator?.BasicId,
+            DelegatorTenantMemberId = delegator?.Id,
             DelegatorDisplayName = TenantMemberApplicationMapper.ToDisplayName(delegator, delegatorAccount),
             DelegateeUserId = delegation.DelegateeUserId,
-            DelegateeTenantMemberId = delegatee?.BasicId,
+            DelegateeTenantMemberId = delegatee?.Id,
             DelegateeDisplayName = TenantMemberApplicationMapper.ToDisplayName(delegatee, delegateeAccount),
             PermissionId = delegation.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -108,10 +108,10 @@ public static class PermissionDelegationApplicationMapper
             IsExpired = delegation.ExpirationTime <= now,
             DelegationReason = delegation.DelegationReason,
             Remark = delegation.Remark,
-            CreatedTime = delegation.CreatedTime,
+            CreatedAt = delegation.CreatedAt,
             CreatedId = delegation.CreatedId,
             CreatedBy = delegation.CreatedBy,
-            ModifiedTime = delegation.ModifiedTime,
+            ModifiedAt = delegation.ModifiedAt,
             ModifiedId = delegation.ModifiedId,
             ModifiedBy = delegation.ModifiedBy
         };
@@ -123,7 +123,7 @@ public static class PermissionDelegationApplicationMapper
     public static PermissionDelegationStatusCommand ToStatusCommand(PermissionDelegationStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new PermissionDelegationStatusCommand(input.BasicId, input.DelegationStatus, input.Remark);
+        return new PermissionDelegationStatusCommand(input.Id, input.DelegationStatus, input.Remark);
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public static class PermissionDelegationApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new PermissionDelegationUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.DelegatorUserId,
             input.DelegateeUserId,
             input.PermissionId,

@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 约束规则查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "约束规则")]
 public sealed class ConstraintRuleQueryService
     : SaasApplicationService, IConstraintRuleQueryService
 {
@@ -83,8 +79,6 @@ public sealed class ConstraintRuleQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>约束规则分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ConstraintRule.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<ConstraintRuleListItemDto>> GetConstraintRulePageAsync(ConstraintRulePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -106,12 +100,12 @@ public sealed class ConstraintRuleQueryService
             return new PageResultDtoBase<ConstraintRuleListItemDto>([], rules.Page);
         }
 
-        var itemCountMap = await BuildItemCountMapAsync(rules.Items.Select(rule => rule.BasicId), cancellationToken);
+        var itemCountMap = await BuildItemCountMapAsync(rules.Items.Select(rule => rule.Id), cancellationToken);
         var now = DateTimeOffset.UtcNow;
         var items = rules.Items
             .Select(rule => ConstraintRuleApplicationMapper.ToListItemDto(
                 rule,
-                itemCountMap.GetValueOrDefault(rule.BasicId),
+                itemCountMap.GetValueOrDefault(rule.Id),
                 now))
             .ToList();
 
@@ -124,7 +118,6 @@ public sealed class ConstraintRuleQueryService
     /// <param name="id">约束规则主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>约束规则详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ConstraintRule.Read)]
     public async Task<ConstraintRuleDetailDto?> GetConstraintRuleDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -228,7 +221,7 @@ public sealed class ConstraintRuleQueryService
     private static void ApplyConstraintRuleSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysConstraintRule rule) => rule.Priority, SortDirection.Descending, 0);
-        request.Conditions.AddSort((SysConstraintRule rule) => rule.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysConstraintRule rule) => rule.CreatedAt, SortDirection.Descending, 1);
     }
 
     /// <summary>
@@ -248,7 +241,7 @@ public sealed class ConstraintRuleQueryService
 
         var items = await _constraintRuleItemRepository.GetListAsync(
             item => ids.Contains(item.ConstraintRuleId),
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
         return items
             .GroupBy(item => item.ConstraintRuleId)
@@ -291,7 +284,7 @@ public sealed class ConstraintRuleQueryService
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
         foreach (var role in roles)
         {
-            result[(ConstraintTargetType.Role, role.BasicId)] = (role.RoleCode, role.RoleName);
+            result[(ConstraintTargetType.Role, role.Id)] = (role.RoleCode, role.RoleName);
         }
     }
 
@@ -317,7 +310,7 @@ public sealed class ConstraintRuleQueryService
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
         foreach (var permission in permissions)
         {
-            result[(ConstraintTargetType.Permission, permission.BasicId)] = (permission.PermissionCode, permission.PermissionName);
+            result[(ConstraintTargetType.Permission, permission.Id)] = (permission.PermissionCode, permission.PermissionName);
         }
     }
 
@@ -342,7 +335,7 @@ public sealed class ConstraintRuleQueryService
 
         var tenantMembers = await _tenantUserRepository.GetListAsync(
             tenantMember => userIds.Contains(tenantMember.UserId),
-            tenantMember => tenantMember.CreatedTime,
+            tenantMember => tenantMember.CreatedAt,
             cancellationToken);
         foreach (var tenantMember in tenantMembers)
         {

@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -28,7 +27,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 不设 Status/IsDeleted：解除继承即硬删这条边。
 /// </remarks>
 [SugarTable(TableName = "Sys_Role_Hierarchy", TableDescription = "系统角色继承关系表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_AnId_DeId", nameof(TenantId), OrderByType.Asc, nameof(AncestorId), OrderByType.Asc, nameof(DescendantId), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_DeId", nameof(DescendantId), OrderByType.Asc)]

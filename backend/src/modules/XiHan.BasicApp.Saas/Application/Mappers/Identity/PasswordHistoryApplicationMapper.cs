@@ -23,13 +23,13 @@ public static class PasswordHistoryApplicationMapper
 
         return new PasswordHistoryListItemDto
         {
-            BasicId = history.BasicId,
+            Id = history.Id,
             UserId = history.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
             NickName = user?.NickName,
             ChangedTime = history.ChangedTime,
-            CreatedTime = history.CreatedTime
+            CreatedAt = history.CreatedAt
         };
     }
 
@@ -46,13 +46,13 @@ public static class PasswordHistoryApplicationMapper
         var item = ToListItemDto(history, user);
         return new PasswordHistoryDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             RealName = item.RealName,
             NickName = item.NickName,
             ChangedTime = item.ChangedTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = history.CreatedId,
             CreatedBy = history.CreatedBy
         };

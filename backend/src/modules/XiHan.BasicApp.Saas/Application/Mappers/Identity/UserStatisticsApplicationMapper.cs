@@ -23,7 +23,7 @@ public static class UserStatisticsApplicationMapper
 
         return new UserStatisticsListItemDto
         {
-            BasicId = statistics.BasicId,
+            Id = statistics.Id,
             UserId = statistics.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
@@ -39,8 +39,8 @@ public static class UserStatisticsApplicationMapper
             LastLoginTime = statistics.LastLoginTime,
             LastAccessTime = statistics.LastAccessTime,
             LastOperationTime = statistics.LastOperationTime,
-            CreatedTime = statistics.CreatedTime,
-            ModifiedTime = statistics.ModifiedTime
+            CreatedAt = statistics.CreatedAt,
+            ModifiedAt = statistics.ModifiedAt
         };
     }
 
@@ -57,7 +57,7 @@ public static class UserStatisticsApplicationMapper
         var item = ToListItemDto(statistics, user);
         return new UserStatisticsDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             RealName = item.RealName,
@@ -80,10 +80,10 @@ public static class UserStatisticsApplicationMapper
             NotificationSentCount = statistics.NotificationSentCount,
             NotificationReceivedCount = statistics.NotificationReceivedCount,
             Remark = statistics.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = statistics.CreatedId,
             CreatedBy = statistics.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = statistics.ModifiedId,
             ModifiedBy = statistics.ModifiedBy
         };

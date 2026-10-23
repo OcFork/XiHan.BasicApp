@@ -78,7 +78,7 @@ public sealed class SmsConfigDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var config = await GetSmsConfigOrThrowAsync(command.BasicId, cancellationToken);
+        var config = await GetSmsConfigOrThrowAsync(command.Id, cancellationToken);
 
         config.ConfigName = command.ConfigName.Trim();
         config.Provider = command.Provider;
@@ -108,8 +108,8 @@ public sealed class SmsConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "短信网关配置主键必须大于 0。");
-        var config = await GetSmsConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "短信网关配置主键必须大于 0。");
+        var config = await GetSmsConfigOrThrowAsync(command.Id, cancellationToken);
         if (config.IsDefault && !command.IsEnabled)
         {
             throw new InvalidOperationException("默认短信网关配置不能停用，请先将其他启用配置设为默认。");
@@ -127,11 +127,11 @@ public sealed class SmsConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "短信网关配置主键必须大于 0。");
-        var config = await GetSmsConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "短信网关配置主键必须大于 0。");
+        var config = await GetSmsConfigOrThrowAsync(command.Id, cancellationToken);
         EnsureEnabledDefault(config.IsEnabled);
 
-        await ClearDefaultConfigsAsync(config.BasicId, cancellationToken);
+        await ClearDefaultConfigsAsync(config.Id, cancellationToken);
         config.IsDefault = true;
 
         return new SmsConfigCommandResult(await _smsConfigRepository.UpdateAsync(config, cancellationToken));
@@ -236,7 +236,7 @@ public sealed class SmsConfigDomainService
 
     private static void ValidateUpdateCommand(SmsConfigUpdateCommand command)
     {
-        EnsureId(command.BasicId, "短信网关配置主键必须大于 0。");
+        EnsureId(command.Id, "短信网关配置主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.ConfigName);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.AccessKeyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.SignName);
@@ -257,7 +257,7 @@ public sealed class SmsConfigDomainService
         return excludeId.HasValue
             ? _smsConfigRepository.UpdateAsync(
                 config => new SysSmsConfig { IsDefault = false },
-                config => config.IsDefault && config.BasicId != excludeId.Value,
+                config => config.IsDefault && config.Id != excludeId.Value,
                 cancellationToken)
             : _smsConfigRepository.UpdateAsync(
                 config => new SysSmsConfig { IsDefault = false },

@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -46,7 +45,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 支持分布式锁保证多实例环境下仅单实例执行
 /// </remarks>
 [SugarTable(TableName = "Sys_Task", TableDescription = "系统任务表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_TaCo", nameof(TenantId), OrderByType.Asc, nameof(TaskCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
@@ -55,7 +54,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_NeRuTi", nameof(NextRunTime), OrderByType.Desc)]
 [SugarIndex("IX_{table}_TeId_St", nameof(TenantId), OrderByType.Asc, nameof(Status), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysTask : BasicAppAggregateRoot, IStrictMultiTenantEntity
+public partial class SysTask : BasicAppAggregateRoot, IMultiTenant
 {
     /// <summary>
     /// 任务编码

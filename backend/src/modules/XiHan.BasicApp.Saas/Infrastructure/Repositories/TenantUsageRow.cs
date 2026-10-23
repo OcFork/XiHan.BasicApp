@@ -15,7 +15,8 @@ internal sealed class TenantUsageRow
     /// <summary>
     /// 租户主键
     /// </summary>
-    public long TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; set; } = string.Empty;
 
     /// <summary>
     /// 聚合值（成员数或已占用字节数）

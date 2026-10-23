@@ -1,17 +1,15 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Caching;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Web.RealTime.Constants;
-using XiHan.Framework.Web.RealTime.Services;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -21,8 +19,19 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// <remarks>
 /// 当用户会话被撤销时，写入登录日志、发送通知给用户，并向其在线连接实时推送 ForceLogout 强制下线。
 /// </remarks>
-public sealed class UserSessionRevokedEventHandler : ILocalEventHandler<UserSessionRevokedDomainEvent>
+public sealed class UserSessionRevokedEventHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string UserSessionRevokedTopic = "user-session-revoked";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<UserSessionRevokedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly ISqlSugarClientResolver _clientResolver;
     private readonly IRealtimeNotificationService<BasicAppNotificationHub> _realtimeNotificationService;
     private readonly IUserNotificationDispatchService _notificationDispatchService;
@@ -144,14 +153,14 @@ public sealed class UserSessionRevokedEventHandler : ILocalEventHandler<UserSess
             // 查询用户信息以获取用户名：会话在事件租户里，账号可能注册在别处（外部成员），按主键跨租户取
             var user = await _clientResolver.GetClientForEntity<SysUser>().Queryable<SysUser>()
                 .ClearTenantFilter()
-                .Where(u => u.BasicId == eventData.UserId && !u.IsDeleted)
+                .Where(u => u.Id == eventData.UserId && !u.IsDeleted)
                 .Select(u => new { u.UserName })
                 .FirstAsync();
 
             // 设备指纹取自被撤销的会话行：撤销可能由后台流程触发，此时没有请求上下文与令牌可依
             var deviceId = eventData.SessionId.HasValue
                 ? await _clientResolver.GetClientForEntity<SysUserSession>().Queryable<SysUserSession>()
-                    .Where(session => session.BasicId == eventData.SessionId.Value)
+                    .Where(session => session.Id == eventData.SessionId.Value)
                     .Select(session => session.DeviceId)
                     .FirstAsync()
                 : null;
@@ -168,7 +177,7 @@ public sealed class UserSessionRevokedEventHandler : ILocalEventHandler<UserSess
                     ? "会话撤销"
                     : $"会话撤销：{eventData.Reason}",
                 TenantId = eventData.TenantId,
-                CreatedTime = now
+                CreatedAt = now
             };
 
             // SysLoginLog 是按月分表，使用 SplitTable 插入

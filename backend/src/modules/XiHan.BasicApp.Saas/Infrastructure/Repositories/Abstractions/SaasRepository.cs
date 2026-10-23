@@ -3,9 +3,6 @@
 
 using System.Linq.Expressions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.DependencyInjection.ServiceLifetimes;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Repository;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
@@ -14,8 +11,9 @@ namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 /// SaaS SqlSugar 普通实体仓储基类
 /// </summary>
 /// <typeparam name="TEntity">实体类型</typeparam>
+// xihan-migrate(V4-03): SaasRepository 没法自动注册（泛型、抽象或不在项目里）；请手工注册。
 public abstract class SaasRepository<TEntity>(ISqlSugarClientResolver clientResolver)
-    : SqlSugarRepositoryBase<TEntity, long>(clientResolver), ISaasRepository<TEntity>, IScopedDependency
+    : SqlSugarRepositoryBase<TEntity, long>(clientResolver), ISaasRepository<TEntity>
     where TEntity : class, IEntityBase<long>, new()
 {
     /// <summary>

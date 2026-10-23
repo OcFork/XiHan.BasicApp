@@ -11,10 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -23,8 +19,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 登录日志查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "登录日志")]
 public sealed class LoginLogQueryService
     : SaasApplicationService, ILoginLogQueryService
 {
@@ -52,8 +46,6 @@ public sealed class LoginLogQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>登录日志分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.LoginLog.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<LoginLogListItemDto>> GetLoginLogPageAsync(LoginLogPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -95,7 +87,6 @@ public sealed class LoginLogQueryService
     /// <param name="id">登录日志主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>登录日志详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.LoginLog.Read)]
     public async Task<LoginLogDetailDto?> GetLoginLogDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -106,7 +97,7 @@ public sealed class LoginLogQueryService
         cancellationToken.ThrowIfCancellationRequested();
 
         var loginLog = await DbClient.Queryable<SysLoginLog>()
-            .Where(x => x.BasicId == id)
+            .Where(x => x.Id == id)
             .SplitTable()
             .FirstAsync(cancellationToken);
         return loginLog is null ? null : LoginLogApplicationMapper.ToDetailDto(loginLog);

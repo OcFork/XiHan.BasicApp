@@ -59,7 +59,7 @@ public sealed class RoleManagementGrantedUserDto
     /// <summary>
     /// 用户角色绑定主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 用户主键
@@ -119,5 +119,5 @@ public sealed class RoleManagementGrantedUserDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }

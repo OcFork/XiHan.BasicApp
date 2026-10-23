@@ -2,10 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Workflow.Abstractions;
-using XiHan.Framework.Workflow.Abstractions.Assignees;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
-using XiHan.Framework.Workflow.Builders;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Seeders;
 

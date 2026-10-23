@@ -32,13 +32,13 @@ namespace XiHan.BasicApp.Chat.Domain.Entities;
 /// - 站内 IM：同事单聊、项目群聊、部门自动群
 /// </remarks>
 [SugarTable(TableName = "Sys_Chat_Conversation", TableDescription = "系统聊天会话表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_PaKe", nameof(TenantId), OrderByType.Asc, nameof(PairKey), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_LaMeTi", nameof(TenantId), OrderByType.Asc, nameof(LastMessageTime), OrderByType.Desc)]
 [SugarIndex("IX_{table}_TeId_DeId", nameof(TenantId), OrderByType.Asc, nameof(DepartmentId), OrderByType.Asc)]
-public partial class SysChatConversation : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysChatConversation : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 会话类型

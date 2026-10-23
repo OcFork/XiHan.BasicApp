@@ -33,12 +33,12 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 异常行为检测（比平时 10x 操作量 → 告警）
 /// </remarks>
 [SugarTable(TableName = "Sys_User_Statistics", TableDescription = "系统用户统计表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_UsId_StDa_Pe", nameof(TenantId), OrderByType.Asc, nameof(UserId), OrderByType.Asc, nameof(StatisticsDate), OrderByType.Desc, nameof(Period), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_StDa", nameof(TenantId), OrderByType.Asc, nameof(StatisticsDate), OrderByType.Desc)]
-public partial class SysUserStatistics : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysUserStatistics : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID（0 表示全体用户汇总统计）

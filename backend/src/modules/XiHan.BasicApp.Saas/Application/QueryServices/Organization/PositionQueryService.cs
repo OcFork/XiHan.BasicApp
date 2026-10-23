@@ -15,9 +15,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -28,8 +26,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 岗位查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "岗位")]
 public sealed class PositionQueryService
     : SaasApplicationService, IPositionQueryService
 {
@@ -71,8 +67,6 @@ public sealed class PositionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>岗位分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Position.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<PositionListItemDto>> GetPositionPageAsync(PositionPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -112,7 +106,6 @@ public sealed class PositionQueryService
     /// <remarks>供任职编辑等下拉一次取全，不走分页。</remarks>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>启用岗位列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Position.Read)]
     public async Task<IReadOnlyList<PositionListItemDto>> GetEnabledPositionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -151,7 +144,6 @@ public sealed class PositionQueryService
     /// <param name="id">岗位主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>岗位详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Position.Read)]
     public async Task<PositionDetailDto?> GetPositionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)

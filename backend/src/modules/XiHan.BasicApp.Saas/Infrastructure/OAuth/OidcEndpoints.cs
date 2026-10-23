@@ -11,7 +11,6 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authentication.Oidc;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.OAuth;
 
@@ -109,7 +108,7 @@ public static class OidcEndpoints
 
         var payload = new Dictionary<string, object?>
         {
-            [OidcConstants.Claims.Subject] = user.BasicId.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            [OidcConstants.Claims.Subject] = user.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)
         };
 
         foreach (var claim in OAuthServerService.BuildProfileClaims(user, granted))

@@ -31,13 +31,13 @@ namespace XiHan.BasicApp.Chat.Domain.Entities;
 /// - 会话列表未读角标、总未读数、@我 扩展、免打扰过滤
 /// </remarks>
 [SugarTable(TableName = "Sys_Chat_Conversation_Member", TableDescription = "系统聊天会话成员表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_CoId_UsId", nameof(TenantId), OrderByType.Asc, nameof(ConversationId), OrderByType.Asc, nameof(UserId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_UsId", nameof(TenantId), OrderByType.Asc, nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_CoId", nameof(ConversationId), OrderByType.Asc)]
-public partial class SysChatConversationMember : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysChatConversationMember : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 会话ID

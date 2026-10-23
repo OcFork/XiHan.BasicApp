@@ -38,8 +38,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 异常趋势分析 → 稳定性改进
 /// - 关联 Sentry/AppInsights 告警
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
+// xihan-migrate(V4-02): ITraceableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Exception_Log_{year}{month}{day}", TableDescription = "系统异常日志表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_UsId", nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_ExTy", nameof(ExceptionType), OrderByType.Asc)]
@@ -48,7 +50,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{split_table}_StCo", nameof(StatusCode), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TrId", nameof(TraceId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TeId_ExTi", nameof(TenantId), OrderByType.Asc, nameof(ExceptionTime), OrderByType.Desc)]
-public partial class SysExceptionLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IStrictMultiTenantEntity
+public partial class SysExceptionLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID
@@ -295,5 +297,5 @@ public partial class SysExceptionLog : BasicAppCreationEntity, ISplitTableEntity
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

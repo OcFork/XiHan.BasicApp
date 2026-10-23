@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -26,8 +24,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <remarks>
 /// 规则列表本身不参与字段安全：配置页要看到规则的全部内容才能维护。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "字段级安全")]
 public sealed class FieldLevelSecurityQueryService
     : SaasApplicationService, IFieldLevelSecurityQueryService
 {
@@ -68,8 +64,6 @@ public sealed class FieldLevelSecurityQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>字段级安全分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.FieldLevelSecurity.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<FieldLevelSecurityListItemDto>> GetFieldLevelSecurityPageAsync(FieldLevelSecurityPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -99,7 +93,6 @@ public sealed class FieldLevelSecurityQueryService
     /// <param name="id">字段级安全主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>字段级安全详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.FieldLevelSecurity.Read)]
     public async Task<FieldLevelSecurityDetailDto?> GetFieldLevelSecurityDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -124,7 +117,6 @@ public sealed class FieldLevelSecurityQueryService
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>实体与字段，按实体显示名排序</returns>
-    [PermissionAuthorize(SaasPermissionCodes.FieldLevelSecurity.Read)]
     public Task<IReadOnlyList<FieldSecurityEntityDto>> GetFieldSecurityEntitiesAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -191,7 +183,7 @@ public sealed class FieldLevelSecurityQueryService
             request.Conditions.AddSort((SysFieldLevelSecurity policy) => policy.EntityName, SortDirection.Ascending, 0);
             request.Conditions.AddSort((SysFieldLevelSecurity policy) => policy.FieldName, SortDirection.Ascending, 1);
             request.Conditions.AddSort((SysFieldLevelSecurity policy) => policy.TargetType, SortDirection.Ascending, 2);
-            request.Conditions.AddSort((SysFieldLevelSecurity policy) => policy.BasicId, SortDirection.Ascending, 3);
+            request.Conditions.AddSort((SysFieldLevelSecurity policy) => policy.Id, SortDirection.Ascending, 3);
         }
 
         return request;
@@ -218,10 +210,10 @@ public sealed class FieldLevelSecurityQueryService
         var users = userIds.Length == 0 ? [] : await _userRepository.GetListByIdsIgnoreTenantAsync(userIds, cancellationToken);
 
         return new TargetLookup(
-            roles.ToDictionary(role => role.BasicId),
-            departments.ToDictionary(department => department.BasicId),
+            roles.ToDictionary(role => role.Id),
+            departments.ToDictionary(department => department.Id),
             members.GroupBy(member => member.UserId).ToDictionary(group => group.Key, group => group.First()),
-            users.ToDictionary(user => user.BasicId));
+            users.ToDictionary(user => user.Id));
     }
 
     /// <summary>

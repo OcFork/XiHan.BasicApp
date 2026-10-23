@@ -22,7 +22,7 @@ public static class CodeGenHistoryApplicationMapper
 
         return new CodeGenHistoryListItemDto
         {
-            BasicId = history.BasicId,
+            Id = history.Id,
             TableId = history.TableId,
             TableName = history.TableName,
             BatchNumber = history.BatchNumber,
@@ -48,7 +48,7 @@ public static class CodeGenHistoryApplicationMapper
         var item = ToListItemDto(history);
         return new CodeGenHistoryDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TableId = item.TableId,
             TableName = item.TableName,
             BatchNumber = item.BatchNumber,

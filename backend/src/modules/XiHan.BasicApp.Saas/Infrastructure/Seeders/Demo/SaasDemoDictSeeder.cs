@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -110,7 +109,7 @@ public sealed class SaasDemoDictSeeder(
                 var saved = await DbClientFor<SysDictItem>().Insertable(new SysDictItem
                 {
                     TenantId = 0,
-                    DictId = dict.BasicId,
+                    DictId = dict.Id,
                     ParentId = item.Parent is null ? null : itemIds[item.Parent],
                     ItemCode = item.Code,
                     ItemName = item.Name,
@@ -120,7 +119,7 @@ public sealed class SaasDemoDictSeeder(
                     Sort = (itemIndex + 1) * 10,
                     Remark = "演示数据"
                 }).ExecuteReturnEntityAsync();
-                itemIds[item.Code] = saved.BasicId;
+                itemIds[item.Code] = saved.Id;
             }
 
             added++;

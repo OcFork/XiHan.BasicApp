@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -36,7 +35,7 @@ public sealed class TenantEditionRepository(ISqlSugarClientResolver clientResolv
         var query = CreateQueryable().Where(edition => edition.EditionCode == editionCode);
         if (excludeId.HasValue)
         {
-            query = query.Where(edition => edition.BasicId != excludeId.Value);
+            query = query.Where(edition => edition.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

@@ -113,7 +113,7 @@ public sealed class RoleInheritanceReader : IRoleInheritanceReader
         }
 
         var permissionMap = (await _permissionRepository.GetByIdsAsync(bindings.Select(binding => binding.PermissionId).Distinct(), cancellationToken))
-            .ToDictionary(permission => permission.BasicId);
+            .ToDictionary(permission => permission.Id);
         var roleMap = await BuildRoleMapAsync(effectiveAncestors.Keys, cancellationToken);
 
         return [.. bindings
@@ -140,7 +140,7 @@ public sealed class RoleInheritanceReader : IRoleInheritanceReader
     }
 
     private static HashSet<long> EnabledIds(IReadOnlyDictionary<long, SysRole> roleMap) =>
-        [.. roleMap.Values.Where(role => role.Status == EnableStatus.Enabled).Select(role => role.BasicId)];
+        [.. roleMap.Values.Where(role => role.Status == EnableStatus.Enabled).Select(role => role.Id)];
 
     private static RoleInheritanceItemDto ToItem(long roleId, RoleInheritancePath path, bool isEffective, IReadOnlyDictionary<long, SysRole> roleMap)
     {
@@ -168,6 +168,6 @@ public sealed class RoleInheritanceReader : IRoleInheritanceReader
         }
 
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
-        return roles.ToDictionary(role => role.BasicId);
+        return roles.ToDictionary(role => role.Id);
     }
 }

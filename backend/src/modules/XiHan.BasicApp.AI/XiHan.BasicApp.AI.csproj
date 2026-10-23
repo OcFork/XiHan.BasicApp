@@ -26,4 +26,8 @@
       <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.74.0-preview" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="XiHan.Framework.Kernel.Generators" Version="5.0.0-preview.1" PrivateAssets="all" />
+    </ItemGroup>
+
 </Project>

@@ -11,13 +11,8 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
@@ -29,8 +24,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 本层不重复实现规则不变量，而是先根据当前租户和权限确定可写范围，再在工作单元内调用领域服务。
 /// 每个非取消异常都会记录结构化失败日志后原样抛出，统一异常中间件负责生成对外响应。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "业务编号规则")]
 public sealed class NumberingRuleAppService : SaasApplicationService, INumberingRuleAppService
 {
     /// <summary>
@@ -97,8 +90,6 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">作用域、权限、规则格式或编码唯一性校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Create)]
     public async Task<NumberingRuleDetailDto> CreateNumberingRuleAsync(NumberingRuleCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -111,7 +102,7 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
         try
         {
             var result = await _domainService.CreateAsync(NumberingApplicationMapper.ToCreateCommand(input), cancellationToken);
-            LogCommandResult("Create", result.Rule.BasicId, result.Rule.RuleCode, input.Scope, true, null);
+            LogCommandResult("Create", result.Rule.Id, result.Rule.RuleCode, input.Scope, true, null);
             return NumberingApplicationMapper.ToDetailDto(result.Rule);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -132,25 +123,23 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">作用域、权限、规则存在性、格式冻结或容量校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Update)]
     public async Task<NumberingRuleDetailDto> UpdateNumberingRuleAsync(NumberingRuleUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         await EnsureWritableScopeAsync(input.Scope, cancellationToken);
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysNumberingRule), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysNumberingRule), input.Id, input, cancellationToken);
 
         try
         {
             var result = await _domainService.UpdateAsync(NumberingApplicationMapper.ToUpdateCommand(input), cancellationToken);
-            LogCommandResult("Update", result.Rule.BasicId, result.Rule.RuleCode, input.Scope, true, null);
+            LogCommandResult("Update", result.Rule.Id, result.Rule.RuleCode, input.Scope, true, null);
             return NumberingApplicationMapper.ToDetailDto(result.Rule);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            LogCommandResult("Update", input.BasicId, null, input.Scope, false, exception);
+            LogCommandResult("Update", input.Id, null, input.Scope, false, exception);
             throw;
         }
     }
@@ -165,26 +154,24 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">作用域、权限、规则存在性或状态值校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Status)]
     public async Task<NumberingRuleDetailDto> UpdateNumberingRuleStatusAsync(NumberingRuleStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         await EnsureWritableScopeAsync(input.Scope, cancellationToken);
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysNumberingRule), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysNumberingRule), input.Id, input, cancellationToken);
 
         try
         {
             var result = await _domainService.UpdateStatusAsync(
-                new NumberingRuleStatusChangeCommand(input.BasicId, input.Status, input.Remark), cancellationToken);
-            LogCommandResult("Status", result.Rule.BasicId, result.Rule.RuleCode, input.Scope, true, null);
+                new NumberingRuleStatusChangeCommand(input.Id, input.Status, input.Remark), cancellationToken);
+            LogCommandResult("Status", result.Rule.Id, result.Rule.RuleCode, input.Scope, true, null);
             return NumberingApplicationMapper.ToDetailDto(result.Rule);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            LogCommandResult("Status", input.BasicId, null, input.Scope, false, exception);
+            LogCommandResult("Status", input.Id, null, input.Scope, false, exception);
             throw;
         }
     }
@@ -202,8 +189,6 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">流水字符串、原因、全局确认编码、权限或防重复校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Reset)]
     public async Task<NumberingRuleDetailDto> ResetNumberingRuleAsync(NumberingRuleResetDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -217,10 +202,10 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
             }
 
             var result = await _domainService.ResetAsync(
-                new NumberingRuleResetCommand(input.BasicId, nextValue, input.Reason, input.ConfirmRuleCode), cancellationToken);
+                new NumberingRuleResetCommand(input.Id, nextValue, input.Reason, input.ConfirmRuleCode), cancellationToken);
             LogCommandResult(
                 "Reset",
-                result.Rule.BasicId,
+                result.Rule.Id,
                 result.Rule.RuleCode,
                 input.Scope,
                 true,
@@ -233,7 +218,7 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
         {
             LogCommandResult(
                 "Reset",
-                input.BasicId,
+                input.Id,
                 input.ConfirmRuleCode,
                 input.Scope,
                 false,
@@ -253,8 +238,6 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
     /// <remarks>领域服务会拒绝删除已经发号的规则，以保留审计链和历史格式快照。</remarks>
     /// <exception cref="UserFriendlyException">作用域、权限、规则存在性、发号状态或删除结果校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Delete)]
     public async Task DeleteNumberingRuleAsync(
         long id,
         NumberingScope scope = NumberingScope.Auto,

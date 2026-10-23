@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Seeders;

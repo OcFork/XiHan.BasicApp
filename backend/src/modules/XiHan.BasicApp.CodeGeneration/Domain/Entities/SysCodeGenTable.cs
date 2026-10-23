@@ -5,7 +5,6 @@ using SqlSugar;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.CodeGeneration.Domain.Entities;
 
@@ -39,7 +38,7 @@ namespace XiHan.BasicApp.CodeGeneration.Domain.Entities;
 /// - 重复生成前保留历史配置
 /// </remarks>
 [SugarTable(TableName = "Sys_CodeGen_Table", TableDescription = "系统代码生成表配置表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 // 补 TenantId 与 IsDeleted，理由同 SysCodeGenDataSource。

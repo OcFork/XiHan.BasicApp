@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 用户数据范围查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户数据范围")]
 public sealed class UserDataScopeQueryService
     : SaasApplicationService, IUserDataScopeQueryService
 {
@@ -63,7 +59,6 @@ public sealed class UserDataScopeQueryService
     /// <param name="userId">用户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>数据范围设置</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserDataScope.Read)]
     public async Task<UserDataScopeSettingDto> GetUserDataScopeSettingAsync(long userId, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -93,7 +88,6 @@ public sealed class UserDataScopeQueryService
     /// <param name="onlyValid">是否仅返回当前有效数据范围覆盖</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户数据范围列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserDataScope.Read)]
     public async Task<IReadOnlyList<UserDataScopeListItemDto>> GetUserDataScopesAsync(long userId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -115,7 +109,7 @@ public sealed class UserDataScopeQueryService
             ? await _userDataScopeRepository.GetValidByUserIdAsync(userId, cancellationToken)
             : await _userDataScopeRepository.GetListAsync(
                 scope => scope.UserId == userId,
-                scope => scope.CreatedTime,
+                scope => scope.CreatedAt,
                 cancellationToken);
 
         if (scopes.Count == 0)
@@ -140,7 +134,6 @@ public sealed class UserDataScopeQueryService
     /// <param name="id">用户数据范围绑定主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户数据范围详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserDataScope.Read)]
     public async Task<UserDataScopeDetailDto?> GetUserDataScopeDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -183,6 +176,6 @@ public sealed class UserDataScopeQueryService
         }
 
         var departments = await _departmentRepository.GetByIdsAsync(ids, cancellationToken);
-        return departments.ToDictionary(department => department.BasicId);
+        return departments.ToDictionary(department => department.Id);
     }
 }

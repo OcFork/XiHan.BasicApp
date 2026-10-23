@@ -77,7 +77,7 @@ public sealed class WorkflowOrganizationDirectory
         }
 
         var userRoles = await _userRoleRepository.GetValidByRoleIdsAsync(
-            [.. roles.Select(role => role.BasicId)], DateTimeOffset.UtcNow, cancellationToken);
+            [.. roles.Select(role => role.Id)], DateTimeOffset.UtcNow, cancellationToken);
         return [.. userRoles.Select(userRole => userRole.UserId).Distinct().Order()];
     }
 
@@ -115,7 +115,7 @@ public sealed class WorkflowOrganizationDirectory
             return [];
         }
 
-        var positionIds = positions.Select(position => (long?)position.BasicId).ToList();
+        var positionIds = positions.Select(position => (long?)position.Id).ToList();
         var assignments = await _userDepartmentRepository.GetListAsync(
             assignment => positionIds.Contains(assignment.PositionId) && assignment.Status == ValidityStatus.Valid,
             cancellationToken);
@@ -130,7 +130,7 @@ public sealed class WorkflowOrganizationDirectory
         var assignments = await _userDepartmentRepository.GetValidByUserIdAsync(starterUserId, cancellationToken);
         var startAssignment = assignments
             .OrderByDescending(assignment => assignment.IsMain)
-            .ThenBy(assignment => assignment.CreatedTime)
+            .ThenBy(assignment => assignment.CreatedAt)
             .FirstOrDefault();
         if (startAssignment is null)
         {

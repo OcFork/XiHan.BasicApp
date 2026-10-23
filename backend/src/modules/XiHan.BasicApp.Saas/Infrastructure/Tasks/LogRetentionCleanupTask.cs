@@ -8,7 +8,7 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Data.SqlSugar.Clients;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Entities.Abstracts;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
@@ -69,6 +69,7 @@ public sealed class LogRetentionCleanupTask
     public async Task<string> ExecuteAsync()
     {
         int retentionDays;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             retentionDays = await ResolveRetentionDaysAsync();
@@ -122,7 +123,7 @@ public sealed class LogRetentionCleanupTask
     {
         // 无参 SplitTable() 仅支持按实体集合删除（运行时抛异常），条件删除必须走带表筛选的重载
         return await client.Deleteable<T>()
-            .Where(entity => entity.CreatedTime < cutoff)
+            .Where(entity => entity.CreatedAt < cutoff)
             .SplitTable(tabs => tabs)
             .ExecuteCommandAsync();
     }

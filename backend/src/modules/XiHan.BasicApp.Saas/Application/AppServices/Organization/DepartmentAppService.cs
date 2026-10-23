@@ -8,17 +8,12 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 部门命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "部门")]
 public sealed class DepartmentAppService
     : SaasApplicationService, IDepartmentAppService
 {
@@ -38,8 +33,6 @@ public sealed class DepartmentAppService
     /// <summary>
     /// 创建部门
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Department.Create)]
     public async Task<DepartmentDetailDto> CreateDepartmentAsync(DepartmentCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -56,8 +49,6 @@ public sealed class DepartmentAppService
     /// <summary>
     /// 删除部门
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Department.Delete)]
     public async Task DeleteDepartmentAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -70,8 +61,6 @@ public sealed class DepartmentAppService
     /// <summary>
     /// 更新部门
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Department.Update)]
     public async Task<DepartmentDetailDto> UpdateDepartmentAsync(DepartmentUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -88,8 +77,6 @@ public sealed class DepartmentAppService
     /// <summary>
     /// 更新部门状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Department.Status)]
     public async Task<DepartmentDetailDto> UpdateDepartmentStatusAsync(DepartmentStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

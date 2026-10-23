@@ -31,7 +31,7 @@ public static class SessionRoleApplicationMapper
 
         return new SessionRoleListItemDto
         {
-            BasicId = sessionRole.BasicId,
+            Id = sessionRole.Id,
             SessionId = sessionRole.SessionId,
             UserSessionId = session?.UserSessionId,
             UserId = session?.UserId,
@@ -46,7 +46,7 @@ public static class SessionRoleApplicationMapper
             ExpirationTime = sessionRole.ExpirationTime,
             IsExpired = IsExpired(sessionRole, now),
             Status = sessionRole.Status,
-            CreatedTime = sessionRole.CreatedTime
+            CreatedAt = sessionRole.CreatedAt
         };
     }
 
@@ -71,7 +71,7 @@ public static class SessionRoleApplicationMapper
         var item = ToListItemDto(sessionRole, session, role, user, now);
         return new SessionRoleDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             SessionId = item.SessionId,
             UserSessionId = item.UserSessionId,
             UserId = item.UserId,
@@ -87,7 +87,7 @@ public static class SessionRoleApplicationMapper
             IsExpired = item.IsExpired,
             Status = item.Status,
             Reason = sessionRole.Reason,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = sessionRole.CreatedId,
             CreatedBy = sessionRole.CreatedBy
         };

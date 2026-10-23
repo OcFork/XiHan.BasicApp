@@ -104,7 +104,7 @@ public sealed class TaskDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var task = await GetTaskOrThrowAsync(command.BasicId, cancellationToken);
+        var task = await GetTaskOrThrowAsync(command.Id, cancellationToken);
         _taskScheduleDomainService.EnsureCanModify(task);
 
         task.TaskName = Required(command.TaskName, 200, nameof(command.TaskName), "任务名称不能超过 200 个字符。");
@@ -141,8 +141,8 @@ public sealed class TaskDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统任务主键必须大于 0。");
-        var task = await GetTaskOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "系统任务主键必须大于 0。");
+        var task = await GetTaskOrThrowAsync(command.Id, cancellationToken);
         var oldRunStatus = task.RunTaskStatus;
 
         _taskScheduleDomainService.ApplyRunStatus(
@@ -166,8 +166,8 @@ public sealed class TaskDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统任务主键必须大于 0。");
-        var task = await GetTaskOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "系统任务主键必须大于 0。");
+        var task = await GetTaskOrThrowAsync(command.Id, cancellationToken);
         var wasEnabled = task.Status == EnableStatus.Enabled;
 
         _taskScheduleDomainService.ApplyStatus(task, command.Status, command.Remark);
@@ -297,7 +297,7 @@ public sealed class TaskDomainService
 
     private void ValidateUpdateCommand(TaskUpdateCommand command)
     {
-        EnsureId(command.BasicId, "系统任务主键必须大于 0。");
+        EnsureId(command.Id, "系统任务主键必须大于 0。");
         _taskScheduleDomainService.EnsureScheduleConfiguration(
             command.TriggerType,
             command.CronExpression,

@@ -5,7 +5,6 @@ using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Repositories;
 
@@ -41,7 +40,7 @@ public sealed class AiProviderRepository(ISqlSugarClientResolver clientResolver)
         var query = CreateQueryable().Where(provider => provider.ConfigCode == code);
         if (excludeId.HasValue)
         {
-            query = query.Where(provider => provider.BasicId != excludeId.Value);
+            query = query.Where(provider => provider.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);
@@ -95,7 +94,7 @@ public sealed class AiProviderRepository(ISqlSugarClientResolver clientResolver)
         cancellationToken.ThrowIfCancellationRequested();
 
         return await CreateQueryable()
-            .Where(provider => provider.IsDefault && provider.BasicId != keepId)
+            .Where(provider => provider.IsDefault && provider.Id != keepId)
             .ToListAsync(cancellationToken);
     }
 }

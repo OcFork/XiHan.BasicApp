@@ -122,8 +122,8 @@ public sealed class TenantEditionDomainService
         var grantPermissionIds = command.GrantPermissionIds.Where(id => id > 0).Distinct().ToList();
         var revokeIds = command.RevokeEditionPermissionIds.Where(id => id > 0).Distinct().ToList();
         var statusChanges = command.StatusChanges
-            .Where(item => item.BasicId > 0)
-            .GroupBy(item => item.BasicId)
+            .Where(item => item.Id > 0)
+            .GroupBy(item => item.Id)
             .ToDictionary(group => group.Key, group => group.Last().Status);
         if (grantPermissionIds.Count == 0 && revokeIds.Count == 0 && statusChanges.Count == 0)
         {
@@ -141,7 +141,7 @@ public sealed class TenantEditionDomainService
         if (revokeIds.Count > 0)
         {
             var revoking = (await _tenantEditionPermissionRepository.GetListAsync(
-                editionPermission => revokeIds.Contains(editionPermission.BasicId) && editionPermission.EditionId == command.EditionId,
+                editionPermission => revokeIds.Contains(editionPermission.Id) && editionPermission.EditionId == command.EditionId,
                 cancellationToken)).ToList();
             if (revoking.Count > 0)
             {
@@ -159,11 +159,11 @@ public sealed class TenantEditionDomainService
         {
             var changeIds = statusChanges.Keys.ToList();
             var changing = (await _tenantEditionPermissionRepository.GetListAsync(
-                editionPermission => changeIds.Contains(editionPermission.BasicId) && editionPermission.EditionId == command.EditionId,
+                editionPermission => changeIds.Contains(editionPermission.Id) && editionPermission.EditionId == command.EditionId,
                 cancellationToken)).ToList();
             foreach (var editionPermission in changing)
             {
-                var status = statusChanges[editionPermission.BasicId];
+                var status = statusChanges[editionPermission.Id];
                 if (status == ValidityStatus.Valid)
                 {
                     _ = await GetGrantablePermissionOrThrowAsync(editionPermission.PermissionId, cancellationToken);
@@ -239,11 +239,11 @@ public sealed class TenantEditionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "租户版本主键必须大于 0。");
-        var edition = await GetTenantEditionOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "租户版本主键必须大于 0。");
+        var edition = await GetTenantEditionOrThrowAsync(command.Id, cancellationToken);
         EnsureEnabledDefault(edition.Status);
 
-        await ClearDefaultEditionsAsync(edition.BasicId, cancellationToken);
+        await ClearDefaultEditionsAsync(edition.Id, cancellationToken);
         edition.IsDefault = true;
 
         return new TenantEditionCommandResult(await _tenantEditionRepository.UpdateAsync(edition, cancellationToken));
@@ -258,7 +258,7 @@ public sealed class TenantEditionDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var edition = await GetTenantEditionOrThrowAsync(command.BasicId, cancellationToken);
+        var edition = await GetTenantEditionOrThrowAsync(command.Id, cancellationToken);
         if (edition.IsDefault && !command.IsDefault)
         {
             throw new InvalidOperationException("默认租户版本不能直接取消，请设置其他版本为默认版本。");
@@ -267,7 +267,7 @@ public sealed class TenantEditionDomainService
         if (command.IsDefault)
         {
             EnsureEnabledDefault(edition.Status);
-            await ClearDefaultEditionsAsync(edition.BasicId, cancellationToken);
+            await ClearDefaultEditionsAsync(edition.Id, cancellationToken);
         }
 
         edition.EditionName = command.EditionName.Trim();
@@ -292,10 +292,10 @@ public sealed class TenantEditionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "租户版本权限绑定主键必须大于 0。");
+        EnsureId(command.Id, "租户版本权限绑定主键必须大于 0。");
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var editionPermission = await GetTenantEditionPermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var editionPermission = await GetTenantEditionPermissionOrThrowAsync(command.Id, cancellationToken);
         var permission = command.Status == ValidityStatus.Valid
             ? await GetGrantablePermissionOrThrowAsync(editionPermission.PermissionId, cancellationToken)
             : await _permissionRepository.GetByIdAsync(editionPermission.PermissionId, cancellationToken);
@@ -316,10 +316,10 @@ public sealed class TenantEditionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "租户版本主键必须大于 0。");
+        EnsureId(command.Id, "租户版本主键必须大于 0。");
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var edition = await GetTenantEditionOrThrowAsync(command.BasicId, cancellationToken);
+        var edition = await GetTenantEditionOrThrowAsync(command.Id, cancellationToken);
         if (edition.IsDefault && command.Status == EnableStatus.Disabled)
         {
             throw new InvalidOperationException("默认租户版本不能被禁用，请先设置其他启用版本为默认版本。");
@@ -385,7 +385,7 @@ public sealed class TenantEditionDomainService
 
     private static void ValidateUpdateCommand(TenantEditionUpdateCommand command)
     {
-        EnsureId(command.BasicId, "租户版本主键必须大于 0。");
+        EnsureId(command.Id, "租户版本主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.EditionName);
         ValidateCommonInput(command.UserLimit, command.StorageLimit, command.Price, command.BillingPeriodMonths, command.IsFree);
     }
@@ -418,7 +418,7 @@ public sealed class TenantEditionDomainService
         return excludeId.HasValue
             ? _tenantEditionRepository.UpdateAsync(
                 edition => new SysTenantEdition { IsDefault = false },
-                edition => edition.IsDefault && edition.BasicId != excludeId.Value,
+                edition => edition.IsDefault && edition.Id != excludeId.Value,
                 cancellationToken)
             : _tenantEditionRepository.UpdateAsync(
                 edition => new SysTenantEdition { IsDefault = false },

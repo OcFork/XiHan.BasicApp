@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 菜单查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "菜单")]
 public sealed class MenuQueryService
     : SaasApplicationService, IMenuQueryService
 {
@@ -55,8 +51,6 @@ public sealed class MenuQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>菜单分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Menu.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<MenuListItemDto>> GetMenuPageAsync(MenuPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -89,7 +83,7 @@ public sealed class MenuQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>菜单列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Menu.Read)]
+    // xihan-migrate(V4-06): 同一资源内动词重复；'list-menu-2' 加了数字后缀，请手工改名。
     public async Task<IReadOnlyList<MenuListItemDto>> GetMenuListAsync(MenuListQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -112,7 +106,6 @@ public sealed class MenuQueryService
     /// <param name="id">菜单主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>菜单详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Menu.Read)]
     public async Task<MenuDetailDto?> GetMenuDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -141,7 +134,6 @@ public sealed class MenuQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>菜单树</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Menu.Read)]
     public async Task<IReadOnlyList<MenuTreeNodeDto>> GetMenuTreeAsync(MenuTreeQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -327,13 +319,13 @@ public sealed class MenuQueryService
     /// </summary>
     private static IReadOnlyList<MenuTreeNodeDto> BuildTree(IReadOnlyList<MenuTreeNodeDto> nodes)
     {
-        var nodeMap = nodes.ToDictionary(node => node.BasicId);
+        var nodeMap = nodes.ToDictionary(node => node.Id);
         var roots = new List<MenuTreeNodeDto>();
 
         foreach (var node in nodes.OrderBy(node => node.Sort).ThenBy(node => node.MenuCode, StringComparer.Ordinal))
         {
             if (node.ParentId.HasValue
-                && node.ParentId.Value != node.BasicId
+                && node.ParentId.Value != node.Id
                 && nodeMap.TryGetValue(node.ParentId.Value, out var parent))
             {
                 parent.Children.Add(node);
@@ -372,6 +364,6 @@ public sealed class MenuQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(permission => permission.BasicId);
+        return permissions.ToDictionary(permission => permission.Id);
     }
 }

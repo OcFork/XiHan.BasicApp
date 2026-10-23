@@ -21,7 +21,7 @@ public static class CodeGenTableApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new CodeGenTableUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.TableName,
             input.TableComment,
             input.ClassName,
@@ -54,7 +54,7 @@ public static class CodeGenTableApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new CodeGenTableStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new CodeGenTableStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public static class CodeGenTableApplicationMapper
 
         return new CodeGenTableListItemDto
         {
-            BasicId = table.BasicId,
+            Id = table.Id,
             TableName = table.TableName,
             TableComment = table.TableComment,
             ClassName = table.ClassName,
@@ -78,8 +78,8 @@ public static class CodeGenTableApplicationMapper
             GenStatus = table.GenStatus,
             LastGenTime = table.LastGenTime,
             Status = table.Status,
-            CreatedTime = table.CreatedTime,
-            ModifiedTime = table.ModifiedTime
+            CreatedAt = table.CreatedAt,
+            ModifiedAt = table.ModifiedAt
         };
     }
 
@@ -93,7 +93,7 @@ public static class CodeGenTableApplicationMapper
         var item = ToListItemDto(table);
         return new CodeGenTableDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TableName = item.TableName,
             TableComment = item.TableComment,
             ClassName = item.ClassName,
@@ -104,8 +104,8 @@ public static class CodeGenTableApplicationMapper
             GenStatus = item.GenStatus,
             LastGenTime = item.LastGenTime,
             Status = item.Status,
-            CreatedTime = item.CreatedTime,
-            ModifiedTime = item.ModifiedTime,
+            CreatedAt = item.CreatedAt,
+            ModifiedAt = item.ModifiedAt,
             Namespace = table.Namespace,
             Author = table.Author,
             GenType = table.GenType,
@@ -149,7 +149,7 @@ public static class CodeGenTableApplicationMapper
 
         return new CodeGenTableColumnListItemDto
         {
-            BasicId = column.BasicId,
+            Id = column.Id,
             TableId = column.TableId,
             ColumnName = column.ColumnName,
             ColumnComment = column.ColumnComment,

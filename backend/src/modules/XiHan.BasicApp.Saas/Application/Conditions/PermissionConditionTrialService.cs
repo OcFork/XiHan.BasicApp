@@ -8,7 +8,7 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authorization.Conditions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 
@@ -99,13 +99,13 @@ public sealed class PermissionConditionTrialService
             ?? throw new InvalidOperationException("用户不存在。");
         var environment = ResolveEnvironment(input);
         var code = input.PermissionCode.Trim();
-        var (verdict, snapshot, explanation) = await EvaluateAsync(tenantId, user.BasicId, user.UserName, code, input, environment, input.ResourceId, cancellationToken);
+        var (verdict, snapshot, explanation) = await EvaluateAsync(tenantId, user.Id, user.UserName, code, input, environment, input.ResourceId, cancellationToken);
 
         var result = new PermissionConditionTrialResultDto
         {
             Verdict = verdict,
             TenantId = tenantId,
-            UserId = user.BasicId,
+            UserId = user.Id,
             UserName = user.UserName,
             PermissionCode = code,
             Ip = environment.Ip?.ToString(),
@@ -184,8 +184,8 @@ public sealed class PermissionConditionTrialService
         };
         foreach (var user in users.OrderBy(user => user.UserName, StringComparer.OrdinalIgnoreCase))
         {
-            var (verdict, _, _) = await EvaluateAsync(tenantId, user.BasicId, user.UserName, code, input, environment, null, cancellationToken);
-            result.Items.Add(new PermissionConditionBatchTrialItemDto { UserId = user.BasicId, UserName = user.UserName, Verdict = verdict });
+            var (verdict, _, _) = await EvaluateAsync(tenantId, user.Id, user.UserName, code, input, environment, null, cancellationToken);
+            result.Items.Add(new PermissionConditionBatchTrialItemDto { UserId = user.Id, UserName = user.UserName, Verdict = verdict });
         }
 
         return result;
@@ -305,7 +305,7 @@ public sealed class PermissionConditionTrialService
         var roles = roleSources.Count == 0
             ? new Dictionary<long, string>()
             : (await _roleRepository.GetByIdsAsync([.. roleSources.Select(item => item.Id).Distinct()], cancellationToken))
-                .ToDictionary(role => role.BasicId, role => role.RoleName);
+                .ToDictionary(role => role.Id, role => role.RoleName);
         foreach (var (source, id) in roleSources)
         {
             if (roles.TryGetValue(id, out var name))

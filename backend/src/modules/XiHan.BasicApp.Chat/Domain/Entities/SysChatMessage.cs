@@ -32,11 +32,11 @@ namespace XiHan.BasicApp.Chat.Domain.Entities;
 /// - 站内 IM 消息流、未读计数来源、图片/文件经文件库预签名 URL 访问
 /// </remarks>
 [SugarTable(TableName = "Sys_Chat_Message", TableDescription = "系统聊天消息表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
-[SugarIndex("IX_{table}_CoId_CrTi", nameof(ConversationId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_CoId_CrTi", nameof(ConversationId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_SeUsId", nameof(SenderUserId), OrderByType.Asc)]
-public partial class SysChatMessage : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysChatMessage : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 会话ID

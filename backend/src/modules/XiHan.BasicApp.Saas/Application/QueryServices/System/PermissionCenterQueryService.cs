@@ -11,17 +11,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 权限中心页面查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限中心")]
 public sealed class PermissionCenterQueryService
     : SaasApplicationService, IPermissionCenterQueryService
 {
@@ -95,7 +90,6 @@ public sealed class PermissionCenterQueryService
     /// <param name="permissionId">权限主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限中心详情聚合视图</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Permission.Read)]
     public async Task<PermissionCenterDetailDto?> GetPermissionCenterDetailAsync(long permissionId, CancellationToken cancellationToken = default)
     {
         if (permissionId <= 0)
@@ -127,7 +121,7 @@ public sealed class PermissionCenterQueryService
             Conditions = await GetConditionsAsync(permission, cancellationToken),
             Delegations = await GetDelegationsAsync(permission, now, cancellationToken),
             Requests = await GetRequestsAsync(permission, now, cancellationToken),
-            ChangeLogs = await GetChangeLogsAsync(permission.BasicId, cancellationToken),
+            ChangeLogs = await GetChangeLogsAsync(permission.Id, cancellationToken),
             GeneratedTime = now
         };
     }
@@ -135,12 +129,12 @@ public sealed class PermissionCenterQueryService
     private async Task<List<PermissionConditionListItemDto>> GetConditionsAsync(SysPermission permission, CancellationToken cancellationToken)
     {
         var rolePermissions = await _rolePermissionRepository.GetListAsync(
-            item => item.PermissionId == permission.BasicId,
-            item => item.CreatedTime,
+            item => item.PermissionId == permission.Id,
+            item => item.CreatedAt,
             cancellationToken);
         var userPermissions = await _userPermissionRepository.GetListAsync(
-            item => item.PermissionId == permission.BasicId,
-            item => item.CreatedTime,
+            item => item.PermissionId == permission.Id,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (rolePermissions.Count == 0 && userPermissions.Count == 0)
@@ -148,16 +142,16 @@ public sealed class PermissionCenterQueryService
             return [];
         }
 
-        var rolePermissionIds = rolePermissions.Select(item => item.BasicId).ToArray();
-        var userPermissionIds = userPermissions.Select(item => item.BasicId).ToArray();
+        var rolePermissionIds = rolePermissions.Select(item => item.Id).ToArray();
+        var userPermissionIds = userPermissions.Select(item => item.Id).ToArray();
         var conditions = await GetConditionsByAuthorizationIdsAsync(rolePermissionIds, userPermissionIds, cancellationToken);
         if (conditions.Count == 0)
         {
             return [];
         }
 
-        var rolePermissionMap = rolePermissions.ToDictionary(item => item.BasicId);
-        var userPermissionMap = userPermissions.ToDictionary(item => item.BasicId);
+        var rolePermissionMap = rolePermissions.ToDictionary(item => item.Id);
+        var userPermissionMap = userPermissions.ToDictionary(item => item.Id);
         var roleMap = await BuildRoleMapAsync(rolePermissions.Select(item => item.RoleId), cancellationToken);
         var tenantMemberMap = await BuildTenantMemberMapAsync(userPermissions.Select(item => item.UserId), cancellationToken);
 
@@ -181,7 +175,7 @@ public sealed class PermissionCenterQueryService
             })
             .OrderBy(item => item.ConditionGroup)
             .ThenBy(item => item.AttributeName)
-            .ThenBy(item => item.BasicId)];
+            .ThenBy(item => item.Id)];
     }
 
     private async Task<IReadOnlyList<SysPermissionCondition>> GetConditionsByAuthorizationIdsAsync(
@@ -223,8 +217,8 @@ public sealed class PermissionCenterQueryService
         CancellationToken cancellationToken)
     {
         var delegations = await _permissionDelegationRepository.GetListAsync(
-            item => item.PermissionId == permission.BasicId,
-            item => item.CreatedTime,
+            item => item.PermissionId == permission.Id,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (delegations.Count == 0)
@@ -253,8 +247,8 @@ public sealed class PermissionCenterQueryService
                 permission,
                 item.RoleId.HasValue ? roleMap.GetValueOrDefault(item.RoleId.Value) : null,
                 now))
-            .OrderByDescending(item => item.CreatedTime)
-            .ThenBy(item => item.BasicId)
+            .OrderByDescending(item => item.CreatedAt)
+            .ThenBy(item => item.Id)
             .Take(MaxDelegationCount)];
     }
 
@@ -264,8 +258,8 @@ public sealed class PermissionCenterQueryService
         CancellationToken cancellationToken)
     {
         var requests = await _permissionRequestRepository.GetListAsync(
-            item => item.PermissionId == permission.BasicId,
-            item => item.CreatedTime,
+            item => item.PermissionId == permission.Id,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (requests.Count == 0)
@@ -282,7 +276,7 @@ public sealed class PermissionCenterQueryService
             cancellationToken);
         var workflowMap = await _workflowBusinessService.GetProgressAsync(
             SaasWorkflowBusinessCodes.PermissionRequest,
-            [.. requests.Select(item => item.BasicId.ToString(CultureInfo.InvariantCulture))],
+            [.. requests.Select(item => item.Id.ToString(CultureInfo.InvariantCulture))],
             cancellationToken);
 
         return [.. requests
@@ -292,10 +286,10 @@ public sealed class PermissionCenterQueryService
                 userMap.GetValueOrDefault(item.RequestUserId),
                 permission,
                 item.RoleId.HasValue ? roleMap.GetValueOrDefault(item.RoleId.Value) : null,
-                workflowMap.GetValueOrDefault(item.BasicId.ToString(CultureInfo.InvariantCulture)),
+                workflowMap.GetValueOrDefault(item.Id.ToString(CultureInfo.InvariantCulture)),
                 now))
-            .OrderByDescending(item => item.CreatedTime)
-            .ThenBy(item => item.BasicId)
+            .OrderByDescending(item => item.CreatedAt)
+            .ThenBy(item => item.Id)
             .Take(MaxRequestCount)];
     }
 
@@ -324,7 +318,7 @@ public sealed class PermissionCenterQueryService
         }
 
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
-        return roles.ToDictionary(item => item.BasicId);
+        return roles.ToDictionary(item => item.Id);
     }
 
     private async Task<IReadOnlyDictionary<long, SysTenantUser>> BuildTenantMemberMapAsync(IEnumerable<long> userIds, CancellationToken cancellationToken)
@@ -341,7 +335,7 @@ public sealed class PermissionCenterQueryService
 
         var tenantMembers = await _tenantUserRepository.GetListAsync(
             item => ids.Contains(item.UserId),
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
         return tenantMembers.ToDictionary(item => item.UserId);
     }
@@ -362,6 +356,6 @@ public sealed class PermissionCenterQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(item => item.BasicId);
+        return users.ToDictionary(item => item.Id);
     }
 }

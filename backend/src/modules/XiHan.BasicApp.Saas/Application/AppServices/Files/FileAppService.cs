@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
@@ -11,19 +12,15 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 系统文件命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统文件")]
 public sealed class FileAppService
     : SaasApplicationService, IFileAppService
 {
@@ -35,7 +32,7 @@ public sealed class FileAppService
 
     private readonly IFileTransferService _fileTransferService;
 
-    private readonly ILocalEventBus _localEventBus;
+    private readonly IMessagePublisher _localEventBus;
 
     private readonly IFieldSecurityService _fieldSecurity;
 
@@ -46,7 +43,7 @@ public sealed class FileAppService
         IFileDomainService fileDomainService,
         IFileRecordQueryService fileRecordQueryService,
         IFileTransferService fileTransferService,
-        ILocalEventBus localEventBus,
+        IMessagePublisher localEventBus,
         ICurrentUser currentUser,
         IFieldSecurityService fieldSecurity)
     {
@@ -61,15 +58,13 @@ public sealed class FileAppService
     /// <summary>
     /// 删除文件
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Delete)]
     public async Task DeleteFileAsync(FileDeleteDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var file = await _fileRecordQueryService.GetFileOrThrowAsync(input.BasicId, cancellationToken);
-        var storages = await _fileRecordQueryService.GetStoragesByFileIdAsync(file.BasicId, cancellationToken);
+        var file = await _fileRecordQueryService.GetFileOrThrowAsync(input.Id, cancellationToken);
+        var storages = await _fileRecordQueryService.GetStoragesByFileIdAsync(file.Id, cancellationToken);
 
         if (input.DeletePhysical)
         {
@@ -78,14 +73,14 @@ public sealed class FileAppService
 
         var result = await _fileDomainService.DeleteFileAsync(FileApplicationMapper.ToDeleteCommand(input), cancellationToken);
 
-        await _localEventBus.PublishAsync(
-            new FileDeletedDomainEvent(
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await _localEventBus.PublishAsync("file-deleted", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "file-deleted", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new FileDeletedDomainEvent(
                 result.File.TenantId,
-                result.File.BasicId,
+                result.File.Id,
                 result.File.FileName,
                 input.DeletePhysical,
                 _currentUser.UserId,
-                input.Reason));
+                input.Reason)) }, cancellationToken);
     }
 
     /// <summary>
@@ -97,8 +92,7 @@ public sealed class FileAppService
     /// 注意裸 <c>[UnitOfWork]</c> 实际不开事务（IsTransactional 可空，不传即不覆盖，选项默认非事务），
     /// 所以这里必须显式写 true。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
+    // xihan-migrate(V4-06): DownloadFileAsync 没法变成操作（泛型、ref/out 参数、流或 ASP.NET 类型）；请手工暴露。
     public async Task<Stream> DownloadFileAsync(long fileId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -114,8 +108,6 @@ public sealed class FileAppService
     /// <summary>
     /// 秒传文件（按哈希探测：未命中返回 null，前端回退普通上传）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Create)]
     public async Task<FileDetailDto?> FastUploadFileAsync(FileFastUploadDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -132,8 +124,6 @@ public sealed class FileAppService
     /// 与下载同理：签名链接生成失败时，那次访问计数应当一并回滚。
     /// 裸 <c>[UnitOfWork]</c> 读起来像开事务、实际不开，故显式声明为事务性。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
     public async Task<string> GenerateFilePresignedUrlAsync(long fileId, TimeSpan? expiresIn = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -149,8 +139,6 @@ public sealed class FileAppService
     /// <summary>
     /// 切换主存储
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Update)]
     public async Task<FileStorageDetailDto> SwitchPrimaryStorageAsync(FilePrimaryStorageSwitchDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -160,14 +148,14 @@ public sealed class FileAppService
             FileApplicationMapper.ToPrimaryStorageSwitchCommand(input),
             cancellationToken);
 
-        await _localEventBus.PublishAsync(
-            new FilePrimaryStorageChangedDomainEvent(
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await _localEventBus.PublishAsync("file-primary-storage-changed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "file-primary-storage-changed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new FilePrimaryStorageChangedDomainEvent(
                 result.Storage.TenantId,
                 result.Storage.FileId,
-                result.Storage.BasicId,
+                result.Storage.Id,
                 result.PreviousStorageId,
                 _currentUser.UserId,
-                input.Remark));
+                input.Remark)) }, cancellationToken);
 
         return FileApplicationMapper.ToStorageDetailDto(result.Storage);
     }
@@ -175,15 +163,13 @@ public sealed class FileAppService
     /// <summary>
     /// 更新文件业务元数据
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Update)]
     public async Task<FileDetailDto> UpdateFileMetadataAsync(FileMetadataUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysFile), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysFile), input.Id, input, cancellationToken);
 
         var result = await _fileDomainService.UpdateFileMetadataAsync(FileApplicationMapper.ToMetadataUpdateCommand(input), cancellationToken);
         return FileApplicationMapper.ToDetailDto(result.File);
@@ -192,15 +178,13 @@ public sealed class FileAppService
     /// <summary>
     /// 更新系统文件状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Status)]
     public async Task<FileDetailDto> UpdateFileStatusAsync(FileStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysFile), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysFile), input.Id, input, cancellationToken);
 
         var result = await _fileDomainService.UpdateFileStatusAsync(
             FileApplicationMapper.ToStatusCommand(input),
@@ -211,15 +195,13 @@ public sealed class FileAppService
     /// <summary>
     /// 更新系统文件存储状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Status)]
     public async Task<FileStorageDetailDto> UpdateFileStorageStatusAsync(FileStorageStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysFileStorage), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysFileStorage), input.Id, input, cancellationToken);
 
         var result = await _fileDomainService.UpdateFileStorageStatusAsync(
             FileApplicationMapper.ToStorageStatusCommand(input),
@@ -230,8 +212,6 @@ public sealed class FileAppService
     /// <summary>
     /// 上传文件
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Create)]
     public async Task<FileDetailDto> UploadFileAsync(FileUploadDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -249,14 +229,12 @@ public sealed class FileAppService
     /// <summary>
     /// 校验文件存储副本
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.File.Status)]
     public async Task<FileStorageDetailDto> VerifyFileStorageAsync(FileStorageVerifyDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var storage = await _fileRecordQueryService.GetStorageOrThrowAsync(input.BasicId, cancellationToken);
+        var storage = await _fileRecordQueryService.GetStorageOrThrowAsync(input.Id, cancellationToken);
         var probe = await _fileTransferService.ProbeStorageAsync(storage, cancellationToken);
 
         var result = await _fileDomainService.VerifyFileStorageAsync(
@@ -269,14 +247,14 @@ public sealed class FileAppService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _localEventBus.PublishAsync(
-            new FileUploadedDomainEvent(
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await _localEventBus.PublishAsync("file-uploaded", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "file-uploaded", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new FileUploadedDomainEvent(
                 file.TenantId,
-                file.BasicId,
-                storage.BasicId,
+                file.Id,
+                storage.Id,
                 file.FileName,
                 file.FileSize,
                 _currentUser.UserId,
-                reason));
+                reason)) }, cancellationToken);
     }
 }

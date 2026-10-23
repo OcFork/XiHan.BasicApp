@@ -7,11 +7,7 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Bot.Email.Abstractions;
-using XiHan.Framework.Bot.Email.Options;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Messaging.Models;
-using XiHan.Framework.Uow;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -63,6 +59,7 @@ public sealed class NotificationFanoutService
 
     private readonly IUserSecurityRepository _userSecurityRepository;
 
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     private readonly ILogger<NotificationFanoutService> _logger;
@@ -142,7 +139,7 @@ public sealed class NotificationFanoutService
         // 量级留痕：扇出规模记 Info（发件箱异步消费天然削峰，不做分页批处理）
         _logger.LogInformation(
             "通知多渠道扇出完成：NotificationId={NotificationId}, Channels={Channels}, Email={EmailCount}, Sms={SmsCount}, Bot={Bot}",
-            notification.BasicId, channels, emailCount, smsCount, needBot);
+            notification.Id, channels, emailCount, smsCount, needBot);
     }
 
     /// <summary>
@@ -205,7 +202,7 @@ public sealed class NotificationFanoutService
             _ = await _messageDeliveryService.CreateEmailAsync(
                 new EmailCreateCommand(
                     SendUserId: notification.SendUserId,
-                    ReceiveUserId: user.BasicId,
+                    ReceiveUserId: user.Id,
                     EmailType: EmailType.Notification,
                     FromEmail: emailConfig?.From.FromMail ?? string.Empty,
                     FromName: emailConfig?.From.FromName,
@@ -222,7 +219,7 @@ public sealed class NotificationFanoutService
                     ScheduledTime: null,
                     MaxRetryCount: FanoutMaxRetryCount,
                     BusinessType: SaasMessageBusinessTypes.Notification,
-                    BusinessId: notification.BasicId,
+                    BusinessId: notification.Id,
                     Remark: null),
                 cancellationToken);
         }
@@ -253,13 +250,13 @@ public sealed class NotificationFanoutService
         }
 
         // 仅向已验证手机号投递（未验证号码不可信，fail-closed 跳过）
-        var phoneUserIds = phoneUsers.Select(user => user.BasicId).ToArray();
+        var phoneUserIds = phoneUsers.Select(user => user.Id).ToArray();
         var securities = await _userSecurityRepository.GetListByUserIdsIgnoreTenantAsync(phoneUserIds, cancellationToken);
         var verifiedUserIds = securities
             .Where(security => security.PhoneVerified)
             .Select(security => security.UserId)
             .ToHashSet();
-        var targets = phoneUsers.Where(user => verifiedUserIds.Contains(user.BasicId)).ToList();
+        var targets = phoneUsers.Where(user => verifiedUserIds.Contains(user.Id)).ToList();
         if (targets.Count == 0)
         {
             return 0;
@@ -278,7 +275,7 @@ public sealed class NotificationFanoutService
             _ = await _messageDeliveryService.CreateSmsAsync(
                 new SmsCreateCommand(
                     SenderId: notification.SendUserId,
-                    ReceiverId: user.BasicId,
+                    ReceiverId: user.Id,
                     SmsType: SmsType.Notification,
                     ToPhone: user.Phone!,
                     Content: fallbackContent,
@@ -288,7 +285,7 @@ public sealed class NotificationFanoutService
                     ScheduledTime: null,
                     MaxRetryCount: FanoutMaxRetryCount,
                     BusinessType: SaasMessageBusinessTypes.Notification,
-                    BusinessId: notification.BasicId,
+                    BusinessId: notification.Id,
                     Remark: null),
                 cancellationToken);
         }
@@ -321,12 +318,12 @@ public sealed class NotificationFanoutService
         {
             // 事务提交后才广播（照 DbMessageOutbox.OnCompleted 先例）：确保外部可见时通知已落库；
             // 失败仅记日志，不回滚已提交的通知发布（IMessageDispatcher 为 Singleton，闭包捕获安全）
-            uow.OnCompleted(() => DispatchBotAsync(envelope, notification.BasicId));
+            uow.OnCompleted(() => DispatchBotAsync(envelope, notification.Id));
             return Task.CompletedTask;
         }
 
         // 无环境 UoW：直接投递（DispatchBotAsync 内部吞异常记日志）
-        return DispatchBotAsync(envelope, notification.BasicId);
+        return DispatchBotAsync(envelope, notification.Id);
     }
 
     /// <summary>

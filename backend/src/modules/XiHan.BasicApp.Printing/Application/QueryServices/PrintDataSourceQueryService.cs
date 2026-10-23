@@ -6,18 +6,13 @@ using XiHan.BasicApp.Printing.Application.Contracts;
 using XiHan.BasicApp.Printing.Application.Dtos;
 using XiHan.BasicApp.Printing.Domain.DataSources;
 using XiHan.BasicApp.Printing.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Printing.Application.QueryServices;
 
 /// <summary>
 /// 打印数据源目录查询 Dynamic API：设计器数据源下拉、字段素材与样例数据的单一来源。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Printing", GroupName = "打印服务", Tag = "打印数据源")]
 public sealed class PrintDataSourceQueryService : PrintingApplicationService, IPrintDataSourceQueryService
 {
     private readonly IPrintDataSourceRegistry _registry;

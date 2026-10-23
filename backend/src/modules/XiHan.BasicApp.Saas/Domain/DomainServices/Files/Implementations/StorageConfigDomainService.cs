@@ -84,7 +84,7 @@ public sealed class StorageConfigDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var config = await GetStorageConfigOrThrowAsync(command.BasicId, cancellationToken);
+        var config = await GetStorageConfigOrThrowAsync(command.Id, cancellationToken);
 
         config.ConfigName = command.ConfigName.Trim();
         config.StorageType = command.StorageType;
@@ -113,8 +113,8 @@ public sealed class StorageConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "存储配置主键必须大于 0。");
-        var config = await GetStorageConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "存储配置主键必须大于 0。");
+        var config = await GetStorageConfigOrThrowAsync(command.Id, cancellationToken);
         if (config.IsDefault && !command.IsEnabled)
         {
             throw new InvalidOperationException("默认存储配置不能停用，请先将其他启用配置设为默认。");
@@ -132,11 +132,11 @@ public sealed class StorageConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "存储配置主键必须大于 0。");
-        var config = await GetStorageConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "存储配置主键必须大于 0。");
+        var config = await GetStorageConfigOrThrowAsync(command.Id, cancellationToken);
         EnsureEnabledDefault(config.IsEnabled);
 
-        await ClearDefaultConfigsAsync(config.BasicId, cancellationToken);
+        await ClearDefaultConfigsAsync(config.Id, cancellationToken);
         config.IsDefault = true;
 
         return new StorageConfigCommandResult(await _storageConfigRepository.UpdateAsync(config, cancellationToken));
@@ -233,7 +233,7 @@ public sealed class StorageConfigDomainService
 
     private static void ValidateUpdateCommand(StorageConfigUpdateCommand command)
     {
-        EnsureId(command.BasicId, "存储配置主键必须大于 0。");
+        EnsureId(command.Id, "存储配置主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.ConfigName);
         ValidateCommonInput(command.StorageType, command.BucketName, command.AccessKeyId, command.Sort);
     }
@@ -252,7 +252,7 @@ public sealed class StorageConfigDomainService
         return excludeId.HasValue
             ? _storageConfigRepository.UpdateAsync(
                 config => new SysStorageConfig { IsDefault = false },
-                config => config.IsDefault && config.BasicId != excludeId.Value,
+                config => config.IsDefault && config.Id != excludeId.Value,
                 cancellationToken)
             : _storageConfigRepository.UpdateAsync(
                 config => new SysStorageConfig { IsDefault = false },

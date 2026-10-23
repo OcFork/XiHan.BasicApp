@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Authorization.Conditions;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 
 namespace XiHan.BasicApp.Saas.Application.Dtos;
@@ -191,7 +190,8 @@ public sealed class PermissionConditionInventoryItemDto
     /// <summary>
     /// 租户主键，0 为平台
     /// </summary>
-    public long TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; set; } = string.Empty;
 
     /// <summary>
     /// 租户编码
@@ -363,7 +363,8 @@ public sealed class PermissionConditionTrialInputDto : PermissionConditionTrialC
     /// <summary>
     /// 租户主键（只在平台上下文可选，0 为平台；租户上下文固定为当前租户）
     /// </summary>
-    public long? TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string? TenantId { get; set; }
 
     /// <summary>
     /// 数据行主键（权限码登记了条件资源时用于取数据行属性）
@@ -431,7 +432,8 @@ public sealed class PermissionConditionTrialResultDto
     /// <summary>
     /// 租户主键
     /// </summary>
-    public long TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; set; } = string.Empty;
 
     /// <summary>
     /// 用户主键

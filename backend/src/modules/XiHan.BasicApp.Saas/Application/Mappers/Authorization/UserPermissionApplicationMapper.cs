@@ -28,9 +28,9 @@ public static class UserPermissionApplicationMapper
         return new UserPermissionListItemDto
         {
             ConditionCount = conditionCount,
-            BasicId = userPermission.BasicId,
+            Id = userPermission.Id,
             UserId = userPermission.UserId,
-            TenantMemberId = tenantMember?.BasicId,
+            TenantMemberId = tenantMember?.Id,
             TenantMemberDisplayName = tenantMember?.DisplayName,
             TenantMemberType = tenantMember?.MemberType,
             TenantMemberInviteStatus = tenantMember?.InviteStatus,
@@ -50,7 +50,7 @@ public static class UserPermissionApplicationMapper
             Status = userPermission.Status,
             IsExpired = userPermission.ExpirationTime.HasValue && userPermission.ExpirationTime.Value <= now,
             Remark = userPermission.Remark,
-            CreatedTime = userPermission.CreatedTime
+            CreatedAt = userPermission.CreatedAt
         };
     }
 
@@ -68,9 +68,9 @@ public static class UserPermissionApplicationMapper
 
         return new UserPermissionDetailDto
         {
-            BasicId = userPermission.BasicId,
+            Id = userPermission.Id,
             UserId = userPermission.UserId,
-            TenantMemberId = tenantMember?.BasicId,
+            TenantMemberId = tenantMember?.Id,
             TenantMemberDisplayName = tenantMember?.DisplayName,
             TenantMemberType = tenantMember?.MemberType,
             TenantMemberInviteStatus = tenantMember?.InviteStatus,
@@ -93,7 +93,7 @@ public static class UserPermissionApplicationMapper
             Status = userPermission.Status,
             IsExpired = userPermission.ExpirationTime.HasValue && userPermission.ExpirationTime.Value <= now,
             Remark = userPermission.Remark,
-            CreatedTime = userPermission.CreatedTime,
+            CreatedAt = userPermission.CreatedAt,
             CreatedId = userPermission.CreatedId,
             CreatedBy = userPermission.CreatedBy
         };
@@ -105,7 +105,7 @@ public static class UserPermissionApplicationMapper
     public static UserPermissionStatusChangeCommand ToStatusCommand(UserPermissionStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new UserPermissionStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new UserPermissionStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public static class UserPermissionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new UserPermissionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.PermissionAction,
             input.EffectiveTime,
             input.ExpirationTime,

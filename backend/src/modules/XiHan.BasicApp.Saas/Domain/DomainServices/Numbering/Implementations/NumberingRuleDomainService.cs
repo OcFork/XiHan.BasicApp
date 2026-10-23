@@ -6,7 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Numbering;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -124,7 +124,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
         var saved = await _ruleRepository.AddAsync(rule, cancellationToken);
         _logger.LogInformation(
             "业务编号规则创建成功：RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}, AllowTenantUse={AllowTenantUse}",
-            saved.BasicId, saved.RuleCode, ownerTenantId, saved.AllowTenantUse);
+            saved.Id, saved.RuleCode, ownerTenantId, saved.AllowTenantUse);
         return new NumberingRuleCommandResult(saved);
     }
 
@@ -144,7 +144,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
         cancellationToken.ThrowIfCancellationRequested();
         ValidateEditableFields(command.RuleName, command.Prefix, command.Separator, command.DateFormat, command.SerialLength, command.ResetCycle, command.TimeZoneId, command.Remark);
 
-        var rule = await GetCurrentScopeRuleOrThrowAsync(command.BasicId, cancellationToken);
+        var rule = await GetCurrentScopeRuleOrThrowAsync(command.Id, cancellationToken);
         // 冻结判断基于已成功分配标记，而不是当前流水值；周期重置后 CurrentValue 可能再次很小。
         if (rule.HasAllocated && IsFrozenFormatChanged(rule, command))
         {
@@ -183,7 +183,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
         var saved = await _ruleRepository.UpdateAsync(rule, cancellationToken);
         _logger.LogInformation(
             "业务编号规则更新成功：RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}, HasAllocated={HasAllocated}",
-            saved.BasicId, saved.RuleCode, saved.TenantId, saved.HasAllocated);
+            saved.Id, saved.RuleCode, saved.TenantId, saved.HasAllocated);
         return new NumberingRuleCommandResult(saved);
     }
 
@@ -203,14 +203,14 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
         cancellationToken.ThrowIfCancellationRequested();
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var rule = await GetCurrentScopeRuleOrThrowAsync(command.BasicId, cancellationToken);
+        var rule = await GetCurrentScopeRuleOrThrowAsync(command.Id, cancellationToken);
         rule.Status = command.Status;
         rule.Remark = NormalizeOptional(command.Remark) ?? rule.Remark;
         var saved = await _ruleRepository.UpdateAsync(rule, cancellationToken);
 
         _logger.LogInformation(
             "业务编号规则状态更新成功：RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}, Status={Status}",
-            saved.BasicId, saved.RuleCode, saved.TenantId, saved.Status);
+            saved.Id, saved.RuleCode, saved.TenantId, saved.Status);
         return new NumberingRuleCommandResult(saved);
     }
 
@@ -236,7 +236,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
             throw new UserFriendlyException("安全重置原因不能为空且不能超过 500 个字符。");
         }
 
-        var rule = await GetCurrentScopeRuleOrThrowAsync(command.BasicId, cancellationToken);
+        var rule = await GetCurrentScopeRuleOrThrowAsync(command.Id, cancellationToken);
         if (rule.IsGlobal && !string.Equals(rule.RuleCode, command.ConfirmRuleCode?.Trim(), StringComparison.Ordinal))
         {
             // 全局规则由多个租户共享，编码二次确认用于降低误操作其他共享序列的风险。
@@ -259,13 +259,13 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
         {
             _logger.LogError(
                 "业务编号安全重置被拒绝，疑似节点时钟偏差：RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}, StoredPeriod={StoredPeriod}, StoredOrdinal={StoredOrdinal}, ComputedPeriod={ComputedPeriod}, ComputedOrdinal={ComputedOrdinal}",
-                rule.BasicId, rule.RuleCode, rule.TenantId, rule.CurrentPeriod, rule.CurrentPeriodOrdinal, periodKey, periodOrdinal);
+                rule.Id, rule.RuleCode, rule.TenantId, rule.CurrentPeriod, rule.CurrentPeriodOrdinal, periodKey, periodOrdinal);
             throw new UserFriendlyException(
                 $"规则当前周期已推进到 {rule.CurrentPeriod}，本节点计算出 {periodKey}，无法安全重置，请检查服务器时间同步。");
         }
 
         // 永久分配记录是真实发号边界；规则当前值可能被重置或因周期变化而不能代表历史最大值。
-        var maximumAllocated = await _allocationRepository.GetMaximumEndValueAsync(rule.TenantId, rule.BasicId, periodKey, cancellationToken);
+        var maximumAllocated = await _allocationRepository.GetMaximumEndValueAsync(rule.TenantId, rule.Id, periodKey, cancellationToken);
         if (command.NextValue <= maximumAllocated)
         {
             throw new UserFriendlyException($"当前周期已发号至 {maximumAllocated}，下一流水值不能回退到可能重复的范围。");
@@ -281,7 +281,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
 
         _logger.LogWarning(
             "业务编号规则安全重置成功：RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}, Period={Period}, PreviousValue={PreviousValue}, NextValue={NextValue}, Reason={Reason}",
-            saved.BasicId, saved.RuleCode, saved.TenantId, periodKey, previousValue, command.NextValue, command.Reason.Trim());
+            saved.Id, saved.RuleCode, saved.TenantId, periodKey, previousValue, command.NextValue, command.Reason.Trim());
         return new NumberingRuleCommandResult(saved);
     }
 
@@ -309,7 +309,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
 
         _logger.LogInformation(
             "业务编号规则删除成功：RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}",
-            rule.BasicId, rule.RuleCode, rule.TenantId);
+            rule.Id, rule.RuleCode, rule.TenantId);
     }
 
     /// <summary>

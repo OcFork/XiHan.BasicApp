@@ -26,7 +26,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.Access,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.AccessTime,
             Title = ComposeRequest(e.Method, e.ResourcePath),
             Summary = e.ResourceName,
@@ -59,7 +59,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.Api,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.RequestTime,
             Title = ComposeRequest(e.Method, e.ApiPath),
             Summary = e.ApiName,
@@ -88,7 +88,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.Operation,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.OperationTime,
             Title = FirstNonEmpty(e.Title, JoinNonEmpty("/", e.Module, e.Function)) ?? e.OperationType.ToString(),
             Summary = e.Description,
@@ -119,7 +119,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.Login,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.LoginTime,
             Title = e.LoginResult.ToString(),
             Summary = e.Message,
@@ -150,7 +150,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.Exception,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.ExceptionTime,
             Title = e.ExceptionType,
             Summary = Truncate(e.ExceptionMessage, 200),
@@ -176,7 +176,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.Diff,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.AuditTime,
             Title = JoinNonEmpty(" ", e.OperationType.ToString(), FirstNonEmpty(e.EntityName, e.TableName)),
             Summary = FirstNonEmpty(e.ChangeDescription, e.Description),
@@ -201,7 +201,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.PermissionChange,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.ChangeTime,
             Title = e.ChangeType.ToString(),
             Summary = FirstNonEmpty(e.Description, e.ChangeReason),
@@ -221,7 +221,7 @@ public static class TraceApplicationMapper
         return new TraceTimelineItemDto
         {
             LogType = TraceLogType.AccessPolicyHit,
-            BasicId = e.BasicId,
+            Id = e.Id,
             Time = e.HitTime,
             Title = ComposeRequest(e.Method, e.Path),
             Summary = FirstNonEmpty(e.PolicyName, e.PolicyCode),

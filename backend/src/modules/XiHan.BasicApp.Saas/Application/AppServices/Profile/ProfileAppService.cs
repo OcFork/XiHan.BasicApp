@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
@@ -14,13 +15,10 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
-using XiHan.Framework.Web.Core.Clients;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -28,14 +26,12 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 当前用户个人中心应用服务（账号资料关注点）。
 /// 其余关注点见 <c>ProfileAppService.Security.cs</c> / <c>ProfileAppService.Verification.cs</c> / <c>ProfileAppService.Session.cs</c>。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "个人中心")]
 public sealed partial class ProfileAppService
     : SaasApplicationService, IProfileAppService
 {
     private readonly ICurrentUser _currentUser;
 
-    private readonly ILocalEventBus _localEventBus;
+    private readonly IMessagePublisher _localEventBus;
 
     private readonly IUserNotificationDispatchService _notificationDispatchService;
 
@@ -68,7 +64,7 @@ public sealed partial class ProfileAppService
         IProfileDomainService profileDomainService,
         IProfileQueryService profileQueryService,
         IProfileVerificationService profileVerificationService,
-        ILocalEventBus localEventBus,
+        IMessagePublisher localEventBus,
         IUserNotificationDispatchService notificationDispatchService,
         IUserNotificationPreferenceRepository notificationPreferenceRepository,
         IUserApiCredentialRepository userApiCredentialRepository,
@@ -107,7 +103,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 更新当前用户通知偏好
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<ProfileNotificationPreferenceDto> UpdateNotificationPreferenceAsync(ProfileNotificationPreferenceDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -139,7 +134,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 修改当前用户名
     /// </summary>
-    [UnitOfWork(true)]
     public async Task ChangeUserNameAsync(ProfileChangeUserNameDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("修改用户名");
@@ -152,19 +146,18 @@ public sealed partial class ProfileAppService
             cancellationToken);
 
         await _notificationDispatchService.DispatchToUserAsync(
-            result.User.BasicId,
+            result.User.Id,
             "用户名已修改",
             $"您的账号用户名已修改为 {result.User.UserName}。",
             NotificationType.Security,
             "profile.username.changed",
-            result.User.BasicId,
+            result.User.Id,
             cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// 停用当前账号
     /// </summary>
-    [UnitOfWork(true)]
     public async Task DeactivateAccountAsync(ProfilePasswordConfirmDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("停用账号");
@@ -185,9 +178,6 @@ public sealed partial class ProfileAppService
     /// 显式锁定 POST /Profile/DeleteAccount：按动词剥离约定本方法会推断成 DELETE /Profile/Account，
     /// 带密码确认 body 的 DELETE 不符合习惯，前端也按 POST 完整方法名调用。
     /// </remarks>
-    [HttpPost]
-    [DynamicApi(Name = "DeleteAccount")]
-    [UnitOfWork(true)]
     public async Task DeleteAccountAsync(ProfilePasswordConfirmDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("注销账号");
@@ -228,7 +218,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 解除第三方账号绑定
     /// </summary>
-    [UnitOfWork(true)]
     public async Task UnlinkAccountAsync(ProfileUnlinkAccountDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("解绑第三方账号");
@@ -243,7 +232,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 更新当前用户个人资料
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<UserProfileDto> UpdateProfileAsync(ProfileUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -291,8 +279,8 @@ public sealed partial class ProfileAppService
     private async Task PublishSecurityAuditAsync(LoginResult auditResult, string message)
     {
         var client = _clientInfoProvider.GetCurrent();
-        await _localEventBus.PublishAsync(
-            new AuthSecurityAuditDomainEvent(
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await _localEventBus.PublishAsync("auth-security-audit", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "auth-security-audit", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new AuthSecurityAuditDomainEvent(
                 _currentUser.TenantId,
                 _currentUser.UserId,
                 _currentUser.UserName,
@@ -301,7 +289,7 @@ public sealed partial class ProfileAppService
                 DateTimeOffset.UtcNow,
                 _httpContextAccessor.HttpContext?.TraceIdentifier,
                 client.IpAddress,
-                client.UserAgent));
+                client.UserAgent)) }, CancellationToken.None);
     }
 
     private string? GetCurrentSessionId()
@@ -321,7 +309,9 @@ public sealed partial class ProfileAppService
         foreach (var domainEvent in domainEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await _localEventBus.PublishAsync(domainEvent);
+            // xihan-migrate(V4-08): 推不出 'domainEvent' 的事件类型；请手工填主题。
+            // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+            await _localEventBus.PublishAsync("domain-event", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "domain-event", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(domainEvent) }, cancellationToken);
         }
     }
 }

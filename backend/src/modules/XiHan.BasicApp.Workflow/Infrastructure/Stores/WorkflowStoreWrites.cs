@@ -27,10 +27,10 @@ internal static class WorkflowStoreWrites
     public static async Task UpdateRuntimeRowAsync<TEntity>(ISaasRepository<TEntity> repository, TEntity entity, CancellationToken cancellationToken)
         where TEntity : BasicAppEntity
     {
-        var current = await repository.GetByIdAsync(entity.BasicId, cancellationToken);
+        var current = await repository.GetByIdAsync(entity.Id, cancellationToken);
         if (current is not null)
         {
-            entity.RowVersion = current.RowVersion;
+            entity.ConcurrencyStamp = current.ConcurrencyStamp;
         }
 
         await repository.UpdateAsync(entity, cancellationToken);

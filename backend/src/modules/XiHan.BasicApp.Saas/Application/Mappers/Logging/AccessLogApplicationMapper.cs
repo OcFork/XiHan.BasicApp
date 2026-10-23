@@ -22,7 +22,7 @@ public static class AccessLogApplicationMapper
 
         return new AccessLogListItemDto
         {
-            BasicId = accessLog.BasicId,
+            Id = accessLog.Id,
             UserId = accessLog.UserId,
             UserName = accessLog.UserName,
             SessionId = accessLog.UserSessionId,
@@ -45,7 +45,7 @@ public static class AccessLogApplicationMapper
             ErrorMessage = accessLog.ErrorMessage,
             ExtendData = accessLog.ExtendData,
             Remark = accessLog.Remark,
-            CreatedTime = accessLog.CreatedTime
+            CreatedAt = accessLog.CreatedAt
         };
     }
 
@@ -61,7 +61,7 @@ public static class AccessLogApplicationMapper
         var item = ToListItemDto(accessLog);
         return new AccessLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             SessionId = item.SessionId,
@@ -84,7 +84,7 @@ public static class AccessLogApplicationMapper
             ErrorMessage = item.ErrorMessage,
             ExtendData = item.ExtendData,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = accessLog.CreatedId,
             CreatedBy = accessLog.CreatedBy
         };

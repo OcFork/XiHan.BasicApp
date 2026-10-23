@@ -23,10 +23,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 导入对话框「最近导入」：IX_TeId_UsId_PaCo + WHERE UserId=? AND PageCode=? ORDER BY CreatedTime DESC LIMIT N
 /// </remarks>
 [SugarTable(TableName = "Sys_Import_History", TableDescription = "导入历史表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_UsId_PaCo", nameof(TenantId), OrderByType.Asc, nameof(UserId), OrderByType.Asc, nameof(PageCode), OrderByType.Asc)]
-public partial class SysImportHistory : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysImportHistory : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID（执行导入的用户）

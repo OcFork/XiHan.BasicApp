@@ -98,10 +98,10 @@ public sealed class DepartmentDomainService
 
         ValidateUpdateCommand(command);
 
-        var department = await GetDepartmentOrThrowAsync(command.BasicId, cancellationToken);
+        var department = await GetDepartmentOrThrowAsync(command.Id, cancellationToken);
         var parentChanged = department.ParentId != command.ParentId;
 
-        _ = await ValidateParentAsync(command.ParentId, department.BasicId, department.Status == EnableStatus.Enabled, cancellationToken);
+        _ = await ValidateParentAsync(command.ParentId, department.Id, department.Status == EnableStatus.Enabled, cancellationToken);
         await ValidateLeaderAsync(command.LeaderId, cancellationToken);
 
         department.ParentId = command.ParentId;
@@ -131,21 +131,21 @@ public sealed class DepartmentDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "部门主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var department = await GetDepartmentOrThrowAsync(command.BasicId, cancellationToken);
+        var department = await GetDepartmentOrThrowAsync(command.Id, cancellationToken);
         if (command.Status == EnableStatus.Enabled)
         {
-            _ = await ValidateParentAsync(department.ParentId, department.BasicId, requireEnabledParent: true, cancellationToken);
+            _ = await ValidateParentAsync(department.ParentId, department.Id, requireEnabledParent: true, cancellationToken);
             await ValidateLeaderAsync(department.LeaderId, cancellationToken);
         }
         else if (await _departmentRepository.AnyAsync(
-            child => child.ParentId == department.BasicId && child.Status == EnableStatus.Enabled,
+            child => child.ParentId == department.Id && child.Status == EnableStatus.Enabled,
             cancellationToken))
         {
             throw new InvalidOperationException("部门存在已启用子部门，不能直接停用。");
@@ -192,7 +192,7 @@ public sealed class DepartmentDomainService
 
     private static void ValidateUpdateCommand(DepartmentUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "部门主键必须大于 0。");
         }
@@ -327,7 +327,7 @@ public sealed class DepartmentDomainService
         var cursor = parent;
         while (true)
         {
-            if (!visited.Add(cursor.BasicId))
+            if (!visited.Add(cursor.Id))
             {
                 throw new InvalidOperationException("部门父子关系不能形成环路。");
             }
@@ -386,28 +386,28 @@ public sealed class DepartmentDomainService
 
     private async Task EnsureCanDeleteDepartmentAsync(SysDepartment department, CancellationToken cancellationToken)
     {
-        if (await _departmentRepository.HasChildrenAsync(department.BasicId, cancellationToken))
+        if (await _departmentRepository.HasChildrenAsync(department.Id, cancellationToken))
         {
             throw new InvalidOperationException("部门存在子部门，不能直接删除。");
         }
 
-        if (await _userDepartmentRepository.AnyAsync(link => link.DepartmentId == department.BasicId, cancellationToken))
+        if (await _userDepartmentRepository.AnyAsync(link => link.DepartmentId == department.Id, cancellationToken))
         {
             throw new InvalidOperationException("部门存在用户归属，不能删除。");
         }
 
-        if (await _roleDataScopeRepository.AnyAsync(scope => scope.DepartmentId == department.BasicId, cancellationToken))
+        if (await _roleDataScopeRepository.AnyAsync(scope => scope.DepartmentId == department.Id, cancellationToken))
         {
             throw new InvalidOperationException("部门存在角色数据范围引用，不能删除。");
         }
 
-        if (await _userDataScopeRepository.AnyAsync(scope => scope.DepartmentId == department.BasicId, cancellationToken))
+        if (await _userDataScopeRepository.AnyAsync(scope => scope.DepartmentId == department.Id, cancellationToken))
         {
             throw new InvalidOperationException("部门存在用户数据范围引用，不能删除。");
         }
 
         if (await _fieldLevelSecurityRepository.AnyAsync(
-            security => security.TargetType == FieldSecurityTargetType.Department && security.TargetId == department.BasicId,
+            security => security.TargetType == FieldSecurityTargetType.Department && security.TargetId == department.Id,
             cancellationToken))
         {
             throw new InvalidOperationException("部门存在字段级安全策略引用，不能删除。");
@@ -416,7 +416,7 @@ public sealed class DepartmentDomainService
 
     private async Task RebuildDepartmentHierarchyAsync(CancellationToken cancellationToken)
     {
-        await _departmentHierarchyRepository.DeleteAsync(hierarchy => hierarchy.BasicId > 0, cancellationToken);
+        await _departmentHierarchyRepository.DeleteAsync(hierarchy => hierarchy.Id > 0, cancellationToken);
 
         var departments = await _departmentRepository.GetAllAsync(cancellationToken);
         if (departments.Count == 0)

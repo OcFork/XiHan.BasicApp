@@ -30,7 +30,7 @@ public static class LoginLandingPolicy
         return accessible
                    .Where(item => item.Membership.LastActiveTime.HasValue)
                    .MaxBy(item => item.Membership.LastActiveTime)
-               ?? accessible.FirstOrDefault(item => item.Tenant.BasicId == homeTenantId)
+               ?? accessible.FirstOrDefault(item => item.Tenant.Id == homeTenantId)
                ?? accessible[0];
     }
 }

@@ -40,7 +40,7 @@ public static class BotConfigApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new BotConfigUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ConfigName,
             input.Provider,
             input.WebhookUrl,
@@ -57,7 +57,7 @@ public static class BotConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new BotConfigStatusChangeCommand(input.BasicId, input.IsEnabled);
+        return new BotConfigStatusChangeCommand(input.Id, input.IsEnabled);
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class BotConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new BotConfigDefaultChangeCommand(input.BasicId);
+        return new BotConfigDefaultChangeCommand(input.Id);
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public static class BotConfigApplicationMapper
 
         return new BotConfigListItemDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             Provider = config.Provider,
@@ -90,8 +90,8 @@ public static class BotConfigApplicationMapper
             IsDefault = config.IsDefault,
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
-            CreatedTime = config.CreatedTime,
-            ModifiedTime = config.ModifiedTime
+            CreatedAt = config.CreatedAt,
+            ModifiedAt = config.ModifiedAt
         };
     }
 
@@ -106,7 +106,7 @@ public static class BotConfigApplicationMapper
 
         return new BotConfigDetailDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             Provider = config.Provider,
@@ -117,10 +117,10 @@ public static class BotConfigApplicationMapper
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
             Remark = config.Remark,
-            CreatedTime = config.CreatedTime,
+            CreatedAt = config.CreatedAt,
             CreatedId = config.CreatedId,
             CreatedBy = config.CreatedBy,
-            ModifiedTime = config.ModifiedTime,
+            ModifiedAt = config.ModifiedAt,
             ModifiedId = config.ModifiedId,
             ModifiedBy = config.ModifiedBy
         };

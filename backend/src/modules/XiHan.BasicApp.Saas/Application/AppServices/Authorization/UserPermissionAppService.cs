@@ -13,17 +13,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 用户直授权限命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户直授权限")]
 public sealed class UserPermissionAppService
     : SaasApplicationService, IUserPermissionAppService
 {
@@ -66,8 +61,6 @@ public sealed class UserPermissionAppService
     /// <remarks>
     /// 入口与「直授权限」按钮同挂授予权限（授予与拒绝都是一条直授）；本次含撤销项时再要撤销权限。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserPermission.Grant)]
     public async Task BatchUpdateUserPermissionsAsync(UserPermissionBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -112,8 +105,6 @@ public sealed class UserPermissionAppService
     /// <summary>
     /// 更新用户直授权限
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserPermission.Update)]
     public async Task<UserPermissionDetailDto> UpdateUserPermissionAsync(UserPermissionUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -138,8 +129,6 @@ public sealed class UserPermissionAppService
     /// <summary>
     /// 更新用户直授权限状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserPermission.Status)]
     public async Task<UserPermissionDetailDto> UpdateUserPermissionStatusAsync(UserPermissionStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

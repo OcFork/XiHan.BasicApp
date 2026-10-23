@@ -13,13 +13,9 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
-using XiHan.Framework.Utils.Linq.Expressions;
-using XiHan.Framework.Web.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -32,8 +28,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// - 实时连接（<see cref="IConnectionManager"/>）：当前持有 SignalR 连接，逐行标注 IsRealtimeOnline。
 /// 权限复用用户会话码（在线用户本质是会话的实时视图）；强制下线走 UserSession/RevokeUserSession[s]。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "在线用户")]
 public sealed class OnlineUserQueryService
     : SaasApplicationService, IOnlineUserQueryService
 {
@@ -66,8 +60,6 @@ public sealed class OnlineUserQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>在线用户分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserSession.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<OnlineUserListItemDto>> GetOnlineUserPageAsync(OnlineUserPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -115,7 +107,7 @@ public sealed class OnlineUserQueryService
 
         var userIds = sessionPage.Items.Select(session => session.UserId).Where(id => id > 0).Distinct().ToArray();
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(userIds, cancellationToken);
-        var userMap = users.ToDictionary(user => user.BasicId);
+        var userMap = users.ToDictionary(user => user.Id);
 
         // 实时连接标注：按去重用户查询一次连接管理器（进程内/缓存查询，开销可忽略）
         var realtimeMap = new Dictionary<long, bool>(userIds.Length);
@@ -140,7 +132,6 @@ public sealed class OnlineUserQueryService
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>在线用户概览</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserSession.Read)]
     public async Task<OnlineUserSummaryDto> GetOnlineUserSummaryAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

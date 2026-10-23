@@ -28,8 +28,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 操作人审计：IX_OpUsId
 /// - 按变更类型统计：IX_ChTy
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
+// xihan-migrate(V4-02): ITraceableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Permission_Change_Log_{year}{month}{day}", TableDescription = "权限变更日志表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_OpUsId", nameof(OperatorUserId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TaUsId", nameof(TargetUserId), OrderByType.Asc)]
@@ -38,7 +40,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{split_table}_ChTy", nameof(ChangeType), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TeId_ChTi", nameof(TenantId), OrderByType.Asc, nameof(ChangeTime), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_TrId", nameof(TraceId), OrderByType.Asc)]
-public partial class SysPermissionChangeLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IStrictMultiTenantEntity
+public partial class SysPermissionChangeLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IMultiTenant
 {
     /// <summary>
     /// 操作人ID（执行授予/撤销动作的用户）
@@ -129,5 +131,5 @@ public partial class SysPermissionChangeLog : BasicAppCreationEntity, ISplitTabl
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

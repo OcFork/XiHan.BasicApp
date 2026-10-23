@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Configurations;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
@@ -79,6 +80,7 @@ public sealed class LoginBanService : ILoginBanService
         }
 
         SaasLoginAutoBanSettings settings;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             settings = await _configuration.GetJsonAsync(SaasConfigKeys.Security.LoginAutoBan, new SaasLoginAutoBanSettings(), cancellationToken);

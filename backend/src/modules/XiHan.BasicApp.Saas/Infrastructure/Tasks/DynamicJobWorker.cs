@@ -8,8 +8,6 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Tasks.ScheduledJobs.Abstractions;
-using XiHan.Framework.Tasks.ScheduledJobs.Models;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 

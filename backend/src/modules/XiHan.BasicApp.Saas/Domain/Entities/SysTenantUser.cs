@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -62,7 +61,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 租户隔离：严格——成员关系只属于它所在的租户，租户里看不到别处（含平台）的行；跨租户读取走显式通道。
 /// </remarks>
 [SugarTable(TableName = "Sys_Tenant_User", TableDescription = "系统租户成员表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_UsId", nameof(TenantId), OrderByType.Asc, nameof(UserId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
@@ -72,7 +71,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_TeId_St", nameof(TenantId), OrderByType.Asc, nameof(Status), OrderByType.Asc)]
 [SugarIndex("IX_{table}_ExTi", nameof(ExpirationTime), OrderByType.Desc)]
 [PlatformDataSource]
-public partial class SysTenantUser : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysTenantUser : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID（指向 SysUser，与当前 TenantId 共同定位一条租户成员关系）

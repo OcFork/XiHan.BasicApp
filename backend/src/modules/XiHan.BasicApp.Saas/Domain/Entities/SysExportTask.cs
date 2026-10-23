@@ -23,11 +23,11 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 后台扫描待执行：IX_St + WHERE Status=Pending（无租户上下文跨租户扫描）
 /// </remarks>
 [SugarTable(TableName = "Sys_Export_Task", TableDescription = "导出任务表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_St", nameof(Status), OrderByType.Asc)]
-public partial class SysExportTask : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysExportTask : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 业务类型（= 导出按钮所属页面码，匹配 IExportProvider.BusinessType）

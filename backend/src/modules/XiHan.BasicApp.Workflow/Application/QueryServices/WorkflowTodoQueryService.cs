@@ -3,19 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Core.Exceptions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Timing;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.Stores;
-using XiHan.Framework.Workflow.Abstractions.UserTasks;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 
@@ -25,7 +19,6 @@ namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 /// <remarks>
 /// 受理人服务端锁定为当前登录用户；单人待办量有限，关键字过滤与分页在内存完成。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "我的待办")]
 public sealed class WorkflowTodoQueryService : WorkflowApplicationService, IWorkflowTodoQueryService
 {
     private readonly IWorkflowUserTaskService _userTaskService;
@@ -34,7 +27,7 @@ public sealed class WorkflowTodoQueryService : WorkflowApplicationService, IWork
     private readonly WorkflowBusinessRegistry _businessRegistry;
     private readonly WorkflowUserNameResolver _userNameResolver;
     private readonly ICurrentUser _currentUser;
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 构造函数
@@ -46,7 +39,7 @@ public sealed class WorkflowTodoQueryService : WorkflowApplicationService, IWork
         WorkflowBusinessRegistry businessRegistry,
         WorkflowUserNameResolver userNameResolver,
         ICurrentUser currentUser,
-        IClock clock)
+        TimeProvider clock)
     {
         _userTaskService = userTaskService;
         _instanceStore = instanceStore;
@@ -60,7 +53,6 @@ public sealed class WorkflowTodoQueryService : WorkflowApplicationService, IWork
     /// <summary>
     /// 分页查询当前用户待办（受理人归属服务端锁定为当前用户）
     /// </summary>
-    [HttpPost]
     public async Task<PageResultDtoBase<WorkflowTodoListItemDto>> GetPageAsync(WorkflowTodoPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

@@ -29,7 +29,7 @@ public static class TenantEditionPermissionApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TenantEditionPermissionStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new TenantEditionPermissionStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public static class TenantEditionPermissionApplicationMapper
 
         return new TenantEditionPermissionListItemDto
         {
-            BasicId = editionPermission.BasicId,
+            Id = editionPermission.Id,
             EditionId = editionPermission.EditionId,
             PermissionId = editionPermission.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -56,7 +56,7 @@ public static class TenantEditionPermissionApplicationMapper
             PermissionStatus = permission?.Status,
             Status = editionPermission.Status,
             Remark = editionPermission.Remark,
-            CreatedTime = editionPermission.CreatedTime
+            CreatedAt = editionPermission.CreatedAt
         };
     }
 
@@ -72,7 +72,7 @@ public static class TenantEditionPermissionApplicationMapper
 
         return new TenantEditionPermissionDetailDto
         {
-            BasicId = editionPermission.BasicId,
+            Id = editionPermission.Id,
             EditionId = editionPermission.EditionId,
             PermissionId = editionPermission.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -87,7 +87,7 @@ public static class TenantEditionPermissionApplicationMapper
             PermissionStatus = permission?.Status,
             Status = editionPermission.Status,
             Remark = editionPermission.Remark,
-            CreatedTime = editionPermission.CreatedTime,
+            CreatedAt = editionPermission.CreatedAt,
             CreatedId = editionPermission.CreatedId,
             CreatedBy = editionPermission.CreatedBy
         };

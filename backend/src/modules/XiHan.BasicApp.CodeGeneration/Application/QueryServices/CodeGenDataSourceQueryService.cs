@@ -11,8 +11,6 @@ using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,7 +20,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.QueryServices;
 /// <summary>
 /// 代码生成数据源查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "数据源")]
 public sealed class CodeGenDataSourceQueryService : CodeGenerationApplicationService, ICodeGenDataSourceQueryService
 {
     private readonly ICodeGenDataSourceRepository _dataSourceRepository;
@@ -43,7 +40,6 @@ public sealed class CodeGenDataSourceQueryService : CodeGenerationApplicationSer
     /// 获取数据源全量列表
     /// </summary>
     /// <remarks>供导入表等下拉一次取全，不走分页。</remarks>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<IReadOnlyList<CodeGenDataSourceListItemDto>> GetOptionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -59,8 +55,6 @@ public sealed class CodeGenDataSourceQueryService : CodeGenerationApplicationSer
     /// <summary>
     /// 获取数据源分页列表
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<CodeGenDataSourceListItemDto>> GetPageAsync(CodeGenDataSourcePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -97,7 +91,6 @@ public sealed class CodeGenDataSourceQueryService : CodeGenerationApplicationSer
     /// <summary>
     /// 获取数据源详情
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<CodeGenDataSourceDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)

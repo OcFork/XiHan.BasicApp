@@ -11,7 +11,7 @@ namespace XiHan.BasicApp.Saas.Application.Dtos;
 public sealed class MyOAuthAppItemDto
 {
     /// <summary>主键</summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>客户端ID（自动生成，全局唯一）</summary>
     public string ClientId { get; set; } = string.Empty;
@@ -44,7 +44,7 @@ public sealed class MyOAuthAppItemDto
     public EnableStatus Status { get; set; }
 
     /// <summary>创建时间</summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>
@@ -77,7 +77,7 @@ public sealed class MyOAuthAppCreateDto
 public sealed class MyOAuthAppUpdateDto
 {
     /// <summary>主键</summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>应用名称</summary>
     public string AppName { get; set; } = string.Empty;
@@ -101,7 +101,7 @@ public sealed class MyOAuthAppUpdateDto
 public sealed class MyOAuthAppStatusDto
 {
     /// <summary>主键</summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>状态</summary>
     public EnableStatus Status { get; set; }
@@ -113,7 +113,7 @@ public sealed class MyOAuthAppStatusDto
 public sealed class MyOAuthAppSecretDto
 {
     /// <summary>主键</summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>客户端ID</summary>
     public string ClientId { get; set; } = string.Empty;

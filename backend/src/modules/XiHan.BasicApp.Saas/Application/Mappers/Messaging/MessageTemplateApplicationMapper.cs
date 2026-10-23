@@ -40,7 +40,7 @@ public static class MessageTemplateApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new MessageTemplateUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.TemplateName,
             input.Subject,
             input.Content,
@@ -57,7 +57,7 @@ public static class MessageTemplateApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new MessageTemplateStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new MessageTemplateStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public static class MessageTemplateApplicationMapper
 
         return new MessageTemplateListItemDto
         {
-            BasicId = template.BasicId,
+            Id = template.Id,
             TemplateCode = template.TemplateCode,
             Channel = template.Channel,
             TemplateName = template.TemplateName,
@@ -92,7 +92,7 @@ public static class MessageTemplateApplicationMapper
 
         return new MessageTemplateDetailDto
         {
-            BasicId = template.BasicId,
+            Id = template.Id,
             TemplateCode = template.TemplateCode,
             Channel = template.Channel,
             TemplateName = template.TemplateName,

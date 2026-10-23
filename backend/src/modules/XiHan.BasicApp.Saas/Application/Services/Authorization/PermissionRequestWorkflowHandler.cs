@@ -8,10 +8,6 @@ using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Workflow.Abstractions;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
-using XiHan.Framework.Workflow.Builders;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

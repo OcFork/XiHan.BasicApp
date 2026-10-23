@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 第三方登录绑定查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "第三方登录")]
 public sealed class ExternalLoginQueryService
     : SaasApplicationService, IExternalLoginQueryService
 {
@@ -54,8 +50,6 @@ public sealed class ExternalLoginQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>第三方登录绑定分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ExternalLogin.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<ExternalLoginListItemDto>> GetExternalLoginPageAsync(ExternalLoginPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -86,7 +80,6 @@ public sealed class ExternalLoginQueryService
     /// <param name="id">第三方登录绑定主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>第三方登录绑定详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ExternalLogin.Read)]
     public async Task<ExternalLoginDetailDto?> GetExternalLoginDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -148,7 +141,7 @@ public sealed class ExternalLoginQueryService
         }
 
         request.Conditions.AddSort((SysExternalLogin login) => login.LastLoginTime, SortDirection.Descending, 0);
-        request.Conditions.AddSort((SysExternalLogin login) => login.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysExternalLogin login) => login.CreatedAt, SortDirection.Descending, 1);
         return request;
     }
 
@@ -210,6 +203,6 @@ public sealed class ExternalLoginQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 }

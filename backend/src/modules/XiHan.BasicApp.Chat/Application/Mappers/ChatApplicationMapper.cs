@@ -61,7 +61,7 @@ public static class ChatApplicationMapper
 
         return new ChatConversationDto
         {
-            ConversationId = conversation.BasicId,
+            ConversationId = conversation.Id,
             ConversationType = conversation.ConversationType,
             ConversationName = conversation.ConversationName,
             Created = created
@@ -77,7 +77,7 @@ public static class ChatApplicationMapper
 
         return new ChatMessageItemDto
         {
-            MessageId = message.BasicId,
+            MessageId = message.Id,
             ConversationId = message.ConversationId,
             SenderUserId = message.SenderUserId,
             SenderUserName = message.SenderUserName,
@@ -86,7 +86,7 @@ public static class ChatApplicationMapper
             Attachments = ChatMessageAttachments.Deserialize(message.Attachments).Select(ToAttachmentDto).ToList(),
             IsRecalled = message.IsRecalled,
             ClientMessageId = message.ClientMessageId,
-            CreatedTime = message.CreatedTime,
+            CreatedAt = message.CreatedAt,
             ReplyToMessageId = message.ReplyToMessageId,
             ReplyPreview = message.ReplyPreview,
             EditedTime = message.EditedTime,

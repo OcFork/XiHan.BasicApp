@@ -48,7 +48,7 @@ public static class PermissionConditionApplicationMapper
 
         return new PermissionConditionListItemDto
         {
-            BasicId = condition.BasicId,
+            Id = condition.Id,
             RolePermissionId = condition.RolePermissionId,
             UserPermissionId = condition.UserPermissionId,
             RoleId = rolePermission?.RoleId,
@@ -68,7 +68,7 @@ public static class PermissionConditionApplicationMapper
             Description = condition.Description,
             Status = condition.Status,
             Remark = condition.Remark,
-            CreatedTime = condition.CreatedTime
+            CreatedAt = condition.CreatedAt
         };
     }
 
@@ -87,7 +87,7 @@ public static class PermissionConditionApplicationMapper
 
         return new PermissionConditionDetailDto
         {
-            BasicId = condition.BasicId,
+            Id = condition.Id,
             RolePermissionId = condition.RolePermissionId,
             UserPermissionId = condition.UserPermissionId,
             RoleId = rolePermission?.RoleId,
@@ -107,10 +107,10 @@ public static class PermissionConditionApplicationMapper
             Description = condition.Description,
             Status = condition.Status,
             Remark = condition.Remark,
-            CreatedTime = condition.CreatedTime,
+            CreatedAt = condition.CreatedAt,
             CreatedId = condition.CreatedId,
             CreatedBy = condition.CreatedBy,
-            ModifiedTime = condition.ModifiedTime,
+            ModifiedAt = condition.ModifiedAt,
             ModifiedId = condition.ModifiedId,
             ModifiedBy = condition.ModifiedBy
         };
@@ -122,7 +122,7 @@ public static class PermissionConditionApplicationMapper
     public static PermissionConditionStatusCommand ToStatusCommand(PermissionConditionStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new PermissionConditionStatusCommand(input.BasicId, input.Status, input.Remark);
+        return new PermissionConditionStatusCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public static class PermissionConditionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new PermissionConditionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.RolePermissionId,
             input.UserPermissionId,
             input.ConditionGroup,

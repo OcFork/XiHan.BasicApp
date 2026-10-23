@@ -52,7 +52,7 @@ public static class CodeGenDataSourceApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new CodeGenDataSourceUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.SourceName,
             input.SourceDescription,
             input.DatabaseType,
@@ -76,7 +76,7 @@ public static class CodeGenDataSourceApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new CodeGenDataSourceStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new CodeGenDataSourceStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public static class CodeGenDataSourceApplicationMapper
 
         return new CodeGenDataSourceListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             SourceName = entity.SourceName,
             SourceDescription = entity.SourceDescription,
             DatabaseType = entity.DatabaseType,
@@ -102,7 +102,7 @@ public static class CodeGenDataSourceApplicationMapper
             Status = entity.Status,
             Sort = entity.Sort,
             Remark = entity.Remark,
-            CreatedTime = entity.CreatedTime
+            CreatedAt = entity.CreatedAt
         };
     }
 
@@ -116,7 +116,7 @@ public static class CodeGenDataSourceApplicationMapper
         var item = ToListItemDto(entity);
         return new CodeGenDataSourceDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             SourceName = item.SourceName,
             SourceDescription = item.SourceDescription,
             DatabaseType = item.DatabaseType,
@@ -130,7 +130,7 @@ public static class CodeGenDataSourceApplicationMapper
             Status = item.Status,
             Sort = item.Sort,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             UserName = entity.UserName,
             // 连接串含密钥：脱敏输出，绝不回传明文/密文
             ConnectionString = string.IsNullOrWhiteSpace(entity.ConnectionString) ? null : SecretMask,

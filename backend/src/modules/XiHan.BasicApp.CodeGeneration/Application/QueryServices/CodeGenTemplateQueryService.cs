@@ -11,8 +11,6 @@ using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,7 +20,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.QueryServices;
 /// <summary>
 /// 代码生成模板查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "模板")]
 public sealed class CodeGenTemplateQueryService : CodeGenerationApplicationService, ICodeGenTemplateQueryService
 {
     private readonly ICodeGenTemplateRepository _templateRepository;
@@ -44,8 +41,6 @@ public sealed class CodeGenTemplateQueryService : CodeGenerationApplicationServi
     /// <summary>
     /// 获取模板分页列表
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<CodeGenTemplateListItemDto>> GetPageAsync(CodeGenTemplatePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -81,7 +76,6 @@ public sealed class CodeGenTemplateQueryService : CodeGenerationApplicationServi
     /// <summary>
     /// 获取模板详情
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<CodeGenTemplateDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)

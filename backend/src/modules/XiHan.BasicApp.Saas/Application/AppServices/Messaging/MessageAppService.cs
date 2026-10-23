@@ -11,17 +11,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Infrastructure.Messaging;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 系统消息命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统消息")]
 public sealed class MessageAppService : SaasApplicationService, IMessageAppService
 {
     private readonly IMessageDeliveryService _messageDeliveryService;
@@ -52,8 +47,6 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 创建系统邮件
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Create)]
     public async Task<EmailDetailDto> CreateEmailAsync(EmailCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -69,8 +62,6 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 删除系统邮件
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Delete)]
     public async Task DeleteEmailAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -80,15 +71,13 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 更新系统邮件
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Update)]
     public async Task<EmailDetailDto> UpdateEmailAsync(EmailUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysEmail), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysEmail), input.Id, input, cancellationToken);
 
         var result = await _messageDomainService.UpdateEmailAsync(MessageApplicationMapper.ToUpdateCommand(input), cancellationToken);
         return MessageApplicationMapper.ToEmailDetailDto(result.Email);
@@ -97,15 +86,13 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 更新系统邮件状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Status)]
     public async Task<EmailDetailDto> UpdateEmailStatusAsync(EmailStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysEmail), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysEmail), input.Id, input, cancellationToken);
 
         var result = await _messageDomainService.UpdateEmailStatusAsync(MessageApplicationMapper.ToStatusCommand(input), cancellationToken);
 
@@ -113,7 +100,7 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
         // EnqueueAsync 在 UoW 提交后才真正入队，保证后台拉到时状态行已可见
         if (result.Email.EmailStatus == EmailStatus.Pending)
         {
-            await _messageOutbox.EnqueueAsync(SaasMessageChannelNames.Email, result.Email.BasicId, result.Email.TenantId, cancellationToken);
+            await _messageOutbox.EnqueueAsync(SaasMessageChannelNames.Email, result.Email.Id, result.Email.TenantId, cancellationToken);
         }
 
         return MessageApplicationMapper.ToEmailDetailDto(result.Email);
@@ -126,8 +113,6 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 创建系统短信
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Create)]
     public async Task<SmsDetailDto> CreateSmsAsync(SmsCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -143,8 +128,6 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 删除系统短信
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Delete)]
     public async Task DeleteSmsAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -154,15 +137,13 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 更新系统短信
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Update)]
     public async Task<SmsDetailDto> UpdateSmsAsync(SmsUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysSms), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysSms), input.Id, input, cancellationToken);
 
         var result = await _messageDomainService.UpdateSmsAsync(MessageApplicationMapper.ToUpdateCommand(input), cancellationToken);
         return MessageApplicationMapper.ToSmsDetailDto(result.Sms);
@@ -171,15 +152,13 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
     /// <summary>
     /// 更新系统短信状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Message.Status)]
     public async Task<SmsDetailDto> UpdateSmsStatusAsync(SmsStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysSms), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysSms), input.Id, input, cancellationToken);
 
         var result = await _messageDomainService.UpdateSmsStatusAsync(MessageApplicationMapper.ToStatusCommand(input), cancellationToken);
 
@@ -187,7 +166,7 @@ public sealed class MessageAppService : SaasApplicationService, IMessageAppServi
         // EnqueueAsync 在 UoW 提交后才真正入队，保证后台拉到时状态行已可见
         if (result.Sms.SmsStatus == SmsStatus.Pending)
         {
-            await _messageOutbox.EnqueueAsync(SaasMessageChannelNames.Sms, result.Sms.BasicId, result.Sms.TenantId, cancellationToken);
+            await _messageOutbox.EnqueueAsync(SaasMessageChannelNames.Sms, result.Sms.Id, result.Sms.TenantId, cancellationToken);
         }
 
         return MessageApplicationMapper.ToSmsDetailDto(result.Sms);

@@ -10,8 +10,6 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authorization.Conditions;
-using XiHan.Framework.Web.Core.Clients;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
@@ -75,7 +73,7 @@ public sealed class AccessPolicyTrialService
         {
             var policy = await _policyRepository.GetByIdAsync(input.PolicyId.Value, cancellationToken)
                 ?? throw new InvalidOperationException("访问策略不存在。");
-            compiled = _compiler.Compile(await _conditionRepository.GetByPolicyIdAsync(policy.BasicId, cancellationToken));
+            compiled = _compiler.Compile(await _conditionRepository.GetByPolicyIdAsync(policy.Id, cancellationToken));
             action = input.Action ?? policy.Action;
         }
         else
@@ -155,7 +153,7 @@ public sealed class AccessPolicyTrialService
             return;
         }
 
-        var compiled = _compiler.Compile(await _conditionRepository.GetByPolicyIdAsync(policy.BasicId, cancellationToken));
+        var compiled = _compiler.Compile(await _conditionRepository.GetByPolicyIdAsync(policy.Id, cancellationToken));
         if (compiled.IsEmpty)
         {
             return;

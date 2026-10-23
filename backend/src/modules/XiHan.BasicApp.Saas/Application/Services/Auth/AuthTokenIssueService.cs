@@ -5,9 +5,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Authentication.Jwt;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Security.Extensions;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -129,9 +126,9 @@ public sealed class AuthTokenIssueService
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.BasicId.ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, accessTokenJti),
-            new(XiHanClaimTypes.UserId, user.BasicId.ToString()),
+            new(XiHanClaimTypes.UserId, user.Id.ToString()),
             new(XiHanClaimTypes.UserName, user.UserName),
             new(XiHanClaimTypes.SessionId, sessionBusinessId)
         };

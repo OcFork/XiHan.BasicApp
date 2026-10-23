@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 邮件配置查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "邮件配置")]
 public sealed class EmailConfigQueryService
     : SaasApplicationService, IEmailConfigQueryService
 {
@@ -55,8 +51,6 @@ public sealed class EmailConfigQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>邮件配置分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.EmailConfig.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<EmailConfigListItemDto>> GetEmailConfigPageAsync(EmailConfigPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -85,7 +79,6 @@ public sealed class EmailConfigQueryService
     /// <param name="id">邮件配置主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>邮件配置详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.EmailConfig.Read)]
     public async Task<EmailConfigDetailDto?> GetEmailConfigDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -154,6 +147,6 @@ public sealed class EmailConfigQueryService
     {
         request.Conditions.AddSort((SysEmailConfig config) => config.IsDefault, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysEmailConfig config) => config.Sort, SortDirection.Ascending, 1);
-        request.Conditions.AddSort((SysEmailConfig config) => config.CreatedTime, SortDirection.Descending, 2);
+        request.Conditions.AddSort((SysEmailConfig config) => config.CreatedAt, SortDirection.Descending, 2);
     }
 }

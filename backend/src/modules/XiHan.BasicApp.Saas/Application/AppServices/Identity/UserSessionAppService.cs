@@ -2,31 +2,28 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 用户会话命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户会话")]
 public sealed class UserSessionAppService
     : SaasApplicationService, IUserSessionAppService
 {
     private readonly ICurrentUser _currentUser;
 
-    private readonly ILocalEventBus _localEventBus;
+    private readonly IMessagePublisher _localEventBus;
 
     private readonly IUserDomainService _userDomainService;
 
@@ -36,7 +33,7 @@ public sealed class UserSessionAppService
     public UserSessionAppService(
         IUserDomainService userDomainService,
         ICurrentUser currentUser,
-        ILocalEventBus localEventBus)
+        IMessagePublisher localEventBus)
     {
         _userDomainService = userDomainService;
         _currentUser = currentUser;
@@ -48,8 +45,6 @@ public sealed class UserSessionAppService
     /// <summary>
     /// 撤销用户会话
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserSession.Revoke)]
     public async Task<UserSessionDetailDto> RevokeUserSessionAsync(UserSessionRevokeDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -65,8 +60,6 @@ public sealed class UserSessionAppService
     /// <summary>
     /// 撤销用户全部会话
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserSession.Revoke)]
     public async Task<int> RevokeUserSessionsAsync(UserSessionsRevokeDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -89,6 +82,7 @@ public sealed class UserSessionAppService
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        await _localEventBus.PublishAsync(domainEvent);
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await _localEventBus.PublishAsync("user-session-revoked", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "user-session-revoked", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(domainEvent) }, cancellationToken);
     }
 }

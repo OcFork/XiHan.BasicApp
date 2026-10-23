@@ -13,7 +13,7 @@ public sealed class UserInboxItemDto
     /// <summary>
     /// 用户通知主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 通知主键
@@ -109,5 +109,5 @@ public sealed class UserInboxUpdateDto
     /// <summary>
     /// 用户通知主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 }

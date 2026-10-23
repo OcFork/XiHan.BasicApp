@@ -5,6 +5,7 @@ using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Chat.Domain.DomainServices;
@@ -144,7 +145,7 @@ public sealed class ChatDomainService : IChatDomainService
             MemberCount = 2
         }, cancellationToken);
 
-        await AddMemberRowsAsync(conversation.BasicId, [command.UserId, command.PeerUserId], ownerUserId: null, now, cancellationToken);
+        await AddMemberRowsAsync(conversation.Id, [command.UserId, command.PeerUserId], ownerUserId: null, now, cancellationToken);
         return new ChatConversationCommandResult(conversation, Created: true);
     }
 
@@ -175,7 +176,7 @@ public sealed class ChatDomainService : IChatDomainService
             MemberCount = memberIds.Count
         }, cancellationToken);
 
-        await AddMemberRowsAsync(conversation.BasicId, memberIds, command.OwnerUserId, now, cancellationToken);
+        await AddMemberRowsAsync(conversation.Id, memberIds, command.OwnerUserId, now, cancellationToken);
 
         var createText = $"{owner.UserName} 创建了群聊";
         var systemMessage = await AppendSystemMessageAsync(
@@ -217,12 +218,12 @@ public sealed class ChatDomainService : IChatDomainService
         }, cancellationToken);
 
         // 成员同步：补齐部门内未入群成员（离开部门的成员保留会话历史，不强制移除）
-        var existingMembers = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var existingMembers = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         var existingUserIds = existingMembers.Select(member => member.UserId).ToHashSet();
         var missing = memberIds.Where(id => !existingUserIds.Contains(id)).ToList();
         if (missing.Count > 0)
         {
-            await AddMemberRowsAsync(conversation.BasicId, missing, ownerUserId: null, now, cancellationToken);
+            await AddMemberRowsAsync(conversation.Id, missing, ownerUserId: null, now, cancellationToken);
         }
 
         conversation.MemberCount = existingUserIds.Count + missing.Count;
@@ -247,7 +248,7 @@ public sealed class ChatDomainService : IChatDomainService
         await EnsureCanManageMembersAsync(conversation, command.OperatorUserId, cancellationToken);
 
         var candidateIds = NormalizeMemberIds(command.UserIds, includeUserId: null);
-        var existingMembers = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var existingMembers = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         var existingUserIds = existingMembers.Select(member => member.UserId).ToHashSet();
         var missing = candidateIds.Where(id => !existingUserIds.Contains(id)).ToList();
         if (missing.Count == 0)
@@ -264,7 +265,7 @@ public sealed class ChatDomainService : IChatDomainService
 
         var operatorUser = await GetUserOrThrowAsync(command.OperatorUserId, cancellationToken);
 
-        await AddMemberRowsAsync(conversation.BasicId, missing, ownerUserId: null, DateTimeOffset.UtcNow, cancellationToken);
+        await AddMemberRowsAsync(conversation.Id, missing, ownerUserId: null, DateTimeOffset.UtcNow, cancellationToken);
         conversation.MemberCount = existingUserIds.Count + missing.Count;
         conversation = await _conversationRepository.UpdateAsync(conversation, cancellationToken);
 
@@ -300,7 +301,7 @@ public sealed class ChatDomainService : IChatDomainService
             await EnsureCanManageMembersAsync(conversation, command.OperatorUserId, cancellationToken);
         }
 
-        var member = await _memberRepository.GetMemberAsync(conversation.BasicId, command.UserId, cancellationToken)
+        var member = await _memberRepository.GetMemberAsync(conversation.Id, command.UserId, cancellationToken)
             ?? throw new InvalidOperationException("该用户不是会话成员。");
 
         if (!await _memberRepository.DeleteAsync(member, cancellationToken))
@@ -327,7 +328,7 @@ public sealed class ChatDomainService : IChatDomainService
         var systemMessage = await AppendSystemMessageAsync(
             conversation, leaveText, leaveText, senderUserId: 0, senderUserName: null, cancellationToken);
 
-        var remaining = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var remaining = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         return new ChatGovernanceResult(conversation, systemMessage, [.. remaining.Select(item => item.UserId)]);
     }
 
@@ -361,7 +362,7 @@ public sealed class ChatDomainService : IChatDomainService
             MemberCount = 1
         }, cancellationToken);
 
-        await AddMemberRowsAsync(conversation.BasicId, [command.UserId], ownerUserId: null, now, cancellationToken);
+        await AddMemberRowsAsync(conversation.Id, [command.UserId], ownerUserId: null, now, cancellationToken);
         return new ChatConversationCommandResult(conversation, Created: true);
     }
 
@@ -386,19 +387,19 @@ public sealed class ChatDomainService : IChatDomainService
 
         var message = await _messageRepository.AddAsync(new SysChatMessage
         {
-            ConversationId = conversation.BasicId,
+            ConversationId = conversation.Id,
             SenderUserId = command.AssistantId,
             SenderUserName = Optional(command.AssistantName, 50),
             MessageType = ChatMessageType.Assistant,
             Content = content
         }, cancellationToken);
 
-        conversation.LastMessageId = message.BasicId;
+        conversation.LastMessageId = message.Id;
         conversation.LastMessageTime = now;
         conversation.LastMessagePreview = BuildPreview(ChatMessageType.Assistant, content, attachments: null);
         _ = await _conversationRepository.UpdateAsync(conversation, cancellationToken);
 
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         var recipientIds = members.Select(member => member.UserId).ToList();
         return new ChatMessageSendResult(message, conversation, recipientIds);
     }
@@ -412,7 +413,7 @@ public sealed class ChatDomainService : IChatDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var conversation = await GetConversationOrThrowAsync(command.ConversationId, cancellationToken);
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         var senderMember = members.FirstOrDefault(member => member.UserId == command.SenderUserId)
             ?? throw new InvalidOperationException("仅会话成员可发送消息。");
 
@@ -423,13 +424,13 @@ public sealed class ChatDomainService : IChatDomainService
 
         var content = ValidateMessagePayload(command);
         var mentionedUserIds = ValidateMentions(command.MentionedUserIds, members);
-        var replyPreview = await BuildReplyPreviewAsync(command.ReplyToMessageId, conversation.BasicId, cancellationToken);
+        var replyPreview = await BuildReplyPreviewAsync(command.ReplyToMessageId, conversation.Id, cancellationToken);
         var sender = await GetUserOrThrowAsync(command.SenderUserId, cancellationToken);
         var now = DateTimeOffset.UtcNow;
 
         var message = await _messageRepository.AddAsync(new SysChatMessage
         {
-            ConversationId = conversation.BasicId,
+            ConversationId = conversation.Id,
             SenderUserId = command.SenderUserId,
             SenderUserName = sender.UserName,
             MessageType = command.MessageType,
@@ -442,13 +443,13 @@ public sealed class ChatDomainService : IChatDomainService
         }, cancellationToken);
 
         // 会话最后消息冗余 + 其余成员未读自增（发送者已读位前移）
-        conversation.LastMessageId = message.BasicId;
+        conversation.LastMessageId = message.Id;
         conversation.LastMessageTime = now;
         conversation.LastMessagePreview = BuildPreview(command.MessageType, content, command.Attachments);
         _ = await _conversationRepository.UpdateAsync(conversation, cancellationToken);
-        _ = await _memberRepository.IncrementUnreadAsync(conversation.BasicId, command.SenderUserId, cancellationToken);
+        _ = await _memberRepository.IncrementUnreadAsync(conversation.Id, command.SenderUserId, cancellationToken);
 
-        senderMember.LastReadMessageId = message.BasicId;
+        senderMember.LastReadMessageId = message.Id;
         senderMember.LastReadTime = now;
         _ = await _memberRepository.UpdateAsync(senderMember, cancellationToken);
 
@@ -479,7 +480,7 @@ public sealed class ChatDomainService : IChatDomainService
         }
 
         var now = DateTimeOffset.UtcNow;
-        if (now - message.CreatedTime > TimeSpan.FromMinutes(RecallWindowMinutes))
+        if (now - message.CreatedAt > TimeSpan.FromMinutes(RecallWindowMinutes))
         {
             throw new InvalidOperationException($"仅可撤回 {RecallWindowMinutes} 分钟内发送的消息。");
         }
@@ -491,7 +492,7 @@ public sealed class ChatDomainService : IChatDomainService
 
         // 撤回的是最后一条时同步刷新会话预览
         var conversation = await GetConversationOrThrowAsync(message.ConversationId, cancellationToken);
-        if (conversation.LastMessageId == message.BasicId)
+        if (conversation.LastMessageId == message.Id)
         {
             conversation.LastMessagePreview = "[消息已撤回]";
             _ = await _conversationRepository.UpdateAsync(conversation, cancellationToken);
@@ -530,7 +531,7 @@ public sealed class ChatDomainService : IChatDomainService
         }
 
         var now = DateTimeOffset.UtcNow;
-        if (now - message.CreatedTime > TimeSpan.FromMinutes(EditWindowMinutes))
+        if (now - message.CreatedAt > TimeSpan.FromMinutes(EditWindowMinutes))
         {
             throw new InvalidOperationException($"仅可编辑 {EditWindowMinutes} 分钟内发送的消息。");
         }
@@ -548,7 +549,7 @@ public sealed class ChatDomainService : IChatDomainService
 
         // 编辑的是最后一条时同步刷新会话预览
         var conversation = await GetConversationOrThrowAsync(message.ConversationId, cancellationToken);
-        if (conversation.LastMessageId == message.BasicId)
+        if (conversation.LastMessageId == message.Id)
         {
             conversation.LastMessagePreview = BuildPreview(message.MessageType, content, ChatMessageAttachments.Deserialize(message.Attachments));
             _ = await _conversationRepository.UpdateAsync(conversation, cancellationToken);
@@ -599,7 +600,7 @@ public sealed class ChatDomainService : IChatDomainService
             _ = await _reactionRepository.AddAsync(new SysChatMessageReaction
             {
                 ConversationId = message.ConversationId,
-                MessageId = message.BasicId,
+                MessageId = message.Id,
                 UserId = command.OperatorUserId,
                 UserName = operatorUser.UserName,
                 Emoji = emoji
@@ -610,7 +611,7 @@ public sealed class ChatDomainService : IChatDomainService
         var members = await _memberRepository.GetByConversationIdAsync(message.ConversationId, cancellationToken);
         return new ChatReactionToggleResult(
             message.ConversationId,
-            message.BasicId,
+            message.Id,
             command.OperatorUserId,
             operatorUser.UserName,
             emoji,
@@ -642,7 +643,7 @@ public sealed class ChatDomainService : IChatDomainService
 
             if (!message.IsPinned)
             {
-                var pinned = await _messageRepository.GetPinnedAsync(conversation.BasicId, cancellationToken);
+                var pinned = await _messageRepository.GetPinnedAsync(conversation.Id, cancellationToken);
                 if (pinned.Count >= MaxPinnedMessages)
                 {
                     throw new InvalidOperationException($"每个会话最多置顶 {MaxPinnedMessages} 条消息。");
@@ -662,7 +663,7 @@ public sealed class ChatDomainService : IChatDomainService
             message = await _messageRepository.UpdateAsync(message, cancellationToken);
         }
 
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         return new ChatMessagePinResult(message, [.. members.Select(member => member.UserId)]);
     }
 
@@ -791,7 +792,7 @@ public sealed class ChatDomainService : IChatDomainService
                 cancellationToken);
         }
 
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         return new ChatGovernanceResult(conversation, systemMessage, [.. members.Select(member => member.UserId)]);
     }
 
@@ -819,8 +820,8 @@ public sealed class ChatDomainService : IChatDomainService
             throw new InvalidOperationException("不能把群主转让给自己。");
         }
 
-        var oldOwnerMember = await GetMemberOrThrowAsync(conversation.BasicId, command.OperatorUserId, "群主成员记录不存在。", cancellationToken);
-        var newOwnerMember = await GetMemberOrThrowAsync(conversation.BasicId, command.NewOwnerUserId, "新群主必须是会话成员。", cancellationToken);
+        var oldOwnerMember = await GetMemberOrThrowAsync(conversation.Id, command.OperatorUserId, "群主成员记录不存在。", cancellationToken);
+        var newOwnerMember = await GetMemberOrThrowAsync(conversation.Id, command.NewOwnerUserId, "新群主必须是会话成员。", cancellationToken);
         var newOwnerUser = await GetUserOrThrowAsync(command.NewOwnerUserId, cancellationToken);
         var oldOwnerUser = await GetUserOrThrowAsync(command.OperatorUserId, cancellationToken);
 
@@ -836,7 +837,7 @@ public sealed class ChatDomainService : IChatDomainService
         var systemMessage = await AppendSystemMessageAsync(
             conversation, transferText, transferText, senderUserId: 0, senderUserName: null, cancellationToken);
 
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         return new ChatGovernanceResult(conversation, systemMessage, [.. members.Select(member => member.UserId)]);
     }
 
@@ -856,7 +857,7 @@ public sealed class ChatDomainService : IChatDomainService
 
         await EnsureCanManageMembersAsync(conversation, command.OperatorUserId, cancellationToken);
 
-        var target = await GetMemberOrThrowAsync(conversation.BasicId, command.TargetUserId, "该用户不是会话成员。", cancellationToken);
+        var target = await GetMemberOrThrowAsync(conversation.Id, command.TargetUserId, "该用户不是会话成员。", cancellationToken);
         if (target.MemberRole is ChatMemberRole.Owner or ChatMemberRole.Admin)
         {
             throw new InvalidOperationException("不能禁言群主或管理员。");
@@ -868,7 +869,7 @@ public sealed class ChatDomainService : IChatDomainService
             _ = await _memberRepository.UpdateAsync(target, cancellationToken);
         }
 
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         return new ChatGovernanceResult(conversation, SystemMessage: null, [.. members.Select(member => member.UserId)]);
     }
 
@@ -901,7 +902,7 @@ public sealed class ChatDomainService : IChatDomainService
             throw new InvalidOperationException("只能在管理员与普通成员之间切换。");
         }
 
-        var target = await GetMemberOrThrowAsync(conversation.BasicId, command.TargetUserId, "该用户不是会话成员。", cancellationToken);
+        var target = await GetMemberOrThrowAsync(conversation.Id, command.TargetUserId, "该用户不是会话成员。", cancellationToken);
         if (target.MemberRole == ChatMemberRole.Owner)
         {
             throw new InvalidOperationException("不能修改群主的角色。");
@@ -913,7 +914,7 @@ public sealed class ChatDomainService : IChatDomainService
             _ = await _memberRepository.UpdateAsync(target, cancellationToken);
         }
 
-        var members = await _memberRepository.GetByConversationIdAsync(conversation.BasicId, cancellationToken);
+        var members = await _memberRepository.GetByConversationIdAsync(conversation.Id, cancellationToken);
         return new ChatGovernanceResult(conversation, SystemMessage: null, [.. members.Select(member => member.UserId)]);
     }
 
@@ -932,14 +933,14 @@ public sealed class ChatDomainService : IChatDomainService
         var now = DateTimeOffset.UtcNow;
         var message = await _messageRepository.AddAsync(new SysChatMessage
         {
-            ConversationId = conversation.BasicId,
+            ConversationId = conversation.Id,
             SenderUserId = senderUserId,
             SenderUserName = senderUserName,
             MessageType = ChatMessageType.System,
             Content = Truncate(content, MaxContentLength)
         }, cancellationToken);
 
-        conversation.LastMessageId = message.BasicId;
+        conversation.LastMessageId = message.Id;
         conversation.LastMessageTime = now;
         conversation.LastMessagePreview = Truncate(preview, MaxPreviewLength);
         _ = await _conversationRepository.UpdateAsync(conversation, cancellationToken);
@@ -1197,7 +1198,7 @@ public sealed class ChatDomainService : IChatDomainService
     /// </summary>
     private async Task EnsureCanPinAsync(SysChatConversation conversation, long operatorUserId, CancellationToken cancellationToken)
     {
-        var member = await GetMemberOrThrowAsync(conversation.BasicId, operatorUserId, "仅会话成员可操作。", cancellationToken);
+        var member = await GetMemberOrThrowAsync(conversation.Id, operatorUserId, "仅会话成员可操作。", cancellationToken);
         if (conversation.ConversationType != ChatConversationType.Single
             && member.MemberRole is not (ChatMemberRole.Owner or ChatMemberRole.Admin))
         {
@@ -1213,7 +1214,7 @@ public sealed class ChatDomainService : IChatDomainService
 
     private async Task EnsureCanManageMembersAsync(SysChatConversation conversation, long operatorUserId, CancellationToken cancellationToken)
     {
-        var operatorMember = await _memberRepository.GetMemberAsync(conversation.BasicId, operatorUserId, cancellationToken)
+        var operatorMember = await _memberRepository.GetMemberAsync(conversation.Id, operatorUserId, cancellationToken)
             ?? throw new InvalidOperationException("仅会话成员可操作。");
 
         if (operatorMember.MemberRole is not (ChatMemberRole.Owner or ChatMemberRole.Admin))

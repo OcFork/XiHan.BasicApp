@@ -35,7 +35,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 验证码、通知类短信、营销短信（需遵守运营商合规）
 /// </remarks>
 [SugarTable(TableName = "Sys_Sms", TableDescription = "系统短信表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_ToPh", nameof(ToPhone), OrderByType.Asc)]
@@ -43,7 +43,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_SmTy", nameof(SmsType), OrderByType.Asc)]
 [SugarIndex("IX_{table}_SeTi", nameof(SendTime), OrderByType.Desc)]
 [SugarIndex("IX_{table}_TeId_SmSt_SeTi", nameof(TenantId), OrderByType.Asc, nameof(SmsStatus), OrderByType.Asc, nameof(SendTime), OrderByType.Desc)]
-public partial class SysSms : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysSms : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 发送用户ID

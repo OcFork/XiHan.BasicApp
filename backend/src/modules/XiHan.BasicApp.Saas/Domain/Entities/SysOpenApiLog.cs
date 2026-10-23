@@ -39,8 +39,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 第三方调用量计费（按 ClientId/AppId 聚合）
 /// - 异常请求追溯
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
+// xihan-migrate(V4-02): ITraceableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_OpenApi_Log_{year}{month}{day}", TableDescription = "系统开放接口日志表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_UsId", nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_ApPa", nameof(ApiPath), OrderByType.Asc)]
@@ -51,7 +53,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{split_table}_TrId", nameof(TraceId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_ClId", nameof(ClientId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_ApId", nameof(AppId), OrderByType.Asc)]
-public partial class SysOpenApiLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IStrictMultiTenantEntity
+public partial class SysOpenApiLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID
@@ -278,5 +280,5 @@ public partial class SysOpenApiLog : BasicAppCreationEntity, ISplitTableEntity, 
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

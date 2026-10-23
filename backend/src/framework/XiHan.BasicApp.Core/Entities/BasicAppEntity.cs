@@ -1,8 +1,8 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.Framework.Data.SqlSugar.Aggregates;
-using XiHan.Framework.Data.SqlSugar.Entities;
+using SqlSugar;
+using XiHan.Framework.Domain;
 
 namespace XiHan.BasicApp.Core.Entities;
 
@@ -28,8 +28,22 @@ namespace XiHan.BasicApp.Core.Entities;
 /// - 限制：同一编码至多保留一条软删行（IsDeleted=true）；如需第二次软删同编码记录，服务层须先物理清理旧软删行
 /// - 纯创建型（Creation）关联/日志实体为硬删，无 IsDeleted，唯一索引保持原样
 /// </remarks>
-public abstract class BasicAppEntity : SugarMultiTenantEntity<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppEntity : IEntity<long>, IHasConcurrencyStamp, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
+
     /// <summary>
     /// 构造函数
     /// </summary>
@@ -42,44 +56,226 @@ public abstract class BasicAppEntity : SugarMultiTenantEntity<long>
     /// </summary>
     /// <param name="basicId"></param>
     protected BasicAppEntity(long basicId)
-        : base(basicId)
     {
+        Id = basicId;
     }
 }
 
 /// <summary>
 /// BasicApp 实体基类（自增主键）
 /// </summary>
-public abstract class BasicAppEntityWithIdentity : SugarMultiTenantEntityWithIdentity<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppEntityWithIdentity : IEntity<long>, IHasConcurrencyStamp, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = true, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
 }
 
 /// <summary>
 /// BasicApp 创建审计实体基类
 /// </summary>
-public abstract class BasicAppCreationEntity : SugarMultiTenantCreationEntity<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppCreationEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Created_Time", IsNullable = false, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建时间")]
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>创建者标识。</summary>
+    [SugarColumn(ColumnName = "Created_Id", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建者唯一标识")]
+    public long? CreatedId { get; set; }
+
+    /// <summary>创建人。</summary>
+    [SugarColumn(ColumnName = "Created_By", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建人")]
+    public string? CreatedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
 }
 
 /// <summary>
 /// BasicApp 修改审计实体基类
 /// </summary>
-public abstract class BasicAppModificationEntity : SugarMultiTenantModificationEntity<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppModificationEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Created_Time", IsNullable = false, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建时间")]
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>创建者标识。</summary>
+    [SugarColumn(ColumnName = "Created_Id", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建者唯一标识")]
+    public long? CreatedId { get; set; }
+
+    /// <summary>创建人。</summary>
+    [SugarColumn(ColumnName = "Created_By", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建人")]
+    public string? CreatedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Modified_Time", IsNullable = true, ColumnDescription = "修改时间")]
+    public DateTimeOffset? ModifiedAt { get; set; }
+
+    /// <summary>修改者标识。</summary>
+    [SugarColumn(ColumnName = "Modified_Id", IsNullable = true, ColumnDescription = "修改者唯一标识")]
+    public long? ModifiedId { get; set; }
+
+    /// <summary>修改人。</summary>
+    [SugarColumn(ColumnName = "Modified_By", IsNullable = true, ColumnDescription = "修改人")]
+    public string? ModifiedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
 }
 
 /// <summary>
 /// BasicApp 删除审计实体基类
 /// </summary>
-public abstract class BasicAppDeletionEntity : SugarMultiTenantDeletionEntity<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppDeletionEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, ISoftDeletable, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Created_Time", IsNullable = false, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建时间")]
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>创建者标识。</summary>
+    [SugarColumn(ColumnName = "Created_Id", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建者唯一标识")]
+    public long? CreatedId { get; set; }
+
+    /// <summary>创建人。</summary>
+    [SugarColumn(ColumnName = "Created_By", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建人")]
+    public string? CreatedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Modified_Time", IsNullable = true, ColumnDescription = "修改时间")]
+    public DateTimeOffset? ModifiedAt { get; set; }
+
+    /// <summary>修改者标识。</summary>
+    [SugarColumn(ColumnName = "Modified_Id", IsNullable = true, ColumnDescription = "修改者唯一标识")]
+    public long? ModifiedId { get; set; }
+
+    /// <summary>修改人。</summary>
+    [SugarColumn(ColumnName = "Modified_By", IsNullable = true, ColumnDescription = "修改人")]
+    public string? ModifiedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Is_Deleted", IsNullable = false, ColumnDescription = "软删除标记")]
+    public bool IsDeleted { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Deleted_Time", IsNullable = true, ColumnDescription = "删除时间")]
+    public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>删除者标识。</summary>
+    [SugarColumn(ColumnName = "Deleted_Id", IsNullable = true, ColumnDescription = "删除者唯一标识")]
+    public long? DeletedId { get; set; }
+
+    /// <summary>删除人。</summary>
+    [SugarColumn(ColumnName = "Deleted_By", IsNullable = true, ColumnDescription = "删除者")]
+    public string? DeletedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
 }
 
 /// <summary>
 /// BasicApp 完整审计实体基类
 /// </summary>
-public abstract class BasicAppFullAuditedEntity : SugarMultiTenantFullAuditedEntity<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppFullAuditedEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, ISoftDeletable, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Created_Time", IsNullable = false, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建时间")]
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>创建者标识。</summary>
+    [SugarColumn(ColumnName = "Created_Id", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建者唯一标识")]
+    public long? CreatedId { get; set; }
+
+    /// <summary>创建人。</summary>
+    [SugarColumn(ColumnName = "Created_By", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建人")]
+    public string? CreatedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Modified_Time", IsNullable = true, ColumnDescription = "修改时间")]
+    public DateTimeOffset? ModifiedAt { get; set; }
+
+    /// <summary>修改者标识。</summary>
+    [SugarColumn(ColumnName = "Modified_Id", IsNullable = true, ColumnDescription = "修改者唯一标识")]
+    public long? ModifiedId { get; set; }
+
+    /// <summary>修改人。</summary>
+    [SugarColumn(ColumnName = "Modified_By", IsNullable = true, ColumnDescription = "修改人")]
+    public string? ModifiedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Is_Deleted", IsNullable = false, ColumnDescription = "软删除标记")]
+    public bool IsDeleted { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Deleted_Time", IsNullable = true, ColumnDescription = "删除时间")]
+    public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>删除者标识。</summary>
+    [SugarColumn(ColumnName = "Deleted_Id", IsNullable = true, ColumnDescription = "删除者唯一标识")]
+    public long? DeletedId { get; set; }
+
+    /// <summary>删除人。</summary>
+    [SugarColumn(ColumnName = "Deleted_By", IsNullable = true, ColumnDescription = "删除者")]
+    public string? DeletedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
+
     /// <summary>
     /// 构造函数
     /// </summary>
@@ -92,16 +288,83 @@ public abstract class BasicAppFullAuditedEntity : SugarMultiTenantFullAuditedEnt
     /// </summary>
     /// <param name="basicId"></param>
     protected BasicAppFullAuditedEntity(long basicId)
-        : base(basicId)
     {
+        Id = basicId;
     }
 }
 
 /// <summary>
 /// BasicApp 聚合根基类
 /// </summary>
-public abstract class BasicAppAggregateRoot : SugarMultiTenantAggregateRoot<long>
+// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+public abstract class BasicAppAggregateRoot : IAggregateRoot<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, ISoftDeletable, IMultiTenant
 {
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
+    public long Id { get; set; } = default!;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    public string ConcurrencyStamp { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Created_Time", IsNullable = false, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建时间")]
+    public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>创建者标识。</summary>
+    [SugarColumn(ColumnName = "Created_Id", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建者唯一标识")]
+    public long? CreatedId { get; set; }
+
+    /// <summary>创建人。</summary>
+    [SugarColumn(ColumnName = "Created_By", IsNullable = true, IsOnlyIgnoreUpdate = true, ColumnDescription = "创建人")]
+    public string? CreatedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Modified_Time", IsNullable = true, ColumnDescription = "修改时间")]
+    public DateTimeOffset? ModifiedAt { get; set; }
+
+    /// <summary>修改者标识。</summary>
+    [SugarColumn(ColumnName = "Modified_Id", IsNullable = true, ColumnDescription = "修改者唯一标识")]
+    public long? ModifiedId { get; set; }
+
+    /// <summary>修改人。</summary>
+    [SugarColumn(ColumnName = "Modified_By", IsNullable = true, ColumnDescription = "修改人")]
+    public string? ModifiedBy { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Is_Deleted", IsNullable = false, ColumnDescription = "软删除标记")]
+    public bool IsDeleted { get; set; }
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Deleted_Time", IsNullable = true, ColumnDescription = "删除时间")]
+    public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>删除者标识。</summary>
+    [SugarColumn(ColumnName = "Deleted_Id", IsNullable = true, ColumnDescription = "删除者唯一标识")]
+    public long? DeletedId { get; set; }
+
+    /// <summary>删除人。</summary>
+    [SugarColumn(ColumnName = "Deleted_By", IsNullable = true, ColumnDescription = "删除者")]
+    public string? DeletedBy { get; set; }
+
+    /// <summary>领域事件缓冲；不映射到列。</summary>
+    [SugarColumn(IsIgnore = true)]
+    private readonly DomainEventBuffer _events = new();
+
+    /// <inheritdoc />
+    public IReadOnlyList<IDomainEvent> DomainEvents => _events.Items;
+
+    /// <summary>记录领域事件。</summary>
+    public void Raise(IDomainEvent domainEvent) => _events.Add(domainEvent);
+
+    /// <inheritdoc />
+    public void ClearDomainEvents() => _events.Clear();
+
+    /// <inheritdoc />
+    [SugarColumn(ColumnName = "Tenant_Id", IsOnlyIgnoreUpdate = true, ColumnDescription = "租户ID")]
+    public string TenantId { get; set; } = string.Empty;
+
     /// <summary>
     /// 构造函数
     /// </summary>
@@ -114,7 +377,7 @@ public abstract class BasicAppAggregateRoot : SugarMultiTenantAggregateRoot<long
     /// </summary>
     /// <param name="basicId"></param>
     protected BasicAppAggregateRoot(long basicId)
-        : base(basicId)
     {
+        Id = basicId;
     }
 }

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -88,7 +87,7 @@ public abstract class PageRegistryMenuSeederBase : PlatformDataSeederBase
             .GroupBy(permission => permission.PermissionCode, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 group => group.Key,
-                group => group.First().BasicId,
+                group => group.First().Id,
                 StringComparer.OrdinalIgnoreCase);
 
         // 父菜单可能由别的模块登记（如开发工具目录），按 MenuCode 连同父码一起查回来
@@ -172,7 +171,7 @@ public abstract class PageRegistryMenuSeederBase : PlatformDataSeederBase
             return false;
         }
 
-        parentId = parent.BasicId;
+        parentId = parent.Id;
         return true;
     }
 

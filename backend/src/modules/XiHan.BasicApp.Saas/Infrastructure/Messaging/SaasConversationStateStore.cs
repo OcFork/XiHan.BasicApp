@@ -3,8 +3,6 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 using XiHan.BasicApp.Saas.Application.Caching;
-using XiHan.Framework.Bot.Telegram.Abstractions;
-using XiHan.Framework.Caching.Distributed.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

@@ -2,8 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Authentication.Jwt;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 

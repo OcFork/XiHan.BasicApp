@@ -10,12 +10,7 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Exporting;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Caching.Distributed.Abstracts;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Security.Extensions;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -23,8 +18,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 导出任务应用服务（写侧：提交 / 取消 / 删除，均为当前用户自有任务）。
 /// 提交仅落 Pending 任务记录；实际拉数/写出/产物由后台 worker 重建发起人上下文后经 QueryService 执行。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "导出任务")]
 public sealed class ExportTaskAppService
     : SaasApplicationService, IExportTaskAppService
 {
@@ -34,6 +27,7 @@ public sealed class ExportTaskAppService
 
     private readonly IRedisDelayQueue<ExportTaskMessage> _exportTaskQueue;
 
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     private readonly IReadOnlyList<IExportProvider> _providers;
@@ -109,7 +103,7 @@ public sealed class ExportTaskAppService
         entity = await _repository.AddAsync(entity, cancellationToken);
 
         // 提交后入队（延迟 0）：后台导出服务拉取后立即领取执行（替换原 3s 轮询）。无环境 UoW 时直接入队。
-        var taskId = entity.BasicId;
+        var taskId = entity.Id;
         var message = new ExportTaskMessage { ExportTaskId = taskId, TenantId = entity.TenantId, CreatedAt = DateTimeOffset.UtcNow };
         var uow = _unitOfWorkManager.Current;
         if (uow is not null)
@@ -158,7 +152,7 @@ public sealed class ExportTaskAppService
         var entity = await _repository.GetByIdForUserAsync(id, userId, cancellationToken)
             ?? throw new InvalidOperationException("任务不存在或不属于当前用户。");
 
-        await _repository.DeleteByIdAsync(entity.BasicId, cancellationToken);
+        await _repository.DeleteByIdAsync(entity.Id, cancellationToken);
     }
 
     /// <summary>
@@ -168,7 +162,7 @@ public sealed class ExportTaskAppService
     {
         return new ExportTaskDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             BusinessType = entity.BusinessType,
             TaskName = entity.TaskName,
             Scope = entity.Scope,
@@ -181,7 +175,7 @@ public sealed class ExportTaskAppService
             FileName = entity.FileName,
             FileSize = entity.FileSize,
             ErrorMessage = entity.ErrorMessage,
-            CreatedTime = entity.CreatedTime,
+            CreatedAt = entity.CreatedAt,
             StartedTime = entity.StartedTime,
             FinishedTime = entity.FinishedTime
         };

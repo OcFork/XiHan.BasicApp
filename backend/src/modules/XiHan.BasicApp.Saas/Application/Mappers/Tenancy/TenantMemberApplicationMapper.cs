@@ -111,7 +111,7 @@ public static class TenantMemberApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new TenantMemberUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.MemberType,
             input.EffectiveTime,
             input.ExpirationTime,
@@ -127,7 +127,7 @@ public static class TenantMemberApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TenantMemberInviteStatusChangeCommand(input.BasicId, input.InviteStatus, input.InviteRemark);
+        return new TenantMemberInviteStatusChangeCommand(input.Id, input.InviteStatus, input.InviteRemark);
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public static class TenantMemberApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TenantMemberStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new TenantMemberStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ public static class TenantMemberApplicationMapper
 
         return new TenantMemberListItemDto
         {
-            BasicId = member.BasicId,
+            Id = member.Id,
             UserId = member.UserId,
             MemberType = member.MemberType,
             InviteStatus = member.InviteStatus,
@@ -165,8 +165,8 @@ public static class TenantMemberApplicationMapper
             DisplayName = member.DisplayName,
             Status = member.Status,
             IsExpired = member.ExpirationTime.HasValue && member.ExpirationTime.Value <= now,
-            CreatedTime = member.CreatedTime,
-            ModifiedTime = member.ModifiedTime
+            CreatedAt = member.CreatedAt,
+            ModifiedAt = member.ModifiedAt
         };
     }
 
@@ -182,7 +182,7 @@ public static class TenantMemberApplicationMapper
 
         return new TenantMemberDetailDto
         {
-            BasicId = member.BasicId,
+            Id = member.Id,
             UserId = member.UserId,
             MemberType = member.MemberType,
             InviteStatus = member.InviteStatus,
@@ -197,10 +197,10 @@ public static class TenantMemberApplicationMapper
             Status = member.Status,
             IsExpired = member.ExpirationTime.HasValue && member.ExpirationTime.Value <= now,
             Remark = member.Remark,
-            CreatedTime = member.CreatedTime,
+            CreatedAt = member.CreatedAt,
             CreatedId = member.CreatedId,
             CreatedBy = member.CreatedBy,
-            ModifiedTime = member.ModifiedTime,
+            ModifiedAt = member.ModifiedAt,
             ModifiedId = member.ModifiedId,
             ModifiedBy = member.ModifiedBy
         };

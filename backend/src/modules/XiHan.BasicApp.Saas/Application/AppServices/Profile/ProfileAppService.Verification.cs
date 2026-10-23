@@ -5,7 +5,6 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -17,7 +16,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 确认邮箱换绑
     /// </summary>
-    [UnitOfWork(true)]
     public async Task ConfirmChangeEmailAsync(ProfileVerificationCodeDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("更换邮箱");
@@ -34,7 +32,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 确认手机换绑
     /// </summary>
-    [UnitOfWork(true)]
     public async Task ConfirmChangePhoneAsync(ProfileVerificationCodeDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("更换手机号");
@@ -111,7 +108,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 验证当前邮箱
     /// </summary>
-    [UnitOfWork(true)]
     public async Task VerifyEmailAsync(ProfileVerificationCodeDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -127,7 +123,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 验证当前手机号
     /// </summary>
-    [UnitOfWork(true)]
     public async Task VerifyPhoneAsync(ProfileVerificationCodeDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

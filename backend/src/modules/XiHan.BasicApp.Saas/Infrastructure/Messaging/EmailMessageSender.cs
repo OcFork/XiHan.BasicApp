@@ -5,12 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.Framework.Bot.Email.Abstractions;
-using XiHan.Framework.Bot.Email.Messaging;
-using XiHan.Framework.Bot.Email.Models;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Messaging.Models;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
@@ -108,7 +103,7 @@ public sealed class EmailMessageSender : IMessageSender
             email.Content = content ?? email.Content;
             await client.Updateable(email)
                 .UpdateColumns(e => new { e.EmailStatus, e.Content })
-                .WhereColumns(e => e.BasicId)
+                .WhereColumns(e => e.Id)
                 .ExecuteCommandAsync(cancellationToken);
         }
         else
@@ -150,7 +145,7 @@ public sealed class EmailMessageSender : IMessageSender
             await client.Updateable<SysEmail>()
                 .SetColumns(e => e.EmailStatus == EmailStatus.Success)
                 .SetColumns(e => e.SendTime == DateTimeOffset.UtcNow)
-                .Where(e => e.BasicId == email.BasicId)
+                .Where(e => e.Id == email.Id)
                 .ExecuteCommandAsync(cancellationToken);
 
             _logger.LogInformation("邮件发送成功。MessageId: {MessageId}, To: {To}, Subject: {Subject}",
@@ -162,7 +157,7 @@ public sealed class EmailMessageSender : IMessageSender
                 Channel = envelope.Channel,
                 RecipientAddress = recipient.Address,
                 IsSuccess = true,
-                ProviderMessageId = email.BasicId.ToString(),
+                ProviderMessageId = email.Id.ToString(),
                 DispatchedAt = DateTimeOffset.UtcNow
             };
         }
@@ -173,7 +168,7 @@ public sealed class EmailMessageSender : IMessageSender
                 .SetColumns(e => e.EmailStatus == EmailStatus.Failed)
                 .SetColumns(e => e.ErrorMessage == ex.Message)
                 .SetColumns(e => e.RetryCount == e.RetryCount + 1)
-                .Where(e => e.BasicId == email.BasicId)
+                .Where(e => e.Id == email.Id)
                 .ExecuteCommandAsync(cancellationToken);
 
             _logger.LogError(ex, "邮件发送失败。MessageId: {MessageId}, To: {To}, Subject: {Subject}",
@@ -186,7 +181,7 @@ public sealed class EmailMessageSender : IMessageSender
                 RecipientAddress = recipient.Address,
                 IsSuccess = false,
                 ErrorMessage = ex.Message,
-                ProviderMessageId = email.BasicId.ToString(),
+                ProviderMessageId = email.Id.ToString(),
                 DispatchedAt = DateTimeOffset.UtcNow
             };
         }

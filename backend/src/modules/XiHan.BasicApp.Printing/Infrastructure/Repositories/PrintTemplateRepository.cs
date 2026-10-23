@@ -5,7 +5,6 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Printing.Infrastructure.Repositories;
 
@@ -66,7 +65,7 @@ public sealed class PrintTemplateRepository(ISqlSugarClientResolver clientResolv
 
         cancellationToken.ThrowIfCancellationRequested();
         return await CreateQueryable()
-            .Where(template => template.TenantId == ownerTenantId && template.BasicId == id)
+            .Where(template => template.TenantId == ownerTenantId && template.Id == id)
             .FirstAsync(cancellationToken);
     }
 }

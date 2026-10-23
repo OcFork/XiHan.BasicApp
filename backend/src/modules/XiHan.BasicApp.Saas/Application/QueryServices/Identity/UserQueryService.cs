@@ -13,8 +13,6 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -24,8 +22,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 用户查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户")]
 public sealed class UserQueryService
     : SaasApplicationService, IUserQueryService
 {
@@ -105,8 +101,6 @@ public sealed class UserQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.User.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<UserListItemDto>> GetUserPageAsync(UserPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -122,7 +116,7 @@ public sealed class UserQueryService
         var dataScope = await _userDataScopeFilter.ResolveAccessibleUsersAsync(DateTimeOffset.UtcNow, cancellationToken);
         if (!dataScope.Unrestricted)
         {
-            request.Conditions.AddFilterIn<SysUser, long>(user => user.BasicId, dataScope.UserIds.Cast<object>());
+            request.Conditions.AddFilterIn<SysUser, long>(user => user.Id, dataScope.UserIds.Cast<object>());
         }
 
         // 超管隐藏：非超管用户排除超管用户（叠加在数据范围过滤之上，超管自身不受限）
@@ -131,7 +125,7 @@ public sealed class UserQueryService
             var protectedUserIds = await _superAdminProtector.GetProtectedUserIdsAsync(cancellationToken);
             if (protectedUserIds.Count > 0)
             {
-                request.Conditions.AddFilterIn<SysUser, long>(user => user.BasicId, protectedUserIds.Cast<object>(), QueryOperator.NotIn);
+                request.Conditions.AddFilterIn<SysUser, long>(user => user.Id, protectedUserIds.Cast<object>(), QueryOperator.NotIn);
             }
         }
 
@@ -152,18 +146,18 @@ public sealed class UserQueryService
         }
 
         // 按当前页用户主键批量预取关联数据，避免逐行 N+1
-        var userIds = users.Items.Select(user => user.BasicId).Distinct().ToList();
+        var userIds = users.Items.Select(user => user.Id).Distinct().ToList();
         var roleNameMap = await BuildRoleNameMapAsync(userIds, cancellationToken);
         var departmentNameMap = await BuildDepartmentNameMapAsync(userIds, cancellationToken);
         var securityMap = await BuildSecurityMapAsync(userIds, cancellationToken);
 
         var items = users.Items.Select(user =>
         {
-            securityMap.TryGetValue(user.BasicId, out var security);
+            securityMap.TryGetValue(user.Id, out var security);
             var item = UserApplicationMapper.ToListItemDto(
                 user,
-                roleNameMap.TryGetValue(user.BasicId, out var roleNames) ? roleNames : [],
-                departmentNameMap.TryGetValue(user.BasicId, out var departmentName) ? departmentName : null,
+                roleNameMap.TryGetValue(user.Id, out var roleNames) ? roleNames : [],
+                departmentNameMap.TryGetValue(user.Id, out var departmentName) ? departmentName : null,
                 security.IsLocked,
                 security.TwoFactorEnabled);
             item.IsExternalMember = !_userDirectory.IsHomeAccount(user);
@@ -184,7 +178,6 @@ public sealed class UserQueryService
     /// <param name="id">用户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.User.Read)]
     public async Task<UserDetailDto?> GetUserDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -219,7 +212,6 @@ public sealed class UserQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>已启用用户选择项</returns>
-    [PermissionAuthorize(SaasPermissionCodes.User.Read)]
     public async Task<IReadOnlyList<UserSelectItemDto>> GetEnabledUsersAsync(UserSelectQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -233,7 +225,7 @@ public sealed class UserQueryService
             var protectedUserIds = await _superAdminProtector.GetProtectedUserIdsAsync(cancellationToken);
             if (protectedUserIds.Count > 0)
             {
-                request.Conditions.AddFilterIn<SysUser, long>(user => user.BasicId, protectedUserIds.Cast<object>(), QueryOperator.NotIn);
+                request.Conditions.AddFilterIn<SysUser, long>(user => user.Id, protectedUserIds.Cast<object>(), QueryOperator.NotIn);
             }
         }
 
@@ -348,7 +340,7 @@ public sealed class UserQueryService
     private static void ApplyUserSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort(nameof(SysUser.IsSystemAccount), SortDirection.Descending, 0);
-        request.Conditions.AddSort(nameof(SysUser.CreatedTime), SortDirection.Descending, 1);
+        request.Conditions.AddSort(nameof(SysUser.CreatedAt), SortDirection.Descending, 1);
         request.Conditions.AddSort(nameof(SysUser.UserName), SortDirection.Ascending, 2);
     }
 
@@ -371,7 +363,7 @@ public sealed class UserQueryService
         var roleIds = userRoles.Select(userRole => userRole.RoleId).Distinct().ToList();
         var roles = await _roleRepository.GetEnabledByIdsAsync(roleIds, cancellationToken);
         var roleNameById = roles
-            .GroupBy(role => role.BasicId)
+            .GroupBy(role => role.Id)
             .ToDictionary(group => group.Key, group => group.First().RoleName);
 
         return userRoles
@@ -403,10 +395,10 @@ public sealed class UserQueryService
 
         var departmentIds = userDepartments.Select(item => item.DepartmentId).Distinct().ToList();
         var departments = await _departmentRepository.GetListAsync(
-            department => departmentIds.Contains(department.BasicId),
+            department => departmentIds.Contains(department.Id),
             cancellationToken);
         var departmentNameById = departments
-            .GroupBy(department => department.BasicId)
+            .GroupBy(department => department.Id)
             .ToDictionary(group => group.Key, group => group.First().DepartmentName);
 
         var result = new Dictionary<long, string>();

@@ -54,8 +54,8 @@ public class KnowledgeListItemDto : BasicAppDto
     public KnowledgeIndexStatus Status { get; set; }
     public string? ErrorMessage { get; set; }
     public int Sort { get; set; }
-    public DateTimeOffset CreatedTime { get; set; }
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 }
 
 /// <summary>

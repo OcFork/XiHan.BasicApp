@@ -17,13 +17,15 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// <item>同一（规则、动作、是否拦下、时机、IP、方法、路径、用户）在同一分钟内合并成一行，<see cref="HitCount"/> 记次数，<see cref="TraceId"/> 取这一分钟里的第一次。</item>
 /// </list>
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
+// xihan-migrate(V4-02): ITraceableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Access_Policy_Hit_{year}{month}{day}", TableDescription = "条件命中记录表"), SplitTable(SplitType.Month)]
 [SugarIndex("IX_{split_table}_TeId_HiTi", nameof(TenantId), OrderByType.Asc, nameof(HitTime), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_PoId", nameof(PolicyId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_Ip", nameof(Ip), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_UsId", nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TrId", nameof(TraceId), OrderByType.Asc)]
-public partial class SysAccessPolicyHit : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IStrictMultiTenantEntity
+public partial class SysAccessPolicyHit : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IMultiTenant
 {
     /// <summary>
     /// 来源
@@ -144,5 +146,5 @@ public partial class SysAccessPolicyHit : BasicAppCreationEntity, ISplitTableEnt
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

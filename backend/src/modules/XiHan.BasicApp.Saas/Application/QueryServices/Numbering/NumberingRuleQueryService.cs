@@ -16,9 +16,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Numbering;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -33,8 +31,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// 查询服务负责把外部 <see cref="NumberingScope"/> 解析为明确的规则所属租户和数据库位置。
 /// 所有客户端过滤与排序先经过字段安全校验，再追加调用方无法覆盖的租户、规则和全局开放条件。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "业务编号查询")]
 public sealed class NumberingRuleQueryService : SaasApplicationService, INumberingRuleQueryService
 {
     /// <summary>
@@ -102,8 +98,6 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">作用域无效，或平台上下文请求了未指定租户的私有规则。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Read)]
     public async Task<PageResultDtoBase<NumberingRuleListItemDto>> GetNumberingRulePageAsync(
         NumberingRulePageQueryDto input,
         CancellationToken cancellationToken = default)
@@ -123,8 +117,6 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <remarks>原请求租户会保留在内部查询作用域中，用于表达“租户查看全局规则”，数据库读取则在平台上下文执行。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Read)]
     public async Task<PageResultDtoBase<NumberingRuleListItemDto>> GetAvailableGlobalNumberingRulePageAsync(
         NumberingRulePageQueryDto input,
         CancellationToken cancellationToken = default)
@@ -143,7 +135,6 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <returns>规则详情；当前作用域内不存在时返回 <see langword="null"/>。</returns>
     /// <exception cref="UserFriendlyException">主键或作用域无效，或者全局规则未向当前租户开放。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Read)]
     public async Task<NumberingRuleDetailDto?> GetNumberingRuleDetailAsync(
         long id,
         NumberingScope scope = NumberingScope.Auto,
@@ -184,8 +175,6 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">规则主键、作用域、规则存在性或全局开放状态校验失败。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.AllocationRead)]
     public async Task<PageResultDtoBase<NumberingAllocationListItemDto>> GetNumberingAllocationPageAsync(
         NumberingAllocationPageQueryDto input,
         CancellationToken cancellationToken = default)
@@ -213,8 +202,6 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">格式组合、时区、流水位数或示例流水值无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Read)]
     public Task<NumberingPreviewResultDto> PreviewNumberingFormatAsync(
         NumberingPreviewDto input,
         CancellationToken cancellationToken = default)
@@ -257,8 +244,6 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="UserFriendlyException">数量、格式组合、时区、流水位数、起始流水或区间容量无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Read)]
     public Task<NumberingBatchPreviewResultDto> PreviewNumberingBatchAsync(
         NumberingBatchPreviewDto input,
         CancellationToken cancellationToken = default)
@@ -415,7 +400,7 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
         {
             // UTC 发号时间与主键共同形成稳定倒序，保证相同时刻写入的记录分页顺序确定。
             request.Conditions.AddSort((SysNumberingAllocation allocation) => allocation.GeneratedTime, SortDirection.Descending, 0);
-            request.Conditions.AddSort((SysNumberingAllocation allocation) => allocation.BasicId, SortDirection.Descending, 1);
+            request.Conditions.AddSort((SysNumberingAllocation allocation) => allocation.Id, SortDirection.Descending, 1);
         }
 
         var page = await _allocationRepository.GetPagedAsync(request, cancellationToken);
@@ -529,6 +514,7 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
         if (scope.IsGlobal && !_currentTenant.IsPlatformOperation())
         {
             // Change 的生命周期必须覆盖 await；提前释放会让独立数据库租户在错误连接上继续执行查询。
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using var platformScope = _currentTenant.Change(null);
             return await action();
         }

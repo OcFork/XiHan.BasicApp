@@ -25,7 +25,7 @@ public static class UserSessionApplicationMapper
 
         return new UserSessionListItemDto
         {
-            BasicId = session.BasicId,
+            Id = session.Id,
             UserId = session.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
@@ -48,8 +48,8 @@ public static class UserSessionApplicationMapper
             ImpersonatorUserName = session.ImpersonatorUserName,
             ImpersonationStartTime = session.ImpersonationStartTime,
             ImpersonationReason = session.ImpersonationReason,
-            CreatedTime = session.CreatedTime,
-            ModifiedTime = session.ModifiedTime
+            CreatedAt = session.CreatedAt,
+            ModifiedAt = session.ModifiedAt
         };
     }
 
@@ -67,7 +67,7 @@ public static class UserSessionApplicationMapper
 
         return new OnlineUserListItemDto
         {
-            BasicId = session.BasicId,
+            Id = session.Id,
             UserId = session.UserId,
             UserName = user?.UserName,
             NickName = user?.NickName,
@@ -102,7 +102,7 @@ public static class UserSessionApplicationMapper
         var item = ToListItemDto(session, user, now);
         return new UserSessionDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             RealName = item.RealName,
@@ -128,10 +128,10 @@ public static class UserSessionApplicationMapper
             ImpersonationStartTime = item.ImpersonationStartTime,
             ImpersonationReason = item.ImpersonationReason,
             Remark = session.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = session.CreatedId,
             CreatedBy = session.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = session.ModifiedId,
             ModifiedBy = session.ModifiedBy
         };
@@ -143,7 +143,7 @@ public static class UserSessionApplicationMapper
     public static UserSessionRevokeCommand ToRevokeCommand(UserSessionRevokeDto input, long? operatorUserId)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new UserSessionRevokeCommand(input.BasicId, input.Reason, operatorUserId);
+        return new UserSessionRevokeCommand(input.Id, input.Reason, operatorUserId);
     }
 
     /// <summary>

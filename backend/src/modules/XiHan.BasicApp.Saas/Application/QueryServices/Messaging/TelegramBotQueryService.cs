@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// Telegram 机器人查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "Telegram机器人")]
 public sealed class TelegramBotQueryService
     : SaasApplicationService, ITelegramBotQueryService
 {
@@ -55,8 +51,6 @@ public sealed class TelegramBotQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>Telegram 机器人分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TelegramBot.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<TelegramBotListItemDto>> GetTelegramBotPageAsync(TelegramBotPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -85,7 +79,6 @@ public sealed class TelegramBotQueryService
     /// <param name="id">Telegram 机器人主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>Telegram 机器人详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TelegramBot.Read)]
     public async Task<TelegramBotDetailDto?> GetTelegramBotDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -147,6 +140,6 @@ public sealed class TelegramBotQueryService
     private static void ApplyTelegramBotSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysTelegramBot bot) => bot.Sort, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysTelegramBot bot) => bot.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysTelegramBot bot) => bot.CreatedAt, SortDirection.Descending, 1);
     }
 }

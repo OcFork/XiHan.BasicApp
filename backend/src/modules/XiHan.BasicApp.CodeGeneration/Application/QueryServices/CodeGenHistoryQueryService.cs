@@ -11,8 +11,6 @@ using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,7 +20,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.QueryServices;
 /// <summary>
 /// 代码生成历史查询应用服务（历史为系统写入，只读对外）
 /// </summary>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "生成历史")]
 public sealed class CodeGenHistoryQueryService : CodeGenerationApplicationService, ICodeGenHistoryQueryService
 {
     /// <summary>
@@ -50,8 +47,6 @@ public sealed class CodeGenHistoryQueryService : CodeGenerationApplicationServic
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>代码生成历史分页列表</returns>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<CodeGenHistoryListItemDto>> GetPageAsync(CodeGenHistoryPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -90,7 +85,6 @@ public sealed class CodeGenHistoryQueryService : CodeGenerationApplicationServic
     /// <param name="id">代码生成历史主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>代码生成历史详情</returns>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<CodeGenHistoryDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -110,7 +104,6 @@ public sealed class CodeGenHistoryQueryService : CodeGenerationApplicationServic
     /// <param name="tableId">所属表ID</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>代码生成历史列表</returns>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<IReadOnlyList<CodeGenHistoryListItemDto>> GetByTableAsync(long tableId, CancellationToken cancellationToken = default)
     {
         if (tableId <= 0)

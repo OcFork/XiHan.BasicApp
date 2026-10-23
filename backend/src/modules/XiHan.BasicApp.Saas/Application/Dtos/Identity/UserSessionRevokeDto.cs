@@ -11,7 +11,7 @@ public sealed class UserSessionRevokeDto
     /// <summary>
     /// 会话主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 撤销原因

@@ -3,10 +3,8 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Upgrade.Abstractions;
-using XiHan.Framework.Upgrade.Models;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Upgrade;
 
@@ -87,7 +85,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
     public async Task<UpgradeVersionState> GetOrCreateAsync(string currentAppVersion, string minSupportVersion, CancellationToken cancellationToken = default)
     {
         var existing = await Db.Queryable<SysVersion>()
-            .OrderBy(version => version.CreatedTime, OrderByType.Desc)
+            .OrderBy(version => version.CreatedAt, OrderByType.Desc)
             .FirstAsync(cancellationToken);
 
         if (existing is not null)
@@ -133,7 +131,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
                 UpgradeNode = nodeName,
                 UpgradeStartTime = startTime
             })
-            .Where(row => row.BasicId == version.Id)
+            .Where(row => row.Id == version.Id)
             .ExecuteCommandAsync(cancellationToken);
 
         version.IsUpgrading = true;
@@ -155,7 +153,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
                 DbVersion = dbVersion,
                 IsUpgrading = false
             })
-            .Where(row => row.BasicId == version.Id)
+            .Where(row => row.Id == version.Id)
             .ExecuteCommandAsync(cancellationToken);
 
         version.AppVersion = appVersion;
@@ -172,7 +170,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
 
         _ = await Db.Updateable<SysVersion>()
             .SetColumns(row => new SysVersion { IsUpgrading = false })
-            .Where(row => row.BasicId == version.Id)
+            .Where(row => row.Id == version.Id)
             .ExecuteCommandAsync(cancellationToken);
 
         version.IsUpgrading = false;
@@ -187,7 +185,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
 
         _ = await Db.Updateable<SysVersion>()
             .SetColumns(row => new SysVersion { DbVersion = dbVersion })
-            .Where(row => row.BasicId == version.Id)
+            .Where(row => row.Id == version.Id)
             .ExecuteCommandAsync(cancellationToken);
 
         version.DbVersion = dbVersion;
@@ -227,7 +225,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
     {
         return new UpgradeVersionState
         {
-            Id = entity.BasicId,
+            Id = entity.Id,
             // 平台就是 0 号租户：与升级锁键同一口径
             TenantId = _currentTenant.Id ?? 0,
             AppVersion = entity.AppVersion,

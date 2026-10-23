@@ -2,11 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using XiHan.BasicApp.Chat.Application.Services;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.Framework.EventBus.Abstractions.Local;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Chat.Application.EventHandlers;
 
@@ -17,8 +19,19 @@ namespace XiHan.BasicApp.Chat.Application.EventHandlers;
 /// 订阅用户部门归属变更：分配进部门 → 自动加入已存在的部门群；移出部门 → 即时踢出部门群。
 /// 部门群不存在时为空操作（首次打开部门群时会全量同步成员）。同步失败只记日志，不阻断主流程。
 /// </remarks>
-public sealed class ChatDepartmentMemberSyncEventHandler : ILocalEventHandler<UserDepartmentChangedDomainEvent>
+public sealed class ChatDepartmentMemberSyncEventHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string UserDepartmentChangedTopic = "user-department-changed";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<UserDepartmentChangedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly IChatConversationRepository _conversationRepository;
 
     private readonly IChatConversationMemberRepository _memberRepository;
@@ -58,7 +71,7 @@ public sealed class ChatDepartmentMemberSyncEventHandler : ILocalEventHandler<Us
                 return;
             }
 
-            var member = await _memberRepository.GetMemberAsync(conversation.BasicId, eventData.UserId);
+            var member = await _memberRepository.GetMemberAsync(conversation.Id, eventData.UserId);
             if (eventData.IsAssigned)
             {
                 if (member is not null)
@@ -68,7 +81,7 @@ public sealed class ChatDepartmentMemberSyncEventHandler : ILocalEventHandler<Us
 
                 _ = await _memberRepository.AddAsync(new SysChatConversationMember
                 {
-                    ConversationId = conversation.BasicId,
+                    ConversationId = conversation.Id,
                     UserId = eventData.UserId,
                     MemberRole = ChatMemberRole.Member,
                     JoinTime = DateTimeOffset.UtcNow
@@ -77,7 +90,7 @@ public sealed class ChatDepartmentMemberSyncEventHandler : ILocalEventHandler<Us
                 _ = await _conversationRepository.UpdateAsync(conversation);
                 // 推给入群后的全体成员：其余成员的成员列表与人数同样需要刷新
                 await _pushService.PushConversationChangedAsync(
-                    conversation.BasicId, "department-joined", await GetMemberUserIdsAsync(conversation.BasicId));
+                    conversation.Id, "department-joined", await GetMemberUserIdsAsync(conversation.Id));
             }
             else
             {
@@ -90,9 +103,9 @@ public sealed class ChatDepartmentMemberSyncEventHandler : ILocalEventHandler<Us
                 conversation.MemberCount = Math.Max(0, conversation.MemberCount - 1);
                 _ = await _conversationRepository.UpdateAsync(conversation);
                 // 剩余成员刷新列表，被移出者自己也要收到（其会话列表随之收敛）
-                var remaining = await GetMemberUserIdsAsync(conversation.BasicId);
+                var remaining = await GetMemberUserIdsAsync(conversation.Id);
                 await _pushService.PushConversationChangedAsync(
-                    conversation.BasicId, "department-kicked", [.. remaining, eventData.UserId]);
+                    conversation.Id, "department-kicked", [.. remaining, eventData.UserId]);
             }
         }
         catch (Exception ex)

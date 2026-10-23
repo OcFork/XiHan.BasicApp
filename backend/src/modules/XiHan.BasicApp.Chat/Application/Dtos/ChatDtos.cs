@@ -555,7 +555,7 @@ public sealed class ChatMessageItemDto
     /// <summary>
     /// 发送时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 被回复消息ID
@@ -669,7 +669,7 @@ public sealed class ChatAuditListItemDto
     /// <summary>
     /// 消息ID
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 会话ID
@@ -724,7 +724,7 @@ public sealed class ChatAuditListItemDto
     /// <summary>
     /// 发送时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>

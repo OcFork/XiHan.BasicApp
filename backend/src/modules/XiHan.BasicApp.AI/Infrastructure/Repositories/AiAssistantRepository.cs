@@ -5,7 +5,6 @@ using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Repositories;
 
@@ -41,7 +40,7 @@ public sealed class AiAssistantRepository(ISqlSugarClientResolver clientResolver
         var query = CreateQueryable().Where(assistant => assistant.AssistantCode == code);
         if (excludeId.HasValue)
         {
-            query = query.Where(assistant => assistant.BasicId != excludeId.Value);
+            query = query.Where(assistant => assistant.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);
@@ -68,7 +67,7 @@ public sealed class AiAssistantRepository(ISqlSugarClientResolver clientResolver
         cancellationToken.ThrowIfCancellationRequested();
 
         return await CreateQueryable()
-            .Where(assistant => assistant.BasicId == id && assistant.IsEnabled && assistant.Status == EnableStatus.Enabled)
+            .Where(assistant => assistant.Id == id && assistant.IsEnabled && assistant.Status == EnableStatus.Enabled)
             .FirstAsync(cancellationToken);
     }
 
@@ -80,7 +79,7 @@ public sealed class AiAssistantRepository(ISqlSugarClientResolver clientResolver
         cancellationToken.ThrowIfCancellationRequested();
 
         return await CreateQueryable()
-            .Where(assistant => assistant.IsDefault && assistant.BasicId != excludeId)
+            .Where(assistant => assistant.IsDefault && assistant.Id != excludeId)
             .ToListAsync(cancellationToken);
     }
 }

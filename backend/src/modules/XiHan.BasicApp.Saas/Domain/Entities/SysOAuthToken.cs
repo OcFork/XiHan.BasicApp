@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -45,7 +44,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 强制多端下线、会话吊销
 /// </remarks>
 [SugarTable(TableName = "Sys_OAuth_Token", TableDescription = "系统OAuth令牌表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_AcJti", nameof(AccessTokenJti), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_SeId", nameof(SessionId), OrderByType.Asc)]
@@ -55,7 +54,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_AcToExTi", nameof(AccessTokenExpirationTime), OrderByType.Desc)]
 [SugarIndex("IX_{table}_PaTo", nameof(ParentTokenId), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysOAuthToken : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysOAuthToken : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 会话ID（关联 SysUserSession，用于多端控制与撤销）

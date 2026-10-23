@@ -65,7 +65,7 @@ public sealed class PrintTemplateUpdateDto : BasicAppUDto
     /// <summary>客户端读取到的十进制字符串行版本。</summary>
     [Required]
     [RegularExpression("^[0-9]+$")]
-    public string RowVersion { get; set; } = string.Empty;
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <summary>可选代码数据源编码；为空表示自由模板。</summary>
     [StringLength(100)]
@@ -105,7 +105,7 @@ public sealed class PrintTemplateStatusUpdateDto : BasicAppUDto
     /// <summary>客户端读取到的十进制字符串行版本。</summary>
     [Required]
     [RegularExpression("^[0-9]+$")]
-    public string RowVersion { get; set; } = string.Empty;
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <summary>目标状态。</summary>
     [EnumDataType(typeof(EnableStatus))]
@@ -128,7 +128,7 @@ public sealed class PrintTemplateDeleteDto : BasicAppUDto
     /// <summary>客户端读取到的十进制字符串行版本。</summary>
     [Required]
     [RegularExpression("^[0-9]+$")]
-    public string RowVersion { get; set; } = string.Empty;
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -161,7 +161,7 @@ public class PrintTemplateListItemDto : BasicAppDto
     public string? Remark { get; set; }
 
     /// <summary>十进制字符串行版本，避免 JavaScript 整数精度问题。</summary>
-    public string RowVersion { get; set; } = string.Empty;
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -173,10 +173,10 @@ public sealed class PrintTemplateDetailDto : PrintTemplateListItemDto
     public string TemplateJson { get; set; } = string.Empty;
 
     /// <summary>创建时间。</summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>最后修改时间。</summary>
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 }
 
 /// <summary>
@@ -185,7 +185,7 @@ public sealed class PrintTemplateDetailDto : PrintTemplateListItemDto
 public sealed class ResolvedPrintTemplateDto
 {
     /// <summary>模板主键。</summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>模板编码。</summary>
     public string TemplateCode { get; set; } = string.Empty;
@@ -206,7 +206,7 @@ public sealed class ResolvedPrintTemplateDto
     public PrintTemplateScope ResolvedScope { get; set; }
 
     /// <summary>十进制字符串行版本。</summary>
-    public string RowVersion { get; set; } = string.Empty;
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 }
 
 /// <summary>

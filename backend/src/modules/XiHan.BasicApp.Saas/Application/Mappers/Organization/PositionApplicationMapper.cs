@@ -35,7 +35,7 @@ public static class PositionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new PositionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.PositionName,
             input.Sort,
             input.Remark);
@@ -48,7 +48,7 @@ public static class PositionApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new PositionStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new PositionStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -62,13 +62,13 @@ public static class PositionApplicationMapper
 
         return new PositionListItemDto
         {
-            BasicId = position.BasicId,
+            Id = position.Id,
             PositionCode = position.PositionCode,
             PositionName = position.PositionName,
             Status = position.Status,
             Sort = position.Sort,
-            CreatedTime = position.CreatedTime,
-            ModifiedTime = position.ModifiedTime
+            CreatedAt = position.CreatedAt,
+            ModifiedAt = position.ModifiedAt
         };
     }
 
@@ -83,16 +83,16 @@ public static class PositionApplicationMapper
 
         return new PositionDetailDto
         {
-            BasicId = position.BasicId,
+            Id = position.Id,
             PositionCode = position.PositionCode,
             PositionName = position.PositionName,
             Status = position.Status,
             Sort = position.Sort,
             Remark = position.Remark,
-            CreatedTime = position.CreatedTime,
+            CreatedAt = position.CreatedAt,
             CreatedId = position.CreatedId,
             CreatedBy = position.CreatedBy,
-            ModifiedTime = position.ModifiedTime,
+            ModifiedAt = position.ModifiedAt,
             ModifiedId = position.ModifiedId,
             ModifiedBy = position.ModifiedBy
         };

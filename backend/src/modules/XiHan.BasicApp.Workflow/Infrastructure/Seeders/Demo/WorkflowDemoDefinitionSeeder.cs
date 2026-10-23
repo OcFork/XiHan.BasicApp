@@ -7,9 +7,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using XiHan.BasicApp.Workflow.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Seeders;
 
@@ -49,7 +46,7 @@ public sealed class WorkflowDemoDefinitionSeeder(
             return;
         }
 
-        var tenantId = tenant.BasicId;
+        var tenantId = tenant.Id;
         var codes = WorkflowDemoCatalog.Codes.ToList();
         var existing = (await DbClientFor<SysWorkflowDefinition>().Queryable<SysWorkflowDefinition>()
                 .ClearTenantAndSoftDeleteFilter()
@@ -67,9 +64,9 @@ public sealed class WorkflowDemoDefinitionSeeder(
         var userIds = (await DbClientFor<SysUser>().Queryable<SysUser>()
                 .ClearTenantFilter()
                 .Where(user => user.TenantId == tenantId && userNames.Contains(user.UserName))
-                .Select(user => new { user.UserName, user.BasicId })
+                .Select(user => new { user.UserName, user.Id })
                 .ToListAsync())
-            .ToDictionary(user => user.UserName, user => user.BasicId.ToString(CultureInfo.InvariantCulture), StringComparer.Ordinal);
+            .ToDictionary(user => user.UserName, user => user.Id.ToString(CultureInfo.InvariantCulture), StringComparer.Ordinal);
         var missing = userNames.Where(name => !userIds.ContainsKey(name)).ToList();
         if (missing.Count > 0)
         {

@@ -45,7 +45,7 @@ public static class EmailConfigApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new EmailConfigUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ConfigName,
             input.SmtpHost,
             input.SmtpPort,
@@ -67,7 +67,7 @@ public static class EmailConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new EmailConfigStatusChangeCommand(input.BasicId, input.IsEnabled);
+        return new EmailConfigStatusChangeCommand(input.Id, input.IsEnabled);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public static class EmailConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new EmailConfigDefaultChangeCommand(input.BasicId);
+        return new EmailConfigDefaultChangeCommand(input.Id);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public static class EmailConfigApplicationMapper
 
         return new EmailConfigListItemDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             SmtpHost = config.SmtpHost,
@@ -103,8 +103,8 @@ public static class EmailConfigApplicationMapper
             IsDefault = config.IsDefault,
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
-            CreatedTime = config.CreatedTime,
-            ModifiedTime = config.ModifiedTime
+            CreatedAt = config.CreatedAt,
+            ModifiedAt = config.ModifiedAt
         };
     }
 
@@ -119,7 +119,7 @@ public static class EmailConfigApplicationMapper
 
         return new EmailConfigDetailDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             SmtpHost = config.SmtpHost,
@@ -135,10 +135,10 @@ public static class EmailConfigApplicationMapper
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
             Remark = config.Remark,
-            CreatedTime = config.CreatedTime,
+            CreatedAt = config.CreatedAt,
             CreatedId = config.CreatedId,
             CreatedBy = config.CreatedBy,
-            ModifiedTime = config.ModifiedTime,
+            ModifiedAt = config.ModifiedAt,
             ModifiedId = config.ModifiedId,
             ModifiedBy = config.ModifiedBy
         };

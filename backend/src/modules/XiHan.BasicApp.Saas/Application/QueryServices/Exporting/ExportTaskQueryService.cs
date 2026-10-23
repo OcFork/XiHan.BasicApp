@@ -11,19 +11,16 @@ using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
-using XiHan.Framework.Security.Users;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 导出任务查询应用服务（读侧：当前用户的导出任务列表 / 详情，供导出中心展示与状态轮询）。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "导出任务")]
 public sealed class ExportTaskQueryService
     : SaasApplicationService, IExportTaskQueryService
 {
@@ -44,7 +41,7 @@ public sealed class ExportTaskQueryService
             nameof(SysExportTask.Status),
             nameof(SysExportTask.Scope),
             nameof(SysExportTask.Format),
-            nameof(SysExportTask.CreatedTime),
+            nameof(SysExportTask.CreatedAt),
             nameof(SysExportTask.FinishedTime),
             nameof(SysExportTask.TaskName)
         };
@@ -68,7 +65,6 @@ public sealed class ExportTaskQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>导出任务分页列表</returns>
-    [HttpPost]
     public async Task<PageResultDtoBase<ExportTaskDto>> GetMineAsync(ExportTaskPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -85,7 +81,7 @@ public sealed class ExportTaskQueryService
         // 无有效排序时回退默认排序（GetPagedAsync 不带默认排序，缺排序会让翻页在库侧无序返回，出现重复行与漏行）
         if (request.Conditions.Sorts.Count == 0)
         {
-            request.Conditions.AddSort((SysExportTask task) => task.CreatedTime, SortDirection.Descending, 0);
+            request.Conditions.AddSort((SysExportTask task) => task.CreatedAt, SortDirection.Descending, 0);
         }
 
         // 自鉴权：数据边界锁定为本人创建的任务

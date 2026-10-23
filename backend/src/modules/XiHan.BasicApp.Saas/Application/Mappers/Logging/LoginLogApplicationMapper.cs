@@ -22,7 +22,7 @@ public static class LoginLogApplicationMapper
 
         return new LoginLogListItemDto
         {
-            BasicId = loginLog.BasicId,
+            Id = loginLog.Id,
             UserId = loginLog.UserId,
             UserName = loginLog.UserName,
             SessionId = loginLog.SessionId,
@@ -38,7 +38,7 @@ public static class LoginLogApplicationMapper
             IsRiskLogin = loginLog.IsRiskLogin,
             LoginTime = loginLog.LoginTime,
             Message = loginLog.Message,
-            CreatedTime = loginLog.CreatedTime
+            CreatedAt = loginLog.CreatedAt
         };
     }
 
@@ -54,7 +54,7 @@ public static class LoginLogApplicationMapper
         var item = ToListItemDto(loginLog);
         return new LoginLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             SessionId = item.SessionId,
@@ -70,7 +70,7 @@ public static class LoginLogApplicationMapper
             IsRiskLogin = item.IsRiskLogin,
             LoginTime = item.LoginTime,
             Message = item.Message,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = loginLog.CreatedId,
             CreatedBy = loginLog.CreatedBy
         };

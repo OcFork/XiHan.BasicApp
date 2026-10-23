@@ -16,9 +16,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -29,8 +27,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 权限查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限")]
 public sealed class PermissionQueryService
     : SaasApplicationService, IPermissionQueryService
 {
@@ -93,8 +89,6 @@ public sealed class PermissionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Permission.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<PermissionListItemDto>> GetPermissionPageAsync(PermissionPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -139,7 +133,6 @@ public sealed class PermissionQueryService
     /// <param name="id">权限主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Permission.Read)]
     public async Task<PermissionDetailDto?> GetPermissionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -171,7 +164,6 @@ public sealed class PermissionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>可选全局权限列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Permission.Read)]
     public async Task<IReadOnlyList<PermissionSelectItemDto>> GetAvailableGlobalPermissionsAsync(PermissionSelectQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -207,7 +199,6 @@ public sealed class PermissionQueryService
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限全量目录</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Permission.Read)]
     public async Task<IReadOnlyList<PermissionListItemDto>> GetPermissionCatalogAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -452,7 +443,7 @@ public sealed class PermissionQueryService
         }
 
         var resources = await _resourceRepository.GetByIdsAsync(ids, cancellationToken);
-        return resources.ToDictionary(resource => resource.BasicId);
+        return resources.ToDictionary(resource => resource.Id);
     }
 
     /// <summary>
@@ -472,6 +463,6 @@ public sealed class PermissionQueryService
         }
 
         var operations = await _operationRepository.GetByIdsAsync(ids, cancellationToken);
-        return operations.ToDictionary(operation => operation.BasicId);
+        return operations.ToDictionary(operation => operation.Id);
     }
 }

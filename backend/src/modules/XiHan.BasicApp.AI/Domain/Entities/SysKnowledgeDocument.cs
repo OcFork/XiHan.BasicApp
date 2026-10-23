@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.AI.Domain.Enums;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.AI.Domain.Entities;
@@ -19,12 +18,12 @@ namespace XiHan.BasicApp.AI.Domain.Entities;
 /// 租户隔离：严格——知识库是平台私有数据，只在平台维护与检索；租户看不到平台文档，也动不了它的向量。
 /// </remarks>
 [SugarTable(TableName = "Sys_Knowledge_Document", TableDescription = "系统知识文档表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_St", nameof(TenantId), OrderByType.Asc, nameof(Status), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysKnowledgeDocument : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysKnowledgeDocument : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 文档标题

@@ -36,7 +36,7 @@ public sealed class CodeGenTableDomainService : ICodeGenTableDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "表配置主键必须大于 0。");
+        EnsureId(command.Id, "表配置主键必须大于 0。");
         ValidateEnum(command.TemplateType, nameof(command.TemplateType));
         EnsureTableTemplateType(command.TemplateType);
         ValidateEnum(command.GenType, nameof(command.GenType));
@@ -54,12 +54,12 @@ public sealed class CodeGenTableDomainService : ICodeGenTableDomainService
         }
 
         // 表名唯一（排除自身）
-        if (await _tableRepository.ExistsTableNameAsync(tableName, command.BasicId, cancellationToken))
+        if (await _tableRepository.ExistsTableNameAsync(tableName, command.Id, cancellationToken))
         {
             throw new InvalidOperationException("数据库表名已配置。");
         }
 
-        var table = await GetTableOrThrowAsync(command.BasicId, cancellationToken);
+        var table = await GetTableOrThrowAsync(command.Id, cancellationToken);
 
         // dirty-tracking：应用前快照，应用后 diff，把变化的字段并入"已人工修改"集合
         var snapshot = UserModifiedFieldSet.Snapshot(table, TrackedTableFields);
@@ -118,10 +118,10 @@ public sealed class CodeGenTableDomainService : ICodeGenTableDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "表配置主键必须大于 0。");
+        EnsureId(command.Id, "表配置主键必须大于 0。");
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var table = await GetTableOrThrowAsync(command.BasicId, cancellationToken);
+        var table = await GetTableOrThrowAsync(command.Id, cancellationToken);
 
         table.Status = command.Status;
         // 留空即不修改备注，与数据源/模板的状态变更同口径：状态切换弹窗通常不回填原备注，
@@ -141,7 +141,7 @@ public sealed class CodeGenTableDomainService : ICodeGenTableDomainService
         var table = await GetTableOrThrowAsync(id, cancellationToken);
 
         // 先级联软删列配置，再软删表本身
-        await _columnRepository.DeleteByTableIdAsync(table.BasicId, cancellationToken);
+        await _columnRepository.DeleteByTableIdAsync(table.Id, cancellationToken);
 
         if (!await _tableRepository.DeleteAsync(table, cancellationToken))
         {

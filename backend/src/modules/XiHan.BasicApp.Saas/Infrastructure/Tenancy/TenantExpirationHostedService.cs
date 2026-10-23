@@ -7,8 +7,6 @@ using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Tasks.BackgroundServices;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tenancy;
 

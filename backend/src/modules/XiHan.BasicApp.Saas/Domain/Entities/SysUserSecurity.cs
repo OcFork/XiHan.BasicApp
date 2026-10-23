@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -44,13 +43,13 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 账号域：TenantId 固定为注册地租户（平台账号为 0），严格租户隔离；按用户主键跨租户读取，写入在注册地租户内进行。
 /// </remarks>
 [SugarTable(TableName = "Sys_User_Security", TableDescription = "系统用户安全状态表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_UsId", nameof(UserId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_LoEnTi", nameof(LockoutEndTime), OrderByType.Desc)]
 [PlatformDataSource]
-public partial class SysUserSecurity : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysUserSecurity : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID

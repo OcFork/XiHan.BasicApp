@@ -4,7 +4,6 @@
 using System.Security.Cryptography;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Security.Password;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -137,9 +136,9 @@ public sealed class OAuthAppDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "OAuth 应用主键必须大于 0。");
+        EnsureId(command.Id, "OAuth 应用主键必须大于 0。");
         ValidateOAuthAppInput(command.AppName, clientId: "skip", command.AppType, command.GrantTypes, command.RedirectUris, command.Scopes, command.AccessTokenLifetime, command.RefreshTokenLifetime, command.AuthorizationCodeLifetime, command.Logo, command.Homepage, command.Remark);
-        var app = await GetOAuthAppOrThrowAsync(command.BasicId, cancellationToken);
+        var app = await GetOAuthAppOrThrowAsync(command.Id, cancellationToken);
         app.AppName = Required(command.AppName, 100, nameof(command.AppName), "应用名称不能超过 100 个字符。");
         app.AppDescription = Optional(command.AppDescription, 500, nameof(command.AppDescription), "应用描述不能超过 500 个字符。");
         app.AppType = command.AppType;
@@ -165,9 +164,9 @@ public sealed class OAuthAppDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "OAuth 应用主键必须大于 0。");
+        EnsureId(command.Id, "OAuth 应用主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
-        var app = await GetOAuthAppOrThrowAsync(command.BasicId, cancellationToken);
+        var app = await GetOAuthAppOrThrowAsync(command.Id, cancellationToken);
         app.Status = command.Status;
         app.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? app.Remark;
 

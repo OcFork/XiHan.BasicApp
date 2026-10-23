@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -22,7 +21,7 @@ public sealed class EmailRepository(ISqlSugarClientResolver clientResolver)
 
         return await CreateQueryable()
             .Where(email => email.EmailStatus == EmailStatus.Pending)
-            .OrderBy(email => email.CreatedTime)
+            .OrderBy(email => email.CreatedAt)
             .Take(maxCount)
             .ToListAsync(cancellationToken);
     }

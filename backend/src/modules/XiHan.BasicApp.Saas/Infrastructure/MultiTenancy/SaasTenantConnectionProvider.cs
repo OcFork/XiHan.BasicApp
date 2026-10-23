@@ -7,9 +7,7 @@ using SqlSugar;
 using System.Collections.Concurrent;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Options;
-using XiHan.Framework.Data.SqlSugar.Tenanting;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.MultiTenancy;
@@ -94,10 +92,11 @@ public sealed class SaasTenantConnectionProvider : ISqlSugarTenantConnectionProv
             var currentTenant = serviceProvider.GetRequiredService<ICurrentTenant>();
 
             // 租户目录固定在平台库，按实体解析不经过本提供器，不会递归；平台作用域读取租户元数据
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (currentTenant.Change(null))
             {
                 var client = serviceProvider.GetRequiredService<ISqlSugarClientResolver>().GetClientForEntity<SysTenant>();
-                tenant = client.Queryable<SysTenant>().Where(x => x.BasicId == tenantId).First();
+                tenant = client.Queryable<SysTenant>().Where(x => x.Id == tenantId).First();
             }
         }
 

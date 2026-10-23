@@ -6,7 +6,6 @@ using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Repositories;
 
@@ -40,7 +39,7 @@ public sealed class CodeGenTemplateRepository(ISqlSugarClientResolver clientReso
         var query = CreateQueryable().Where(template => template.TemplateCode == templateCode.Trim());
         if (excludeId.HasValue)
         {
-            query = query.Where(template => template.BasicId != excludeId.Value);
+            query = query.Where(template => template.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

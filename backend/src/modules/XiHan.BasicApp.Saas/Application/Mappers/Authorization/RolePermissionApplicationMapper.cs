@@ -26,7 +26,7 @@ public static class RolePermissionApplicationMapper
         return new RolePermissionListItemDto
         {
             ConditionCount = conditionCount,
-            BasicId = rolePermission.BasicId,
+            Id = rolePermission.Id,
             RoleId = rolePermission.RoleId,
             PermissionId = rolePermission.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -42,7 +42,7 @@ public static class RolePermissionApplicationMapper
             GrantReason = rolePermission.GrantReason,
             Status = rolePermission.Status,
             Remark = rolePermission.Remark,
-            CreatedTime = rolePermission.CreatedTime
+            CreatedAt = rolePermission.CreatedAt
         };
     }
 
@@ -58,7 +58,7 @@ public static class RolePermissionApplicationMapper
 
         return new RolePermissionDetailDto
         {
-            BasicId = rolePermission.BasicId,
+            Id = rolePermission.Id,
             RoleId = rolePermission.RoleId,
             PermissionId = rolePermission.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -77,7 +77,7 @@ public static class RolePermissionApplicationMapper
             GrantReason = rolePermission.GrantReason,
             Status = rolePermission.Status,
             Remark = rolePermission.Remark,
-            CreatedTime = rolePermission.CreatedTime,
+            CreatedAt = rolePermission.CreatedAt,
             CreatedId = rolePermission.CreatedId,
             CreatedBy = rolePermission.CreatedBy
         };
@@ -89,7 +89,7 @@ public static class RolePermissionApplicationMapper
     public static RolePermissionStatusChangeCommand ToStatusCommand(RolePermissionStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new RolePermissionStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new RolePermissionStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public static class RolePermissionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new RolePermissionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.PermissionAction,
             input.EffectiveTime,
             input.ExpirationTime,

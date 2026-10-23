@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 用户角色查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户角色")]
 public sealed class UserRoleQueryService
     : SaasApplicationService, IUserRoleQueryService
 {
@@ -77,7 +73,6 @@ public sealed class UserRoleQueryService
     /// <param name="roleId">角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色成员</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Read)]
     public async Task<IReadOnlyList<RoleMemberDto>> GetRoleMembersAsync(long roleId, CancellationToken cancellationToken = default)
     {
         if (roleId <= 0)
@@ -94,7 +89,7 @@ public sealed class UserRoleQueryService
         }
 
         var users = (await _userRepository.GetListByIdsIgnoreTenantAsync([.. userRoles.Select(item => item.UserId).Distinct()], cancellationToken))
-            .ToDictionary(user => user.BasicId);
+            .ToDictionary(user => user.Id);
 
         return [.. userRoles
             .Select(item =>
@@ -102,7 +97,7 @@ public sealed class UserRoleQueryService
                 var user = users.GetValueOrDefault(item.UserId);
                 return new RoleMemberDto
                 {
-                    UserRoleId = item.BasicId,
+                    UserRoleId = item.Id,
                     UserId = item.UserId,
                     UserName = user?.UserName ?? string.Empty,
                     RealName = user?.RealName,
@@ -123,7 +118,6 @@ public sealed class UserRoleQueryService
     /// <param name="onlyValid">是否仅返回当前有效角色授权</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户角色列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Read)]
     public async Task<IReadOnlyList<UserRoleListItemDto>> GetUserRolesAsync(long userId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -146,7 +140,7 @@ public sealed class UserRoleQueryService
             ? await _userRoleRepository.GetValidByUserIdAsync(userId, now, cancellationToken)
             : await _userRoleRepository.GetListAsync(
                 userRole => userRole.UserId == userId,
-                userRole => userRole.CreatedTime,
+                userRole => userRole.CreatedAt,
                 cancellationToken);
 
         if (userRoles.Count == 0)
@@ -172,7 +166,6 @@ public sealed class UserRoleQueryService
     /// <param name="id">用户角色绑定主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户角色详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Read)]
     public async Task<UserRoleDetailDto?> GetUserRoleDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -212,6 +205,6 @@ public sealed class UserRoleQueryService
         }
 
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
-        return roles.ToDictionary(role => role.BasicId);
+        return roles.ToDictionary(role => role.Id);
     }
 }

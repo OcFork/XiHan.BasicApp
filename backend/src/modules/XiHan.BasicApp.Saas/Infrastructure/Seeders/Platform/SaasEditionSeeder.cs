@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -257,7 +256,7 @@ public sealed class SaasEditionSeeder(
                 .Where(permission => permission.TenantId == 0)
                 .ToListAsync())
             .Where(permission => permission.Side.IsTenantEffective())
-            .ToDictionary(permission => permission.PermissionCode, permission => permission.BasicId, StringComparer.Ordinal);
+            .ToDictionary(permission => permission.PermissionCode, permission => permission.Id, StringComparer.Ordinal);
 
         foreach (var seed in missing)
         {
@@ -282,7 +281,7 @@ public sealed class SaasEditionSeeder(
             await BulkInsertAsync([.. permissionIds.Select(permissionId => new SysTenantEditionPermission
             {
                 TenantId = 0,
-                EditionId = edition.BasicId,
+                EditionId = edition.Id,
                 PermissionId = permissionId,
                 Status = ValidityStatus.Valid,
                 Remark = $"系统初始化套餐白名单：{seed.Name}"

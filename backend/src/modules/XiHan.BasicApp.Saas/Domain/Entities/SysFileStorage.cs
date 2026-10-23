@@ -38,14 +38,14 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 存储迁移：阿里云 → AWS 平滑切换
 /// </remarks>
 [SugarTable(TableName = "Sys_File_Storage", TableDescription = "系统文件存储表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_StTy", nameof(StorageType), OrderByType.Asc)]
 [SugarIndex("IX_{table}_IsPr", nameof(IsPrimary), OrderByType.Desc)]
 [SugarIndex("IX_{table}_FiId_StTy", nameof(FileId), OrderByType.Asc, nameof(StorageType), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_FiId", nameof(TenantId), OrderByType.Asc, nameof(FileId), OrderByType.Asc)]
-public partial class SysFileStorage : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysFileStorage : BasicAppFullAuditedEntity, IMultiTenant
 {
     #region 关联信息
 

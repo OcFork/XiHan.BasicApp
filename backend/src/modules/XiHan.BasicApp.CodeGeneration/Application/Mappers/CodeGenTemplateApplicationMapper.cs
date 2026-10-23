@@ -44,7 +44,7 @@ public static class CodeGenTemplateApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new CodeGenTemplateUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.TemplateName,
             input.TemplateDescription,
             input.TemplateGroup,
@@ -67,7 +67,7 @@ public static class CodeGenTemplateApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new CodeGenTemplateStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new CodeGenTemplateStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public static class CodeGenTemplateApplicationMapper
 
         return new CodeGenTemplateListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             TemplateCode = entity.TemplateCode,
             TemplateName = entity.TemplateName,
             TemplateDescription = entity.TemplateDescription,
@@ -92,8 +92,8 @@ public static class CodeGenTemplateApplicationMapper
             IsEnabled = entity.IsEnabled,
             Sort = entity.Sort,
             Status = entity.Status,
-            CreatedTime = entity.CreatedTime,
-            ModifiedTime = entity.ModifiedTime
+            CreatedAt = entity.CreatedAt,
+            ModifiedAt = entity.ModifiedAt
         };
     }
 
@@ -107,7 +107,7 @@ public static class CodeGenTemplateApplicationMapper
         var item = ToListItemDto(entity);
         return new CodeGenTemplateDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TemplateCode = item.TemplateCode,
             TemplateName = item.TemplateName,
             TemplateDescription = item.TemplateDescription,
@@ -120,8 +120,8 @@ public static class CodeGenTemplateApplicationMapper
             IsEnabled = item.IsEnabled,
             Sort = item.Sort,
             Status = item.Status,
-            CreatedTime = item.CreatedTime,
-            ModifiedTime = item.ModifiedTime,
+            CreatedAt = item.CreatedAt,
+            ModifiedAt = item.ModifiedAt,
             TemplateContent = entity.TemplateContent,
             TemplatePath = entity.TemplatePath,
             FileNameExpression = entity.FileNameExpression,

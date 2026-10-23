@@ -5,10 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Auditing;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using XiHan.Framework.Domain.Entities.Abstracts;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -60,7 +57,7 @@ public class SaasEntityDiffLogWriter : IEntityDiffLogWriter
             EntityType = entityTypeName,
             EntityId = entityId,
             EntityName = entityTypeName,
-            PrimaryKey = nameof(IEntityBase<>.BasicId),
+            PrimaryKey = nameof(IEntityBase<>.Id),
             PrimaryKeyValue = entityId,
             TableName = entityTypeName,
             Description = SaasLogMappingHelper.TrimOrNull(BuildDescription(record, entityTypeName, entityId), 500),

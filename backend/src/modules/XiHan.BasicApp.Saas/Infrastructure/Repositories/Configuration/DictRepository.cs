@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -39,7 +38,7 @@ public sealed class DictRepository(ISqlSugarClientResolver clientResolver)
         var query = CreateQueryable().Where(dict => dict.DictCode == dictCode);
         if (excludeId.HasValue)
         {
-            query = query.Where(dict => dict.BasicId != excludeId.Value);
+            query = query.Where(dict => dict.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

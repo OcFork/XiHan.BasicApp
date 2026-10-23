@@ -6,16 +6,13 @@ using XiHan.BasicApp.Saas.Application.AppServices;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Security.Users;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 导入历史查询应用服务（读侧：当前用户在指定页面的最近导入记录，供导入对话框「最近导入」展示）。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "导入历史")]
 public sealed class ImportHistoryQueryService
     : SaasApplicationService, IImportHistoryQueryService
 {

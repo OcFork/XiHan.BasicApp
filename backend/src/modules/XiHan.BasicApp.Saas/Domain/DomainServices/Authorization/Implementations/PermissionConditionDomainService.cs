@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -127,7 +128,7 @@ public sealed class PermissionConditionDomainService
         ValidateConditionUpdateInput(command);
 
         var now = DateTimeOffset.UtcNow;
-        var condition = await GetPermissionConditionOrThrowAsync(command.BasicId, cancellationToken);
+        var condition = await GetPermissionConditionOrThrowAsync(command.Id, cancellationToken);
         await EnsureAuthorizationBindingUsableAsync(command.RolePermissionId, command.UserPermissionId, now, cancellationToken);
         await EnsureConditionLimitsAsync(
             command.RolePermissionId,
@@ -135,7 +136,7 @@ public sealed class PermissionConditionDomainService
             command.ConditionGroup,
             command.AttributeName.Trim(),
             command.ValueType,
-            condition.BasicId,
+            condition.Id,
             cancellationToken);
         await _ruleChecker.ValidateAsync(
             command.RolePermissionId,
@@ -170,14 +171,14 @@ public sealed class PermissionConditionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限 ABAC 条件主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var condition = await GetPermissionConditionOrThrowAsync(command.BasicId, cancellationToken);
+        var condition = await GetPermissionConditionOrThrowAsync(command.Id, cancellationToken);
         if (command.Status == ValidityStatus.Valid)
         {
             await EnsureAuthorizationBindingUsableAsync(condition.RolePermissionId, condition.UserPermissionId, DateTimeOffset.UtcNow, cancellationToken);
@@ -187,7 +188,7 @@ public sealed class PermissionConditionDomainService
                 condition.ConditionGroup,
                 condition.AttributeName,
                 condition.ValueType,
-                condition.BasicId,
+                condition.Id,
                 cancellationToken);
             // 存量里不合规的条件改对之前不能重新启用
             await _ruleChecker.ValidateAsync(
@@ -216,16 +217,16 @@ public sealed class PermissionConditionDomainService
         if (condition.RolePermissionId is > 0)
         {
             var rolePermission = await _rolePermissionRepository.GetByIdAsync(condition.RolePermissionId.Value, cancellationToken);
-            return new PermissionConditionCommandResult(condition.BasicId, rolePermission?.RoleId, null, rolePermission?.PermissionId);
+            return new PermissionConditionCommandResult(condition.Id, rolePermission?.RoleId, null, rolePermission?.PermissionId);
         }
 
         if (condition.UserPermissionId is > 0)
         {
             var userPermission = await _userPermissionRepository.GetByIdAsync(condition.UserPermissionId.Value, cancellationToken);
-            return new PermissionConditionCommandResult(condition.BasicId, null, userPermission?.UserId, userPermission?.PermissionId);
+            return new PermissionConditionCommandResult(condition.Id, null, userPermission?.UserId, userPermission?.PermissionId);
         }
 
-        return new PermissionConditionCommandResult(condition.BasicId);
+        return new PermissionConditionCommandResult(condition.Id);
     }
 
     private static void EnsureValidity(
@@ -334,7 +335,7 @@ public sealed class PermissionConditionDomainService
 
     private static void ValidateConditionUpdateInput(PermissionConditionUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限 ABAC 条件主键必须大于 0。");
         }
@@ -442,7 +443,7 @@ public sealed class PermissionConditionDomainService
 
         var existingConditions = await GetConditionsByBindingAsync(rolePermissionId, userPermissionId, cancellationToken);
         var comparableConditions = existingConditions
-            .Where(condition => !excludeId.HasValue || condition.BasicId != excludeId.Value)
+            .Where(condition => !excludeId.HasValue || condition.Id != excludeId.Value)
             .ToArray();
 
         var groupCount = comparableConditions

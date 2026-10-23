@@ -10,16 +10,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 角色管理页面查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "角色管理")]
 public sealed class RoleManagementQueryService
     : SaasApplicationService, IRoleManagementQueryService
 {
@@ -78,7 +74,6 @@ public sealed class RoleManagementQueryService
     /// <param name="roleId">角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色管理详情聚合视图</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Role.Read)]
     public async Task<RoleManagementDetailDto?> GetRoleManagementDetailAsync(long roleId, CancellationToken cancellationToken = default)
     {
         if (roleId <= 0)
@@ -106,12 +101,12 @@ public sealed class RoleManagementQueryService
         return new RoleManagementDetailDto
         {
             Role = RoleApplicationMapper.ToDetailDto(role),
-            Ancestors = await _roleInheritanceReader.GetAncestorsAsync(role.BasicId, cancellationToken),
-            Descendants = await _roleInheritanceReader.GetDescendantsAsync(role.BasicId, cancellationToken),
-            Permissions = await GetPermissionsAsync(role.BasicId, cancellationToken),
-            InheritedPermissions = await _roleInheritanceReader.GetInheritedPermissionsAsync(role.BasicId, cancellationToken),
-            DataScopes = await GetDataScopesAsync(role.BasicId, cancellationToken),
-            GrantedUsers = await GetGrantedUsersAsync(role.BasicId, now, cancellationToken),
+            Ancestors = await _roleInheritanceReader.GetAncestorsAsync(role.Id, cancellationToken),
+            Descendants = await _roleInheritanceReader.GetDescendantsAsync(role.Id, cancellationToken),
+            Permissions = await GetPermissionsAsync(role.Id, cancellationToken),
+            InheritedPermissions = await _roleInheritanceReader.GetInheritedPermissionsAsync(role.Id, cancellationToken),
+            DataScopes = await GetDataScopesAsync(role.Id, cancellationToken),
+            GrantedUsers = await GetGrantedUsersAsync(role.Id, now, cancellationToken),
             GeneratedTime = now
         };
     }
@@ -120,7 +115,7 @@ public sealed class RoleManagementQueryService
     {
         return new RoleManagementGrantedUserDto
         {
-            BasicId = userRole.BasicId,
+            Id = userRole.Id,
             UserId = userRole.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
@@ -132,7 +127,7 @@ public sealed class RoleManagementQueryService
             Status = userRole.Status,
             IsExpired = userRole.ExpirationTime.HasValue && userRole.ExpirationTime.Value <= now,
             Remark = userRole.Remark,
-            CreatedTime = userRole.CreatedTime
+            CreatedAt = userRole.CreatedAt
         };
     }
 
@@ -140,7 +135,7 @@ public sealed class RoleManagementQueryService
     {
         var rolePermissions = await _rolePermissionRepository.GetListAsync(
             item => item.RoleId == roleId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (rolePermissions.Count == 0)
@@ -149,13 +144,13 @@ public sealed class RoleManagementQueryService
         }
 
         var permissionMap = await BuildPermissionMapAsync(rolePermissions.Select(item => item.PermissionId), cancellationToken);
-        var conditionCounts = await _permissionConditionRepository.CountForRolePermissionsAsync(rolePermissions.Select(item => item.BasicId), cancellationToken);
+        var conditionCounts = await _permissionConditionRepository.CountForRolePermissionsAsync(rolePermissions.Select(item => item.Id), cancellationToken);
 
         return [.. rolePermissions
             .Select(item => RolePermissionApplicationMapper.ToListItemDto(
                 item,
                 permissionMap.GetValueOrDefault(item.PermissionId),
-                conditionCounts.GetValueOrDefault(item.BasicId)))
+                conditionCounts.GetValueOrDefault(item.Id)))
             .OrderBy(item => item.PermissionCode)
             .ThenBy(item => item.PermissionId)];
     }
@@ -164,7 +159,7 @@ public sealed class RoleManagementQueryService
     {
         var dataScopes = await _roleDataScopeRepository.GetListAsync(
             item => item.RoleId == roleId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (dataScopes.Count == 0)
@@ -189,7 +184,7 @@ public sealed class RoleManagementQueryService
     {
         var userRoles = await _userRoleRepository.GetListAsync(
             item => item.RoleId == roleId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (userRoles.Count == 0)
@@ -219,7 +214,7 @@ public sealed class RoleManagementQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(item => item.BasicId);
+        return permissions.ToDictionary(item => item.Id);
     }
 
     private async Task<IReadOnlyDictionary<long, SysDepartment>> BuildDepartmentMapAsync(IEnumerable<long> departmentIds, CancellationToken cancellationToken)
@@ -235,7 +230,7 @@ public sealed class RoleManagementQueryService
         }
 
         var departments = await _departmentRepository.GetByIdsAsync(ids, cancellationToken);
-        return departments.ToDictionary(item => item.BasicId);
+        return departments.ToDictionary(item => item.Id);
     }
 
     private async Task<IReadOnlyDictionary<long, SysUser>> BuildUserMapAsync(IEnumerable<long> userIds, CancellationToken cancellationToken)
@@ -251,6 +246,6 @@ public sealed class RoleManagementQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(item => item.BasicId);
+        return users.ToDictionary(item => item.Id);
     }
 }

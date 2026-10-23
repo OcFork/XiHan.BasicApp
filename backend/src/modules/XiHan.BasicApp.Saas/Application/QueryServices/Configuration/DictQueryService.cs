@@ -15,9 +15,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -28,8 +26,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 系统字典查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统字典")]
 public sealed class DictQueryService
     : SaasApplicationService, IDictQueryService
 {
@@ -81,8 +77,6 @@ public sealed class DictQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统字典分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Dict.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<DictListItemDto>> GetDictPageAsync(DictPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -108,7 +102,6 @@ public sealed class DictQueryService
     /// <param name="id">系统字典主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统字典详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Dict.Read)]
     public async Task<DictDetailDto?> GetDictDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -128,8 +121,6 @@ public sealed class DictQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统字典项分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Dict.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<DictItemListItemDto>> GetDictItemPageAsync(DictItemPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -154,7 +145,6 @@ public sealed class DictQueryService
     /// <param name="id">系统字典项主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统字典项详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Dict.Read)]
     public async Task<DictItemDetailDto?> GetDictItemDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -174,7 +164,6 @@ public sealed class DictQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统字典项树</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Dict.Read)]
     public async Task<IReadOnlyList<DictItemTreeNodeDto>> GetDictItemTreeAsync(DictItemTreeQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -200,7 +189,6 @@ public sealed class DictQueryService
     /// 不含项值、说明与扩展元数据。停用的字典不暴露任何项；停用的项照样返回并标成停用，
     /// 引用了它的历史数据仍能显示名称，只是不能再选。
     /// </remarks>
-    [HttpGet]
     public async Task<IReadOnlyList<DictOptionDto>> GetDictOptionsAsync(string dictCode, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dictCode);
@@ -214,7 +202,7 @@ public sealed class DictQueryService
         }
 
         var tree = await LoadDictItemTreeAsync(
-            new DictItemTreeQueryDto { DictId = dict.BasicId, OnlyEnabled = false },
+            new DictItemTreeQueryDto { DictId = dict.Id, OnlyEnabled = false },
             cancellationToken);
 
         var options = new List<DictOptionDto>();
@@ -472,13 +460,13 @@ public sealed class DictQueryService
     /// <returns>系统字典项树</returns>
     private static IReadOnlyList<DictItemTreeNodeDto> BuildItemTree(IReadOnlyList<DictItemTreeNodeDto> nodes)
     {
-        var nodeMap = nodes.ToDictionary(node => node.BasicId);
+        var nodeMap = nodes.ToDictionary(node => node.Id);
         var roots = new List<DictItemTreeNodeDto>();
 
         foreach (var node in nodes.OrderBy(node => node.Sort).ThenBy(node => node.ItemCode, StringComparer.Ordinal))
         {
             if (node.ParentId.HasValue
-                && node.ParentId.Value != node.BasicId
+                && node.ParentId.Value != node.Id
                 && nodeMap.TryGetValue(node.ParentId.Value, out var parent))
             {
                 parent.Children.Add(node);

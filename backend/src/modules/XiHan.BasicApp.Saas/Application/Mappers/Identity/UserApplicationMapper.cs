@@ -61,7 +61,7 @@ public static class UserApplicationMapper
 
         return new UserListItemDto
         {
-            BasicId = user.BasicId,
+            Id = user.Id,
             UserName = user.UserName,
             RealName = user.RealName,
             NickName = user.NickName,
@@ -76,8 +76,8 @@ public static class UserApplicationMapper
             TwoFactorEnabled = twoFactorEnabled,
             LastLoginTime = user.LastLoginTime,
             LastLoginIp = user.LastLoginIp,
-            CreatedTime = user.CreatedTime,
-            ModifiedTime = user.ModifiedTime
+            CreatedAt = user.CreatedAt,
+            ModifiedAt = user.ModifiedAt
         };
     }
 
@@ -92,7 +92,7 @@ public static class UserApplicationMapper
 
         return new UserDetailDto
         {
-            BasicId = user.BasicId,
+            Id = user.Id,
             UserName = user.UserName,
             RealName = user.RealName,
             NickName = user.NickName,
@@ -106,10 +106,10 @@ public static class UserApplicationMapper
             Country = user.Country,
             IsSystemAccount = user.IsSystemAccount,
             Remark = user.Remark,
-            CreatedTime = user.CreatedTime,
+            CreatedAt = user.CreatedAt,
             CreatedId = user.CreatedId,
             CreatedBy = user.CreatedBy,
-            ModifiedTime = user.ModifiedTime,
+            ModifiedAt = user.ModifiedAt,
             ModifiedId = user.ModifiedId,
             ModifiedBy = user.ModifiedBy
         };
@@ -126,7 +126,7 @@ public static class UserApplicationMapper
 
         return new UserSelectItemDto
         {
-            BasicId = user.BasicId,
+            Id = user.Id,
             UserName = user.UserName,
             RealName = user.RealName,
             NickName = user.NickName,
@@ -142,7 +142,7 @@ public static class UserApplicationMapper
     public static UserStatusChangeCommand ToStatusCommand(UserStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new UserStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new UserStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public static class UserApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new UserUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.RealName,
             input.NickName,
             input.Avatar,

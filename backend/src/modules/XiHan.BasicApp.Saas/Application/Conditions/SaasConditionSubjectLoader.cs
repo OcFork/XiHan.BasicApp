@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
@@ -70,13 +71,13 @@ public sealed class SaasConditionSubjectLoader
 
         var departments = (await _departmentRepository.GetByIdsAsync(assignments.Select(item => item.DepartmentId).Distinct(), cancellationToken))
             .Where(department => department.Status == EnableStatus.Enabled && !string.IsNullOrWhiteSpace(department.DepartmentCode))
-            .ToDictionary(department => department.BasicId, department => department.DepartmentCode);
+            .ToDictionary(department => department.Id, department => department.DepartmentCode);
         var positionIds = assignments.Where(item => item.PositionId is > 0).Select(item => item.PositionId!.Value).Distinct().ToList();
         var positions = positionIds.Count == 0
             ? []
             : (await _positionRepository.GetByIdsAsync(positionIds, cancellationToken))
                 .Where(position => position.Status == EnableStatus.Enabled && !string.IsNullOrWhiteSpace(position.PositionCode))
-                .ToDictionary(position => position.BasicId, position => position.PositionCode);
+                .ToDictionary(position => position.Id, position => position.PositionCode);
 
         // 岗位挂在任职上：所在部门停用的任职，岗位也不算
         var effective = assignments.Where(item => departments.ContainsKey(item.DepartmentId)).ToList();

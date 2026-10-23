@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Enums;
 using XiHan.BasicApp.AI.Domain.Repositories;
-using XiHan.Framework.AI.Abstractions.Rag;
 
 namespace XiHan.BasicApp.AI.Domain.DomainServices.Implementations;
 
@@ -77,7 +76,7 @@ public sealed class KnowledgeDocumentDomainService : IKnowledgeDocumentDomainSer
         var document = await GetDocumentOrThrowAsync(id, cancellationToken);
 
         // 先清旧向量（按当前已入库切片数），再用原文重新索引
-        await _ingestor.RemoveDocumentAsync(document.BasicId.ToString(), document.ChunkCount, cancellationToken);
+        await _ingestor.RemoveDocumentAsync(document.Id.ToString(), document.ChunkCount, cancellationToken);
         await IndexAsync(document, cancellationToken);
         return new KnowledgeDocumentCommandResult(document);
     }
@@ -90,7 +89,7 @@ public sealed class KnowledgeDocumentDomainService : IKnowledgeDocumentDomainSer
         cancellationToken.ThrowIfCancellationRequested();
 
         var document = await GetDocumentOrThrowAsync(id, cancellationToken);
-        await _ingestor.RemoveDocumentAsync(document.BasicId.ToString(), document.ChunkCount, cancellationToken);
+        await _ingestor.RemoveDocumentAsync(document.Id.ToString(), document.ChunkCount, cancellationToken);
         if (!await _documentRepository.DeleteAsync(document, cancellationToken))
         {
             throw new InvalidOperationException("知识文档删除失败。");
@@ -111,7 +110,7 @@ public sealed class KnowledgeDocumentDomainService : IKnowledgeDocumentDomainSer
         {
             writtenChunkCount = await _ingestor.IngestAsync(new KnowledgeIngestRequest
             {
-                DocumentId = document.BasicId.ToString(),
+                DocumentId = document.Id.ToString(),
                 Text = document.RawContent,
                 TenantId = document.TenantId,
                 Title = document.Title,
@@ -145,11 +144,11 @@ public sealed class KnowledgeDocumentDomainService : IKnowledgeDocumentDomainSer
             {
                 try
                 {
-                    await _ingestor.RemoveDocumentAsync(document.BasicId.ToString(), writtenChunkCount, CancellationToken.None);
+                    await _ingestor.RemoveDocumentAsync(document.Id.ToString(), writtenChunkCount, CancellationToken.None);
                 }
                 catch (Exception cleanupEx)
                 {
-                    _logger.LogError(cleanupEx, "知识文档 {DocumentId} 回写切片数失败后补偿清理向量亦失败，可能残留 {ChunkCount} 条孤儿向量。", document.BasicId, writtenChunkCount);
+                    _logger.LogError(cleanupEx, "知识文档 {DocumentId} 回写切片数失败后补偿清理向量亦失败，可能残留 {ChunkCount} 条孤儿向量。", document.Id, writtenChunkCount);
                 }
             }
 

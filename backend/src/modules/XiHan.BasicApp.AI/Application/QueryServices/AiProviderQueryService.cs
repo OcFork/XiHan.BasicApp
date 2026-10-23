@@ -11,8 +11,6 @@ using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,7 +20,6 @@ namespace XiHan.BasicApp.AI.Application.QueryServices;
 /// <summary>
 /// AI Provider 查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "AI提供商")]
 public sealed class AiProviderQueryService : AiApplicationService, IAiProviderQueryService
 {
     private readonly IAiProviderRepository _providerRepository;
@@ -44,8 +41,6 @@ public sealed class AiProviderQueryService : AiApplicationService, IAiProviderQu
     /// <summary>
     /// 获取 provider 分页列表
     /// </summary>
-    [PermissionAuthorize(AiPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<AiProviderListItemDto>> GetPageAsync(AiProviderPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -81,7 +76,6 @@ public sealed class AiProviderQueryService : AiApplicationService, IAiProviderQu
     /// <summary>
     /// 获取 provider 详情
     /// </summary>
-    [PermissionAuthorize(AiPermissionCodes.Read)]
     public async Task<AiProviderDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -155,6 +149,6 @@ public sealed class AiProviderQueryService : AiApplicationService, IAiProviderQu
     private static void ApplyProviderSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysAiProvider provider) => provider.Sort, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysAiProvider provider) => provider.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysAiProvider provider) => provider.CreatedAt, SortDirection.Descending, 1);
     }
 }

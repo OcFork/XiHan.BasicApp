@@ -79,7 +79,7 @@ public sealed class EmailConfigDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var config = await GetEmailConfigOrThrowAsync(command.BasicId, cancellationToken);
+        var config = await GetEmailConfigOrThrowAsync(command.Id, cancellationToken);
 
         config.ConfigName = command.ConfigName.Trim();
         config.SmtpHost = command.SmtpHost.Trim();
@@ -111,8 +111,8 @@ public sealed class EmailConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "邮件网关配置主键必须大于 0。");
-        var config = await GetEmailConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "邮件网关配置主键必须大于 0。");
+        var config = await GetEmailConfigOrThrowAsync(command.Id, cancellationToken);
         if (config.IsDefault && !command.IsEnabled)
         {
             throw new InvalidOperationException("默认邮件网关配置不能停用，请先将其他启用配置设为默认。");
@@ -130,11 +130,11 @@ public sealed class EmailConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "邮件网关配置主键必须大于 0。");
-        var config = await GetEmailConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "邮件网关配置主键必须大于 0。");
+        var config = await GetEmailConfigOrThrowAsync(command.Id, cancellationToken);
         EnsureEnabledDefault(config.IsEnabled);
 
-        await ClearDefaultConfigsAsync(config.BasicId, cancellationToken);
+        await ClearDefaultConfigsAsync(config.Id, cancellationToken);
         config.IsDefault = true;
 
         return new EmailConfigCommandResult(await _emailConfigRepository.UpdateAsync(config, cancellationToken));
@@ -212,7 +212,7 @@ public sealed class EmailConfigDomainService
 
     private static void ValidateUpdateCommand(EmailConfigUpdateCommand command)
     {
-        EnsureId(command.BasicId, "邮件网关配置主键必须大于 0。");
+        EnsureId(command.Id, "邮件网关配置主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.ConfigName);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.SmtpHost);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.FromEmail);
@@ -225,7 +225,7 @@ public sealed class EmailConfigDomainService
         return excludeId.HasValue
             ? _emailConfigRepository.UpdateAsync(
                 config => new SysEmailConfig { IsDefault = false },
-                config => config.IsDefault && config.BasicId != excludeId.Value,
+                config => config.IsDefault && config.Id != excludeId.Value,
                 cancellationToken)
             : _emailConfigRepository.UpdateAsync(
                 config => new SysEmailConfig { IsDefault = false },

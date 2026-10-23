@@ -7,11 +7,8 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.ObjectStorage;
-using XiHan.Framework.ObjectStorage.Constants;
-using XiHan.Framework.ObjectStorage.Options;
-using XiHan.Framework.ObjectStorage.Providers;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -57,7 +54,7 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
         var config = await GetDbDrivenDefaultAsync(scope.ServiceProvider, cancellationToken);
         if (config is not null)
         {
-            return new StorageRoute(GetOrBuild(config), config.BasicId);
+            return new StorageRoute(GetOrBuild(config), config.Id);
         }
 
         return new StorageRoute(scope.ServiceProvider.GetRequiredService<IFileStorageRouter>().Route(routeKey, providerName), null);
@@ -103,7 +100,7 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
     {
         var fingerprint = Fingerprint(config);
         var entry = _cache.AddOrUpdate(
-            config.BasicId,
+            config.Id,
             _ => new CachedProvider(fingerprint, Build(config)),
             (_, existing) => existing.Fingerprint == fingerprint ? existing : new CachedProvider(fingerprint, Build(config)));
         return entry.Provider;
@@ -155,7 +152,7 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
     private static string Fingerprint(SysStorageConfig config)
     {
         return string.Join('|',
-            config.BasicId,
+            config.Id,
             (int)config.StorageType,
             config.Endpoint,
             config.Region,

@@ -21,7 +21,7 @@ public sealed class PermissionConditionDetailDto : PermissionConditionListItemDt
     /// <summary>
     /// 修改时间
     /// </summary>
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 
     /// <summary>
     /// 修改人主键

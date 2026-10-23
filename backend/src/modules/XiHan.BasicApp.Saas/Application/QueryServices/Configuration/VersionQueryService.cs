@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 系统版本查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统版本")]
 public sealed class VersionQueryService
     : SaasApplicationService, IVersionQueryService
 {
@@ -62,8 +58,6 @@ public sealed class VersionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统版本分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Version.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<VersionListItemDto>> GetVersionPageAsync(VersionPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -88,7 +82,6 @@ public sealed class VersionQueryService
     /// <param name="id">系统版本主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统版本详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Version.Read)]
     public async Task<VersionDetailDto?> GetVersionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -108,8 +101,6 @@ public sealed class VersionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统迁移历史分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Version.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<MigrationHistoryListItemDto>> GetMigrationHistoryPageAsync(MigrationHistoryPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -128,7 +119,6 @@ public sealed class VersionQueryService
     /// <param name="id">系统迁移历史主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统迁移历史详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Version.Read)]
     public async Task<MigrationHistoryDetailDto?> GetMigrationHistoryDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -213,7 +203,7 @@ public sealed class VersionQueryService
     /// </summary>
     private static void ApplyVersionSorts(BasicAppPRDto request)
     {
-        request.Conditions.AddSort((SysVersion version) => version.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysVersion version) => version.CreatedAt, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysVersion version) => version.AppVersion, SortDirection.Descending, 1);
     }
 

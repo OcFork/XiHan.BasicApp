@@ -22,7 +22,7 @@ public static class OperationLogApplicationMapper
 
         return new OperationLogListItemDto
         {
-            BasicId = operationLog.BasicId,
+            Id = operationLog.Id,
             UserId = operationLog.UserId,
             UserName = operationLog.UserName,
             SessionId = operationLog.UserSessionId,
@@ -43,7 +43,7 @@ public static class OperationLogApplicationMapper
             Result = operationLog.Result,
             ErrorMessage = operationLog.ErrorMessage,
             OperationTime = operationLog.OperationTime,
-            CreatedTime = operationLog.CreatedTime
+            CreatedAt = operationLog.CreatedAt
         };
     }
 
@@ -59,7 +59,7 @@ public static class OperationLogApplicationMapper
         var item = ToListItemDto(operationLog);
         return new OperationLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             SessionId = item.SessionId,
@@ -80,7 +80,7 @@ public static class OperationLogApplicationMapper
             Result = item.Result,
             ErrorMessage = item.ErrorMessage,
             OperationTime = item.OperationTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = operationLog.CreatedId,
             CreatedBy = operationLog.CreatedBy
         };

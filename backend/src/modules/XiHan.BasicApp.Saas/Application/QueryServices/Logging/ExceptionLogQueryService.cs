@@ -11,10 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -23,8 +19,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 异常日志查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "异常日志")]
 public sealed class ExceptionLogQueryService
     : SaasApplicationService, IExceptionLogQueryService
 {
@@ -52,8 +46,6 @@ public sealed class ExceptionLogQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>异常日志分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ExceptionLog.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<ExceptionLogListItemDto>> GetExceptionLogPageAsync(ExceptionLogPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -96,7 +88,6 @@ public sealed class ExceptionLogQueryService
     /// <param name="id">异常日志主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>异常日志详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ExceptionLog.Read)]
     public async Task<ExceptionLogDetailDto?> GetExceptionLogDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -107,7 +98,7 @@ public sealed class ExceptionLogQueryService
         cancellationToken.ThrowIfCancellationRequested();
 
         var exceptionLog = await DbClient.Queryable<SysExceptionLog>()
-            .Where(x => x.BasicId == id)
+            .Where(x => x.Id == id)
             .SplitTable()
             .FirstAsync(cancellationToken);
         return exceptionLog is null ? null : ExceptionLogApplicationMapper.ToDetailDto(exceptionLog);

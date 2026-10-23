@@ -57,7 +57,7 @@ public static class TaskApplicationMapper
 
         return new TaskListItemDto
         {
-            BasicId = task.BasicId,
+            Id = task.Id,
             TaskCode = task.TaskCode,
             TaskName = task.TaskName,
             TaskDescription = task.TaskDescription,
@@ -78,8 +78,8 @@ public static class TaskApplicationMapper
             RetryCount = task.RetryCount,
             MaxRetryCount = task.MaxRetryCount,
             Status = task.Status,
-            CreatedTime = task.CreatedTime,
-            ModifiedTime = task.ModifiedTime
+            CreatedAt = task.CreatedAt,
+            ModifiedAt = task.ModifiedAt
         };
     }
 
@@ -95,7 +95,7 @@ public static class TaskApplicationMapper
         var item = ToListItemDto(task);
         return new TaskDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TaskCode = item.TaskCode,
             TaskName = item.TaskName,
             TaskDescription = item.TaskDescription,
@@ -119,10 +119,10 @@ public static class TaskApplicationMapper
             RetryCount = item.RetryCount,
             MaxRetryCount = item.MaxRetryCount,
             Status = item.Status,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = task.CreatedId,
             CreatedBy = task.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = task.ModifiedId,
             ModifiedBy = task.ModifiedBy,
             Remark = task.Remark
@@ -137,7 +137,7 @@ public static class TaskApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new TaskRunStatusChangeCommand(
-            input.BasicId,
+            input.Id,
             input.RunTaskStatus,
             input.NextRunTime,
             input.LastRunTime,
@@ -152,7 +152,7 @@ public static class TaskApplicationMapper
     public static TaskStatusChangeCommand ToStatusCommand(TaskStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new TaskStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new TaskStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public static class TaskApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new TaskUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.TaskName,
             input.TaskDescription,
             input.TaskGroup,

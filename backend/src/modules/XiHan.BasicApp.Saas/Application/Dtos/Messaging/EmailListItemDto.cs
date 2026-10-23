@@ -79,10 +79,10 @@ public class EmailListItemDto : BasicAppDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 修改时间
     /// </summary>
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 }

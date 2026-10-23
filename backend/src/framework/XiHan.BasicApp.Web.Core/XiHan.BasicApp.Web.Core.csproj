@@ -17,23 +17,13 @@
 
     <!-- 曦寒框架 Web 相关引用：两组二选一，规则同 XiHan.BasicApp.Core（见 props\framework.props） -->
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
-        <PackageReference Include="XiHan.Framework.Web.Api" Version="4.8.0" />
-        <PackageReference Include="XiHan.Framework.Web.Core" Version="4.8.0" />
-        <PackageReference Include="XiHan.Framework.Web.Docs" Version="4.8.0" />
-        <PackageReference Include="XiHan.Framework.Web.Gateway" Version="4.8.0" />
-        <PackageReference Include="XiHan.Framework.Web.Grpc" Version="4.8.0" />
-        <PackageReference Include="XiHan.Framework.Web.Mcp" Version="4.8.0" />
-        <PackageReference Include="XiHan.Framework.Web.RealTime" Version="4.8.0" />
+        <PackageReference Include="XiHan.Framework.Hosting.AspNetCore" Version="5.0.0-preview.1" />
+        <PackageReference Include="XiHan.Framework.Protocols.Http" Version="5.0.0-preview.1" />
+        <PackageReference Include="XiHan.Framework.Protocols.Grpc" Version="5.0.0-preview.1" />
+        <PackageReference Include="XiHan.Framework.Protocols.Mcp" Version="5.0.0-preview.1" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.Api\XiHan.Framework.Web.Api.csproj" />
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.Core\XiHan.Framework.Web.Core.csproj" />
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.Docs\XiHan.Framework.Web.Docs.csproj" />
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.Gateway\XiHan.Framework.Web.Gateway.csproj" />
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.Grpc\XiHan.Framework.Web.Grpc.csproj" />
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.Mcp\XiHan.Framework.Web.Mcp.csproj" />
-        <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Web.RealTime\XiHan.Framework.Web.RealTime.csproj" />
     </ItemGroup>
 
     <ItemGroup>

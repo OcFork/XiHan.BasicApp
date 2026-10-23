@@ -15,10 +15,7 @@ using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Authorization.Conditions;
-using XiHan.Framework.Data.SqlSugar.Clients;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -30,8 +27,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 访问策略查询应用服务：只看当前层（平台上下文看平台策略，租户上下文看本租户的）
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "访问策略")]
 public sealed class AccessPolicyQueryService
     : SaasApplicationService, IAccessPolicyQueryService
 {
@@ -73,8 +68,6 @@ public sealed class AccessPolicyQueryService
     /// <summary>
     /// 访问策略分页列表
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicy.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<AccessPolicyListItemDto>> GetAccessPolicyPageAsync(AccessPolicyPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -84,7 +77,7 @@ public sealed class AccessPolicyQueryService
         if (request.Conditions.Sorts.Count == 0)
         {
             request.Conditions.AddSort((SysAccessPolicy policy) => policy.Priority, SortDirection.Ascending, 0);
-            request.Conditions.AddSort((SysAccessPolicy policy) => policy.CreatedTime, SortDirection.Descending, 1);
+            request.Conditions.AddSort((SysAccessPolicy policy) => policy.CreatedAt, SortDirection.Descending, 1);
         }
 
         var policies = await _policyRepository.GetPagedAsync(request, cancellationToken);
@@ -93,13 +86,13 @@ public sealed class AccessPolicyQueryService
             return new PageResultDtoBase<AccessPolicyListItemDto>([], policies.Page);
         }
 
-        var ids = policies.Items.Select(policy => policy.BasicId).ToArray();
+        var ids = policies.Items.Select(policy => policy.Id).ToArray();
         var conditions = (await _conditionRepository.GetListAsync(condition => ids.Contains(condition.PolicyId), condition => condition.ConditionGroup, cancellationToken))
             .ToLookup(condition => condition.PolicyId);
         var now = _timeProvider.GetUtcNow();
         var hitCounts = await GetRecentHitCountsAsync(ids, now, cancellationToken);
         var items = policies.Items
-            .Select(policy => AccessPolicyApplicationMapper.ToListItemDto(policy, [.. conditions[policy.BasicId]], hitCounts.GetValueOrDefault(policy.BasicId), now))
+            .Select(policy => AccessPolicyApplicationMapper.ToListItemDto(policy, [.. conditions[policy.Id]], hitCounts.GetValueOrDefault(policy.Id), now))
             .ToList();
         return new PageResultDtoBase<AccessPolicyListItemDto>(items, policies.Page);
     }
@@ -107,7 +100,6 @@ public sealed class AccessPolicyQueryService
     /// <summary>
     /// 访问策略详情
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicy.Read)]
     public async Task<AccessPolicyDetailDto?> GetAccessPolicyDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -131,7 +123,6 @@ public sealed class AccessPolicyQueryService
     /// <summary>
     /// 访问策略能用的条件属性
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicy.Read)]
     public Task<List<AccessPolicyAttributeDto>> GetAccessPolicyAttributesAsync()
     {
         var items = _attributes.Attributes
@@ -154,7 +145,6 @@ public sealed class AccessPolicyQueryService
     /// <summary>
     /// 预置模板
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicy.Read)]
     public Task<List<AccessPolicyTemplateDto>> GetAccessPolicyTemplatesAsync()
     {
         var items = AccessPolicyTemplates.All
@@ -183,8 +173,6 @@ public sealed class AccessPolicyQueryService
     /// <summary>
     /// 试运行一条策略
     /// </summary>
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicy.Trial)]
     public Task<AccessPolicyTrialResultDto> GetAccessPolicyTrialAsync(AccessPolicyTrialInputDto input, CancellationToken cancellationToken = default)
     {
         return _trialService.TrialAsync(input, cancellationToken);
@@ -193,7 +181,6 @@ public sealed class AccessPolicyQueryService
     /// <summary>
     /// 当前的自动封禁；租户上下文返回空
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicy.Read)]
     public async Task<List<LoginBanDto>> GetLoginBansAsync(CancellationToken cancellationToken = default)
     {
         if (_currentTenant.Id is > 0)

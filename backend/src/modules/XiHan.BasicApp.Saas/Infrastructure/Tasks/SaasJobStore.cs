@@ -7,9 +7,6 @@ using SqlSugar;
 using System.Collections.Concurrent;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Tasks.ScheduledJobs.Abstractions;
-using XiHan.Framework.Tasks.ScheduledJobs.Models;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 
@@ -149,7 +146,7 @@ public sealed class SaasJobStore : IJobStore
             TriggerMode = history.TriggerType.ToString(),
             ExtendData = history.ParametersJson,
             Remark = history.Remarks,
-            CreatedTime = history.StartedAt,
+            CreatedAt = history.StartedAt,
             TenantId = history.TenantId ?? 0
         };
 
@@ -160,7 +157,7 @@ public sealed class SaasJobStore : IJobStore
             var task = await FindTaskByCodeAsync(taskRepository, history.JobName, history.TenantId);
             if (task is not null)
             {
-                log.TaskId = task.BasicId;
+                log.TaskId = task.Id;
                 log.TaskName = task.TaskName;
             }
         }
@@ -196,7 +193,7 @@ public sealed class SaasJobStore : IJobStore
             InstanceId = instanceId,
             JobName = task.TaskCode,
             Status = MapToJobStatus(task.RunTaskStatus),
-            ScheduledAt = task.NextRunTime ?? task.CreatedTime,
+            ScheduledAt = task.NextRunTime ?? task.CreatedAt,
             StartedAt = task.LastRunTime,
             TriggerType = MapToJobTriggerType(task.TriggerType),
             TenantId = task.TenantId,
@@ -256,10 +253,10 @@ public sealed class SaasJobStore : IJobStore
 
         return tasks.Select(task => new JobInstance
         {
-            InstanceId = task.BasicId.ToString(),
+            InstanceId = task.Id.ToString(),
             JobName = task.TaskCode,
             Status = JobStatus.Running,
-            ScheduledAt = task.NextRunTime ?? task.CreatedTime,
+            ScheduledAt = task.NextRunTime ?? task.CreatedAt,
             StartedAt = task.LastRunTime,
             TriggerType = MapToJobTriggerType(task.TriggerType),
             TenantId = task.TenantId,
@@ -372,7 +369,7 @@ public sealed class SaasJobStore : IJobStore
     /// </summary>
     private static JobHistory MapToJobHistory(SysTaskLog log) => new()
     {
-        HistoryId = log.BasicId.ToString(),
+        HistoryId = log.Id.ToString(),
         InstanceId = log.BatchNumber ?? string.Empty,
         JobName = log.TaskCode,
         Status = MapToJobStatus(log.TaskStatus),

@@ -4,7 +4,6 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authentication.Users;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -116,7 +115,7 @@ public sealed class AuthenticationDomainService
             return LoginAuthenticationResult.Failed(LoginResult.InvalidCredentials, "邮箱未注册或验证码错误。");
         }
 
-        var security = await _userSecurityRepository.GetByUserIdAsync(user.BasicId, cancellationToken);
+        var security = await _userSecurityRepository.GetByUserIdAsync(user.Id, cancellationToken);
         var access = await ValidateUserAccessAsync(user, security, tenantId, now, cancellationToken);
         return access ?? LoginAuthenticationResult.Success(user, security);
     }
@@ -142,7 +141,7 @@ public sealed class AuthenticationDomainService
         var verified = new List<(SysUser User, SysUserSecurity Security)>();
         foreach (var candidate in await _userRepository.GetListByPhoneGloballyAsync(phone.Trim(), cancellationToken))
         {
-            var candidateSecurity = await _userSecurityRepository.GetByUserIdAsync(candidate.BasicId, cancellationToken);
+            var candidateSecurity = await _userSecurityRepository.GetByUserIdAsync(candidate.Id, cancellationToken);
             if (candidateSecurity?.PhoneVerified == true)
             {
                 verified.Add((candidate, candidateSecurity));
@@ -181,7 +180,7 @@ public sealed class AuthenticationDomainService
 
         if (tenantId.HasValue)
         {
-            var membership = await _tenantUserRepository.GetMembershipAsync(user.BasicId, cancellationToken);
+            var membership = await _tenantUserRepository.GetMembershipAsync(user.Id, cancellationToken);
             if (membership is null)
             {
                 return LoginAuthenticationResult.Failed(LoginResult.Failed, "用户不是当前租户成员。");

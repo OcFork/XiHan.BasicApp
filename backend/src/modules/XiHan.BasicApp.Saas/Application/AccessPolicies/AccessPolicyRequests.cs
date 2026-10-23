@@ -6,8 +6,6 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Web.Api.Constants;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 

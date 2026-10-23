@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -106,7 +107,7 @@ public sealed class PermissionCatalogDomainService
         };
 
         var savedPermission = await _permissionRepository.AddAsync(permission, cancellationToken);
-        return new PermissionCatalogCommandResult(savedPermission.BasicId);
+        return new PermissionCatalogCommandResult(savedPermission.Id);
     }
 
     /// <summary>
@@ -117,7 +118,7 @@ public sealed class PermissionCatalogDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var permission = await GetEditablePermissionOrThrowAsync(id, cancellationToken);
-        await EnsurePermissionNotReferencedAsync(permission.BasicId, cancellationToken);
+        await EnsurePermissionNotReferencedAsync(permission.Id, cancellationToken);
 
         if (!await _permissionRepository.DeleteAsync(permission, cancellationToken))
         {
@@ -135,7 +136,7 @@ public sealed class PermissionCatalogDomainService
 
         ValidateUpdateInput(command);
 
-        var permission = await GetEditablePermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var permission = await GetEditablePermissionOrThrowAsync(command.Id, cancellationToken);
         permission.PermissionName = command.PermissionName.Trim();
         permission.PermissionDescription = NormalizeNullable(command.PermissionDescription);
         permission.Tags = NormalizeTags(command.Tags);
@@ -146,7 +147,7 @@ public sealed class PermissionCatalogDomainService
         permission.Remark = NormalizeNullable(command.Remark);
 
         var savedPermission = await _permissionRepository.UpdateAsync(permission, cancellationToken);
-        return new PermissionCatalogCommandResult(savedPermission.BasicId);
+        return new PermissionCatalogCommandResult(savedPermission.Id);
     }
 
     /// <summary>
@@ -157,14 +158,14 @@ public sealed class PermissionCatalogDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var permission = await GetEditablePermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var permission = await GetEditablePermissionOrThrowAsync(command.Id, cancellationToken);
         if (command.Status == EnableStatus.Enabled)
         {
             _ = await LoadAndValidatePermissionTargetAsync(permission.PermissionType, permission.ResourceId, permission.OperationId, cancellationToken);
@@ -174,7 +175,7 @@ public sealed class PermissionCatalogDomainService
         permission.Remark = NormalizeNullable(command.Remark) ?? permission.Remark;
 
         var savedPermission = await _permissionRepository.UpdateAsync(permission, cancellationToken);
-        return new PermissionCatalogCommandResult(savedPermission.BasicId);
+        return new PermissionCatalogCommandResult(savedPermission.Id);
     }
 
     /// <summary>
@@ -208,7 +209,7 @@ public sealed class PermissionCatalogDomainService
         };
 
         var savedResource = await _resourceRepository.AddAsync(resource, cancellationToken);
-        return new ResourceCatalogCommandResult(savedResource.BasicId);
+        return new ResourceCatalogCommandResult(savedResource.Id);
     }
 
     /// <summary>
@@ -219,7 +220,7 @@ public sealed class PermissionCatalogDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var resource = await GetEditableResourceOrThrowAsync(id, cancellationToken);
-        await EnsureResourceNotReferencedAsync(resource.BasicId, cancellationToken);
+        await EnsureResourceNotReferencedAsync(resource.Id, cancellationToken);
 
         if (!await _resourceRepository.DeleteAsync(resource, cancellationToken))
         {
@@ -237,7 +238,7 @@ public sealed class PermissionCatalogDomainService
 
         ValidateResourceUpdateInput(command);
 
-        var resource = await GetEditableResourceOrThrowAsync(command.BasicId, cancellationToken);
+        var resource = await GetEditableResourceOrThrowAsync(command.Id, cancellationToken);
         resource.ResourceName = command.ResourceName.Trim();
         resource.ResourceType = command.ResourceType;
         resource.ResourcePath = NormalizeNullable(command.ResourcePath);
@@ -248,7 +249,7 @@ public sealed class PermissionCatalogDomainService
         resource.Remark = NormalizeNullable(command.Remark);
 
         var savedResource = await _resourceRepository.UpdateAsync(resource, cancellationToken);
-        return new ResourceCatalogCommandResult(savedResource.BasicId);
+        return new ResourceCatalogCommandResult(savedResource.Id);
     }
 
     /// <summary>
@@ -259,19 +260,19 @@ public sealed class PermissionCatalogDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "资源主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var resource = await GetEditableResourceOrThrowAsync(command.BasicId, cancellationToken);
+        var resource = await GetEditableResourceOrThrowAsync(command.Id, cancellationToken);
         resource.Status = command.Status;
         resource.Remark = NormalizeNullable(command.Remark) ?? resource.Remark;
 
         var savedResource = await _resourceRepository.UpdateAsync(resource, cancellationToken);
-        return new ResourceCatalogCommandResult(savedResource.BasicId);
+        return new ResourceCatalogCommandResult(savedResource.Id);
     }
 
     /// <summary>
@@ -308,7 +309,7 @@ public sealed class PermissionCatalogDomainService
         };
 
         var savedOperation = await _operationRepository.AddAsync(operation, cancellationToken);
-        return new OperationCatalogCommandResult(savedOperation.BasicId);
+        return new OperationCatalogCommandResult(savedOperation.Id);
     }
 
     /// <summary>
@@ -319,7 +320,7 @@ public sealed class PermissionCatalogDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var operation = await GetEditableOperationOrThrowAsync(id, cancellationToken);
-        await EnsureOperationNotReferencedAsync(operation.BasicId, cancellationToken);
+        await EnsureOperationNotReferencedAsync(operation.Id, cancellationToken);
 
         if (!await _operationRepository.DeleteAsync(operation, cancellationToken))
         {
@@ -337,7 +338,7 @@ public sealed class PermissionCatalogDomainService
 
         ValidateOperationUpdateInput(command);
 
-        var operation = await GetEditableOperationOrThrowAsync(command.BasicId, cancellationToken);
+        var operation = await GetEditableOperationOrThrowAsync(command.Id, cancellationToken);
         operation.OperationName = command.OperationName.Trim();
         operation.OperationTypeCode = command.OperationTypeCode;
         operation.Category = command.Category;
@@ -351,7 +352,7 @@ public sealed class PermissionCatalogDomainService
         operation.Remark = NormalizeNullable(command.Remark);
 
         var savedOperation = await _operationRepository.UpdateAsync(operation, cancellationToken);
-        return new OperationCatalogCommandResult(savedOperation.BasicId);
+        return new OperationCatalogCommandResult(savedOperation.Id);
     }
 
     /// <summary>
@@ -362,19 +363,19 @@ public sealed class PermissionCatalogDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "操作主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var operation = await GetEditableOperationOrThrowAsync(command.BasicId, cancellationToken);
+        var operation = await GetEditableOperationOrThrowAsync(command.Id, cancellationToken);
         operation.Status = command.Status;
         operation.Remark = NormalizeNullable(command.Remark) ?? operation.Remark;
 
         var savedOperation = await _operationRepository.UpdateAsync(operation, cancellationToken);
-        return new OperationCatalogCommandResult(savedOperation.BasicId);
+        return new OperationCatalogCommandResult(savedOperation.Id);
     }
 
     private static bool IsValidCodeSegmentChar(char code)
@@ -575,7 +576,7 @@ public sealed class PermissionCatalogDomainService
 
     private static void ValidateOperationUpdateInput(OperationUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "操作主键必须大于 0。");
         }
@@ -674,7 +675,7 @@ public sealed class PermissionCatalogDomainService
 
     private static void ValidateResourceUpdateInput(ResourceUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "资源主键必须大于 0。");
         }
@@ -684,7 +685,7 @@ public sealed class PermissionCatalogDomainService
 
     private static void ValidateUpdateInput(PermissionUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限主键必须大于 0。");
         }

@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -38,8 +37,9 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 失败重试决策依据
 /// - 按任务码统计成功率/平均耗时
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Task_Log_{year}{month}{day}", TableDescription = "系统任务日志表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TaSt", nameof(TaskStatus), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TaCo", nameof(TaskCode), OrderByType.Asc)]
@@ -47,7 +47,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{split_table}_TeId_TaId", nameof(TenantId), OrderByType.Asc, nameof(TaskId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TeId_StTi", nameof(TenantId), OrderByType.Asc, nameof(StartTime), OrderByType.Desc)]
 [PlatformDataSource]
-public partial class SysTaskLog : BasicAppCreationEntity, ISplitTableEntity, IStrictMultiTenantEntity
+public partial class SysTaskLog : BasicAppCreationEntity, ISplitTableEntity, IMultiTenant
 {
     /// <summary>
     /// 任务ID
@@ -150,5 +150,5 @@ public partial class SysTaskLog : BasicAppCreationEntity, ISplitTableEntity, ISt
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

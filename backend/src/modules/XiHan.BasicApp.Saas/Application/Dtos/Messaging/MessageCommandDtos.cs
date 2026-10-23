@@ -87,7 +87,7 @@ public sealed class NotificationPublishDto : BasicAppDto
 
 public sealed class NotificationPublishResultDto
 {
-    public long BasicId { get; set; }
+    public long Id { get; set; }
     public int RecipientCount { get; set; }
     public DateTimeOffset SendTime { get; set; }
 }

@@ -8,9 +8,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
@@ -18,8 +15,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// <summary>
 /// 约束规则命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "约束规则")]
 public sealed class ConstraintRuleAppService
     : SaasApplicationService, IConstraintRuleAppService
 {
@@ -44,8 +39,6 @@ public sealed class ConstraintRuleAppService
     /// <summary>
     /// 创建约束规则
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.ConstraintRule.Create)]
     public async Task<ConstraintRuleDetailDto> CreateConstraintRuleAsync(ConstraintRuleCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -61,8 +54,6 @@ public sealed class ConstraintRuleAppService
     /// <summary>
     /// 删除约束规则
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.ConstraintRule.Delete)]
     public async Task DeleteConstraintRuleAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -72,15 +63,13 @@ public sealed class ConstraintRuleAppService
     /// <summary>
     /// 更新约束规则
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.ConstraintRule.Update)]
     public async Task<ConstraintRuleDetailDto> UpdateConstraintRuleAsync(ConstraintRuleUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysConstraintRule), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysConstraintRule), input.Id, input, cancellationToken);
 
         var result = await _constraintRuleDomainService.UpdateConstraintRuleAsync(ConstraintRuleApplicationMapper.ToUpdateCommand(input), cancellationToken);
         return await GetDetailOrThrowAsync(result.RuleId, cancellationToken);
@@ -89,15 +78,13 @@ public sealed class ConstraintRuleAppService
     /// <summary>
     /// 更新约束规则状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.ConstraintRule.Status)]
     public async Task<ConstraintRuleDetailDto> UpdateConstraintRuleStatusAsync(ConstraintRuleStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysConstraintRule), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysConstraintRule), input.Id, input, cancellationToken);
 
         var result = await _constraintRuleDomainService.UpdateConstraintRuleStatusAsync(ConstraintRuleApplicationMapper.ToStatusCommand(input), cancellationToken);
         return await GetDetailOrThrowAsync(result.RuleId, cancellationToken);

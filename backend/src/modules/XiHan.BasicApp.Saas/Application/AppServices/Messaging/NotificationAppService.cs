@@ -13,20 +13,13 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
-using XiHan.Framework.Web.RealTime.Constants;
-using XiHan.Framework.Web.RealTime.Services;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 系统通知命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统通知")]
 public sealed class NotificationAppService
     : SaasApplicationService, INotificationAppService
 {
@@ -80,8 +73,6 @@ public sealed class NotificationAppService
     /// <summary>
     /// 创建系统通知
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Create)]
     public async Task<NotificationDetailDto> CreateNotificationAsync(NotificationCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -119,8 +110,6 @@ public sealed class NotificationAppService
     /// <summary>
     /// 删除系统通知
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Delete)]
     public async Task DeleteNotificationAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -134,15 +123,13 @@ public sealed class NotificationAppService
     /// 发布落库后：① 给在线接收者实时推送 ReceiveNotification（收件箱即时刷新，无需等下次拉取）；
     /// ② 给发布者经 TaskProgress 推送任务进度（灵动岛呈现）。推送失败均不影响发布结果。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Publish)]
     public async Task<NotificationPublishResultDto> PublishNotificationAsync(NotificationPublishDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         var publisherId = _currentUser.UserId ?? 0;
-        var progressTaskId = $"notification-publish:{input.BasicId}";
+        var progressTaskId = $"notification-publish:{input.Id}";
         await _taskProgressNotifier.NotifyRunningAsync(publisherId, progressTaskId, "正在发布公告…", cancellationToken: cancellationToken);
 
         NotificationPublishCommandResult result;
@@ -174,15 +161,13 @@ public sealed class NotificationAppService
     /// <summary>
     /// 更新系统通知
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Update)]
     public async Task<NotificationDetailDto> UpdateNotificationAsync(NotificationUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysNotification), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysNotification), input.Id, input, cancellationToken);
 
         var result = await _notificationDomainService.UpdateNotificationAsync(NotificationApplicationMapper.ToUpdateCommand(input), cancellationToken);
         return NotificationApplicationMapper.ToDetailDto(result.Notification);
@@ -191,7 +176,6 @@ public sealed class NotificationAppService
     /// <summary>
     /// 催办：对未读人员重新实时推送（不改库；在线者即时再提醒）
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Notification.Publish)]
     public async Task<NotificationPublishResultDto> RemindAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -212,8 +196,8 @@ public sealed class NotificationAppService
             try
             {
                 var payload = NotificationRealtimePayload.Create(
-                    notification.BasicId,
-                    notification.BasicId,
+                    notification.Id,
+                    notification.Id,
                     notification.NotificationType,
                     notification.Title,
                     notification.Content,
@@ -226,13 +210,13 @@ public sealed class NotificationAppService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "催办实时推送失败，NotificationId={NotificationId}", notification.BasicId);
+                _logger.LogWarning(ex, "催办实时推送失败，NotificationId={NotificationId}", notification.Id);
             }
         }
 
         return new NotificationPublishResultDto
         {
-            BasicId = id,
+            Id = id,
             RecipientCount = unreadUserIds.Length,
             SendTime = DateTimeOffset.UtcNow
         };
@@ -246,8 +230,8 @@ public sealed class NotificationAppService
         try
         {
             var payload = NotificationRealtimePayload.Create(
-                notification.BasicId,
-                notification.BasicId,
+                notification.Id,
+                notification.Id,
                 notification.NotificationType,
                 notification.Title,
                 notification.Content,
@@ -274,7 +258,7 @@ public sealed class NotificationAppService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "公告实时推送失败，NotificationId={NotificationId}", notification.BasicId);
+            _logger.LogWarning(ex, "公告实时推送失败，NotificationId={NotificationId}", notification.Id);
         }
     }
 }

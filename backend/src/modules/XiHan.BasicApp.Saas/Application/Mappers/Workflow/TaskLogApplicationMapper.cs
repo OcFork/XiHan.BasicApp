@@ -22,7 +22,7 @@ public static class TaskLogApplicationMapper
 
         return new TaskLogListItemDto
         {
-            BasicId = taskLog.BasicId,
+            Id = taskLog.Id,
             TaskId = taskLog.TaskId,
             TaskCode = taskLog.TaskCode,
             TaskName = taskLog.TaskName,
@@ -33,7 +33,7 @@ public static class TaskLogApplicationMapper
             ExecutionTime = taskLog.ExecutionTime,
             RetryCount = taskLog.RetryCount,
             TriggerMode = taskLog.TriggerMode,
-            CreatedTime = taskLog.CreatedTime
+            CreatedAt = taskLog.CreatedAt
         };
     }
 
@@ -49,7 +49,7 @@ public static class TaskLogApplicationMapper
         var item = ToListItemDto(taskLog);
         return new TaskLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TaskId = item.TaskId,
             TaskCode = item.TaskCode,
             TaskName = item.TaskName,
@@ -60,7 +60,7 @@ public static class TaskLogApplicationMapper
             ExecutionTime = item.ExecutionTime,
             RetryCount = item.RetryCount,
             TriggerMode = item.TriggerMode,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             ExecutionResult = taskLog.ExecutionResult,
             ExceptionMessage = taskLog.ExceptionMessage,
             ExceptionStackTrace = taskLog.ExceptionStackTrace,

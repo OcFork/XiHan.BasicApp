@@ -5,9 +5,8 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Initializers;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Upgrade.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.MultiTenancy;
 
@@ -86,6 +85,7 @@ public sealed class TenantDatabaseInitializer : ITenantDatabaseInitializer
         try
         {
             // 切到目标租户上下文：DbInitializer 经运行时连接提供器解析到该租户独立库
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (_currentTenant.Change(tenantId, tenant.TenantName))
             {
                 // 整套布局一起初始化：租户主库，加上该租户自带的模块库（Tenant_{id}_Erp 这类）

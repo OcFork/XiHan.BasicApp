@@ -36,7 +36,7 @@ public static class VersionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new VersionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.AppVersion,
             input.DbVersion,
             input.MinSupportVersion,
@@ -52,7 +52,7 @@ public static class VersionApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new VersionUpgradeStartCommand(input.BasicId, input.UpgradeNode, input.UpgradeStartTime);
+        return new VersionUpgradeStartCommand(input.Id, input.UpgradeNode, input.UpgradeStartTime);
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public static class VersionApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new VersionUpgradeFinishCommand(input.BasicId, input.AppVersion, input.DbVersion, input.MinSupportVersion);
+        return new VersionUpgradeFinishCommand(input.Id, input.AppVersion, input.DbVersion, input.MinSupportVersion);
     }
 
     /// <summary>
@@ -76,14 +76,14 @@ public static class VersionApplicationMapper
 
         return new VersionListItemDto
         {
-            BasicId = version.BasicId,
+            Id = version.Id,
             AppVersion = version.AppVersion,
             DbVersion = version.DbVersion,
             MinSupportVersion = version.MinSupportVersion,
             IsUpgrading = version.IsUpgrading,
             UpgradeNode = version.UpgradeNode,
             UpgradeStartTime = version.UpgradeStartTime,
-            CreatedTime = version.CreatedTime
+            CreatedAt = version.CreatedAt
         };
     }
 
@@ -99,14 +99,14 @@ public static class VersionApplicationMapper
         var item = ToListItemDto(version);
         return new VersionDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             AppVersion = item.AppVersion,
             DbVersion = item.DbVersion,
             MinSupportVersion = item.MinSupportVersion,
             IsUpgrading = item.IsUpgrading,
             UpgradeNode = item.UpgradeNode,
             UpgradeStartTime = item.UpgradeStartTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = version.CreatedId,
             CreatedBy = version.CreatedBy
         };
@@ -123,13 +123,13 @@ public static class VersionApplicationMapper
 
         return new MigrationHistoryListItemDto
         {
-            BasicId = migrationHistory.BasicId,
+            Id = migrationHistory.Id,
             Version = migrationHistory.Version,
             ScriptName = migrationHistory.ScriptName,
             ExecutedTime = migrationHistory.ExecutedTime,
             Success = migrationHistory.Success,
             NodeName = migrationHistory.NodeName,
-            CreatedTime = migrationHistory.CreatedTime
+            CreatedAt = migrationHistory.CreatedAt
         };
     }
 
@@ -145,13 +145,13 @@ public static class VersionApplicationMapper
         var item = ToMigrationHistoryListItemDto(migrationHistory);
         return new MigrationHistoryDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             Version = item.Version,
             ScriptName = item.ScriptName,
             ExecutedTime = item.ExecutedTime,
             Success = item.Success,
             NodeName = item.NodeName,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             ErrorMessage = migrationHistory.ErrorMessage,
             CreatedId = migrationHistory.CreatedId,
             CreatedBy = migrationHistory.CreatedBy

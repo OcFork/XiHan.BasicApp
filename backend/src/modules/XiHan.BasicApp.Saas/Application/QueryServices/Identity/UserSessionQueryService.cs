@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 用户会话查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户会话")]
 public sealed class UserSessionQueryService
     : SaasApplicationService, IUserSessionQueryService
 {
@@ -54,8 +50,6 @@ public sealed class UserSessionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户会话分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserSession.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<UserSessionListItemDto>> GetUserSessionPageAsync(UserSessionPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -88,7 +82,6 @@ public sealed class UserSessionQueryService
     /// <param name="id">会话主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户会话详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserSession.Read)]
     public async Task<UserSessionDetailDto?> GetUserSessionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -243,6 +236,6 @@ public sealed class UserSessionQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 }

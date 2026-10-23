@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.AI.Domain.DomainServices;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Repositories;
-using XiHan.Framework.AI.Abstractions.Configuration;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Configuration;
 

@@ -41,7 +41,7 @@ public static class DepartmentApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new DepartmentUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ParentId,
             input.DepartmentName,
             input.DepartmentType,
@@ -60,7 +60,7 @@ public static class DepartmentApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new DepartmentStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new DepartmentStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public static class DepartmentApplicationMapper
 
         return new DepartmentListItemDto
         {
-            BasicId = department.BasicId,
+            Id = department.Id,
             ParentId = department.ParentId,
             DepartmentName = department.DepartmentName,
             DepartmentCode = department.DepartmentCode,
@@ -84,8 +84,8 @@ public static class DepartmentApplicationMapper
             Email = department.Email,
             Status = department.Status,
             Sort = department.Sort,
-            CreatedTime = department.CreatedTime,
-            ModifiedTime = department.ModifiedTime
+            CreatedAt = department.CreatedAt,
+            ModifiedAt = department.ModifiedAt
         };
     }
 
@@ -100,7 +100,7 @@ public static class DepartmentApplicationMapper
 
         return new DepartmentDetailDto
         {
-            BasicId = department.BasicId,
+            Id = department.Id,
             ParentId = department.ParentId,
             DepartmentName = department.DepartmentName,
             DepartmentCode = department.DepartmentCode,
@@ -112,10 +112,10 @@ public static class DepartmentApplicationMapper
             Status = department.Status,
             Sort = department.Sort,
             Remark = department.Remark,
-            CreatedTime = department.CreatedTime,
+            CreatedAt = department.CreatedAt,
             CreatedId = department.CreatedId,
             CreatedBy = department.CreatedBy,
-            ModifiedTime = department.ModifiedTime,
+            ModifiedAt = department.ModifiedAt,
             ModifiedId = department.ModifiedId,
             ModifiedBy = department.ModifiedBy
         };
@@ -132,7 +132,7 @@ public static class DepartmentApplicationMapper
 
         return new DepartmentTreeNodeDto
         {
-            BasicId = department.BasicId,
+            Id = department.Id,
             ParentId = department.ParentId,
             DepartmentName = department.DepartmentName,
             DepartmentCode = department.DepartmentCode,

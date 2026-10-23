@@ -7,8 +7,6 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Web.Api.Middlewares;
-using XiHan.Framework.Web.Api.Security.OpenApi;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -77,7 +78,7 @@ public sealed class RoleHierarchyDomainService
         var candidateIds = ids.SelectMany(id => graph.AncestorsOf(id).Keys).ToHashSet();
         var enabledIds = candidateIds.Count == 0
             ? []
-            : (await _roleRepository.GetEnabledByIdsAsync(candidateIds, cancellationToken)).Select(role => role.BasicId).ToHashSet();
+            : (await _roleRepository.GetEnabledByIdsAsync(candidateIds, cancellationToken)).Select(role => role.Id).ToHashSet();
 
         foreach (var id in ids)
         {
@@ -132,25 +133,25 @@ public sealed class RoleHierarchyDomainService
         var edges = await _roleHierarchyRepository.GetEdgesAsync(cancellationToken);
         var graph = RoleInheritanceGraph.FromEdges(edges);
 
-        var removedParentIds = removeParentIds.Where(parentId => graph.HasEdge(parentId, role.BasicId)).ToList();
+        var removedParentIds = removeParentIds.Where(parentId => graph.HasEdge(parentId, role.Id)).ToList();
         foreach (var parentId in removedParentIds)
         {
-            graph.RemoveEdge(parentId, role.BasicId);
+            graph.RemoveEdge(parentId, role.Id);
         }
 
         var addedParentIds = new List<long>();
         foreach (var parentId in addParentIds)
         {
             // 已是直接上级的视为已达成
-            if (graph.HasEdge(parentId, role.BasicId))
+            if (graph.HasEdge(parentId, role.Id))
             {
                 continue;
             }
 
             var parent = await GetRoleOrThrowAsync(parentId, "上级角色不存在。", cancellationToken);
             EnsureCanBeParent(role, parent, graph);
-            graph.AddEdge(parent.BasicId, role.BasicId);
-            addedParentIds.Add(parent.BasicId);
+            graph.AddEdge(parent.Id, role.Id);
+            addedParentIds.Add(parent.Id);
         }
 
         if (addedParentIds.Count == 0 && removedParentIds.Count == 0)
@@ -162,23 +163,23 @@ public sealed class RoleHierarchyDomainService
         {
             // 下级角色的上级边与下级同属一个作用域：租户角色的边在本租户，全局角色的边在平台
             var removingRowIds = edges
-                .Where(edge => edge.DescendantId == role.BasicId && removedParentIds.Contains(edge.AncestorId))
-                .Select(edge => edge.BasicId)
+                .Where(edge => edge.DescendantId == role.Id && removedParentIds.Contains(edge.AncestorId))
+                .Select(edge => edge.Id)
                 .ToList();
-            _ = await _roleHierarchyRepository.DeleteAsync(edge => removingRowIds.Contains(edge.BasicId), cancellationToken);
+            _ = await _roleHierarchyRepository.DeleteAsync(edge => removingRowIds.Contains(edge.Id), cancellationToken);
         }
 
         if (addedParentIds.Count > 0)
         {
             _ = await _roleHierarchyRepository.AddRangeAsync(
-                addedParentIds.Select(parentId => new SysRoleHierarchy { AncestorId = parentId, DescendantId = role.BasicId }),
+                addedParentIds.Select(parentId => new SysRoleHierarchy { AncestorId = parentId, DescendantId = role.Id }),
                 cancellationToken);
         }
 
-        await EnsureSeparationOfDutyAsync(role.BasicId, cancellationToken);
+        await EnsureSeparationOfDutyAsync(role.Id, cancellationToken);
         if (role.IsGlobal)
         {
-            await EnsureSeparationOfDutyInTenantsAsync(role.BasicId, graph, cancellationToken);
+            await EnsureSeparationOfDutyInTenantsAsync(role.Id, graph, cancellationToken);
         }
 
         return new RoleHierarchyBatchUpdateResult(addedParentIds, removedParentIds);
@@ -213,12 +214,12 @@ public sealed class RoleHierarchyDomainService
             throw new InvalidOperationException("平台全局角色只能继承全局角色。");
         }
 
-        if (graph.DescendantsOf(role.BasicId).ContainsKey(parent.BasicId))
+        if (graph.DescendantsOf(role.Id).ContainsKey(parent.Id))
         {
             throw new InvalidOperationException($"「{parent.RoleName}」已继承本角色，再设为上级会形成环路。");
         }
 
-        if (graph.AncestorsOf(role.BasicId).ContainsKey(parent.BasicId))
+        if (graph.AncestorsOf(role.Id).ContainsKey(parent.Id))
         {
             throw new InvalidOperationException($"本角色已经通过其他上级间接继承「{parent.RoleName}」，无需再直接继承。");
         }
@@ -304,6 +305,7 @@ public sealed class RoleHierarchyDomainService
 
         foreach (var tenantId in tenantIds)
         {
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (_currentTenant.Change(tenantId))
             {
                 await EnsureSeparationOfDutyAsync(roleId, cancellationToken);

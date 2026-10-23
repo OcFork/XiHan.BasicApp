@@ -4,8 +4,6 @@
 using Microsoft.AspNetCore.Authorization;
 using XiHan.BasicApp.Saas.Application.Dtos.Metadata;
 using XiHan.BasicApp.Saas.Application.QueryServices;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices.Metadata;
 
@@ -13,9 +11,7 @@ namespace XiHan.BasicApp.Saas.Application.AppServices.Metadata;
 /// 枚举元数据应用服务
 /// 只按登录态门控、不挂权限码：枚举标签是所有页面字典的单一事实源，任何登录用户都要能取。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "枚举元数据")]
-public sealed class EnumMetadataAppService : ApplicationServiceBase
+public sealed class EnumMetadataAppService
 {
     private readonly IEnumMetadataQueryService _enumMetadataQueryService;
 

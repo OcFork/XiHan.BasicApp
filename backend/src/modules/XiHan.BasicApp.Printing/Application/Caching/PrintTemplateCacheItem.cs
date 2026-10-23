@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Printing.Domain.Enums;
-using XiHan.Framework.Caching.Attributes;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Printing.Application.Caching;
@@ -18,7 +17,7 @@ public sealed class PrintTemplateCacheItem
     public bool Found { get; set; }
 
     /// <summary>模板主键。</summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>模板编码。</summary>
     public string TemplateCode { get; set; } = string.Empty;
@@ -36,7 +35,8 @@ public sealed class PrintTemplateCacheItem
     public PrintTemplateScope ResolvedScope { get; set; }
 
     /// <summary>数据库行版本。</summary>
-    public long RowVersion { get; set; }
+    // xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+    public string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <summary>缓存创建时间。</summary>
     public DateTimeOffset CachedAt { get; set; }

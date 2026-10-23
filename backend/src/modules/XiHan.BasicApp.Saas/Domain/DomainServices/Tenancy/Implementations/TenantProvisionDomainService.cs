@@ -4,7 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -98,7 +98,7 @@ public sealed class TenantProvisionDomainService
 
         // 用户名在目标租户内唯一，租户范围显式传入（连带平台账号一起比对，避免与平台账号重名）
         var normalizedUserName = adminUserName.Trim();
-        if (await _userRepository.ExistsUserNameInTenantAsync(tenant.BasicId, normalizedUserName, cancellationToken: cancellationToken))
+        if (await _userRepository.ExistsUserNameInTenantAsync(tenant.Id, normalizedUserName, cancellationToken: cancellationToken))
         {
             throw new UserFriendlyException("管理员用户名已被使用。");
         }
@@ -115,7 +115,7 @@ public sealed class TenantProvisionDomainService
 
         await _userSecurityRepository.AddAsync(new SysUserSecurity
         {
-            UserId = adminUser.BasicId,
+            UserId = adminUser.Id,
             Password = passwordHash,
             LastPasswordChangeTime = DateTimeOffset.UtcNow,
             // 初始密码由平台设置
@@ -124,7 +124,7 @@ public sealed class TenantProvisionDomainService
 
         await _tenantUserRepository.AddAsync(new SysTenantUser
         {
-            UserId = adminUser.BasicId,
+            UserId = adminUser.Id,
             MemberType = TenantMemberType.Owner,
             InviteStatus = TenantMemberInviteStatus.Accepted,
             RespondedTime = DateTimeOffset.UtcNow
@@ -133,8 +133,8 @@ public sealed class TenantProvisionDomainService
         var ownerRole = await _roleRepository.AddAsync(SysRole.CreateTenantOwnerRole(), cancellationToken);
         await _userRoleRepository.AddAsync(new SysUserRole
         {
-            UserId = adminUser.BasicId,
-            RoleId = ownerRole.BasicId,
+            UserId = adminUser.Id,
+            RoleId = ownerRole.Id,
             Status = ValidityStatus.Valid,
             GrantReason = "租户开通"
         }, cancellationToken);
@@ -159,8 +159,8 @@ public sealed class TenantProvisionDomainService
             return null;
         }
 
-        tenant.EditionId = defaultEdition.BasicId;
-        return defaultEdition.BasicId;
+        tenant.EditionId = defaultEdition.Id;
+        return defaultEdition.Id;
     }
 
     /// <summary>
@@ -186,6 +186,7 @@ public sealed class TenantProvisionDomainService
 
         // 版本白名单是平台数据，在平台作用域读
         HashSet<long> allowedIds;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             var whitelist = await _tenantEditionPermissionRepository.GetByEditionIdAsync(tenant.EditionId.Value, cancellationToken);
@@ -204,7 +205,7 @@ public sealed class TenantProvisionDomainService
         // 授权绑定是该租户的数据，切入该租户读写；只处理该租户自有绑定行，
         // 读共享可见的全局行（TenantId=0）属平台资产，不在回收范围
         using var tenantScope = EnterTenantScope(tenant);
-        var tenantId = tenant.BasicId;
+        var tenantId = tenant.Id;
         var now = DateTimeOffset.UtcNow;
 
         var staleRolePermissions = (await _rolePermissionRepository.GetListAsync(
@@ -261,6 +262,7 @@ public sealed class TenantProvisionDomainService
 
         // 租户注册表是平台数据，在平台作用域读；逐个租户的回收各自切入该租户
         IReadOnlyList<SysTenant> tenants;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             tenants = await _tenantRepository.GetListAsync(tenant => tenant.EditionId == editionId, cancellationToken);
@@ -292,6 +294,7 @@ public sealed class TenantProvisionDomainService
         }
 
         SysTenant tenant;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken)
@@ -316,7 +319,7 @@ public sealed class TenantProvisionDomainService
     /// </summary>
     private IDisposable EnterTenantScope(SysTenant tenant)
     {
-        return _currentTenant.Change(tenant.BasicId, tenant.TenantName);
+        return _currentTenant.Change(tenant.Id, tenant.TenantName);
     }
 
     /// <summary>

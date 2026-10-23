@@ -5,11 +5,8 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Core.Exceptions;
 using XiHan.Framework.Domain.Repositories;
 using XiHan.Framework.Localization.Abstractions;
-using XiHan.Framework.Uow.Attributes;
-using XiHan.Framework.Utils.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -42,7 +39,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 创建 API 凭证（明文 Secret 仅本次返回）
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<ProfileApiCredentialSecretDto> CreateApiCredentialAsync(ProfileApiCredentialCreateDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("创建接口凭证");
@@ -79,11 +75,11 @@ public sealed partial class ProfileAppService
             credential = await _userApiCredentialRepository.AddAsync(credential, cancellationToken);
         }
 
-        await NotifyApiCredentialChangeAsync(userId, "API 凭证已创建", $"凭证「{name}」（{appKey}）已创建。如非本人操作，请立即删除该凭证并修改密码。", credential.BasicId, cancellationToken);
+        await NotifyApiCredentialChangeAsync(userId, "API 凭证已创建", $"凭证「{name}」（{appKey}）已创建。如非本人操作，请立即删除该凭证并修改密码。", credential.Id, cancellationToken);
 
         return new ProfileApiCredentialSecretDto
         {
-            BasicId = credential.BasicId,
+            Id = credential.Id,
             AppKey = credential.AppKey,
             AppSecret = secret
         };
@@ -92,7 +88,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 滚动 API 凭证密钥（AppKey 不变，旧密钥立即失效，明文 Secret 仅本次返回）
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<ProfileApiCredentialSecretDto> RotateApiCredentialSecretAsync(ProfileApiCredentialIdDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("重置接口凭证密钥");
@@ -100,17 +95,17 @@ public sealed partial class ProfileAppService
         cancellationToken.ThrowIfCancellationRequested();
 
         var userId = GetCurrentUserIdOrThrow();
-        var credential = await GetOwnedApiCredentialOrThrowAsync(userId, input.BasicId, cancellationToken);
+        var credential = await GetOwnedApiCredentialOrThrowAsync(userId, input.Id, cancellationToken);
 
         var secret = GenerateApiSecret();
         credential.SecretCipher = _apiCredentialSecretProtector.Protect(secret)!;
         await SaveOwnedApiCredentialAsync(credential, cancellationToken);
 
-        await NotifyApiCredentialChangeAsync(userId, "API 凭证密钥已滚动", $"凭证「{credential.CredentialName}」（{credential.AppKey}）的密钥已重置，旧密钥立即失效。", credential.BasicId, cancellationToken);
+        await NotifyApiCredentialChangeAsync(userId, "API 凭证密钥已滚动", $"凭证「{credential.CredentialName}」（{credential.AppKey}）的密钥已重置，旧密钥立即失效。", credential.Id, cancellationToken);
 
         return new ProfileApiCredentialSecretDto
         {
-            BasicId = credential.BasicId,
+            Id = credential.Id,
             AppKey = credential.AppKey,
             AppSecret = secret
         };
@@ -119,7 +114,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 启停 API 凭证
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<ProfileApiCredentialDto> UpdateApiCredentialStatusAsync(ProfileApiCredentialStatusDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("启停接口凭证");
@@ -132,7 +126,7 @@ public sealed partial class ProfileAppService
         }
 
         var userId = GetCurrentUserIdOrThrow();
-        var credential = await GetOwnedApiCredentialOrThrowAsync(userId, input.BasicId, cancellationToken);
+        var credential = await GetOwnedApiCredentialOrThrowAsync(userId, input.Id, cancellationToken);
 
         credential.Status = input.Status;
         await SaveOwnedApiCredentialAsync(credential, cancellationToken);
@@ -143,7 +137,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 删除 API 凭证
     /// </summary>
-    [UnitOfWork(true)]
     public async Task DeleteApiCredentialAsync(long id, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("删除接口凭证");
@@ -154,10 +147,10 @@ public sealed partial class ProfileAppService
 
         // 软删：唯一索引 UX_ApKe 含 IsDeleted，删后 AppKey 经带软删过滤的鉴权查询即不可用
         credential.IsDeleted = true;
-        credential.DeletedTime = DateTimeOffset.UtcNow;
+        credential.DeletedAt = DateTimeOffset.UtcNow;
         await SaveOwnedApiCredentialAsync(credential, cancellationToken);
 
-        await NotifyApiCredentialChangeAsync(userId, "API 凭证已删除", $"凭证「{credential.CredentialName}」（{credential.AppKey}）已删除，该 AppKey 立即不可用。", credential.BasicId, cancellationToken);
+        await NotifyApiCredentialChangeAsync(userId, "API 凭证已删除", $"凭证「{credential.CredentialName}」（{credential.AppKey}）已删除，该 AppKey 立即不可用。", credential.Id, cancellationToken);
     }
 
     /// <summary>
@@ -172,13 +165,13 @@ public sealed partial class ProfileAppService
     {
         return new ProfileApiCredentialDto
         {
-            BasicId = credential.BasicId,
+            Id = credential.Id,
             CredentialName = credential.CredentialName,
             AppKey = credential.AppKey,
             Status = credential.Status,
             LastUsedTime = credential.LastUsedTime,
             ExpirationTime = credential.ExpirationTime,
-            CreatedTime = credential.CreatedTime
+            CreatedAt = credential.CreatedAt
         };
     }
 
@@ -194,7 +187,7 @@ public sealed partial class ProfileAppService
 
         // 凭证行带创建时所在租户的戳，按人跨租户取再按主键定位
         var credentials = await _userApiCredentialRepository.GetListByUserIdAsync(userId, cancellationToken);
-        var credential = credentials.FirstOrDefault(item => item.BasicId == credentialId);
+        var credential = credentials.FirstOrDefault(item => item.Id == credentialId);
         if (credential is null)
         {
             throw new UserFriendlyException(new ResourceLocalizableString("Errors", "Profile.Credential.NotFoundOrNoPermission"), "凭证不存在或无权操作。");

@@ -47,7 +47,7 @@ public static class AiProviderApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new AiProviderUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ConfigName,
             input.Provider,
             input.Model,
@@ -71,7 +71,7 @@ public static class AiProviderApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new AiProviderStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new AiProviderStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class AiProviderApplicationMapper
 
         return new AiProviderListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             ConfigCode = entity.ConfigCode,
             ConfigName = entity.ConfigName,
             Provider = entity.Provider,
@@ -98,8 +98,8 @@ public static class AiProviderApplicationMapper
             HasApiKey = !string.IsNullOrEmpty(entity.ApiKey),
             Sort = entity.Sort,
             Status = entity.Status,
-            CreatedTime = entity.CreatedTime,
-            ModifiedTime = entity.ModifiedTime
+            CreatedAt = entity.CreatedAt,
+            ModifiedAt = entity.ModifiedAt
         };
     }
 
@@ -113,7 +113,7 @@ public static class AiProviderApplicationMapper
         var item = ToListItemDto(entity);
         return new AiProviderDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             ConfigCode = item.ConfigCode,
             ConfigName = item.ConfigName,
             Provider = item.Provider,
@@ -128,8 +128,8 @@ public static class AiProviderApplicationMapper
             HasApiKey = item.HasApiKey,
             Sort = item.Sort,
             Status = item.Status,
-            CreatedTime = item.CreatedTime,
-            ModifiedTime = item.ModifiedTime,
+            CreatedAt = item.CreatedAt,
+            ModifiedAt = item.ModifiedAt,
             ExtraJson = entity.ExtraJson,
             Remark = entity.Remark,
             CreatedId = entity.CreatedId,

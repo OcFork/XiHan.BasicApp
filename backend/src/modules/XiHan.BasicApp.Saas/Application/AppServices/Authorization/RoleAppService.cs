@@ -13,17 +13,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 角色命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "角色")]
 public sealed class RoleAppService
     : SaasApplicationService, IRoleAppService
 {
@@ -73,8 +68,6 @@ public sealed class RoleAppService
     /// <summary>
     /// 创建角色
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Role.Create)]
     public async Task<RoleDetailDto> CreateRoleAsync(RoleCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -92,8 +85,6 @@ public sealed class RoleAppService
     /// <summary>
     /// 设置角色数据范围：档位与自定义部门一次提交（单事务，仅在最后失效一次缓存）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.RoleDataScope.Update)]
     public async Task SetRoleDataScopeAsync(RoleDataScopeSetDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -116,8 +107,6 @@ public sealed class RoleAppService
     /// 入口只要查看继承关系；本次新增上级要新增权限，解除上级要删除权限，各按实际出现的操作校验。
     /// 新增上级等同把上级继承链的权限授给本角色，与分配角色走同一道模仿登录授出校验。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.RoleHierarchy.Read)]
     public async Task BatchUpdateRoleParentsAsync(RoleHierarchyBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -187,8 +176,6 @@ public sealed class RoleAppService
     /// <remarks>
     /// 入口与「分配权限」按钮同挂授予权限；本次含撤销项时再要撤销权限，只加不减的提交不需要撤销权限。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.RolePermission.Grant)]
     public async Task BatchUpdateRolePermissionsAsync(RolePermissionBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -231,8 +218,6 @@ public sealed class RoleAppService
     /// <summary>
     /// 删除角色
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Role.Delete)]
     public async Task DeleteRoleAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -245,17 +230,15 @@ public sealed class RoleAppService
     /// <summary>
     /// 更新角色
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Role.Update)]
     public async Task<RoleDetailDto> UpdateRoleAsync(RoleUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysRole), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysRole), input.Id, input, cancellationToken);
 
-        await _superAdminProtector.EnsureCanWriteRoleAsync(input.BasicId, cancellationToken);
+        await _superAdminProtector.EnsureCanWriteRoleAsync(input.Id, cancellationToken);
         var result = await _roleDomainService.UpdateRoleAsync(RoleApplicationMapper.ToUpdateCommand(input), cancellationToken);
         await _cacheInvalidator.InvalidateAuthorizationAsync(cancellationToken: cancellationToken);
         await _cacheInvalidator.InvalidateRoleDefinitionAsync(cancellationToken);
@@ -265,14 +248,12 @@ public sealed class RoleAppService
     /// <summary>
     /// 更新角色权限
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.RolePermission.Update)]
     public async Task<RolePermissionDetailDto> UpdateRolePermissionAsync(RolePermissionUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var rolePermission = await _rolePermissionRepository.GetByIdAsync(input.BasicId, cancellationToken);
+        var rolePermission = await _rolePermissionRepository.GetByIdAsync(input.Id, cancellationToken);
         if (rolePermission is not null)
         {
             await _superAdminProtector.EnsureCanWriteRoleAsync(rolePermission.RoleId, cancellationToken);
@@ -296,14 +277,12 @@ public sealed class RoleAppService
     /// <summary>
     /// 更新角色权限状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.RolePermission.Status)]
     public async Task<RolePermissionDetailDto> UpdateRolePermissionStatusAsync(RolePermissionStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var rolePermission = await _rolePermissionRepository.GetByIdAsync(input.BasicId, cancellationToken);
+        var rolePermission = await _rolePermissionRepository.GetByIdAsync(input.Id, cancellationToken);
         if (rolePermission is not null)
         {
             await _superAdminProtector.EnsureCanWriteRoleAsync(rolePermission.RoleId, cancellationToken);
@@ -327,17 +306,15 @@ public sealed class RoleAppService
     /// <summary>
     /// 更新角色状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Role.Status)]
     public async Task<RoleDetailDto> UpdateRoleStatusAsync(RoleStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysRole), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysRole), input.Id, input, cancellationToken);
 
-        await _superAdminProtector.EnsureCanWriteRoleAsync(input.BasicId, cancellationToken);
+        await _superAdminProtector.EnsureCanWriteRoleAsync(input.Id, cancellationToken);
         var result = await _roleDomainService.UpdateRoleStatusAsync(RoleApplicationMapper.ToStatusCommand(input), cancellationToken);
         await _cacheInvalidator.InvalidateAuthorizationAsync(cancellationToken: cancellationToken);
         await _cacheInvalidator.InvalidateRoleDefinitionAsync(cancellationToken);

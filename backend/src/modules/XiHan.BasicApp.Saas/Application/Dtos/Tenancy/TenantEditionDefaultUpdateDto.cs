@@ -11,5 +11,5 @@ public sealed class TenantEditionDefaultUpdateDto
     /// <summary>
     /// 租户版本主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 }

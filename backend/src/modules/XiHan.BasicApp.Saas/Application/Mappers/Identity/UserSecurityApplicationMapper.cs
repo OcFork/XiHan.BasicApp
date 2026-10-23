@@ -43,7 +43,7 @@ public static class UserSecurityApplicationMapper
 
         return new UserSecurityListItemDto
         {
-            BasicId = security.BasicId,
+            Id = security.Id,
             UserId = security.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
@@ -61,8 +61,8 @@ public static class UserSecurityApplicationMapper
             AllowMultiLogin = security.AllowMultiLogin,
             MaxLoginDevices = security.MaxLoginDevices,
             LastSecurityCheckTime = security.LastSecurityCheckTime,
-            CreatedTime = security.CreatedTime,
-            ModifiedTime = security.ModifiedTime
+            CreatedAt = security.CreatedAt,
+            ModifiedAt = security.ModifiedAt
         };
     }
 
@@ -99,7 +99,7 @@ public static class UserSecurityApplicationMapper
 
         return new UserSecurityDetailDto
         {
-            BasicId = security.BasicId,
+            Id = security.Id,
             UserId = security.UserId,
             UserName = user.UserName,
             RealName = user.RealName,
@@ -121,10 +121,10 @@ public static class UserSecurityApplicationMapper
             MaxLoginDevices = security.MaxLoginDevices,
             LastSecurityCheckTime = security.LastSecurityCheckTime,
             Remark = security.Remark,
-            CreatedTime = security.CreatedTime,
+            CreatedAt = security.CreatedAt,
             CreatedId = security.CreatedId,
             CreatedBy = security.CreatedBy,
-            ModifiedTime = security.ModifiedTime,
+            ModifiedAt = security.ModifiedAt,
             ModifiedId = security.ModifiedId,
             ModifiedBy = security.ModifiedBy
         };

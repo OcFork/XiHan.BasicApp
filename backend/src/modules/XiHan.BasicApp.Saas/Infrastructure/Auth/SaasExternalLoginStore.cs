@@ -2,9 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Authentication.OAuth;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
@@ -48,6 +46,7 @@ public sealed class SaasExternalLoginStore : IExternalLoginStore
         }
 
         var effectiveTenantId = tenantId ?? _currentTenant.Id ?? 0;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(effectiveTenantId);
         var db = _clientResolver.GetClientForEntity<SysExternalLogin>();
 
@@ -76,6 +75,7 @@ public sealed class SaasExternalLoginStore : IExternalLoginStore
         ArgumentNullException.ThrowIfNull(info);
 
         var effectiveTenantId = tenantId ?? _currentTenant.Id ?? 0;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(effectiveTenantId);
         var db = _clientResolver.GetClientForEntity<SysExternalLogin>();
 

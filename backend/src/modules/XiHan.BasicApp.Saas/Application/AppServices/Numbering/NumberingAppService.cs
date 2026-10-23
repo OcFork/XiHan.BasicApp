@@ -6,8 +6,6 @@ using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -18,8 +16,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 本层只负责权限入口、外部 DTO 到公共 DI 请求的映射以及结果 DTO 转换。
 /// 作用域解析、幂等、事务和并发正确性统一由 <see cref="INumberGenerator"/> 实现，避免 API 与内部调用出现两套发号语义。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "业务编号生成")]
 public sealed class NumberingAppService : SaasApplicationService, INumberingAppService
 {
     /// <summary>
@@ -46,7 +42,6 @@ public sealed class NumberingAppService : SaasApplicationService, INumberingAppS
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求、规则、幂等、容量或并发校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Generate)]
     public async Task<NumberGenerationResultDto> GenerateNumberAsync(NumberGenerateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -67,7 +62,6 @@ public sealed class NumberingAppService : SaasApplicationService, INumberingAppS
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求、批量数量、规则、幂等、容量或并发校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    [PermissionAuthorize(SaasPermissionCodes.Numbering.Generate)]
     public async Task<NumberGenerationResultDto> GenerateNumberBatchAsync(NumberBatchGenerateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

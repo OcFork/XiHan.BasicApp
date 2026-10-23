@@ -12,19 +12,15 @@ using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
-using XiHan.Framework.Timing;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 
 /// <summary>
 /// 工作流定义查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "流程定义")]
 public sealed class WorkflowDefinitionQueryService : WorkflowApplicationService, IWorkflowDefinitionQueryService
 {
     private readonly IWorkflowDefinitionRepository _definitionRepository;
@@ -36,7 +32,7 @@ public sealed class WorkflowDefinitionQueryService : WorkflowApplicationService,
 
     private readonly WorkflowBusinessRegistry _businessRegistry;
 
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 构造函数
@@ -45,7 +41,7 @@ public sealed class WorkflowDefinitionQueryService : WorkflowApplicationService,
         IWorkflowDefinitionRepository definitionRepository,
         IFieldSecurityService fieldSecurityService,
         WorkflowBusinessRegistry businessRegistry,
-        IClock clock)
+        TimeProvider clock)
     {
         _definitionRepository = definitionRepository;
         _fieldSecurity = fieldSecurityService;
@@ -56,8 +52,6 @@ public sealed class WorkflowDefinitionQueryService : WorkflowApplicationService,
     /// <summary>
     /// 分页查询定义
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<WorkflowDefinitionListItemDto>> GetPageAsync(WorkflowDefinitionPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -84,7 +78,6 @@ public sealed class WorkflowDefinitionQueryService : WorkflowApplicationService,
     /// <summary>
     /// 获取定义详情（含定义 JSON）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
     public async Task<WorkflowDefinitionDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -104,7 +97,6 @@ public sealed class WorkflowDefinitionQueryService : WorkflowApplicationService,
     /// <summary>
     /// 已登记的审批业务（设计器「关联业务」：流程编码等于业务编码即为该业务的审批流程）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
     public Task<List<WorkflowBusinessTypeDto>> GetBusinessTypesAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

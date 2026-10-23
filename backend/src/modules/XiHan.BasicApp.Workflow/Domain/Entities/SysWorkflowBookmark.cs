@@ -21,7 +21,7 @@ namespace XiHan.BasicApp.Workflow.Domain.Entities;
 [SugarIndex("IX_{table}_NoIn", nameof(NodeInstanceId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_Ki_Ke", nameof(Kind), OrderByType.Asc, nameof(Key), OrderByType.Asc)]
 [SugarIndex("IX_{table}_DuTi", nameof(DueTime), OrderByType.Asc)]
-public partial class SysWorkflowBookmark : BasicAppEntity, IStrictMultiTenantEntity
+public partial class SysWorkflowBookmark : BasicAppEntity, IMultiTenant
 {
     /// <summary>
     /// 构造函数

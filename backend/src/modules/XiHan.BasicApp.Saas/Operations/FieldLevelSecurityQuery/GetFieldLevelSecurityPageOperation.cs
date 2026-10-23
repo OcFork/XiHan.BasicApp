@@ -1,0 +1,34 @@
+// 由 xihan migrate v4 生成；提交前请检查。
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using XiHan.BasicApp.Core.Dtos;
+using XiHan.BasicApp.Saas.Application.Contracts;
+using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Saas.Application.Extensions;
+using XiHan.BasicApp.Saas.Application.Mappers;
+using XiHan.BasicApp.Saas.Application.QueryServices;
+using XiHan.BasicApp.Saas.Domain.DomainServices;
+using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Operations;
+using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.Framework.Domain.Shared.Paging.Enums;
+using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.Framework.Kernel;
+using XiHan.Framework.Kernel.Operations;
+using XiHan.Framework.Primitives;
+
+namespace XiHan.BasicApp.Saas.Operations.FieldLevelSecurityQuery;
+
+/// <summary>
+/// 由 xihan migrate v4 生成；提交前请检查。
+/// </summary>
+[Operation("field-level-security-query.list-field-level-security", Permission = SaasPermissionCodes.FieldLevelSecurity.Read)]
+public sealed class GetFieldLevelSecurityPageOperation(IFieldLevelSecurityQueryService service) : IOperation<FieldLevelSecurityPageQueryDto, PageResultDtoBase<FieldLevelSecurityListItemDto>>
+{
+    /// <inheritdoc />
+    public async ValueTask<Result<PageResultDtoBase<FieldLevelSecurityListItemDto>>> HandleAsync(FieldLevelSecurityPageQueryDto request, InvocationContext context)
+        => await service.GetFieldLevelSecurityPageAsync(request, context.CancellationToken).ConfigureAwait(false);
+}

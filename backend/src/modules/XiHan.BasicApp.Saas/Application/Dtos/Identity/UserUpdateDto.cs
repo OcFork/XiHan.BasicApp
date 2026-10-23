@@ -13,7 +13,7 @@ public sealed class UserUpdateDto
     /// <summary>
     /// 用户主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 真实姓名

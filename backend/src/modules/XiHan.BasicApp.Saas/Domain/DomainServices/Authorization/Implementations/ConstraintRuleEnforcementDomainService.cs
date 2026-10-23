@@ -85,7 +85,7 @@ public sealed class ConstraintRuleEnforcementDomainService
         var ruleGroups = new List<(SysConstraintRule Rule, int MaxAllowed, IReadOnlyList<IGrouping<int, SysConstraintRuleItem>> Groups)>();
         foreach (var rule in applicableRules)
         {
-            var items = await _constraintRuleItemRepository.GetByRuleIdAsync(rule.BasicId, cancellationToken);
+            var items = await _constraintRuleItemRepository.GetByRuleIdAsync(rule.Id, cancellationToken);
             ruleGroups.Add((
                 rule,
                 ResolveMaxAllowed(rule.Parameters),
@@ -123,7 +123,7 @@ public sealed class ConstraintRuleEnforcementDomainService
                     if (matched.Count > maxAllowed)
                     {
                         violations.Add(new ConstraintViolation(
-                            rule.BasicId,
+                            rule.Id,
                             rule.RuleCode,
                             rule.RuleName,
                             rule.ConstraintType,

@@ -8,14 +8,7 @@ using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
-using XiHan.Framework.Workflow.Abstractions.Exceptions;
-using XiHan.Framework.Workflow.Builders;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Timing;
 
 namespace XiHan.BasicApp.Workflow.Application.AppServices;
 
@@ -26,7 +19,6 @@ namespace XiHan.BasicApp.Workflow.Application.AppServices;
 /// 生命周期规则（草稿可改可删、发布不可变、版本自增）由框架定义管理器执行；
 /// 本服务负责 DTO 转换与工作流协议异常到业务异常的翻译。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "流程定义")]
 public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, IWorkflowDefinitionAppService
 {
     private readonly IWorkflowDefinitionManager _definitionManager;
@@ -35,7 +27,7 @@ public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, I
 
     private readonly WorkflowBusinessDefinitionGuard _businessDefinitionGuard;
 
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 构造函数
@@ -44,7 +36,7 @@ public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, I
         IWorkflowDefinitionManager definitionManager,
         IFieldSecurityService fieldSecurity,
         WorkflowBusinessDefinitionGuard businessDefinitionGuard,
-        IClock clock)
+        TimeProvider clock)
     {
         _definitionManager = definitionManager;
         _fieldSecurity = fieldSecurity;
@@ -55,7 +47,6 @@ public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, I
     /// <summary>
     /// 创建定义草稿（版本号自动取编码下最大版本 + 1）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Create)]
     public async Task<WorkflowDefinitionDetailDto> CreateAsync(WorkflowDefinitionCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -71,18 +62,17 @@ public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, I
     /// <summary>
     /// 更新草稿定义
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Update)]
     public async Task<WorkflowDefinitionDetailDto> UpdateDraftAsync(WorkflowDefinitionUpdateDraftDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysWorkflowDefinition), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysWorkflowDefinition), input.Id, input, cancellationToken);
 
-        RequirePositiveKey(input.BasicId, nameof(input));
+        RequirePositiveKey(input.Id, nameof(input));
 
         var definition = ParseDefinition(input.DefinitionJson);
-        definition.Id = ToWorkflowId(input.BasicId);
+        definition.Id = ToWorkflowId(input.Id);
         var updated = await TranslateAsync(() => _definitionManager.UpdateDraftAsync(definition, cancellationToken));
         return WorkflowApplicationMapper.ToDetailDto(updated, _clock.Kind);
     }
@@ -90,28 +80,26 @@ public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, I
     /// <summary>
     /// 发布定义（发布前结构校验）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Update)]
     public async Task<WorkflowDefinitionDetailDto> PublishAsync(WorkflowDefinitionIdDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
-        RequirePositiveKey(input.BasicId, nameof(input));
+        RequirePositiveKey(input.Id, nameof(input));
 
         // 审批业务流程额外校验：每个结束节点都要声明业务允许的结果，业务才能据此回写单据
-        var definition = await TranslateAsync(() => _definitionManager.GetAsync(ToWorkflowId(input.BasicId), cancellationToken));
+        var definition = await TranslateAsync(() => _definitionManager.GetAsync(ToWorkflowId(input.Id), cancellationToken));
         var businessErrors = _businessDefinitionGuard.Validate(definition);
         if (businessErrors.Count > 0)
         {
             throw new BusinessException(message: string.Join("；", businessErrors));
         }
 
-        var published = await TranslateAsync(() => _definitionManager.PublishAsync(ToWorkflowId(input.BasicId), cancellationToken));
+        var published = await TranslateAsync(() => _definitionManager.PublishAsync(ToWorkflowId(input.Id), cancellationToken));
         return WorkflowApplicationMapper.ToDetailDto(published, _clock.Kind);
     }
 
     /// <summary>
     /// 基于最新版本创建新草稿版本
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Create)]
     public async Task<WorkflowDefinitionDetailDto> NewVersionAsync(WorkflowDefinitionNewVersionDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -124,33 +112,30 @@ public sealed class WorkflowDefinitionAppService : WorkflowApplicationService, I
     /// <summary>
     /// 停用定义
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Update)]
     public async Task<WorkflowDefinitionDetailDto> DisableAsync(WorkflowDefinitionIdDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
-        RequirePositiveKey(input.BasicId, nameof(input));
+        RequirePositiveKey(input.Id, nameof(input));
 
-        var disabled = await TranslateAsync(() => _definitionManager.DisableAsync(ToWorkflowId(input.BasicId), cancellationToken));
+        var disabled = await TranslateAsync(() => _definitionManager.DisableAsync(ToWorkflowId(input.Id), cancellationToken));
         return WorkflowApplicationMapper.ToDetailDto(disabled, _clock.Kind);
     }
 
     /// <summary>
     /// 归档定义
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Update)]
     public async Task<WorkflowDefinitionDetailDto> ArchiveAsync(WorkflowDefinitionIdDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
-        RequirePositiveKey(input.BasicId, nameof(input));
+        RequirePositiveKey(input.Id, nameof(input));
 
-        var archived = await TranslateAsync(() => _definitionManager.ArchiveAsync(ToWorkflowId(input.BasicId), cancellationToken));
+        var archived = await TranslateAsync(() => _definitionManager.ArchiveAsync(ToWorkflowId(input.Id), cancellationToken));
         return WorkflowApplicationMapper.ToDetailDto(archived, _clock.Kind);
     }
 
     /// <summary>
     /// 删除草稿定义
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Delete)]
     public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         RequirePositiveKey(id, nameof(id));

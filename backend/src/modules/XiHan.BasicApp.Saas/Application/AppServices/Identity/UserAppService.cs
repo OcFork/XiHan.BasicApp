@@ -13,20 +13,13 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
-using XiHan.Framework.Web.RealTime.Constants;
-using XiHan.Framework.Web.RealTime.Services;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 用户命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户")]
 public sealed class UserAppService
     : SaasApplicationService, IUserAppService
 {
@@ -74,8 +67,6 @@ public sealed class UserAppService
     /// <summary>
     /// 创建用户
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.User.Create)]
     public async Task<UserDetailDto> CreateUserAsync(UserCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -93,8 +84,6 @@ public sealed class UserAppService
     /// <summary>
     /// 删除用户
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.User.Delete)]
     public async Task DeleteUserAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -125,18 +114,16 @@ public sealed class UserAppService
     /// <summary>
     /// 更新用户资料
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.User.Update)]
     public async Task<UserDetailDto> UpdateUserAsync(UserUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysUser), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysUser), input.Id, input, cancellationToken);
 
         // 超管保护：非超管不得修改超管用户
-        await _superAdminProtector.EnsureCanWriteUserAsync(input.BasicId, cancellationToken);
+        await _superAdminProtector.EnsureCanWriteUserAsync(input.Id, cancellationToken);
 
         var result = await _userDomainService.UpdateUserAsync(UserApplicationMapper.ToUpdateCommand(input), cancellationToken);
         return UserApplicationMapper.ToDetailDto(result.User);
@@ -145,30 +132,28 @@ public sealed class UserAppService
     /// <summary>
     /// 更新用户状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.User.Status)]
     public async Task<UserDetailDto> UpdateUserStatusAsync(UserStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysUser), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysUser), input.Id, input, cancellationToken);
 
         // 超管保护：非超管不得启停超管用户
-        await _superAdminProtector.EnsureCanWriteUserAsync(input.BasicId, cancellationToken);
+        await _superAdminProtector.EnsureCanWriteUserAsync(input.Id, cancellationToken);
 
         var result = await _userDomainService.UpdateUserStatusAsync(UserApplicationMapper.ToStatusCommand(input), cancellationToken);
         // 禁用时吊销其全部会话，使禁用即时生效（请求期会话校验随即拒绝；禁用用户重新启用后需重新登录）
         if (input.Status == EnableStatus.Disabled)
         {
-            var revokedSessionIds = await _userSessionRepository.RevokeByUserIdAsync(input.BasicId, cancellationToken);
+            var revokedSessionIds = await _userSessionRepository.RevokeByUserIdAsync(input.Id, cancellationToken);
             // 其发起的模仿会话行 UserId 是被模仿者，须按模仿者另吊销一次
-            var revokedImpersonationIds = await _userSessionRepository.RevokeByImpersonatorUserIdAsync(input.BasicId, cancellationToken);
+            var revokedImpersonationIds = await _userSessionRepository.RevokeByImpersonatorUserIdAsync(input.Id, cancellationToken);
             await InvalidateSessionStatesAsync([.. revokedSessionIds, .. revokedImpersonationIds], cancellationToken);
         }
 
-        await _cacheInvalidator.InvalidateAuthorizationAsync(input.BasicId, cancellationToken);
+        await _cacheInvalidator.InvalidateAuthorizationAsync(input.Id, cancellationToken);
         return UserApplicationMapper.ToDetailDto(result.User);
     }
 

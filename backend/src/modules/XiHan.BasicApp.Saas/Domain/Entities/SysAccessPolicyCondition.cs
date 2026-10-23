@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -15,11 +14,11 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 列与 <see cref="SysPermissionCondition"/> 同形；随策略整体替换，租户与策略一致。
 /// </remarks>
 [SugarTable(TableName = "Sys_Access_Policy_Condition", TableDescription = "访问策略条件表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_PoId", nameof(TenantId), OrderByType.Asc, nameof(PolicyId), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysAccessPolicyCondition : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysAccessPolicyCondition : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 所属策略主键

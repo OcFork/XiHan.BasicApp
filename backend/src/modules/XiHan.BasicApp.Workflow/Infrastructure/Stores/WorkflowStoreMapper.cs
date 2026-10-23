@@ -4,10 +4,6 @@
 using System.Globalization;
 using System.Text.Json;
 using XiHan.BasicApp.Workflow.Domain.Entities;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
-using XiHan.Framework.Workflow.Abstractions.Exceptions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Builders;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Stores;
 
@@ -117,7 +113,7 @@ public static class WorkflowStoreMapper
     public static WorkflowInstance ToModel(SysWorkflowInstance entity)
     {
         var instance = JsonSerializer.Deserialize<WorkflowInstance>(entity.InstanceJson, JsonOptions)
-            ?? throw new WorkflowException($"实例 {entity.BasicId} 的 JSON 真源为空，无法还原");
+            ?? throw new WorkflowException($"实例 {entity.Id} 的 JSON 真源为空，无法还原");
         instance.TenantId = entity.TenantId;
         return instance;
     }
@@ -155,7 +151,7 @@ public static class WorkflowStoreMapper
     public static WorkflowNodeInstance ToModel(SysWorkflowNodeInstance entity)
     {
         var nodeInstance = JsonSerializer.Deserialize<WorkflowNodeInstance>(entity.NodeInstanceJson, JsonOptions)
-            ?? throw new WorkflowException($"节点实例 {entity.BasicId} 的 JSON 真源为空，无法还原");
+            ?? throw new WorkflowException($"节点实例 {entity.Id} 的 JSON 真源为空，无法还原");
         nodeInstance.TenantId = entity.TenantId;
         return nodeInstance;
     }
@@ -194,7 +190,7 @@ public static class WorkflowStoreMapper
     public static WorkflowBookmark ToModel(SysWorkflowBookmark entity)
     {
         var bookmark = JsonSerializer.Deserialize<WorkflowBookmark>(entity.BookmarkJson, JsonOptions)
-            ?? throw new WorkflowException($"书签 {entity.BasicId} 的 JSON 真源为空，无法还原");
+            ?? throw new WorkflowException($"书签 {entity.Id} 的 JSON 真源为空，无法还原");
         bookmark.TenantId = entity.TenantId;
         return bookmark;
     }

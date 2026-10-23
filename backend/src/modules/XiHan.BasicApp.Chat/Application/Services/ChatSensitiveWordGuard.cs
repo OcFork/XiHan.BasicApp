@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Chat.Domain.Configurations;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Core.DependencyInjection.ServiceLifetimes;
 
 namespace XiHan.BasicApp.Chat.Application.Services;
 
@@ -25,7 +24,7 @@ public interface IChatSensitiveWordGuard
 /// 词库是聊天策略（<see cref="ChatConfigKeys.Policy"/>）里的敏感词数组，租户有同键配置时用租户的；
 /// 配置值查询自带缓存且在修改配置时失效。不区分大小写的包含匹配，命中即拒绝。
 /// </remarks>
-public sealed class ChatSensitiveWordGuard : IChatSensitiveWordGuard, IScopedDependency
+public sealed class ChatSensitiveWordGuard : IChatSensitiveWordGuard
 {
     private readonly ISaasConfigurationService _configuration;
 

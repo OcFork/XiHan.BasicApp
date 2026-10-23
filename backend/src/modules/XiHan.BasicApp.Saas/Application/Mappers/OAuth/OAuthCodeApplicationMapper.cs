@@ -25,7 +25,7 @@ public static class OAuthCodeApplicationMapper
 
         return new OAuthCodeListItemDto
         {
-            BasicId = code.BasicId,
+            Id = code.Id,
             ClientId = code.ClientId,
             AppName = app?.AppName,
             UserId = code.UserId,
@@ -39,7 +39,7 @@ public static class OAuthCodeApplicationMapper
             IsExpired = code.ExpirationTime <= now,
             IsUsed = code.IsUsed,
             UsedTime = code.UsedTime,
-            CreatedTime = code.CreatedTime
+            CreatedAt = code.CreatedAt
         };
     }
 
@@ -58,7 +58,7 @@ public static class OAuthCodeApplicationMapper
         var item = ToListItemDto(code, app, user, now);
         return new OAuthCodeDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             ClientId = item.ClientId,
             AppName = item.AppName,
             UserId = item.UserId,
@@ -72,7 +72,7 @@ public static class OAuthCodeApplicationMapper
             IsExpired = item.IsExpired,
             IsUsed = item.IsUsed,
             UsedTime = item.UsedTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = code.CreatedId,
             CreatedBy = code.CreatedBy
         };

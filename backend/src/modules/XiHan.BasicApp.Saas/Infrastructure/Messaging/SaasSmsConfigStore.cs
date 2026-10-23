@@ -4,8 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Bot.Sms.Abstractions;
-using XiHan.Framework.Bot.Sms.Options;
+using XiHan.BasicApp.Saas.Security;
 using BotSmsProviderType = XiHan.Framework.Bot.Sms.Enums.SmsProviderType;
 using SaasSmsProviderType = XiHan.BasicApp.Saas.Domain.Entities.SmsProviderType;
 using XiHan.Framework.MultiTenancy.Abstractions;
@@ -64,7 +63,7 @@ public sealed class SaasSmsConfigStore : ISmsConfigStore
 
         return new SmsChannelConfig
         {
-            ConfigId = config.BasicId,
+            ConfigId = config.Id,
             Provider = MapProvider(config.Provider),
             AccessKeyId = config.AccessKeyId,
             AccessKeySecret = secret,

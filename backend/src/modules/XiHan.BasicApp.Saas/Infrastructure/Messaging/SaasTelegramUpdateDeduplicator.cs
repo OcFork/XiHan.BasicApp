@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using XiHan.BasicApp.Saas.Application.Caching;
-using XiHan.Framework.Bot.Telegram.Abstractions;
-using XiHan.Framework.Bot.Telegram.Stores;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

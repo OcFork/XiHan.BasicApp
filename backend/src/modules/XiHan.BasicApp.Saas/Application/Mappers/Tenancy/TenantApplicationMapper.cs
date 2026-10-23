@@ -44,7 +44,7 @@ public static class TenantApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new TenantUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.TenantName,
             input.TenantShortName,
             input.Logo,
@@ -66,7 +66,7 @@ public static class TenantApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TenantStatusChangeCommand(input.BasicId, input.TenantStatus, input.Reason, currentUserId);
+        return new TenantStatusChangeCommand(input.Id, input.TenantStatus, input.Reason, currentUserId);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class TenantApplicationMapper
 
         return new TenantSwitcherDto
         {
-            TenantId = tenant.BasicId,
+            TenantId = tenant.Id,
             TenantCode = tenant.TenantCode,
             TenantName = tenant.TenantName,
             TenantShortName = tenant.TenantShortName,
@@ -92,12 +92,12 @@ public static class TenantApplicationMapper
             TenantStatus = tenant.TenantStatus,
             ConfigStatus = tenant.ConfigStatus,
             ExpirationTime = tenant.ExpirationTime,
-            MembershipId = membership.BasicId,
+            MembershipId = membership.Id,
             MemberType = membership.MemberType,
             InviteStatus = membership.InviteStatus,
             MembershipExpirationTime = membership.ExpirationTime,
-            JoinedTime = membership.RespondedTime ?? membership.CreatedTime,
-            IsCurrent = currentTenantId == tenant.BasicId
+            JoinedTime = membership.RespondedTime ?? membership.CreatedAt,
+            IsCurrent = currentTenantId == tenant.Id
         };
     }
 
@@ -113,7 +113,7 @@ public static class TenantApplicationMapper
 
         return new TenantListItemDto
         {
-            BasicId = tenant.BasicId,
+            Id = tenant.Id,
             TenantCode = tenant.TenantCode,
             TenantName = tenant.TenantName,
             TenantShortName = tenant.TenantShortName,
@@ -129,8 +129,8 @@ public static class TenantApplicationMapper
             UserLimit = tenant.UserLimit,
             StorageLimit = tenant.StorageLimit,
             Sort = tenant.Sort,
-            CreatedTime = tenant.CreatedTime,
-            ModifiedTime = tenant.ModifiedTime
+            CreatedAt = tenant.CreatedAt,
+            ModifiedAt = tenant.ModifiedAt
         };
     }
 
@@ -146,7 +146,7 @@ public static class TenantApplicationMapper
 
         return new TenantDetailDto
         {
-            BasicId = tenant.BasicId,
+            Id = tenant.Id,
             TenantCode = tenant.TenantCode,
             TenantName = tenant.TenantName,
             TenantShortName = tenant.TenantShortName,
@@ -163,10 +163,10 @@ public static class TenantApplicationMapper
             StorageLimit = tenant.StorageLimit,
             Sort = tenant.Sort,
             Remark = tenant.Remark,
-            CreatedTime = tenant.CreatedTime,
+            CreatedAt = tenant.CreatedAt,
             CreatedId = tenant.CreatedId,
             CreatedBy = tenant.CreatedBy,
-            ModifiedTime = tenant.ModifiedTime,
+            ModifiedAt = tenant.ModifiedAt,
             ModifiedId = tenant.ModifiedId,
             ModifiedBy = tenant.ModifiedBy
         };

@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -102,7 +103,7 @@ public sealed class PermissionDelegationDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var now = DateTimeOffset.UtcNow;
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限委托主键必须大于 0。");
         }
@@ -116,7 +117,7 @@ public sealed class PermissionDelegationDomainService
             command.ExpirationTime,
             now);
 
-        var delegation = await GetPermissionDelegationOrThrowAsync(command.BasicId, cancellationToken);
+        var delegation = await GetPermissionDelegationOrThrowAsync(command.Id, cancellationToken);
         if (delegation.DelegationStatus == DelegationStatus.Revoked)
         {
             throw new InvalidOperationException("已撤销权限委托不能更新。");
@@ -126,7 +127,7 @@ public sealed class PermissionDelegationDomainService
         _ = await GetAvailableTenantMemberWithSubjectOrThrowAsync(command.DelegateeUserId, now, "被委托人", cancellationToken);
         _ = await GetDelegablePermissionOrDefaultAsync(command.PermissionId, cancellationToken);
         _ = await GetDelegableRoleOrDefaultAsync(command.RoleId, cancellationToken);
-        await EnsureDelegationNotExistsAsync(command.DelegatorUserId, command.DelegateeUserId, command.PermissionId, delegation.BasicId, cancellationToken);
+        await EnsureDelegationNotExistsAsync(command.DelegatorUserId, command.DelegateeUserId, command.PermissionId, delegation.Id, cancellationToken);
 
         delegation.DelegatorUserId = command.DelegatorUserId;
         delegation.DelegateeUserId = command.DelegateeUserId;
@@ -150,7 +151,7 @@ public sealed class PermissionDelegationDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限委托主键必须大于 0。");
         }
@@ -158,7 +159,7 @@ public sealed class PermissionDelegationDomainService
         ValidateEnum(command.DelegationStatus, nameof(command.DelegationStatus));
 
         var now = DateTimeOffset.UtcNow;
-        var delegation = await GetPermissionDelegationOrThrowAsync(command.BasicId, cancellationToken);
+        var delegation = await GetPermissionDelegationOrThrowAsync(command.Id, cancellationToken);
         if (delegation.DelegationStatus == DelegationStatus.Revoked && command.DelegationStatus != DelegationStatus.Revoked)
         {
             throw new InvalidOperationException("已撤销权限委托不能重新生效。");
@@ -185,7 +186,7 @@ public sealed class PermissionDelegationDomainService
         // 生效/待生效视为授予；已撤销/已过期视为收回
         var isActive = delegation.DelegationStatus is DelegationStatus.Active or DelegationStatus.Pending;
         return new PermissionDelegationCommandResult(
-            delegation.BasicId,
+            delegation.Id,
             delegation.DelegateeUserId,
             delegation.PermissionId,
             delegation.RoleId,
@@ -298,7 +299,7 @@ public sealed class PermissionDelegationDomainService
                 delegation => delegation.DelegatorUserId == delegatorUserId
                     && delegation.DelegateeUserId == delegateeUserId
                     && delegation.PermissionId == permissionId
-                    && delegation.BasicId != excludeId.Value,
+                    && delegation.Id != excludeId.Value,
                 cancellationToken)
             : await _permissionDelegationRepository.AnyAsync(
                 delegation => delegation.DelegatorUserId == delegatorUserId

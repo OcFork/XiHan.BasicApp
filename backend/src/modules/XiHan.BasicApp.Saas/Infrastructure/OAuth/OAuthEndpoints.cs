@@ -11,8 +11,6 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
-using XiHan.Framework.Authentication.OAuth;
-using XiHan.Framework.Core.DynamicProxy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.OAuth;
 

@@ -4,9 +4,7 @@
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Upgrade.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Upgrade;
 
@@ -161,7 +159,7 @@ public sealed class SaasUpgradeTenantProvider : IUpgradeTenantProvider
             .ToList();
 
         // 平台库自身以 null 租户参与升级，排在各租户库之前
-        return [new BasicTenantInfo(null, "平台库"), .. tenants.Select(tenant => new BasicTenantInfo(tenant.BasicId, tenant.TenantName))];
+        return [new BasicTenantInfo(null, "平台库"), .. tenants.Select(tenant => new BasicTenantInfo(tenant.Id, tenant.TenantName))];
     }
 }
 

@@ -11,17 +11,12 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 租户版本命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "租户版本")]
 public sealed class TenantEditionAppService
     : SaasApplicationService, ITenantEditionAppService
 {
@@ -55,8 +50,6 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 创建租户版本
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Create)]
     public async Task<TenantEditionDetailDto> CreateTenantEditionAsync(TenantEditionCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -76,15 +69,13 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 设置默认租户版本
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Default)]
     public async Task<TenantEditionDetailDto> UpdateDefaultTenantEditionAsync(TenantEditionDefaultUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenantEdition), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenantEdition), input.Id, input, cancellationToken);
 
         var result = await _tenantEditionDomainService.UpdateDefaultTenantEditionAsync(
             TenantEditionApplicationMapper.ToDefaultCommand(input),
@@ -99,15 +90,13 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 更新租户版本
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Update)]
     public async Task<TenantEditionDetailDto> UpdateTenantEditionAsync(TenantEditionUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenantEdition), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenantEdition), input.Id, input, cancellationToken);
 
         var result = await _tenantEditionDomainService.UpdateTenantEditionAsync(TenantEditionApplicationMapper.ToUpdateCommand(input), cancellationToken);
 
@@ -120,15 +109,13 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 更新租户版本状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Status)]
     public async Task<TenantEditionDetailDto> UpdateTenantEditionStatusAsync(TenantEditionStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenantEdition), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenantEdition), input.Id, input, cancellationToken);
 
         var result = await _tenantEditionDomainService.UpdateTenantEditionStatusAsync(
             TenantEditionApplicationMapper.ToStatusCommand(input),
@@ -143,8 +130,6 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 授予租户版本权限
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEditionPermission.Grant)]
     public async Task<TenantEditionPermissionDetailDto> GrantTenantEditionPermissionAsync(TenantEditionPermissionGrantDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -165,8 +150,6 @@ public sealed class TenantEditionAppService
     /// 入口与「版本权限」抽屉同挂查看权限；抽屉里授予、撤销、启停各由对应按钮码放开，
     /// 这里按本次实际出现的操作逐项校验授予、撤销、更新权限，与界面的放开口径一致。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEditionPermission.Read)]
     public async Task BatchUpdateTenantEditionPermissionsAsync(TenantEditionPermissionBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -192,7 +175,7 @@ public sealed class TenantEditionAppService
                 input.EditionId,
                 input.GrantPermissionIds,
                 input.RevokeEditionPermissionIds,
-                [.. input.StatusChanges.Select(item => new TenantEditionPermissionStatusItem(item.BasicId, item.Status))]),
+                [.. input.StatusChanges.Select(item => new TenantEditionPermissionStatusItem(item.Id, item.Status))]),
             cancellationToken);
         await _cacheInvalidator.InvalidateEditionGateAsync(cancellationToken);
 
@@ -208,8 +191,6 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 撤销租户版本权限
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEditionPermission.Revoke)]
     public async Task RevokeTenantEditionPermissionAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -222,8 +203,6 @@ public sealed class TenantEditionAppService
     /// <summary>
     /// 更新租户版本权限状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantEditionPermission.Update)]
     public async Task<TenantEditionPermissionDetailDto> UpdateTenantEditionPermissionStatusAsync(TenantEditionPermissionStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

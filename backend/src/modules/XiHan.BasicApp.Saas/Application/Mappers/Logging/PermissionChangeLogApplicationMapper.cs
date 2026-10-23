@@ -22,7 +22,7 @@ public static class PermissionChangeLogApplicationMapper
 
         return new PermissionChangeLogListItemDto
         {
-            BasicId = permissionChangeLog.BasicId,
+            Id = permissionChangeLog.Id,
             OperatorUserId = permissionChangeLog.OperatorUserId,
             OperatorUserName = permissionChangeLog.OperatorUserName,
             TargetUserId = permissionChangeLog.TargetUserId,
@@ -37,7 +37,7 @@ public static class PermissionChangeLogApplicationMapper
             OperationIp = permissionChangeLog.OperationIp,
             TraceId = permissionChangeLog.TraceId,
             ChangeTime = permissionChangeLog.ChangeTime,
-            CreatedTime = permissionChangeLog.CreatedTime
+            CreatedAt = permissionChangeLog.CreatedAt
         };
     }
 
@@ -53,7 +53,7 @@ public static class PermissionChangeLogApplicationMapper
         var item = ToListItemDto(permissionChangeLog);
         return new PermissionChangeLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             OperatorUserId = item.OperatorUserId,
             OperatorUserName = item.OperatorUserName,
             TargetUserId = item.TargetUserId,
@@ -68,7 +68,7 @@ public static class PermissionChangeLogApplicationMapper
             OperationIp = item.OperationIp,
             TraceId = item.TraceId,
             ChangeTime = item.ChangeTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = permissionChangeLog.CreatedId,
             CreatedBy = permissionChangeLog.CreatedBy
         };

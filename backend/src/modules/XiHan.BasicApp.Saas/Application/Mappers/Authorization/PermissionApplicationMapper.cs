@@ -59,7 +59,7 @@ public static class PermissionApplicationMapper
 
         return new PermissionListItemDto
         {
-            BasicId = permission.BasicId,
+            Id = permission.Id,
             PermissionType = permission.PermissionType,
             ResourceId = permission.ResourceId,
             ResourceCode = resource?.ResourceCode,
@@ -79,8 +79,8 @@ public static class PermissionApplicationMapper
             Priority = permission.Priority,
             Status = permission.Status,
             Sort = permission.Sort,
-            CreatedTime = permission.CreatedTime,
-            ModifiedTime = permission.ModifiedTime
+            CreatedAt = permission.CreatedAt,
+            ModifiedAt = permission.ModifiedAt
         };
     }
 
@@ -97,7 +97,7 @@ public static class PermissionApplicationMapper
 
         return new PermissionDetailDto
         {
-            BasicId = permission.BasicId,
+            Id = permission.Id,
             PermissionType = permission.PermissionType,
             ResourceId = permission.ResourceId,
             ResourceCode = resource?.ResourceCode,
@@ -117,10 +117,10 @@ public static class PermissionApplicationMapper
             Status = permission.Status,
             Sort = permission.Sort,
             Remark = permission.Remark,
-            CreatedTime = permission.CreatedTime,
+            CreatedAt = permission.CreatedAt,
             CreatedId = permission.CreatedId,
             CreatedBy = permission.CreatedBy,
-            ModifiedTime = permission.ModifiedTime,
+            ModifiedAt = permission.ModifiedAt,
             ModifiedId = permission.ModifiedId,
             ModifiedBy = permission.ModifiedBy
         };
@@ -137,7 +137,7 @@ public static class PermissionApplicationMapper
 
         return new PermissionSelectItemDto
         {
-            BasicId = permission.BasicId,
+            Id = permission.Id,
             PermissionType = permission.PermissionType,
             ModuleCode = permission.ModuleCode,
             PermissionCode = permission.PermissionCode,
@@ -154,7 +154,7 @@ public static class PermissionApplicationMapper
     public static PermissionStatusCommand ToStatusCommand(PermissionStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new PermissionStatusCommand(input.BasicId, input.Status, input.Remark);
+        return new PermissionStatusCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public static class PermissionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new PermissionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.PermissionName,
             input.PermissionDescription,
             input.Tags,

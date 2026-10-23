@@ -13,7 +13,7 @@ public sealed class TenantEditionPermissionStatusItemDto
     /// <summary>
     /// 租户版本权限绑定主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 目标映射状态

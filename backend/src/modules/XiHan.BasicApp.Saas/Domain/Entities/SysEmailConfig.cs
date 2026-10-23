@@ -31,12 +31,12 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 租户隔离：严格——配置带 SMTP 密码，租户只看自己的；租户未自配默认发件时，发送显式回退平台默认（见 SaasEmailConfigStore）。
 /// </remarks>
 [SugarTable(TableName = "Sys_Email_Config", TableDescription = "系统邮件网关配置表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_CoCd", nameof(TenantId), OrderByType.Asc, nameof(ConfigCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_IsDe_IsEn", nameof(TenantId), OrderByType.Asc, nameof(IsDefault), OrderByType.Desc, nameof(IsEnabled), OrderByType.Asc)]
-public partial class SysEmailConfig : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysEmailConfig : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 配置编码（租户内唯一标识）

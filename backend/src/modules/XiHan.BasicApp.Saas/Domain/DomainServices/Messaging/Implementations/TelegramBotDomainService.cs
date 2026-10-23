@@ -67,11 +67,11 @@ public sealed class TelegramBotDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var bot = await GetTelegramBotOrThrowAsync(command.BasicId, cancellationToken);
+        var bot = await GetTelegramBotOrThrowAsync(command.Id, cancellationToken);
 
         var botName = command.BotName.Trim();
         if (!string.Equals(bot.BotName, botName, StringComparison.Ordinal)
-            && await _telegramBotRepository.AnyAsync(item => item.BotName == botName && item.BasicId != command.BasicId, cancellationToken))
+            && await _telegramBotRepository.AnyAsync(item => item.BotName == botName && item.Id != command.Id, cancellationToken))
         {
             throw new InvalidOperationException("Telegram 机器人名称已存在。");
         }
@@ -102,8 +102,8 @@ public sealed class TelegramBotDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "Telegram 机器人主键必须大于 0。");
-        var bot = await GetTelegramBotOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "Telegram 机器人主键必须大于 0。");
+        var bot = await GetTelegramBotOrThrowAsync(command.Id, cancellationToken);
 
         bot.IsEnabled = command.IsEnabled;
         return new TelegramBotCommandResult(await _telegramBotRepository.UpdateAsync(bot, cancellationToken));
@@ -202,7 +202,7 @@ public sealed class TelegramBotDomainService
 
     private static void ValidateUpdateCommand(TelegramBotUpdateCommand command)
     {
-        EnsureId(command.BasicId, "Telegram 机器人主键必须大于 0。");
+        EnsureId(command.Id, "Telegram 机器人主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.BotName);
         ValidateCommonInput(command.Sort);
     }

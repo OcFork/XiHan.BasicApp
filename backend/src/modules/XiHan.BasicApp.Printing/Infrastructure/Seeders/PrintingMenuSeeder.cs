@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using PrintingPageRegistry = XiHan.BasicApp.Printing.Application.Pages.PageRegistry;
 
 namespace XiHan.BasicApp.Printing.Infrastructure.Seeders;

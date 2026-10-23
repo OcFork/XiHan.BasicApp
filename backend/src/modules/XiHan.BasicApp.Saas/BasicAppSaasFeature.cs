@@ -1,0 +1,179 @@
+// Copyright (c) 2021-Present XiHanFun and contributors.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core;
+using XiHan.BasicApp.Saas.Application.Conditions;
+using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Saas.Hubs;
+using XiHan.BasicApp.Saas.Infrastructure.OAuth;
+using XiHan.BasicApp.Saas.Infrastructure.Tasks;
+using XiHan.BasicApp.Saas.Extensions;
+using XiHan.BasicApp.Web.Core;
+using XiHan.Framework.Kernel;
+using XiHan.Framework.Kernel.Hosting;
+using XiHan.Framework.Primitives;
+using XiHan.Framework.Primitives.Manifests;
+
+namespace XiHan.BasicApp.Saas;
+
+/// <summary>
+/// 曦寒基础应用 SaaS 模块
+/// </summary>
+public sealed class BasicAppSaasFeature : IHostedFeature
+{
+    /// <inheritdoc />
+    public Manifest Manifest { get; } = new()
+    {
+        Id = "xihan.basicapp.saas",
+        Package = "XiHan.BasicApp.Saas",
+        Version = "1.0.0",
+        Primitives = 1,
+        Stability = Stability.Stable,
+        Kind = ManifestKind.Capability,
+        Requires =
+        [
+            new CapabilityRequirement(KernelCapabilities.Hosting, KernelCapabilities.Version),
+        ],
+        Entry = typeof(BasicAppSaasFeature).FullName,
+    };
+
+    /// <inheritdoc />
+    public void Configure(FeatureContext context)
+    {
+        var services = context.Services;
+
+        // 注册 SaaS 模块种子数据（基础数据始终播种；演示数据只在 Saas:Seed:EnableDemoData 为 true 时写入）
+        services.AddSaasDataSeeders();
+        services.AddSaasDemoDataSeeders();
+
+        // 注册 SaaS 领域服务
+        services.AddSaasDomainServices();
+
+        // 注册 SaaS 应用层内部服务
+        services.AddSaasApplicationServices();
+        services.AddSaasFieldSecurityEntities();
+
+        // 注册条件求值的属性登记与属性来源（时区取 Saas:Conditions:TimeZone）
+        services.AddSaasConditions();
+
+        // 注册访问策略（总开关 Saas:AccessPolicy:Enabled）
+        services.AddSaasAccessPolicies();
+
+        // 修正 .NET 配置对 List<T> 的「追加而非替换」语义：框架 XiHanOpenApiSecurityOptions 的默认
+        // ProtectedPathPrefixes=["/api"] 不会被 appsettings 的值替换，而是被追加，导致最终为 ["/api", 配置值...]，
+        // 把整个第一方前端 /api/* 全纳入强制签名（登录等匿名调用直接 401「缺少安全请求头」）。
+        // 此处以 appsettings 配置值为准重建这两个路径列表（.Get 返回全新列表，无默认污染）；PostConfigure 在框架绑定之后执行，最终生效。
+        services.AddOptions<XiHan.Framework.Web.Api.Security.OpenApi.XiHanOpenApiSecurityOptions>()
+            .PostConfigure<IConfiguration>((options, configuration) =>
+            {
+                var sectionName = XiHan.Framework.Web.Api.Security.OpenApi.XiHanOpenApiSecurityOptions.SectionName;
+
+                var protectedPrefixes = configuration.GetSection($"{sectionName}:ProtectedPathPrefixes").Get<List<string>>();
+                if (protectedPrefixes is not null)
+                {
+                    options.ProtectedPathPrefixes = protectedPrefixes;
+                }
+
+                var ignoredPrefixes = configuration.GetSection($"{sectionName}:IgnoredPathPrefixes").Get<List<string>>();
+                if (ignoredPrefixes is not null)
+                {
+                    options.IgnoredPathPrefixes = ignoredPrefixes;
+                }
+            });
+
+        // 注册 SaaS 领域事件处理器（ILocalEventHandler<T> 由事件总线框架自动发现并订阅）
+        services.AddSaasEventHandlers();
+
+        // 注册日志写入器
+        services.AddSaasLogWriters();
+
+        // 注册 SaaS 认证基础设施（用户存储、第三方登录存储、密码历史存储）
+        services.AddSaasAuthStores();
+
+        // 注册 SaaS 消息发送器（Email / SMS）
+        services.AddSaasMessageSenders();
+
+        // 注册任务调度基础设施（替换 DefaultJobStore 为数据库持久化，注册 IJobWorker 实现）
+        services.AddSaasJobInfrastructure();
+
+        // 注册导出中心基础设施（导出引擎 + Provider + 后台执行 worker）
+        services.AddSaasExportInfrastructure();
+    }
+
+    /// <inheritdoc />
+    public Task StartAsync(IServiceProvider services, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-01): GetApplicationBuilder() 在 StartAsync 里没有对应物；中间件与端点改到 Program.cs 的 app.UseXiHan() 之后注册。
+        var app = context.GetApplicationBuilder();
+
+        app.UseEndpoints(endpoints =>
+        {
+            // 映射 SignalR Hub 端点
+            endpoints.MapXiHanHub<BasicAppNotificationHub>(SignalRConstants.HubPaths.Notification);
+
+            // 第三方登录（OAuth）端点：/api/OAuth/ExternalLogin（发起）+ /api/OAuth/Callback（回调）
+            endpoints.MapOAuthEndpoints();
+
+            // OAuth2 授权服务端标准端点：/connect/authorize（跳同意页）+ /connect/token（令牌）+ /connect/revoke（撤销）
+            endpoints.MapOAuthConnectEndpoints();
+
+            // OIDC 端点：发现文档 + JWKS + 用户信息（未启用时不注册任何路由）
+            endpoints.MapOidcEndpoints();
+        });
+
+        var scheduler = services.GetRequiredService<IJobScheduler>();
+        var logger = services.GetRequiredService<ILogger<BasicAppSaasFeature>>();
+
+        // 1. 扫描当前程序集中带 [JobName] 特性的 IJobWorker 实现（声明式任务）。
+        //    注意：DynamicJobWorker 是反射桥接器、UserStatisticsAggregationTask 是反射目标类，
+        //    均不带 [JobName]，故本步对当前程序集是空操作；保留以支持未来的声明式 Worker。
+        var jobAssembly = typeof(DynamicJobWorker).Assembly;
+        scheduler.RegisterJobsFromAssembly(jobAssembly);
+
+        // 2. 同步数据库中所有启用的 SysTask 记录到调度器（含崩溃残留 Running 状态复位）
+        using var scope = services.CreateScope();
+        var schedulerSyncService = scope.ServiceProvider.GetRequiredService<ITaskSchedulerSyncService>();
+        schedulerSyncService.SyncAllActiveJobsAsync().GetAwaiter().GetResult();
+        logger.LogInformation("数据库中的活跃 SysTask 记录已同步到调度器");
+
+        // 3. 权限条件盘点：启动时写一行各类条数的汇总，详单在权限管理页的「条件盘点」
+        LogPermissionConditionInventory(services, logger);
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 写一行权限条件盘点的汇总；盘点失败只记警告，不影响启动
+    /// </summary>
+    private static void LogPermissionConditionInventory(IServiceProvider serviceProvider, ILogger logger)
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var inventory = scope.ServiceProvider.GetRequiredService<PermissionConditionInventoryService>()
+                .BuildAsync(DateTimeOffset.UtcNow)
+                .GetAwaiter()
+                .GetResult();
+            logger.LogInformation(
+                "权限条件盘点：{ConditionCount} 条条件、{BindingCount} 条授权；条件组 {GroupConclusions}；诊断 {Diagnostics}",
+                inventory.ConditionCount,
+                inventory.BindingCount,
+                PermissionConditionInventoryService.FormatCounts(inventory.GroupConclusions),
+                PermissionConditionInventoryService.FormatCounts(inventory.Diagnostics));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "权限条件盘点失败，不影响启动；可在权限管理页重跑");
+        }
+    }
+}

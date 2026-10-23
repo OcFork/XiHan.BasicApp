@@ -4,7 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using XiHan.BasicApp.Chat.Domain.Permissions;
-using XiHan.Framework.Authorization.AspNetCore;
+using XiHan.BasicApp.Saas.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -17,13 +17,7 @@ using XiHan.BasicApp.Chat.Application.Services;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.Framework.AI.Abstractions.Chat;
-using XiHan.Framework.AI.Abstractions.Prompts;
-using XiHan.Framework.AI.Abstractions.Rag;
-using XiHan.Framework.Application.Attributes;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.AI.Application.AppServices;
 
@@ -35,8 +29,6 @@ namespace XiHan.BasicApp.AI.Application.AppServices;
 /// 生成结束才落库为一条 <see cref="ChatMessageType.Assistant"/> 消息并按普通消息推送。
 /// 助手输出与用户输入走同一套敏感词守卫。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "聊天助手")]
 public sealed class ChatAssistantAppService : AiApplicationService, IChatAssistantAppService
 {
     /// <summary>
@@ -99,9 +91,6 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
     /// <summary>
     /// 打开与指定助手的会话（不存在则创建，并发送开场白）
     /// </summary>
-    [UnitOfWork(true)]
-    [HttpPost]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task<ChatAssistantConversationDto> OpenConversationAsync(ChatAssistantOpenDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -111,21 +100,21 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
         var assistant = await GetEnabledAssistantOrThrowAsync(input.AssistantId, cancellationToken);
 
         var result = await _chatDomainService.GetOrCreateAssistantConversationAsync(
-            new ChatAssistantConversationCommand(userId, assistant.BasicId, assistant.AssistantName, assistant.Avatar), cancellationToken);
+            new ChatAssistantConversationCommand(userId, assistant.Id, assistant.AssistantName, assistant.Avatar), cancellationToken);
 
         // 开场白只在新建会话时发一次，避免每次打开都灌一条
         if (result.Created && !string.IsNullOrWhiteSpace(assistant.Greeting))
         {
             var greeting = await _chatDomainService.AppendAssistantMessageAsync(
-                new ChatAssistantMessageCommand(result.Conversation.BasicId, assistant.BasicId, assistant.AssistantName, assistant.Greeting), cancellationToken);
+                new ChatAssistantMessageCommand(result.Conversation.Id, assistant.Id, assistant.AssistantName, assistant.Greeting), cancellationToken);
             await _pushService.PushMessageAsync(
                 ChatApplicationMapper.ToMessageItemDto(greeting.Message), greeting.Conversation, greeting.RecipientUserIds);
         }
 
         return new ChatAssistantConversationDto
         {
-            ConversationId = result.Conversation.BasicId,
-            AssistantId = assistant.BasicId,
+            ConversationId = result.Conversation.Id,
+            AssistantId = assistant.Id,
             AssistantName = assistant.AssistantName,
             Avatar = assistant.Avatar,
             Created = result.Created
@@ -135,8 +124,6 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
     /// <summary>
     /// 请求助手回复会话内最后一条用户消息（增量经 SignalR 推送，完成后落库）
     /// </summary>
-    [HttpPost]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task<ChatAssistantReplyResultDto> ReplyAsync(ChatAssistantReplyDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -151,14 +138,14 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
             throw new InvalidOperationException("该会话不是助手会话。");
         }
 
-        _ = await _memberRepository.GetMemberAsync(conversation.BasicId, userId, cancellationToken)
+        _ = await _memberRepository.GetMemberAsync(conversation.Id, userId, cancellationToken)
             ?? throw new InvalidOperationException("仅会话成员可请求助手回复。");
 
         var assistant = await GetEnabledAssistantOrThrowAsync(assistantId, cancellationToken);
         IReadOnlyList<long> recipients = [userId];
 
         // 历史取自库而不是前端传参：前端可篡改上下文，且多端发起时应看到同一份历史
-        var history = await _messageRepository.GetHistoryAsync(conversation.BasicId, null, Math.Max(assistant.HistoryRounds, 1), cancellationToken);
+        var history = await _messageRepository.GetHistoryAsync(conversation.Id, null, Math.Max(assistant.HistoryRounds, 1), cancellationToken);
         var question = history.FirstOrDefault(message => message.MessageType == ChatMessageType.Text && !message.IsRecalled)?.Content;
         if (string.IsNullOrWhiteSpace(question))
         {
@@ -180,7 +167,7 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
                 }
 
                 _ = builder.Append(update.Text);
-                await _pushService.PushAssistantDeltaAsync(conversation.BasicId, input.ReplyId, update.Text, recipients);
+                await _pushService.PushAssistantDeltaAsync(conversation.Id, input.ReplyId, update.Text, recipients);
             }
         }
         catch (OperationCanceledException)
@@ -189,8 +176,8 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "助手回复生成失败，ConversationId={ConversationId}", conversation.BasicId);
-            await _pushService.PushAssistantCompletedAsync(conversation.BasicId, input.ReplyId, messageId: null, ex.Message, recipients);
+            _logger.LogWarning(ex, "助手回复生成失败，ConversationId={ConversationId}", conversation.Id);
+            await _pushService.PushAssistantCompletedAsync(conversation.Id, input.ReplyId, messageId: null, ex.Message, recipients);
             return new ChatAssistantReplyResultDto { Error = ex.Message };
         }
 
@@ -198,7 +185,7 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
         if (answer.Length == 0)
         {
             const string emptyMessage = "助手没有产生任何内容。";
-            await _pushService.PushAssistantCompletedAsync(conversation.BasicId, input.ReplyId, messageId: null, emptyMessage, recipients);
+            await _pushService.PushAssistantCompletedAsync(conversation.Id, input.ReplyId, messageId: null, emptyMessage, recipients);
             return new ChatAssistantReplyResultDto { Error = emptyMessage };
         }
 
@@ -209,17 +196,17 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
         }
         catch (Exception ex)
         {
-            await _pushService.PushAssistantCompletedAsync(conversation.BasicId, input.ReplyId, messageId: null, ex.Message, recipients);
+            await _pushService.PushAssistantCompletedAsync(conversation.Id, input.ReplyId, messageId: null, ex.Message, recipients);
             return new ChatAssistantReplyResultDto { Error = ex.Message };
         }
 
         var result = await _chatDomainService.AppendAssistantMessageAsync(
-            new ChatAssistantMessageCommand(conversation.BasicId, assistant.BasicId, assistant.AssistantName, answer), cancellationToken);
+            new ChatAssistantMessageCommand(conversation.Id, assistant.Id, assistant.AssistantName, answer), cancellationToken);
         await _pushService.PushMessageAsync(
             ChatApplicationMapper.ToMessageItemDto(result.Message), result.Conversation, result.RecipientUserIds);
-        await _pushService.PushAssistantCompletedAsync(conversation.BasicId, input.ReplyId, result.Message.BasicId, error: null, recipients);
+        await _pushService.PushAssistantCompletedAsync(conversation.Id, input.ReplyId, result.Message.Id, error: null, recipients);
 
-        return new ChatAssistantReplyResultDto { MessageId = result.Message.BasicId };
+        return new ChatAssistantReplyResultDto { MessageId = result.Message.Id };
     }
 
     /// <summary>
@@ -288,7 +275,7 @@ public sealed class ChatAssistantAppService : AiApplicationService, IChatAssista
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "助手知识检索失败，本轮退化为纯模型回答，AssistantId={AssistantId}", assistant.BasicId);
+            _logger.LogWarning(ex, "助手知识检索失败，本轮退化为纯模型回答，AssistantId={AssistantId}", assistant.Id);
             return question;
         }
     }

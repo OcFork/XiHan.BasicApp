@@ -7,16 +7,12 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 角色继承查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "角色继承")]
 public sealed class RoleHierarchyQueryService
     : SaasApplicationService, IRoleHierarchyQueryService
 {
@@ -45,7 +41,6 @@ public sealed class RoleHierarchyQueryService
     /// <param name="roleId">角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>上级链，按继承深度排列</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RoleHierarchy.Read)]
     public async Task<IReadOnlyList<RoleInheritanceItemDto>> GetRoleAncestorsAsync(long roleId, CancellationToken cancellationToken = default)
     {
         return await CanReadRoleAsync(roleId, cancellationToken)
@@ -59,7 +54,6 @@ public sealed class RoleHierarchyQueryService
     /// <param name="roleId">角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>下级链，按继承深度排列</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RoleHierarchy.Read)]
     public async Task<IReadOnlyList<RoleInheritanceItemDto>> GetRoleDescendantsAsync(long roleId, CancellationToken cancellationToken = default)
     {
         return await CanReadRoleAsync(roleId, cancellationToken)
@@ -74,7 +68,6 @@ public sealed class RoleHierarchyQueryService
     /// <param name="roleId">角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>继承来的权限绑定，同一权限来自多个上级时逐条列出</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RolePermission.Read)]
     public async Task<IReadOnlyList<RoleInheritedPermissionDto>> GetRoleInheritedPermissionsAsync(long roleId, CancellationToken cancellationToken = default)
     {
         return await CanReadRoleAsync(roleId, cancellationToken)

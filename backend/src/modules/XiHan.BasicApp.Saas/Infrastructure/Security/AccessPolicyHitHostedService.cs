@@ -8,10 +8,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Tasks.BackgroundServices;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 
@@ -101,6 +99,7 @@ public sealed class AccessPolicyHitHostedService : XiHanBackgroundServiceBase<Ac
             try
             {
                 // 切入命中所属的层再取连接，库隔离租户的命中进它自己的库
+                // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
                 using var tenantScope = currentTenant.Change(group.Key == 0 ? null : group.Key);
                 var entities = group.Select(ToEntity).ToList();
                 _ = await resolver.GetCurrentClient().Insertable(entities).SplitTable().ExecuteCommandAsync();

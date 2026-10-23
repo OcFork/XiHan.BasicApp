@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.QueryServices;
-using XiHan.Framework.Authorization.Conditions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Web.Api.Constants;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

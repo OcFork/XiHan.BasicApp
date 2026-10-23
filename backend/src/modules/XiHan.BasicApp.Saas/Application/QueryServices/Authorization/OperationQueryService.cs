@@ -14,9 +14,6 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -26,8 +23,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 操作查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "操作")]
 public sealed class OperationQueryService
     : SaasApplicationService, IOperationQueryService
 {
@@ -58,8 +53,6 @@ public sealed class OperationQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>操作分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Operation.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<OperationListItemDto>> GetOperationPageAsync(OperationPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -77,7 +70,6 @@ public sealed class OperationQueryService
     /// <param name="id">操作主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>操作详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Operation.Read)]
     public async Task<OperationDetailDto?> GetOperationDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -97,7 +89,6 @@ public sealed class OperationQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>可选全局操作列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Operation.Read)]
     public async Task<IReadOnlyList<OperationSelectItemDto>> GetAvailableGlobalOperationsAsync(OperationSelectQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

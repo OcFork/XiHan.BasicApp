@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -49,12 +48,12 @@ public sealed class SaasDemoAccessPolicySeeder(
             return;
         }
 
-        using var tenantScope = CurrentTenant.Change(tenant.BasicId, tenant.TenantName);
+        using var tenantScope = CurrentTenant.Change(tenant.Id, tenant.TenantName);
         var client = DbClientFor<SysAccessPolicy>();
         var codes = DemoPolicies.Select(item => item.Code).ToList();
         var existing = (await client.Queryable<SysAccessPolicy>()
                 .IncludingDeleted()
-                .Where(policy => policy.TenantId == tenant.BasicId && codes.Contains(policy.PolicyCode))
+                .Where(policy => policy.TenantId == tenant.Id && codes.Contains(policy.PolicyCode))
                 .Select(policy => policy.PolicyCode)
                 .ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -65,7 +64,7 @@ public sealed class SaasDemoAccessPolicySeeder(
                 ?? throw new InvalidOperationException($"{Name}：找不到模板 {templateCode}。");
             var policy = await client.Insertable(new SysAccessPolicy
             {
-                TenantId = tenant.BasicId,
+                TenantId = tenant.Id,
                 PolicyCode = code,
                 PolicyName = template.Name,
                 Description = template.Description,
@@ -77,8 +76,8 @@ public sealed class SaasDemoAccessPolicySeeder(
             }).ExecuteReturnEntityAsync();
             _ = await client.Insertable(template.Conditions.Select(condition => new SysAccessPolicyCondition
             {
-                TenantId = tenant.BasicId,
-                PolicyId = policy.BasicId,
+                TenantId = tenant.Id,
+                PolicyId = policy.Id,
                 ConditionGroup = condition.ConditionGroup,
                 AttributeName = condition.AttributeName,
                 Operator = condition.Operator,

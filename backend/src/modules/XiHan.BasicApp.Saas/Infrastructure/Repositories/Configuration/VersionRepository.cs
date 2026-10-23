@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -21,7 +20,7 @@ public sealed class VersionRepository(ISqlSugarClientResolver clientResolver)
         cancellationToken.ThrowIfCancellationRequested();
 
         return await CreateQueryable()
-            .OrderByDescending(version => version.CreatedTime)
+            .OrderByDescending(version => version.CreatedAt)
             .FirstAsync(cancellationToken);
     }
 }

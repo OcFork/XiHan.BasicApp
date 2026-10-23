@@ -4,7 +4,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Repositories;
-using XiHan.Framework.AI.Abstractions.Prompts;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Configuration;
 

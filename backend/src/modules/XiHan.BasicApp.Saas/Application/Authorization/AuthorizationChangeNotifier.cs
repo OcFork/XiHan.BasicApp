@@ -1,11 +1,13 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.EventBus.Abstractions.Local;
+using XiHan.BasicApp.Saas.Security;
+using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.Authorization;
 
@@ -14,7 +16,7 @@ namespace XiHan.BasicApp.Saas.Application.Authorization;
 /// </summary>
 public sealed class AuthorizationChangeNotifier : IAuthorizationChangeNotifier
 {
-    private readonly ILocalEventBus _localEventBus;
+    private readonly IMessagePublisher _localEventBus;
 
     private readonly ICurrentUser _currentUser;
 
@@ -24,7 +26,7 @@ public sealed class AuthorizationChangeNotifier : IAuthorizationChangeNotifier
     /// 构造函数
     /// </summary>
     public AuthorizationChangeNotifier(
-        ILocalEventBus localEventBus,
+        IMessagePublisher localEventBus,
         ICurrentUser currentUser,
         ICurrentTenant currentTenant)
     {
@@ -64,6 +66,7 @@ public sealed class AuthorizationChangeNotifier : IAuthorizationChangeNotifier
             reason,
             relatedRoleId);
 
-        return _localEventBus.PublishAsync(domainEvent);
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        return _localEventBus.PublishAsync("authorization-changed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "authorization-changed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(domainEvent) }, cancellationToken);
     }
 }

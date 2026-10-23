@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Security.Password;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -53,8 +51,8 @@ public sealed class SaasSuperAdminSeeder(
     {
         var role = await EnsureRoleAsync();
         var user = await EnsureUserAsync();
-        await EnsureSecurityAsync(user.BasicId);
-        await EnsureUserRoleAsync(user.BasicId, role.BasicId);
+        await EnsureSecurityAsync(user.Id);
+        await EnsureUserRoleAsync(user.Id, role.Id);
         Logger.LogInformation("{Seeder}：账号 {UserName} 已就绪", Name, UserName);
     }
 

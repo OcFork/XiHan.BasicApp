@@ -68,17 +68,17 @@ public static class AuthorizationConditionResolver
 
         string? RoleSetKey(SysRolePermission row)
         {
-            return RegisterSet($"rp:{row.BasicId}", row.PermissionId, conditionsByRolePermission[row.BasicId]);
+            return RegisterSet($"rp:{row.Id}", row.PermissionId, conditionsByRolePermission[row.Id]);
         }
 
         string? UserSetKey(SysUserPermission row)
         {
-            return RegisterSet($"up:{row.BasicId}", row.PermissionId, conditionsByUserPermission[row.BasicId]);
+            return RegisterSet($"up:{row.Id}", row.PermissionId, conditionsByUserPermission[row.Id]);
         }
 
         string? RegisterSet(string key, long permissionId, IEnumerable<SysPermissionCondition> conditions)
         {
-            var clauses = conditions.OrderBy(condition => condition.ConditionGroup).ThenBy(condition => condition.BasicId).ToList();
+            var clauses = conditions.OrderBy(condition => condition.ConditionGroup).ThenBy(condition => condition.Id).ToList();
             if (clauses.Count == 0)
             {
                 return null;
@@ -89,10 +89,10 @@ public static class AuthorizationConditionResolver
                 sets[key] = (permissionId, new AuthorizationConditionSet
                 {
                     Key = key,
-                    Fingerprint = string.Join(',', clauses.Select(clause => $"{clause.BasicId}@{(clause.ModifiedTime ?? clause.CreatedTime).UtcTicks}")),
+                    Fingerprint = string.Join(',', clauses.Select(clause => $"{clause.Id}@{(clause.ModifiedAt ?? clause.CreatedAt).UtcTicks}")),
                     Clauses = [.. clauses.Select(clause => new AuthorizationConditionClause
                     {
-                        Id = clause.BasicId,
+                        Id = clause.Id,
                         Group = clause.ConditionGroup,
                         AttributeName = clause.AttributeName,
                         Operator = (int)clause.Operator,
@@ -192,7 +192,7 @@ public static class AuthorizationConditionResolver
                 }
                 else
                 {
-                    AddPath(row.PermissionId, new ConditionalGrantPath { Source = $"user:{row.BasicId}", GrantSetKeys = [key] });
+                    AddPath(row.PermissionId, new ConditionalGrantPath { Source = $"user:{row.Id}", GrantSetKeys = [key] });
                 }
 
                 continue;

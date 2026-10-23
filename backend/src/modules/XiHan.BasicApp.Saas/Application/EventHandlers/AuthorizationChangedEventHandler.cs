@@ -2,9 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.EventBus.Abstractions.Local;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -15,8 +17,19 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// 当授权（角色-权限、用户-角色、用户-权限）发生变更时，失效相关的授权缓存快照，
 /// 确保下次鉴权决策时使用最新权限数据。
 /// </remarks>
-public sealed class AuthorizationChangedEventHandler : ILocalEventHandler<AuthorizationChangedDomainEvent>
+public sealed class AuthorizationChangedEventHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string AuthorizationChangedTopic = "authorization-changed";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<AuthorizationChangedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly ISaasCacheInvalidator _cacheInvalidator;
     private readonly ILogger<AuthorizationChangedEventHandler> _logger;
 

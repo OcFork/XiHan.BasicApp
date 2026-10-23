@@ -17,4 +17,8 @@
       <ProjectReference Include="..\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="XiHan.Framework.Kernel.Generators" Version="5.0.0-preview.1" PrivateAssets="all" />
+    </ItemGroup>
+
 </Project>

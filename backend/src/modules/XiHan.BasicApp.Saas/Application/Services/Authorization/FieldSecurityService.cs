@@ -8,8 +8,8 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Models;
-using XiHan.Framework.Security.Users;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -235,7 +235,7 @@ public sealed class FieldSecurityService : IFieldSecurityService
                     MaskKeepHead = strategy == FieldMaskStrategy.PartialMask ? partials.Min(rule => rule.MaskKeepHead ?? 0) : null,
                     MaskKeepTail = strategy == FieldMaskStrategy.PartialMask ? partials.Min(rule => rule.MaskKeepTail ?? 0) : null,
                     MaskReplacement = strategy == FieldMaskStrategy.Redact
-                        ? group.Where(rule => rule.MaskStrategy == FieldMaskStrategy.Redact).MinBy(rule => rule.BasicId)!.MaskReplacement
+                        ? group.Where(rule => rule.MaskStrategy == FieldMaskStrategy.Redact).MinBy(rule => rule.Id)!.MaskReplacement
                         : null,
                     IsEditable = group.All(rule => rule.IsEditable)
                 };
@@ -463,7 +463,7 @@ public sealed class FieldSecurityService : IFieldSecurityService
             .ToArray();
         var enabledRoleIds = roleIds.Length == 0
             ? new HashSet<long>()
-            : (await _roleRepository.GetEnabledByIdsAsync(roleIds, cancellationToken)).Select(role => role.BasicId).ToHashSet();
+            : (await _roleRepository.GetEnabledByIdsAsync(roleIds, cancellationToken)).Select(role => role.Id).ToHashSet();
 
         var memberDepartmentIds = (await _userDepartmentRepository.GetValidByUserIdAsync(userId, cancellationToken))
             .Select(membership => membership.DepartmentId)
@@ -483,7 +483,7 @@ public sealed class FieldSecurityService : IFieldSecurityService
     private async Task<HashSet<long>> ExpandToEnabledAncestorsAsync(HashSet<long> memberDepartmentIds, CancellationToken cancellationToken)
     {
         var departments = (await _departmentRepository.GetListAsync(_ => true, cancellationToken))
-            .ToDictionary(department => department.BasicId);
+            .ToDictionary(department => department.Id);
         var result = new HashSet<long>();
         var visited = new HashSet<long>();
         foreach (var departmentId in memberDepartmentIds)

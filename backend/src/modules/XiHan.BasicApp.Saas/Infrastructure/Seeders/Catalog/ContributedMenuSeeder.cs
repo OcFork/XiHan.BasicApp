@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

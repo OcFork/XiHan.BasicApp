@@ -4,7 +4,6 @@
 using XiHan.BasicApp.AI.Application.Dtos;
 using XiHan.BasicApp.AI.Domain.DomainServices;
 using XiHan.BasicApp.AI.Domain.Entities;
-using XiHan.Framework.AI.Abstractions.Rag.Models;
 
 namespace XiHan.BasicApp.AI.Application.Mappers;
 
@@ -38,7 +37,7 @@ public static class KnowledgeApplicationMapper
 
         return new KnowledgeListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             Title = entity.Title,
             SourceType = entity.SourceType,
             Source = entity.Source,
@@ -47,8 +46,8 @@ public static class KnowledgeApplicationMapper
             Status = entity.Status,
             ErrorMessage = entity.ErrorMessage,
             Sort = entity.Sort,
-            CreatedTime = entity.CreatedTime,
-            ModifiedTime = entity.ModifiedTime
+            CreatedAt = entity.CreatedAt,
+            ModifiedAt = entity.ModifiedAt
         };
     }
 
@@ -62,7 +61,7 @@ public static class KnowledgeApplicationMapper
         var item = ToListItemDto(entity);
         return new KnowledgeDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             Title = item.Title,
             SourceType = item.SourceType,
             Source = item.Source,
@@ -71,8 +70,8 @@ public static class KnowledgeApplicationMapper
             Status = item.Status,
             ErrorMessage = item.ErrorMessage,
             Sort = item.Sort,
-            CreatedTime = item.CreatedTime,
-            ModifiedTime = item.ModifiedTime,
+            CreatedAt = item.CreatedAt,
+            ModifiedAt = item.ModifiedAt,
             RawContent = entity.RawContent,
             Remark = entity.Remark,
             CreatedId = entity.CreatedId,

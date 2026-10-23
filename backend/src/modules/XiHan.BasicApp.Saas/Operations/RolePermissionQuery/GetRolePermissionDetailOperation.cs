@@ -1,0 +1,34 @@
+// 由 xihan migrate v4 生成；提交前请检查。
+
+using Microsoft.AspNetCore.Authorization;
+using XiHan.BasicApp.Saas.Application.Conditions;
+using XiHan.BasicApp.Saas.Application.Contracts;
+using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Saas.Application.Mappers;
+using XiHan.BasicApp.Saas.Application.QueryServices;
+using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Operations;
+using XiHan.Framework.Kernel;
+using XiHan.Framework.Kernel.Operations;
+using XiHan.Framework.Primitives;
+
+namespace XiHan.BasicApp.Saas.Operations.RolePermissionQuery;
+
+/// <summary>
+/// 由 xihan migrate v4 生成；提交前请检查。
+/// </summary>
+[Operation("role-permission-query.get-role-permission-detail", Permission = SaasPermissionCodes.RolePermission.Read)]
+public sealed class GetRolePermissionDetailOperation(IRolePermissionQueryService service) : IOperation<GetRolePermissionDetailRequest, RolePermissionDetailDto?>
+{
+    /// <inheritdoc />
+    public async ValueTask<Result<RolePermissionDetailDto?>> HandleAsync(GetRolePermissionDetailRequest request, InvocationContext context)
+        => await service.GetRolePermissionDetailAsync(request.Id, context.CancellationToken).ConfigureAwait(false);
+}
+
+/// <summary>
+/// 由 xihan migrate v4 生成；提交前请检查。
+/// </summary>
+public sealed record GetRolePermissionDetailRequest(long Id);

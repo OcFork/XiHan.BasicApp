@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.Saas.Application;
 using XiHan.BasicApp.Saas.OpenApi.Contracts;
 using XiHan.BasicApp.Saas.OpenApi.Dtos;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Web.Api.Middlewares;
-using XiHan.Framework.Web.Api.Security.OpenApi;
 
 namespace XiHan.BasicApp.Saas.OpenApi.AppServices;
 
@@ -25,8 +22,6 @@ namespace XiHan.BasicApp.Saas.OpenApi.AppServices;
 /// 验签通过后 <see cref="XiHanOpenApiSecurityMiddleware"/> 会把调用方放进 <c>HttpContext.Items</c>，此处回显以证明链路通畅。
 /// </para>
 /// </remarks>
-[AllowAnonymous]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "开放接口", RouteTemplate = "api/OpenApi")]
 public sealed class OpenApiAppService
     : SaasApplicationService, IOpenApiAppService
 {
@@ -45,7 +40,6 @@ public sealed class OpenApiAppService
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>自测结果</returns>
-    [HttpGet]
     public Task<OpenApiPingDto> PingAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -67,7 +61,6 @@ public sealed class OpenApiAppService
     /// <param name="input">回显入参</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>自测结果</returns>
-    [HttpPost]
     public Task<OpenApiEchoDto> EchoAsync(OpenApiEchoInputDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

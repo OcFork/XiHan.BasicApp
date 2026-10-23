@@ -70,8 +70,8 @@ public class AiPromptListItemDto : BasicAppDto
     public bool IsEnabled { get; set; }
     public int Sort { get; set; }
     public EnableStatus Status { get; set; }
-    public DateTimeOffset CreatedTime { get; set; }
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 }
 
 /// <summary>

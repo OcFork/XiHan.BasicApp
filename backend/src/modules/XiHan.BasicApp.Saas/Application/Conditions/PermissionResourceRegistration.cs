@@ -3,8 +3,6 @@
 
 using System.Reflection;
 using XiHan.BasicApp.Saas.Domain.Conditions;
-using XiHan.Framework.Authorization.Conditions;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
@@ -148,7 +146,7 @@ public sealed class PermissionResourceRegistration
     /// </summary>
     public static long KeyOf(object row)
     {
-        return row is IEntityBase<long> entity ? entity.BasicId : 0;
+        return row is IEntityBase<long> entity ? entity.Id : 0;
     }
 
     private static ConditionValueKind? KindOf(Type type)

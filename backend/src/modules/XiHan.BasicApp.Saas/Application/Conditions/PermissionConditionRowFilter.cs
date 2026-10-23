@@ -5,10 +5,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using XiHan.Framework.Application.Contracts.Dtos;
-using XiHan.Framework.Application.Contracts.Enums;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Web.Api.Constants;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

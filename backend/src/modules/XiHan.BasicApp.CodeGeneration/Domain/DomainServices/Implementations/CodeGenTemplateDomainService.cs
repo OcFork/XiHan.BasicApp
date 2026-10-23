@@ -74,13 +74,13 @@ public sealed class CodeGenTemplateDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "模板主键必须大于 0。");
+        EnsureId(command.Id, "模板主键必须大于 0。");
         EnsureEnum(command.TemplateType, nameof(command.TemplateType));
 
         EnsureEnum(command.TemplateEngine, nameof(command.TemplateEngine));
         EnsureEnum(command.WriteMode, nameof(command.WriteMode));
 
-        var template = await GetTemplateOrThrowAsync(command.BasicId, cancellationToken);
+        var template = await GetTemplateOrThrowAsync(command.Id, cancellationToken);
 
         // 内置模板随程序版本走，启动时由种子按嵌入资源整体回刷，改了也会被覆盖；
         // 要定制请复制一份自有模板。与「内置模板不可删除」保持同一口径。
@@ -116,10 +116,10 @@ public sealed class CodeGenTemplateDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "模板主键必须大于 0。");
+        EnsureId(command.Id, "模板主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var template = await GetTemplateOrThrowAsync(command.BasicId, cancellationToken);
+        var template = await GetTemplateOrThrowAsync(command.Id, cancellationToken);
         template.Status = command.Status;
         template.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? template.Remark;
 

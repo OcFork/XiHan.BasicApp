@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -87,7 +88,7 @@ public sealed class PermissionRequestDomainService
         };
 
         var savedRequest = await _permissionRequestRepository.AddAsync(permissionRequest, cancellationToken);
-        return new PermissionRequestCommandResult(savedRequest.BasicId);
+        return new PermissionRequestCommandResult(savedRequest.Id);
     }
 
     /// <summary>
@@ -119,7 +120,7 @@ public sealed class PermissionRequestDomainService
         var request = await GetPermissionRequestOrThrowAsync(id, cancellationToken);
         if (request.RequestStatus == PermissionRequestStatus.Approved)
         {
-            return new PermissionRequestCommandResult(request.BasicId);
+            return new PermissionRequestCommandResult(request.Id);
         }
 
         if (request.RequestStatus != PermissionRequestStatus.Pending)
@@ -132,7 +133,7 @@ public sealed class PermissionRequestDomainService
         _ = await GetRequestableRoleOrDefaultAsync(request.RoleId, cancellationToken);
 
         // 自动授权：为申请人创建角色 / 权限直授（沿用申请的期望有效期）
-        var grantReason = $"权限申请[{request.BasicId}]审批通过自动授权";
+        var grantReason = $"权限申请[{request.Id}]审批通过自动授权";
         if (request.RoleId is > 0)
         {
             // SSD 执法：审批自动授予角色与手动授予同一约束语义，违规时阻断授权（申请保持待审批，流程停在故障态可重试）。
@@ -166,7 +167,7 @@ public sealed class PermissionRequestDomainService
         request.RequestStatus = PermissionRequestStatus.Approved;
         var savedRequest = await _permissionRequestRepository.UpdateAsync(request, cancellationToken);
         return new PermissionRequestCommandResult(
-            savedRequest.BasicId,
+            savedRequest.Id,
             request.RequestUserId,
             request.RoleId is > 0 ? request.RoleId : null,
             request.PermissionId is > 0 ? request.PermissionId : null);
@@ -182,7 +183,7 @@ public sealed class PermissionRequestDomainService
         var request = await GetPermissionRequestOrThrowAsync(id, cancellationToken);
         if (request.RequestStatus == PermissionRequestStatus.Rejected)
         {
-            return new PermissionRequestCommandResult(request.BasicId);
+            return new PermissionRequestCommandResult(request.Id);
         }
 
         if (request.RequestStatus != PermissionRequestStatus.Pending)
@@ -192,7 +193,7 @@ public sealed class PermissionRequestDomainService
 
         request.RequestStatus = PermissionRequestStatus.Rejected;
         var savedRequest = await _permissionRequestRepository.UpdateAsync(request, cancellationToken);
-        return new PermissionRequestCommandResult(savedRequest.BasicId);
+        return new PermissionRequestCommandResult(savedRequest.Id);
     }
 
     /// <summary>
@@ -236,7 +237,7 @@ public sealed class PermissionRequestDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var now = DateTimeOffset.UtcNow;
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限申请主键必须大于 0。");
         }
@@ -249,13 +250,13 @@ public sealed class PermissionRequestDomainService
             command.ExpectedExpirationTime,
             now);
 
-        var permissionRequest = await GetPermissionRequestOrThrowAsync(command.BasicId, cancellationToken);
+        var permissionRequest = await GetPermissionRequestOrThrowAsync(command.Id, cancellationToken);
         EnsurePendingOwnerRequest(permissionRequest, command.RequestUserId);
 
         _ = await GetAvailableTenantMemberForRequestOrThrowAsync(command.RequestUserId, now, cancellationToken);
         _ = await GetRequestablePermissionOrDefaultAsync(command.PermissionId, cancellationToken);
         _ = await GetRequestableRoleOrDefaultAsync(command.RoleId, cancellationToken);
-        await EnsurePendingRequestNotExistsAsync(command.RequestUserId, command.PermissionId, command.RoleId, permissionRequest.BasicId, cancellationToken);
+        await EnsurePendingRequestNotExistsAsync(command.RequestUserId, command.PermissionId, command.RoleId, permissionRequest.Id, cancellationToken);
 
         permissionRequest.PermissionId = command.PermissionId;
         permissionRequest.RoleId = command.RoleId;
@@ -265,7 +266,7 @@ public sealed class PermissionRequestDomainService
         permissionRequest.Remark = NormalizeNullable(command.Remark);
 
         var savedRequest = await _permissionRequestRepository.UpdateAsync(permissionRequest, cancellationToken);
-        return new PermissionRequestCommandResult(savedRequest.BasicId);
+        return new PermissionRequestCommandResult(savedRequest.Id);
     }
 
     /// <summary>
@@ -276,7 +277,7 @@ public sealed class PermissionRequestDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "权限申请主键必须大于 0。");
         }
@@ -284,14 +285,14 @@ public sealed class PermissionRequestDomainService
         ValidateEnum(command.RequestStatus, nameof(command.RequestStatus));
 
         _ = await GetAvailableTenantMemberForRequestOrThrowAsync(command.OperatorUserId, DateTimeOffset.UtcNow, cancellationToken);
-        var permissionRequest = await GetPermissionRequestOrThrowAsync(command.BasicId, cancellationToken);
+        var permissionRequest = await GetPermissionRequestOrThrowAsync(command.Id, cancellationToken);
         EnsureStatusCanBeChanged(permissionRequest, command.RequestStatus);
 
         permissionRequest.RequestStatus = command.RequestStatus;
         permissionRequest.Remark = NormalizeNullable(command.Remark);
 
         var savedRequest = await _permissionRequestRepository.UpdateAsync(permissionRequest, cancellationToken);
-        return new PermissionRequestCommandResult(savedRequest.BasicId);
+        return new PermissionRequestCommandResult(savedRequest.Id);
     }
 
     private static void EnsurePendingOwnerRequest(SysPermissionRequest permissionRequest, long currentUserId)
@@ -388,7 +389,7 @@ public sealed class PermissionRequestDomainService
                     && request.PermissionId == permissionId
                     && request.RoleId == roleId
                     && request.RequestStatus == PermissionRequestStatus.Pending
-                    && request.BasicId != excludeId.Value,
+                    && request.Id != excludeId.Value,
                 cancellationToken)
             : await _permissionRequestRepository.AnyAsync(
                 request => request.RequestUserId == requestUserId

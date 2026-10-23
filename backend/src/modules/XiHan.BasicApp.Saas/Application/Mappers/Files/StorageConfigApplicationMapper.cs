@@ -42,7 +42,7 @@ public static class StorageConfigApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new StorageConfigUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ConfigName,
             input.StorageType,
             input.Endpoint,
@@ -61,7 +61,7 @@ public static class StorageConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new StorageConfigStatusChangeCommand(input.BasicId, input.IsEnabled);
+        return new StorageConfigStatusChangeCommand(input.Id, input.IsEnabled);
     }
 
     /// <summary>
@@ -71,7 +71,7 @@ public static class StorageConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new StorageConfigDefaultChangeCommand(input.BasicId);
+        return new StorageConfigDefaultChangeCommand(input.Id);
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ public static class StorageConfigApplicationMapper
 
         return new StorageConfigListItemDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             StorageType = config.StorageType,
@@ -95,8 +95,8 @@ public static class StorageConfigApplicationMapper
             IsDefault = config.IsDefault,
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
-            CreatedTime = config.CreatedTime,
-            ModifiedTime = config.ModifiedTime
+            CreatedAt = config.CreatedAt,
+            ModifiedAt = config.ModifiedAt
         };
     }
 
@@ -111,7 +111,7 @@ public static class StorageConfigApplicationMapper
 
         return new StorageConfigDetailDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             StorageType = config.StorageType,
@@ -124,10 +124,10 @@ public static class StorageConfigApplicationMapper
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
             Remark = config.Remark,
-            CreatedTime = config.CreatedTime,
+            CreatedAt = config.CreatedAt,
             CreatedId = config.CreatedId,
             CreatedBy = config.CreatedBy,
-            ModifiedTime = config.ModifiedTime,
+            ModifiedAt = config.ModifiedAt,
             ModifiedId = config.ModifiedId,
             ModifiedBy = config.ModifiedBy
         };

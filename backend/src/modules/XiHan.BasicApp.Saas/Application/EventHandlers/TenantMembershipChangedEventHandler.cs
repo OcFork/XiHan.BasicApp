@@ -2,11 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.EventBus.Abstractions.Local;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -16,8 +17,19 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// <remarks>
 /// 当租户成员身份被撤销或过期时，移除该用户在该租户下的所有角色绑定，并失效该用户的授权快照缓存。
 /// </remarks>
-public sealed class TenantMembershipChangedEventHandler : ILocalEventHandler<TenantMembershipChangedDomainEvent>
+public sealed class TenantMembershipChangedEventHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string TenantMembershipChangedTopic = "tenant-membership-changed";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<TenantMembershipChangedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly ISaasCacheInvalidator _cacheInvalidator;
     private readonly ISqlSugarClientResolver _clientResolver;
     private readonly ILogger<TenantMembershipChangedEventHandler> _logger;

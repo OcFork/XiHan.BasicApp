@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -19,8 +17,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 同意流走正常动态 API 管道（SPA + Bearer + JSON），仅要求已登录（继承基类 <c>[Authorize]</c>，不加具体权限码——
 /// 任何登录用户均可授权第三方访问自身账号）。协议逻辑委托普通 Scoped 的 <see cref="IOAuthServerService"/>。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "OAuth 授权", RouteTemplate = "api/OAuthConnect")]
 public sealed class OAuthConsentAppService
     : SaasApplicationService, IOAuthConsentAppService
 {
@@ -40,7 +36,6 @@ public sealed class OAuthConsentAppService
     /// <summary>
     /// 校验授权请求并返回同意页所需的客户端信息与授权范围
     /// </summary>
-    [HttpPost]
     public async Task<OAuthConsentPreviewDto> ResolveAuthorizationAsync(OAuthAuthorizeRequestDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("授权第三方应用");
@@ -66,8 +61,6 @@ public sealed class OAuthConsentAppService
     /// <summary>
     /// 用户同意授权：创建授权码并返回携带 code 的最终跳转地址
     /// </summary>
-    [HttpPost]
-    [UnitOfWork(true)]
     public async Task<OAuthConsentResultDto> AuthorizeAsync(OAuthAuthorizeRequestDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("授权第三方应用");

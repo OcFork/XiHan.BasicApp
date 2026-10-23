@@ -46,9 +46,9 @@ public static class PermissionRequestApplicationMapper
 
         return new PermissionRequestListItemDto
         {
-            BasicId = request.BasicId,
+            Id = request.Id,
             RequestUserId = request.RequestUserId,
-            RequestTenantMemberId = requestUser?.BasicId,
+            RequestTenantMemberId = requestUser?.Id,
             RequestUserDisplayName = TenantMemberApplicationMapper.ToDisplayName(requestUser, requestAccount),
             PermissionId = request.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -63,8 +63,8 @@ public static class PermissionRequestApplicationMapper
             IsExpectedExpired = request.ExpectedExpirationTime.HasValue && request.ExpectedExpirationTime.Value <= now,
             WorkflowInstanceId = request.WorkflowInstanceId,
             Workflow = workflow is null ? null : WorkflowProgressApplicationMapper.ToDto(workflow),
-            CreatedTime = request.CreatedTime,
-            ModifiedTime = request.ModifiedTime
+            CreatedAt = request.CreatedAt,
+            ModifiedAt = request.ModifiedAt
         };
     }
 
@@ -84,9 +84,9 @@ public static class PermissionRequestApplicationMapper
 
         return new PermissionRequestDetailDto
         {
-            BasicId = request.BasicId,
+            Id = request.Id,
             RequestUserId = request.RequestUserId,
-            RequestTenantMemberId = requestUser?.BasicId,
+            RequestTenantMemberId = requestUser?.Id,
             RequestUserDisplayName = TenantMemberApplicationMapper.ToDisplayName(requestUser, requestAccount),
             PermissionId = request.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -104,10 +104,10 @@ public static class PermissionRequestApplicationMapper
             WorkflowInstanceId = request.WorkflowInstanceId,
             Workflow = workflow is null ? null : WorkflowProgressApplicationMapper.ToDto(workflow),
             Remark = request.Remark,
-            CreatedTime = request.CreatedTime,
+            CreatedAt = request.CreatedAt,
             CreatedId = request.CreatedId,
             CreatedBy = request.CreatedBy,
-            ModifiedTime = request.ModifiedTime,
+            ModifiedAt = request.ModifiedAt,
             ModifiedId = request.ModifiedId,
             ModifiedBy = request.ModifiedBy
         };
@@ -121,7 +121,7 @@ public static class PermissionRequestApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new PermissionRequestStatusCommand(
-            input.BasicId,
+            input.Id,
             operatorUserId,
             input.RequestStatus,
             input.Remark);
@@ -135,7 +135,7 @@ public static class PermissionRequestApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new PermissionRequestUpdateCommand(
-            input.BasicId,
+            input.Id,
             requestUserId,
             input.PermissionId,
             input.RoleId,

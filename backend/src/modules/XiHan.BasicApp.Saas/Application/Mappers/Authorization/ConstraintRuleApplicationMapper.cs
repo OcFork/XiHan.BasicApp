@@ -44,7 +44,7 @@ public static class ConstraintRuleApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new ConstraintRuleUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.RuleName,
             input.ConstraintType,
             input.TargetType,
@@ -65,7 +65,7 @@ public static class ConstraintRuleApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new ConstraintRuleStatusCommand(input.BasicId, input.Status, input.Remark);
+        return new ConstraintRuleStatusCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public static class ConstraintRuleApplicationMapper
 
         return new ConstraintRuleListItemDto
         {
-            BasicId = rule.BasicId,
+            Id = rule.Id,
             RuleCode = rule.RuleCode,
             RuleName = rule.RuleName,
             ConstraintType = rule.ConstraintType,
@@ -91,8 +91,8 @@ public static class ConstraintRuleApplicationMapper
             ExpirationTime = rule.ExpirationTime,
             ItemCount = itemCount,
             Description = rule.Description,
-            CreatedTime = rule.CreatedTime,
-            ModifiedTime = rule.ModifiedTime
+            CreatedAt = rule.CreatedAt,
+            ModifiedAt = rule.ModifiedAt
         };
     }
 
@@ -105,7 +105,7 @@ public static class ConstraintRuleApplicationMapper
 
         return new ConstraintRuleDetailDto
         {
-            BasicId = rule.BasicId,
+            Id = rule.Id,
             RuleCode = rule.RuleCode,
             RuleName = rule.RuleName,
             ConstraintType = rule.ConstraintType,
@@ -121,10 +121,10 @@ public static class ConstraintRuleApplicationMapper
             ExpirationTime = rule.ExpirationTime,
             Remark = rule.Remark,
             Items = items,
-            CreatedTime = rule.CreatedTime,
+            CreatedAt = rule.CreatedAt,
             CreatedId = rule.CreatedId,
             CreatedBy = rule.CreatedBy,
-            ModifiedTime = rule.ModifiedTime,
+            ModifiedAt = rule.ModifiedAt,
             ModifiedId = rule.ModifiedId,
             ModifiedBy = rule.ModifiedBy
         };
@@ -139,14 +139,14 @@ public static class ConstraintRuleApplicationMapper
 
         return new ConstraintRuleItemDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TargetType = item.TargetType,
             TargetId = item.TargetId,
             TargetCode = targetCode,
             TargetName = targetName,
             ConstraintGroup = item.ConstraintGroup,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime
+            CreatedAt = item.CreatedAt
         };
     }
 

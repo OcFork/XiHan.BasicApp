@@ -5,7 +5,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -124,7 +123,7 @@ public sealed class SaasDemoNotificationSeeder(
         var added = 0;
         var senderId = await DbClientFor<SysUser>().Queryable<SysUser>()
             .Where(user => user.TenantId == 0 && user.UserName == SaasSuperAdminSeeder.UserName)
-            .Select(user => user.BasicId)
+            .Select(user => user.Id)
             .FirstAsync();
         if (senderId == 0)
         {
@@ -150,16 +149,16 @@ public sealed class SaasDemoNotificationSeeder(
         var tenant = await DbClientFor<SysTenant>().Queryable<SysTenant>().FirstAsync(item => item.TenantCode == "demo-enterprise");
         if (tenant is not null)
         {
-            using var tenantScope = CurrentTenant.Change(tenant.BasicId, tenant.TenantName);
+            using var tenantScope = CurrentTenant.Change(tenant.Id, tenant.TenantName);
             var department = await DbClientFor<SysDepartment>().Queryable<SysDepartment>()
-                .FirstAsync(item => item.TenantId == tenant.BasicId && item.DepartmentCode == "rd");
+                .FirstAsync(item => item.TenantId == tenant.Id && item.DepartmentCode == "rd");
             var role = await DbClientFor<SysRole>().Queryable<SysRole>()
-                .FirstAsync(item => item.TenantId == tenant.BasicId && item.RoleCode == "employee");
+                .FirstAsync(item => item.TenantId == tenant.Id && item.RoleCode == "employee");
             var owner = await DbClientFor<SysUser>().Queryable<SysUser>()
-                .FirstAsync(item => item.TenantId == tenant.BasicId && item.UserName == "owner");
+                .FirstAsync(item => item.TenantId == tenant.Id && item.UserName == "owner");
             if (department is not null)
             {
-                added += await InsertIfMissingAsync(tenant.BasicId, new SysNotification
+                added += await InsertIfMissingAsync(tenant.Id, new SysNotification
                 {
                     NotificationType = NotificationType.Business,
                     Priority = NotificationPriority.Normal,
@@ -168,15 +167,15 @@ public sealed class SaasDemoNotificationSeeder(
                     Content = "本周周会改到周五下午三点，地点三楼会议室，请研发中心（含前端组、后端组）全员参加。",
                     Icon = "lucide:calendar",
                     TargetType = NotificationTargetType.Department,
-                    TargetValue = JsonSerializer.Serialize(new[] { department.BasicId }),
-                    SendUserId = owner?.BasicId,
+                    TargetValue = JsonSerializer.Serialize(new[] { department.Id }),
+                    SendUserId = owner?.Id,
                     Remark = "演示：按部门定向（含下级部门）"
                 });
             }
 
             if (role is not null)
             {
-                added += await InsertIfMissingAsync(tenant.BasicId, new SysNotification
+                added += await InsertIfMissingAsync(tenant.Id, new SysNotification
                 {
                     NotificationType = NotificationType.Security,
                     Priority = NotificationPriority.Urgent,
@@ -185,9 +184,9 @@ public sealed class SaasDemoNotificationSeeder(
                     Content = "演示账号的密码都是公开的，请在「个人中心 - 账号安全」修改为只有你知道的密码。",
                     Icon = "lucide:shield-alert",
                     TargetType = NotificationTargetType.Role,
-                    TargetValue = JsonSerializer.Serialize(new[] { role.BasicId }),
+                    TargetValue = JsonSerializer.Serialize(new[] { role.Id }),
                     NeedConfirm = true,
-                    SendUserId = owner?.BasicId,
+                    SendUserId = owner?.Id,
                     Remark = "演示：按角色定向、紧急、需要确认"
                 });
             }

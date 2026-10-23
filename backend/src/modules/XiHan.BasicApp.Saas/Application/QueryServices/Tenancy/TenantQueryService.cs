@@ -14,21 +14,17 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Specifications;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 租户查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "租户")]
 public sealed class TenantQueryService
     : SaasApplicationService, ITenantQueryService
 {
@@ -103,8 +99,6 @@ public sealed class TenantQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<TenantListItemDto>> GetTenantPageAsync(TenantPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -133,7 +127,6 @@ public sealed class TenantQueryService
     /// <param name="id">租户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Read)]
     public async Task<TenantDetailDto?> GetTenantDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -150,9 +143,9 @@ public sealed class TenantQueryService
         }
 
         var detail = TenantApplicationMapper.ToDetailDto(tenant, DateTimeOffset.UtcNow);
-        detail.HasOwner = (await _tenantUserRepository.GetTenantIdsWithOwnerAsync([detail.BasicId], cancellationToken)).Contains(detail.BasicId);
-        var snapshots = await _tenantQuotaDomainService.GetQuotaSnapshotsAsync([detail.BasicId], cancellationToken);
-        if (snapshots.TryGetValue(detail.BasicId, out var snapshot))
+        detail.HasOwner = (await _tenantUserRepository.GetTenantIdsWithOwnerAsync([detail.Id], cancellationToken)).Contains(detail.Id);
+        var snapshots = await _tenantQuotaDomainService.GetQuotaSnapshotsAsync([detail.Id], cancellationToken);
+        if (snapshots.TryGetValue(detail.Id, out var snapshot))
         {
             detail.EffectiveUserLimit = snapshot.UserLimit;
             detail.UsedUserCount = snapshot.UsedUserCount;
@@ -168,7 +161,6 @@ public sealed class TenantQueryService
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>超配额租户清单，无超限时为空集合</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Read)]
     public async Task<IReadOnlyList<TenantOverQuotaDto>> GetOverQuotaTenantsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -181,12 +173,12 @@ public sealed class TenantQueryService
         }
 
         var snapshots = await _tenantQuotaDomainService.GetQuotaSnapshotsAsync(
-            [.. tenants.Select(tenant => tenant.BasicId)], cancellationToken);
+            [.. tenants.Select(tenant => tenant.Id)], cancellationToken);
 
         var alerts = new List<TenantOverQuotaDto>();
         foreach (var tenant in tenants)
         {
-            if (!snapshots.TryGetValue(tenant.BasicId, out var snapshot))
+            if (!snapshots.TryGetValue(tenant.Id, out var snapshot))
             {
                 continue;
             }
@@ -202,7 +194,7 @@ public sealed class TenantQueryService
 
             alerts.Add(new TenantOverQuotaDto
             {
-                TenantId = tenant.BasicId,
+                TenantId = tenant.Id,
                 TenantCode = tenant.TenantCode,
                 TenantName = tenant.TenantName,
                 SeatExceeded = seatExceeded,
@@ -226,7 +218,6 @@ public sealed class TenantQueryService
     /// </remarks>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>当前租户的订阅</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantSubscription.Read)]
     public async Task<TenantSubscriptionDto> GetMySubscriptionAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -248,7 +239,7 @@ public sealed class TenantQueryService
 
         return new TenantSubscriptionDto
         {
-            TenantId = tenant.BasicId,
+            TenantId = tenant.Id,
             TenantCode = tenant.TenantCode,
             TenantName = tenant.TenantName,
             TenantStatus = tenant.TenantStatus,
@@ -351,7 +342,7 @@ public sealed class TenantQueryService
     private static void ApplyTenantSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysTenant tenant) => tenant.Sort, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysTenant tenant) => tenant.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysTenant tenant) => tenant.CreatedAt, SortDirection.Descending, 1);
     }
 
     /// <summary>
@@ -367,14 +358,14 @@ public sealed class TenantQueryService
             return;
         }
 
-        var tenantIds = items.Select(item => item.BasicId).ToList();
+        var tenantIds = items.Select(item => item.Id).ToList();
         var snapshots = await _tenantQuotaDomainService.GetQuotaSnapshotsAsync(tenantIds, cancellationToken);
         var withOwner = await _tenantUserRepository.GetTenantIdsWithOwnerAsync(tenantIds, cancellationToken);
 
         foreach (var item in items)
         {
-            item.HasOwner = withOwner.Contains(item.BasicId);
-            if (!snapshots.TryGetValue(item.BasicId, out var snapshot))
+            item.HasOwner = withOwner.Contains(item.Id);
+            if (!snapshots.TryGetValue(item.Id, out var snapshot))
             {
                 continue;
             }

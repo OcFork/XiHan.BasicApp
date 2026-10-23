@@ -42,7 +42,7 @@ public static class TenantEditionApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new TenantEditionUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.EditionName,
             input.Description,
             input.UserLimit,
@@ -62,7 +62,7 @@ public static class TenantEditionApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TenantEditionDefaultChangeCommand(input.BasicId);
+        return new TenantEditionDefaultChangeCommand(input.Id);
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public static class TenantEditionApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TenantEditionStatusChangeCommand(input.BasicId, input.Status);
+        return new TenantEditionStatusChangeCommand(input.Id, input.Status);
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public static class TenantEditionApplicationMapper
 
         return new TenantEditionListItemDto
         {
-            BasicId = edition.BasicId,
+            Id = edition.Id,
             EditionCode = edition.EditionCode,
             EditionName = edition.EditionName,
             Description = edition.Description,
@@ -98,8 +98,8 @@ public static class TenantEditionApplicationMapper
             IsDefault = edition.IsDefault,
             Status = edition.Status,
             Sort = edition.Sort,
-            CreatedTime = edition.CreatedTime,
-            ModifiedTime = edition.ModifiedTime
+            CreatedAt = edition.CreatedAt,
+            ModifiedAt = edition.ModifiedAt
         };
     }
 
@@ -114,7 +114,7 @@ public static class TenantEditionApplicationMapper
 
         return new TenantEditionDetailDto
         {
-            BasicId = edition.BasicId,
+            Id = edition.Id,
             EditionCode = edition.EditionCode,
             EditionName = edition.EditionName,
             Description = edition.Description,
@@ -127,10 +127,10 @@ public static class TenantEditionApplicationMapper
             Status = edition.Status,
             Sort = edition.Sort,
             Remark = edition.Remark,
-            CreatedTime = edition.CreatedTime,
+            CreatedAt = edition.CreatedAt,
             CreatedId = edition.CreatedId,
             CreatedBy = edition.CreatedBy,
-            ModifiedTime = edition.ModifiedTime,
+            ModifiedAt = edition.ModifiedAt,
             ModifiedId = edition.ModifiedId,
             ModifiedBy = edition.ModifiedBy
         };

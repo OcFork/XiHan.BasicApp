@@ -9,12 +9,6 @@ using XiHan.BasicApp.Workflow.Application.EventHandlers;
 using XiHan.BasicApp.Workflow.Infrastructure.Assignees;
 using XiHan.BasicApp.Workflow.Infrastructure.Seeders;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
-using XiHan.Framework.Data.Extensions.DependencyInjection;
-using XiHan.Framework.EventBus.Local;
-using XiHan.Framework.Utils.Collections;
-using XiHan.Framework.Workflow.Abstractions.Outcomes;
-using XiHan.Framework.Workflow.Abstractions.Stores;
-using XiHan.Framework.Workflow.Extensions.DependencyInjection;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Saas.Extensions;
 

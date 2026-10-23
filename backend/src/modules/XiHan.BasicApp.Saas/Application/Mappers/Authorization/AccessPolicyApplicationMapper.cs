@@ -56,7 +56,7 @@ public static class AccessPolicyApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
         return new AccessPolicyUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.PolicyName,
             input.Description,
             input.Priority,
@@ -111,7 +111,7 @@ public static class AccessPolicyApplicationMapper
         ArgumentNullException.ThrowIfNull(hit);
         return new AccessPolicyHitListItemDto
         {
-            BasicId = hit.BasicId,
+            Id = hit.Id,
             Source = hit.Source,
             PolicyId = hit.PolicyId,
             PolicyCode = hit.PolicyCode,
@@ -139,7 +139,7 @@ public static class AccessPolicyApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(conditions);
-        dto.BasicId = policy.BasicId;
+        dto.Id = policy.Id;
         dto.TenantId = policy.TenantId;
         dto.PolicyCode = policy.PolicyCode;
         dto.PolicyName = policy.PolicyName;
@@ -156,8 +156,8 @@ public static class AccessPolicyApplicationMapper
             : AccessPolicyPhase.AfterAuthentication;
         dto.ConditionCount = conditions.Count;
         dto.RecentHitCount = recentHitCount;
-        dto.CreatedTime = policy.CreatedTime;
-        dto.ModifiedTime = policy.ModifiedTime;
+        dto.CreatedAt = policy.CreatedAt;
+        dto.ModifiedAt = policy.ModifiedAt;
         return dto;
     }
 }

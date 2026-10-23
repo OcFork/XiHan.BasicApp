@@ -8,10 +8,6 @@ using XiHan.BasicApp.AI.Application.Mappers;
 using XiHan.BasicApp.AI.Domain.DomainServices;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Permissions;
-using XiHan.Framework.AI.Abstractions.Providers;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.AI.Application.AppServices;
@@ -19,7 +15,6 @@ namespace XiHan.BasicApp.AI.Application.AppServices;
 /// <summary>
 /// AI Provider 命令应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "AI提供商")]
 public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppService
 {
     private readonly IAiProviderDomainService _providerDomainService;
@@ -63,8 +58,6 @@ public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppS
     /// <summary>
     /// 创建 provider
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(AiPermissionCodes.Create)]
     public async Task<AiProviderDetailDto> CreateAsync(AiProviderCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -81,15 +74,13 @@ public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppS
     /// <summary>
     /// 更新 provider
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(AiPermissionCodes.Update)]
     public async Task<AiProviderDetailDto> UpdateAsync(AiProviderUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysAiProvider), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysAiProvider), input.Id, input, cancellationToken);
 
         var result = await _providerDomainService.UpdateProviderAsync(AiProviderApplicationMapper.ToUpdateCommand(input), cancellationToken);
         InvalidateResolvers();
@@ -99,15 +90,13 @@ public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppS
     /// <summary>
     /// 更新 provider 状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(AiPermissionCodes.Update)]
     public async Task<AiProviderDetailDto> UpdateStatusAsync(AiProviderStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysAiProvider), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysAiProvider), input.Id, input, cancellationToken);
 
         var result = await _providerDomainService.UpdateProviderStatusAsync(AiProviderApplicationMapper.ToStatusCommand(input), cancellationToken);
         InvalidateResolvers();
@@ -117,14 +106,12 @@ public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppS
     /// <summary>
     /// 设为默认 provider
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(AiPermissionCodes.Update)]
     public async Task<AiProviderDetailDto> SetDefaultAsync(AiProviderActionDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var result = await _providerDomainService.SetDefaultAsync(input.BasicId, cancellationToken);
+        var result = await _providerDomainService.SetDefaultAsync(input.Id, cancellationToken);
         InvalidateResolvers();
         return AiProviderApplicationMapper.ToDetailDto(result.Provider);
     }
@@ -132,8 +119,6 @@ public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppS
     /// <summary>
     /// 删除 provider
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(AiPermissionCodes.Delete)]
     public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -144,14 +129,12 @@ public sealed class AiProviderAppService : AiApplicationService, IAiProviderAppS
     /// <summary>
     /// 测试连接（对指定 provider 发起一次极简推理）
     /// </summary>
-    [PermissionAuthorize(AiPermissionCodes.Execute)]
-    [HttpPost]
     public async Task<AiProviderTestConnectionResultDto> TestConnectionAsync(AiProviderActionDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var result = await _providerDomainService.TestConnectionAsync(input.BasicId, cancellationToken);
+        var result = await _providerDomainService.TestConnectionAsync(input.Id, cancellationToken);
         return AiProviderApplicationMapper.ToTestResultDto(result);
     }
 }

@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 租户版本权限查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "租户版本权限")]
 public sealed class TenantEditionPermissionQueryService
     : SaasApplicationService, ITenantEditionPermissionQueryService
 {
@@ -57,7 +53,6 @@ public sealed class TenantEditionPermissionQueryService
     /// <param name="onlyValid">是否仅返回有效绑定</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户版本权限列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantEditionPermission.Read)]
     public async Task<IReadOnlyList<TenantEditionPermissionListItemDto>> GetTenantEditionPermissionsAsync(long editionId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (editionId <= 0)
@@ -73,11 +68,11 @@ public sealed class TenantEditionPermissionQueryService
         var editionPermissions = onlyValid
             ? await _tenantEditionPermissionRepository.GetListAsync(
                 editionPermission => editionPermission.EditionId == editionId && editionPermission.Status == ValidityStatus.Valid,
-                editionPermission => editionPermission.CreatedTime,
+                editionPermission => editionPermission.CreatedAt,
                 cancellationToken)
             : await _tenantEditionPermissionRepository.GetListAsync(
                 editionPermission => editionPermission.EditionId == editionId,
-                editionPermission => editionPermission.CreatedTime,
+                editionPermission => editionPermission.CreatedAt,
                 cancellationToken);
 
         if (editionPermissions.Count == 0)
@@ -101,7 +96,6 @@ public sealed class TenantEditionPermissionQueryService
     /// <param name="id">租户版本权限绑定主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户版本权限详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantEditionPermission.Read)]
     public async Task<TenantEditionPermissionDetailDto?> GetTenantEditionPermissionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -140,6 +134,6 @@ public sealed class TenantEditionPermissionQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(permission => permission.BasicId);
+        return permissions.ToDictionary(permission => permission.Id);
     }
 }

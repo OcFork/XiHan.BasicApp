@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -38,7 +37,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 租户隔离：严格——授权绑定只在所属上下文（平台 / 某个租户）可见与生效，租户里看不到平台的绑定。
 /// </remarks>
 [SugarTable(TableName = "Sys_Permission_Delegation", TableDescription = "权限委托表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_DrId_DeId_PeId", nameof(TenantId), OrderByType.Asc, nameof(DelegatorUserId), OrderByType.Asc, nameof(DelegateeUserId), OrderByType.Asc, nameof(PermissionId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
@@ -47,7 +46,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_TeId_DeSt", nameof(TenantId), OrderByType.Asc, nameof(DelegationStatus), OrderByType.Asc)]
 [SugarIndex("IX_{table}_ExTi", nameof(ExpirationTime), OrderByType.Desc)]
 [PlatformDataSource]
-public partial class SysPermissionDelegation : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysPermissionDelegation : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 委托人ID

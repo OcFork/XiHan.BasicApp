@@ -11,7 +11,8 @@ public sealed class TenantSupportMemberAddDto
     /// <summary>
     /// 目标租户主键
     /// </summary>
-    public long TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; set; } = string.Empty;
 
     /// <summary>
     /// 平台账号的用户主键

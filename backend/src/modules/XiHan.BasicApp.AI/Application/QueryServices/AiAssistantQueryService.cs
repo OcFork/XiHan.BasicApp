@@ -13,8 +13,6 @@ using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -24,7 +22,6 @@ namespace XiHan.BasicApp.AI.Application.QueryServices;
 /// <summary>
 /// AI 助手查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "AI助手")]
 public sealed class AiAssistantQueryService : AiApplicationService, IAiAssistantQueryService
 {
     private readonly IAiAssistantRepository _assistantRepository;
@@ -46,8 +43,6 @@ public sealed class AiAssistantQueryService : AiApplicationService, IAiAssistant
     /// <summary>
     /// 获取助手分页列表
     /// </summary>
-    [PermissionAuthorize(AiAssistantPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<AiAssistantListItemDto>> GetPageAsync(AiAssistantPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -83,7 +78,6 @@ public sealed class AiAssistantQueryService : AiApplicationService, IAiAssistant
     /// <summary>
     /// 获取助手详情
     /// </summary>
-    [PermissionAuthorize(AiAssistantPermissionCodes.Read)]
     public async Task<AiAssistantDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -103,7 +97,6 @@ public sealed class AiAssistantQueryService : AiApplicationService, IAiAssistant
     /// <remarks>
     /// 聊天页人人可见，只按登录态门控：助手管理权限属后台配置，不能拿它挡住普通用户使用助手。
     /// </remarks>
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task<IReadOnlyList<AiAssistantOptionDto>> GetAvailableAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -168,6 +161,6 @@ public sealed class AiAssistantQueryService : AiApplicationService, IAiAssistant
     private static void ApplyAssistantSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysAiAssistant assistant) => assistant.Sort, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysAiAssistant assistant) => assistant.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysAiAssistant assistant) => assistant.CreatedAt, SortDirection.Descending, 1);
     }
 }

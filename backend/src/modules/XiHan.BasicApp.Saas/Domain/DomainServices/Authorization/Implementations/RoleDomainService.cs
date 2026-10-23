@@ -5,7 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
@@ -102,7 +102,7 @@ public sealed class RoleDomainService
 
         ValidateUpdateCommand(command);
 
-        var role = await GetEditableRoleOrThrowAsync(command.BasicId, cancellationToken);
+        var role = await GetEditableRoleOrThrowAsync(command.Id, cancellationToken);
         role.RoleName = command.RoleName.Trim();
         role.RoleDescription = NormalizeNullable(command.RoleDescription);
         role.RoleType = command.RoleType;
@@ -122,14 +122,14 @@ public sealed class RoleDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "角色主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var role = await GetEditableRoleOrThrowAsync(command.BasicId, cancellationToken);
+        var role = await GetEditableRoleOrThrowAsync(command.Id, cancellationToken);
         role.Status = command.Status;
         role.Remark = NormalizeNullable(command.Remark) ?? role.Remark;
 
@@ -185,7 +185,7 @@ public sealed class RoleDomainService
         if (revokeRolePermissionIds.Count > 0)
         {
             var revoking = (await _rolePermissionRepository.GetListAsync(
-                rolePermission => revokeRolePermissionIds.Contains(rolePermission.BasicId) && rolePermission.RoleId == command.RoleId,
+                rolePermission => revokeRolePermissionIds.Contains(rolePermission.Id) && rolePermission.RoleId == command.RoleId,
                 cancellationToken)).ToList();
             if (revoking.Count > 0)
             {
@@ -203,8 +203,8 @@ public sealed class RoleDomainService
         if (grantPermissionIds.Count > 0)
         {
             var permissions = await _permissionRepository.GetListAsync(
-                permission => grantPermissionIds.Contains(permission.BasicId), cancellationToken);
-            var permissionMap = permissions.ToDictionary(permission => permission.BasicId);
+                permission => grantPermissionIds.Contains(permission.Id), cancellationToken);
+            var permissionMap = permissions.ToDictionary(permission => permission.Id);
             foreach (var permissionId in grantPermissionIds)
             {
                 if (!permissionMap.TryGetValue(permissionId, out var permission))
@@ -276,7 +276,7 @@ public sealed class RoleDomainService
 
         ValidateRolePermissionUpdateCommand(command);
 
-        var rolePermission = await GetRolePermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var rolePermission = await GetRolePermissionOrThrowAsync(command.Id, cancellationToken);
         _ = await GetEnabledRoleForPermissionOrThrowAsync(rolePermission.RoleId, cancellationToken);
         var permission = await GetEnabledPermissionOrThrowAsync(rolePermission.PermissionId, cancellationToken);
 
@@ -298,14 +298,14 @@ public sealed class RoleDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "角色权限绑定主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var rolePermission = await GetRolePermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var rolePermission = await GetRolePermissionOrThrowAsync(command.Id, cancellationToken);
         var permission = command.Status == ValidityStatus.Valid
             ? await GetEnabledPermissionOrThrowAsync(rolePermission.PermissionId, cancellationToken)
             : await _permissionRepository.GetByIdAsync(rolePermission.PermissionId, cancellationToken);
@@ -356,7 +356,7 @@ public sealed class RoleDomainService
         }
 
         // 同一 角色×部门 只有一行：撤销只置无效，历史行命中即就地复用
-        var rows = (await _roleDataScopeRepository.GetListAsync(scope => scope.RoleId == role.BasicId, cancellationToken))
+        var rows = (await _roleDataScopeRepository.GetListAsync(scope => scope.RoleId == role.Id, cancellationToken))
             .ToDictionary(scope => scope.DepartmentId);
         var now = DateTimeOffset.UtcNow;
         var updating = new List<SysRoleDataScope>();
@@ -368,7 +368,7 @@ public sealed class RoleDomainService
             {
                 adding.Add(new SysRoleDataScope
                 {
-                    RoleId = role.BasicId,
+                    RoleId = role.Id,
                     DepartmentId = departmentId,
                     IncludeChildren = includeChildren,
                     Status = ValidityStatus.Valid
@@ -443,7 +443,7 @@ public sealed class RoleDomainService
 
     private static void ValidateUpdateCommand(RoleUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "角色主键必须大于 0。");
         }
@@ -469,7 +469,7 @@ public sealed class RoleDomainService
 
     private static void ValidateRolePermissionUpdateCommand(RolePermissionUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "角色权限绑定主键必须大于 0。");
         }
@@ -541,7 +541,7 @@ public sealed class RoleDomainService
     /// </remarks>
     private async Task EnsureRoleNotReferencedAsync(SysRole role, CancellationToken cancellationToken)
     {
-        var roleId = role.BasicId;
+        var roleId = role.Id;
         var acrossTenants = role.IsGlobal;
 
         if (acrossTenants

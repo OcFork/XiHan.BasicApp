@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 部门管理页面查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "部门管理")]
 public sealed class DepartmentManagementQueryService
     : SaasApplicationService, IDepartmentManagementQueryService
 {
@@ -52,7 +48,6 @@ public sealed class DepartmentManagementQueryService
     /// <summary>
     /// 获取部门管理详情聚合数据
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Department.Read)]
     public async Task<DepartmentManagementDetailDto?> GetDepartmentManagementDetailAsync(long departmentId, CancellationToken cancellationToken = default)
     {
         if (departmentId <= 0)
@@ -83,7 +78,7 @@ public sealed class DepartmentManagementQueryService
     {
         return new DepartmentManagementMemberDto
         {
-            BasicId = userDepartment.BasicId,
+            Id = userDepartment.Id,
             UserId = userDepartment.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
@@ -96,7 +91,7 @@ public sealed class DepartmentManagementQueryService
             IsMain = userDepartment.IsMain,
             Status = userDepartment.Status,
             Remark = userDepartment.Remark,
-            CreatedTime = userDepartment.CreatedTime,
+            CreatedAt = userDepartment.CreatedAt,
         };
     }
 
@@ -118,7 +113,7 @@ public sealed class DepartmentManagementQueryService
     {
         var userDepartments = await _userDepartmentRepository.GetListAsync(
             item => item.DepartmentId == departmentId && item.Status == ValidityStatus.Valid,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (userDepartments.Count == 0)
@@ -128,7 +123,7 @@ public sealed class DepartmentManagementQueryService
 
         var userIds = userDepartments.Select(item => item.UserId).Distinct().ToArray();
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(userIds, cancellationToken);
-        var userMap = users.ToDictionary(user => user.BasicId);
+        var userMap = users.ToDictionary(user => user.Id);
 
         var positionIds = userDepartments
             .Where(item => item.PositionId is > 0)
@@ -137,7 +132,7 @@ public sealed class DepartmentManagementQueryService
             .ToArray();
         var positionMap = positionIds.Length == 0
             ? new Dictionary<long, SysPosition>()
-            : (await _positionRepository.GetByIdsAsync(positionIds, cancellationToken)).ToDictionary(position => position.BasicId);
+            : (await _positionRepository.GetByIdsAsync(positionIds, cancellationToken)).ToDictionary(position => position.Id);
 
         return [.. userDepartments
             .Select(item => ToMemberDto(

@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 系统消息查询应用服务（邮件/短信发送记录）
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "消息记录")]
 public sealed class MessageQueryService
     : SaasApplicationService, IMessageQueryService
 {
@@ -53,8 +49,6 @@ public sealed class MessageQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统邮件分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Message.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<EmailListItemDto>> GetEmailPageAsync(EmailPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -81,7 +75,6 @@ public sealed class MessageQueryService
     /// <param name="id">系统邮件主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统邮件详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Message.Read)]
     public async Task<EmailDetailDto?> GetEmailDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -101,8 +94,6 @@ public sealed class MessageQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统短信分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Message.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<SmsListItemDto>> GetSmsPageAsync(SmsPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -129,7 +120,6 @@ public sealed class MessageQueryService
     /// <param name="id">系统短信主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统短信详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Message.Read)]
     public async Task<SmsDetailDto?> GetSmsDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -239,7 +229,7 @@ public sealed class MessageQueryService
     /// </summary>
     private static void ApplyEmailSorts(BasicAppPRDto request)
     {
-        request.Conditions.AddSort((SysEmail email) => email.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysEmail email) => email.CreatedAt, SortDirection.Descending, 0);
     }
 
     /// <summary>
@@ -343,6 +333,6 @@ public sealed class MessageQueryService
     /// </summary>
     private static void ApplySmsSorts(BasicAppPRDto request)
     {
-        request.Conditions.AddSort((SysSms sms) => sms.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysSms sms) => sms.CreatedAt, SortDirection.Descending, 0);
     }
 }

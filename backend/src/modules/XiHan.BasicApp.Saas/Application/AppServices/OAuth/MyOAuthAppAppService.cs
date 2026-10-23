@@ -11,10 +11,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Identity;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -26,8 +23,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// <see cref="IOAuthAppDomainService"/> 做校验/落库，仅暴露精简字段，其余（授权类型/范围/时效）用默认值。
 /// 与「开放平台/应用管理」管理页并存：管理页面向管理员管全租户，本服务面向普通用户管自己的。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "个人中心-OAuth 应用", RouteTemplate = "api/MyOAuthApp")]
 public sealed class MyOAuthAppAppService
     : SaasApplicationService, IMyOAuthAppAppService
 {
@@ -72,13 +67,12 @@ public sealed class MyOAuthAppAppService
         cancellationToken.ThrowIfCancellationRequested();
         var userId = CurrentUserId();
         var apps = await _oauthAppRepository.GetListAsync(app => app.CreatedId == userId, cancellationToken);
-        return [.. apps.OrderByDescending(app => app.CreatedTime).Select(ToItemDto)];
+        return [.. apps.OrderByDescending(app => app.CreatedAt).Select(ToItemDto)];
     }
 
     /// <summary>
     /// 创建我的 OAuth 应用（机密：生成密钥仅返回一次；公开：无密钥，依赖 PKCE）
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<MyOAuthAppSecretDto> CreateMyOAuthAppAsync(MyOAuthAppCreateDto input, CancellationToken cancellationToken = default)
     {
         // 字段安全：只读字段不能填写
@@ -131,7 +125,7 @@ public sealed class MyOAuthAppAppService
 
         return new MyOAuthAppSecretDto
         {
-            BasicId = result.App.BasicId,
+            Id = result.App.Id,
             ClientId = result.App.ClientId,
             ClientType = isPublic ? ClientTypePublic : ClientTypeConfidential,
             ClientSecret = result.PlaintextSecret ?? string.Empty
@@ -141,11 +135,10 @@ public sealed class MyOAuthAppAppService
     /// <summary>
     /// 更新我的 OAuth 应用（仅名称/主页/描述/回调/Logo；授权类型等保持不变）
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<MyOAuthAppItemDto> UpdateMyOAuthAppAsync(MyOAuthAppUpdateDto input, CancellationToken cancellationToken = default)
     {
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysOAuthApp), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysOAuthApp), input.Id, input, cancellationToken);
 
         _currentUser.EnsureNotImpersonating("更新 OAuth 应用");
         ArgumentNullException.ThrowIfNull(input);
@@ -156,10 +149,10 @@ public sealed class MyOAuthAppAppService
             throw new UserFriendlyException("授权回调地址不能为空。");
         }
 
-        var app = await GetOwnedOrThrowAsync(input.BasicId, cancellationToken);
+        var app = await GetOwnedOrThrowAsync(input.Id, cancellationToken);
 
         var command = new OAuthAppUpdateCommand(
-            BasicId: app.BasicId,
+            Id: app.Id,
             AppName: input.AppName,
             AppDescription: input.AppDescription,
             AppType: app.AppType,
@@ -194,7 +187,6 @@ public sealed class MyOAuthAppAppService
     /// <summary>
     /// 重置我的 OAuth 应用密钥（仅机密客户端；明文仅返回一次）
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<MyOAuthAppSecretDto> RegenerateMyOAuthAppSecretAsync(long id, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("重置 OAuth 应用密钥");
@@ -208,7 +200,7 @@ public sealed class MyOAuthAppAppService
         var result = await _oauthAppDomainService.RegenerateOAuthAppSecretAsync(id, cancellationToken);
         return new MyOAuthAppSecretDto
         {
-            BasicId = result.App.BasicId,
+            Id = result.App.Id,
             ClientId = result.App.ClientId,
             ClientType = ClientTypeConfidential,
             ClientSecret = result.PlaintextSecret ?? string.Empty
@@ -218,19 +210,18 @@ public sealed class MyOAuthAppAppService
     /// <summary>
     /// 启用/停用我的 OAuth 应用
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<MyOAuthAppItemDto> UpdateMyOAuthAppStatusAsync(MyOAuthAppStatusDto input, CancellationToken cancellationToken = default)
     {
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysOAuthApp), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysOAuthApp), input.Id, input, cancellationToken);
 
         _currentUser.EnsureNotImpersonating("启停 OAuth 应用");
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var app = await GetOwnedOrThrowAsync(input.BasicId, cancellationToken);
+        var app = await GetOwnedOrThrowAsync(input.Id, cancellationToken);
         var result = await _oauthAppDomainService.UpdateOAuthAppStatusAsync(
-            new OAuthAppStatusChangeCommand(app.BasicId, input.Status, app.Remark),
+            new OAuthAppStatusChangeCommand(app.Id, input.Status, app.Remark),
             cancellationToken);
         return ToItemDto(result.App);
     }
@@ -238,7 +229,6 @@ public sealed class MyOAuthAppAppService
     /// <summary>
     /// 删除我的 OAuth 应用（存在授权码/令牌记录时不可删，请改为停用）
     /// </summary>
-    [UnitOfWork(true)]
     public async Task DeleteMyOAuthAppAsync(long id, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("删除 OAuth 应用");
@@ -268,7 +258,7 @@ public sealed class MyOAuthAppAppService
     {
         return new MyOAuthAppItemDto
         {
-            BasicId = app.BasicId,
+            Id = app.Id,
             ClientId = app.ClientId,
             AppName = app.AppName,
             AppDescription = app.AppDescription,
@@ -279,7 +269,7 @@ public sealed class MyOAuthAppAppService
             GrantTypes = app.GrantTypes,
             Scopes = app.Scopes,
             Status = app.Status,
-            CreatedTime = app.CreatedTime
+            CreatedAt = app.CreatedAt
         };
     }
 

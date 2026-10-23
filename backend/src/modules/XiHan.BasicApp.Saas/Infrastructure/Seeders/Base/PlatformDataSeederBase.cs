@@ -3,9 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Initializers;
-using XiHan.Framework.Data.SqlSugar.Seeders;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
@@ -40,6 +38,7 @@ public abstract class PlatformDataSeederBase : DataSeederBase
     /// </summary>
     public override async Task SeedAsync()
     {
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = CurrentTenant.Change(null);
         await base.SeedAsync();
     }

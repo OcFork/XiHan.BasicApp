@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Application.Services;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices.Monitoring;
 
@@ -15,9 +12,7 @@ namespace XiHan.BasicApp.Saas.Application.AppServices.Monitoring;
 /// 缓存管理服务（查询 / 改字符串值 / 删除）
 /// 读取走 saas:cache:read，写入与删除走 saas:cache:clear。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统Saas服务", Tag = "缓存管理")]
-public class CacheAppService : ApplicationServiceBase
+public class CacheAppService
 {
     private readonly ICacheManagementService _cacheManagementService;
 
@@ -32,7 +27,6 @@ public class CacheAppService : ApplicationServiceBase
     /// <summary>
     /// 判断缓存键是否存在
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Cache.Read)]
     public bool Exists(string key)
     {
         return _cacheManagementService.Exists(key);
@@ -41,7 +35,6 @@ public class CacheAppService : ApplicationServiceBase
     /// <summary>
     /// 按模式获取缓存键列表
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Cache.Read)]
     public IReadOnlyCollection<string> GetKeys(string pattern = "*")
     {
         return _cacheManagementService.GetKeys(pattern);
@@ -50,7 +43,6 @@ public class CacheAppService : ApplicationServiceBase
     /// <summary>
     /// 获取缓存字符串值
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Cache.Read)]
     public string? GetString(string key)
     {
         return _cacheManagementService.GetString(key);
@@ -59,7 +51,6 @@ public class CacheAppService : ApplicationServiceBase
     /// <summary>
     /// 更新缓存字符串值（鉴权关键命名空间禁止改写）
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Cache.Clear)]
     public void UpdateString(CacheStringUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -69,7 +60,6 @@ public class CacheAppService : ApplicationServiceBase
     /// <summary>
     /// 删除指定缓存键
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.Cache.Clear)]
     public void Remove(string key)
     {
         _cacheManagementService.Remove(key);
@@ -79,7 +69,6 @@ public class CacheAppService : ApplicationServiceBase
     /// 按模式批量删除缓存键
     /// </summary>
     /// <remarks>缓存管理页的「按模式删除」调用此处；动态 API 剥离 Remove 前缀，实际路由为 /Cache/ByPattern。</remarks>
-    [PermissionAuthorize(SaasPermissionCodes.Cache.Clear)]
     public long RemoveByPattern(string pattern = "*")
     {
         return _cacheManagementService.RemoveByPattern(pattern);

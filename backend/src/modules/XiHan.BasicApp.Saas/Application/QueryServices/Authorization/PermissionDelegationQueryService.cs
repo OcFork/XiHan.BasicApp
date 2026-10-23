@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 权限委托查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限委托")]
 public sealed class PermissionDelegationQueryService
     : SaasApplicationService, IPermissionDelegationQueryService
 {
@@ -75,8 +71,6 @@ public sealed class PermissionDelegationQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限委托分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionDelegation.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<PermissionDelegationListItemDto>> GetPermissionDelegationPageAsync(PermissionDelegationPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -127,7 +121,6 @@ public sealed class PermissionDelegationQueryService
     /// <param name="id">权限委托主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限委托详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionDelegation.Read)]
     public async Task<PermissionDelegationDetailDto?> GetPermissionDelegationDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -211,7 +204,7 @@ public sealed class PermissionDelegationQueryService
         }
 
         request.Conditions.AddSort((SysPermissionDelegation delegation) => delegation.ExpirationTime, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysPermissionDelegation delegation) => delegation.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysPermissionDelegation delegation) => delegation.CreatedAt, SortDirection.Descending, 1);
         return request;
     }
 
@@ -232,7 +225,7 @@ public sealed class PermissionDelegationQueryService
 
         var tenantMembers = await _tenantUserRepository.GetListAsync(
             tenantMember => ids.Contains(tenantMember.UserId),
-            tenantMember => tenantMember.CreatedTime,
+            tenantMember => tenantMember.CreatedAt,
             cancellationToken);
         return tenantMembers.ToDictionary(tenantMember => tenantMember.UserId);
     }
@@ -254,7 +247,7 @@ public sealed class PermissionDelegationQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 
     /// <summary>
@@ -273,7 +266,7 @@ public sealed class PermissionDelegationQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(permission => permission.BasicId);
+        return permissions.ToDictionary(permission => permission.Id);
     }
 
     /// <summary>
@@ -292,6 +285,6 @@ public sealed class PermissionDelegationQueryService
         }
 
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
-        return roles.ToDictionary(role => role.BasicId);
+        return roles.ToDictionary(role => role.Id);
     }
 }

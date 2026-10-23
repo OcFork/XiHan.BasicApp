@@ -21,7 +21,7 @@ public static class CodeGenTableColumnApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new CodeGenTableColumnUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.CSharpType,
             input.CSharpProperty,
             input.TsType,
@@ -69,7 +69,7 @@ public static class CodeGenTableColumnApplicationMapper
 
         return new CodeGenTableColumnListItemDto
         {
-            BasicId = column.BasicId,
+            Id = column.Id,
             TableId = column.TableId,
             ColumnName = column.ColumnName,
             ColumnComment = column.ColumnComment,

@@ -52,7 +52,7 @@ public static class MessageApplicationMapper
 
         return new EmailListItemDto
         {
-            BasicId = email.BasicId,
+            Id = email.Id,
             SendUserId = email.SendUserId,
             ReceiveUserId = email.ReceiveUserId,
             EmailType = email.EmailType,
@@ -66,8 +66,8 @@ public static class MessageApplicationMapper
             MaxRetryCount = email.MaxRetryCount,
             BusinessType = email.BusinessType,
             BusinessId = email.BusinessId,
-            CreatedTime = email.CreatedTime,
-            ModifiedTime = email.ModifiedTime
+            CreatedAt = email.CreatedAt,
+            ModifiedAt = email.ModifiedAt
         };
     }
 
@@ -83,7 +83,7 @@ public static class MessageApplicationMapper
         var item = ToEmailListItemDto(email);
         return new EmailDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             SendUserId = item.SendUserId,
             ReceiveUserId = item.ReceiveUserId,
             EmailType = item.EmailType,
@@ -97,10 +97,10 @@ public static class MessageApplicationMapper
             MaxRetryCount = item.MaxRetryCount,
             BusinessType = item.BusinessType,
             BusinessId = item.BusinessId,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = email.CreatedId,
             CreatedBy = email.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = email.ModifiedId,
             ModifiedBy = email.ModifiedBy
         };
@@ -114,7 +114,7 @@ public static class MessageApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new EmailUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ReceiveUserId,
             input.EmailType,
             input.FromEmail,
@@ -143,7 +143,7 @@ public static class MessageApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new EmailStatusUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.EmailStatus,
             input.SendTime,
             input.RetryCount,
@@ -185,7 +185,7 @@ public static class MessageApplicationMapper
 
         return new SmsListItemDto
         {
-            BasicId = sms.BasicId,
+            Id = sms.Id,
             SenderId = sms.SenderId,
             ReceiverId = sms.ReceiverId,
             SmsType = sms.SmsType,
@@ -199,8 +199,8 @@ public static class MessageApplicationMapper
             Cost = sms.Cost,
             BusinessType = sms.BusinessType,
             BusinessId = sms.BusinessId,
-            CreatedTime = sms.CreatedTime,
-            ModifiedTime = sms.ModifiedTime
+            CreatedAt = sms.CreatedAt,
+            ModifiedAt = sms.ModifiedAt
         };
     }
 
@@ -216,7 +216,7 @@ public static class MessageApplicationMapper
         var item = ToSmsListItemDto(sms);
         return new SmsDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             SenderId = item.SenderId,
             ReceiverId = item.ReceiverId,
             SmsType = item.SmsType,
@@ -230,10 +230,10 @@ public static class MessageApplicationMapper
             Cost = item.Cost,
             BusinessType = item.BusinessType,
             BusinessId = item.BusinessId,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = sms.CreatedId,
             CreatedBy = sms.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = sms.ModifiedId,
             ModifiedBy = sms.ModifiedBy
         };
@@ -247,7 +247,7 @@ public static class MessageApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new SmsUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ReceiverId,
             input.SmsType,
             input.ToPhone,
@@ -270,7 +270,7 @@ public static class MessageApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new SmsStatusUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.SmsStatus,
             input.SendTime,
             input.ProviderMessageId,

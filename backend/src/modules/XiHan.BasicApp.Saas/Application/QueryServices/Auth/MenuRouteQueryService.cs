@@ -7,7 +7,6 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Caching.Distributed.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -101,7 +100,7 @@ public sealed class MenuRouteQueryService
             permission => permission.Status == EnableStatus.Enabled,
             cancellationToken);
         var permissionCodeMap = permissions.ToDictionary(
-            permission => permission.BasicId,
+            permission => permission.Id,
             permission => permission.PermissionCode);
 
         var hasAllPermissions = snapshot.Permissions.Contains("*", StringComparer.OrdinalIgnoreCase);
@@ -193,7 +192,7 @@ public sealed class MenuRouteQueryService
                 node.Children = PruneEmptyDirectories(node.Children, directoryIds);
             }
 
-            var isDirectory = node.BasicId != null && directoryIds.Contains(node.BasicId);
+            var isDirectory = node.Id != null && directoryIds.Contains(node.Id);
             var hasChildren = node.Children is { Count: > 0 };
             // 目录且剪枝后无子节点 → 丢弃；叶子菜单（含外链）一律保留
             if (isDirectory && !hasChildren)
@@ -215,7 +214,7 @@ public sealed class MenuRouteQueryService
 
         return new MenuRouteDto
         {
-            BasicId = menu.BasicId.ToString(),
+            Id = menu.Id.ToString(),
             Path = string.IsNullOrWhiteSpace(menu.Path) ? $"/{menu.MenuCode}" : menu.Path.Trim(),
             Name = string.IsNullOrWhiteSpace(menu.RouteName) ? ToRouteName(menu.MenuCode) : menu.RouteName.Trim(),
             Component = menu.IsExternal ? null : NormalizeComponent(menu.Component),
@@ -312,7 +311,7 @@ public sealed class MenuRouteQueryService
         CancellationToken cancellationToken)
     {
         var allPermissions = await _permissionRepository.GetListAsync(permission => permission.Status == EnableStatus.Enabled, cancellationToken);
-        var permissionCodeMap = allPermissions.ToDictionary(permission => permission.BasicId, permission => permission.PermissionCode);
+        var permissionCodeMap = allPermissions.ToDictionary(permission => permission.Id, permission => permission.PermissionCode);
         var menus = await _menuRepository.GetListAsync(
             menu => menu.Status == EnableStatus.Enabled && menu.MenuType != MenuType.Button,
             cancellationToken);
@@ -320,7 +319,7 @@ public sealed class MenuRouteQueryService
             .Where(menu => menu.IsVisible)
             .Where(menu => IsMenuGranted(menu, snapshot, hasAllPermissions, permissionCodeMap, deniedPermissionCodes))
             .OrderBy(menu => menu.Sort)
-            .ThenBy(menu => menu.BasicId)
+            .ThenBy(menu => menu.Id)
             .ToList();
 
         if (visibleMenus.Count == 0)
@@ -328,11 +327,11 @@ public sealed class MenuRouteQueryService
             return [BuildFallbackDashboardRoute()];
         }
 
-        var routeMap = visibleMenus.ToDictionary(menu => menu.BasicId, menu => ToMenuRoute(menu, permissionCodeMap));
+        var routeMap = visibleMenus.ToDictionary(menu => menu.Id, menu => ToMenuRoute(menu, permissionCodeMap));
         var roots = new List<MenuRouteDto>();
         foreach (var menu in visibleMenus)
         {
-            var route = routeMap[menu.BasicId];
+            var route = routeMap[menu.Id];
             if (menu.ParentId.HasValue && routeMap.TryGetValue(menu.ParentId.Value, out var parent))
             {
                 parent.Children ??= [];
@@ -348,7 +347,7 @@ public sealed class MenuRouteQueryService
         // 显示一个点不进去的空目录没有意义，应隐藏（叶子菜单已按权限过滤，目录可见性派生自子菜单）。
         var directoryIds = visibleMenus
             .Where(menu => menu.MenuType == MenuType.Directory)
-            .Select(menu => menu.BasicId.ToString())
+            .Select(menu => menu.Id.ToString())
             .ToHashSet();
         roots = PruneEmptyDirectories(roots, directoryIds);
 

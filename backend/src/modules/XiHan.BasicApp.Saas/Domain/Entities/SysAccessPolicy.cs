@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -21,13 +20,13 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// </list>
 /// </remarks>
 [SugarTable(TableName = "Sys_Access_Policy", TableDescription = "访问策略表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_PoCo", nameof(TenantId), OrderByType.Asc, nameof(PolicyCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_St", nameof(TenantId), OrderByType.Asc, nameof(Status), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysAccessPolicy : BasicAppAggregateRoot, IStrictMultiTenantEntity
+public partial class SysAccessPolicy : BasicAppAggregateRoot, IMultiTenant
 {
     /// <summary>
     /// 策略编码（同一层内唯一）

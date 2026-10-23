@@ -7,10 +7,7 @@ using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Chat.Application.Mappers;
 using XiHan.BasicApp.Chat.Application.Services;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
 
 using XiHan.BasicApp.Chat.Domain.Permissions;
 
@@ -22,8 +19,6 @@ namespace XiHan.BasicApp.Chat.Application.AppServices;
 /// <remarks>
 /// 持久化经领域服务（UoW 内），实时推送在落库后 best-effort 点发（失败不回滚）。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "在线聊天")]
 public sealed class ChatAppService
     : ChatApplicationService, IChatAppService
 {
@@ -53,8 +48,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 打开单聊会话（不存在则创建）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task<ChatConversationDto> OpenSingleConversationAsync(ChatSingleConversationOpenDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -68,8 +61,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 创建群聊
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task<ChatConversationDto> CreateGroupConversationAsync(ChatGroupCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -84,8 +75,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 打开部门群（不存在则创建，成员按部门归属同步）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task<ChatConversationDto> OpenDepartmentConversationAsync(ChatDepartmentConversationOpenDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -99,8 +88,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 添加群成员
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task AddMembersAsync(ChatMemberAddDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -121,8 +108,6 @@ public sealed class ChatAppService
     /// 在权限过滤器阶段就被 403，根本走不到领域层那条自助分支。
     /// 入参 UserId 传当前用户时仍会被领域层接受（等价于退群），但普通成员到不了这里。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task RemoveMemberAsync(ChatMemberRemoveDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -139,8 +124,6 @@ public sealed class ChatAppService
     /// 因而不需要群治理权限：门槛定为 chat:read（能看到这个群就能退出这个群），
     /// 具体能否退出仍由领域层判定（非成员/群主/非群聊一律拒绝）。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task LeaveConversationAsync(ChatConversationLeaveDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -168,8 +151,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 发送消息（落库后向会话成员实时推送）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task<ChatMessageItemDto> SendMessageAsync(ChatMessageSendDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -186,22 +167,18 @@ public sealed class ChatAppService
     /// <summary>
     /// 撤回消息（仅本人限时）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task RecallMessageAsync(long messageId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = await _chatDomainService.RecallMessageAsync(
             new ChatMessageRecallCommand(messageId, GetCurrentUserIdOrThrow()), cancellationToken);
-        await _pushService.PushRecalledAsync(result.Message.ConversationId, result.Message.BasicId, result.RecipientUserIds);
+        await _pushService.PushRecalledAsync(result.Message.ConversationId, result.Message.Id, result.RecipientUserIds);
     }
 
     /// <summary>
     /// 编辑消息（仅文本、仅本人、限时窗口）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task<ChatMessageItemDto> EditMessageAsync(ChatMessageEditDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -211,15 +188,13 @@ public sealed class ChatAppService
         var result = await _chatDomainService.EditMessageAsync(
             new ChatMessageEditCommand(input.MessageId, GetCurrentUserIdOrThrow(), input.Content), cancellationToken);
         await _pushService.PushMessageEditedAsync(
-            result.Message.ConversationId, result.Message.BasicId, result.Message.Content, result.Message.EditedTime, result.RecipientUserIds);
+            result.Message.ConversationId, result.Message.Id, result.Message.Content, result.Message.EditedTime, result.RecipientUserIds);
         return ChatApplicationMapper.ToMessageItemDto(result.Message);
     }
 
     /// <summary>
     /// 表情回应 toggle（已存在则取消，否则新增）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task<ChatReactionToggleResultDto> ToggleReactionAsync(ChatReactionToggleDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -235,8 +210,6 @@ public sealed class ChatAppService
     /// <summary>
     /// Pin 消息（单聊双方皆可，群仅群主/管理员；每会话有上限）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task PinMessageAsync(ChatMessagePinDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -250,8 +223,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 取消 Pin 消息
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Send)]
     public async Task UnpinMessageAsync(ChatMessagePinDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -265,8 +236,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 会话置顶 toggle（个人维度）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task<ChatToggleStateDto> TogglePinConversationAsync(ChatConversationToggleDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -283,8 +252,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 会话免打扰 toggle（个人维度）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task<ChatToggleStateDto> ToggleMuteConversationAsync(ChatConversationToggleDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -300,8 +267,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 标记会话已读
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Read)]
     public async Task MarkReadAsync(ChatMarkReadDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -316,8 +281,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 更新群信息（群主/管理员；部门群名称禁改；公告变更追加系统提示）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task UpdateConversationInfoAsync(ChatConversationInfoUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -332,8 +295,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 转让群主（仅群聊群主）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task TransferOwnerAsync(ChatOwnerTransferDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -347,8 +308,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 成员禁言/解除（群主与管理员）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task SetMemberSilenceAsync(ChatMemberSilenceDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -362,8 +321,6 @@ public sealed class ChatAppService
     /// <summary>
     /// 设置成员角色（仅群主；Admin ↔ Member）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(ChatPermissionCodes.Manage)]
     public async Task SetMemberRoleAsync(ChatMemberRoleDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -379,7 +336,7 @@ public sealed class ChatAppService
     /// </summary>
     private async Task PushGovernanceAsync(ChatGovernanceResult result, string changeType)
     {
-        await _pushService.PushConversationChangedAsync(result.Conversation.BasicId, changeType, result.RecipientUserIds);
+        await _pushService.PushConversationChangedAsync(result.Conversation.Id, changeType, result.RecipientUserIds);
         if (result.SystemMessage is not null)
         {
             await _pushService.PushMessageAsync(

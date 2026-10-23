@@ -5,6 +5,7 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -78,8 +79,8 @@ public sealed class ConstraintRuleDomainService
         };
 
         var savedRule = await _constraintRuleRepository.AddAsync(rule, cancellationToken);
-        _ = await ReplaceRuleItemsAsync(savedRule.BasicId, command.Items, cancellationToken);
-        return new ConstraintRuleCommandResult(savedRule.BasicId);
+        _ = await ReplaceRuleItemsAsync(savedRule.Id, command.Items, cancellationToken);
+        return new ConstraintRuleCommandResult(savedRule.Id);
     }
 
     /// <summary>
@@ -90,7 +91,7 @@ public sealed class ConstraintRuleDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var rule = await GetEditableRuleOrThrowAsync(id, cancellationToken);
-        _ = await _constraintRuleItemRepository.DeleteAsync(item => item.ConstraintRuleId == rule.BasicId, cancellationToken);
+        _ = await _constraintRuleItemRepository.DeleteAsync(item => item.ConstraintRuleId == rule.Id, cancellationToken);
         if (!await _constraintRuleRepository.DeleteAsync(rule, cancellationToken))
         {
             throw new InvalidOperationException("约束规则删除失败。");
@@ -108,7 +109,7 @@ public sealed class ConstraintRuleDomainService
         var now = DateTimeOffset.UtcNow;
         ValidateUpdateInput(command, now);
 
-        var rule = await GetEditableRuleOrThrowAsync(command.BasicId, cancellationToken);
+        var rule = await GetEditableRuleOrThrowAsync(command.Id, cancellationToken);
         await ValidateRuleItemsAsync(command.ConstraintType, command.TargetType, command.Items, now, cancellationToken);
 
         rule.RuleName = command.RuleName.Trim();
@@ -123,8 +124,8 @@ public sealed class ConstraintRuleDomainService
         rule.Remark = NormalizeNullable(command.Remark);
 
         var savedRule = await _constraintRuleRepository.UpdateAsync(rule, cancellationToken);
-        _ = await ReplaceRuleItemsAsync(savedRule.BasicId, command.Items, cancellationToken);
-        return new ConstraintRuleCommandResult(savedRule.BasicId);
+        _ = await ReplaceRuleItemsAsync(savedRule.Id, command.Items, cancellationToken);
+        return new ConstraintRuleCommandResult(savedRule.Id);
     }
 
     /// <summary>
@@ -135,7 +136,7 @@ public sealed class ConstraintRuleDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "约束规则主键必须大于 0。");
         }
@@ -143,8 +144,8 @@ public sealed class ConstraintRuleDomainService
         ValidateEnum(command.Status, nameof(command.Status));
 
         var now = DateTimeOffset.UtcNow;
-        var rule = await GetEditableRuleOrThrowAsync(command.BasicId, cancellationToken);
-        var items = await GetRuleItemsAsync(rule.BasicId, cancellationToken);
+        var rule = await GetEditableRuleOrThrowAsync(command.Id, cancellationToken);
+        var items = await GetRuleItemsAsync(rule.Id, cancellationToken);
         if (command.Status == EnableStatus.Enabled)
         {
             ValidateRuleItems(rule.ConstraintType, rule.TargetType, ToCommandItems(items));
@@ -158,7 +159,7 @@ public sealed class ConstraintRuleDomainService
 
         rule.Remark = NormalizeNullable(command.Remark) ?? rule.Remark;
         var savedRule = await _constraintRuleRepository.UpdateAsync(rule, cancellationToken);
-        return new ConstraintRuleCommandResult(savedRule.BasicId);
+        return new ConstraintRuleCommandResult(savedRule.Id);
     }
 
     private static string? NormalizeNullable(string? value)
@@ -338,7 +339,7 @@ public sealed class ConstraintRuleDomainService
 
     private static void ValidateUpdateInput(ConstraintRuleUpdateCommand command, DateTimeOffset now)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "约束规则主键必须大于 0。");
         }
@@ -369,7 +370,7 @@ public sealed class ConstraintRuleDomainService
     {
         var exists = excludeId.HasValue
             ? await _constraintRuleRepository.AnyAsync(
-                rule => rule.RuleCode == ruleCode && rule.BasicId != excludeId.Value,
+                rule => rule.RuleCode == ruleCode && rule.Id != excludeId.Value,
                 cancellationToken)
             : await _constraintRuleRepository.AnyAsync(rule => rule.RuleCode == ruleCode, cancellationToken);
 

@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// OAuth 授权码查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "OAuth授权码")]
 public sealed class OAuthCodeQueryService
     : SaasApplicationService, IOAuthCodeQueryService
 {
@@ -61,8 +57,6 @@ public sealed class OAuthCodeQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>OAuth 授权码分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.OAuthCode.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<OAuthCodeListItemDto>> GetOAuthCodePageAsync(OAuthCodePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -97,7 +91,6 @@ public sealed class OAuthCodeQueryService
     /// <param name="id">OAuth 授权码主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>OAuth 授权码详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.OAuthCode.Read)]
     public async Task<OAuthCodeDetailDto?> GetOAuthCodeDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -167,17 +160,17 @@ public sealed class OAuthCodeQueryService
 
         if (input.CreatedTimeStart.HasValue)
         {
-            request.Conditions.AddFilter((SysOAuthCode code) => code.CreatedTime, input.CreatedTimeStart.Value, QueryOperator.GreaterThanOrEqual);
+            request.Conditions.AddFilter((SysOAuthCode code) => code.CreatedAt, input.CreatedTimeStart.Value, QueryOperator.GreaterThanOrEqual);
         }
 
         if (input.CreatedTimeEnd.HasValue)
         {
-            request.Conditions.AddFilter((SysOAuthCode code) => code.CreatedTime, input.CreatedTimeEnd.Value, QueryOperator.LessThanOrEqual);
+            request.Conditions.AddFilter((SysOAuthCode code) => code.CreatedAt, input.CreatedTimeEnd.Value, QueryOperator.LessThanOrEqual);
         }
 
         request.Conditions.AddSort((SysOAuthCode code) => code.IsUsed, SortDirection.Ascending, 0);
         request.Conditions.AddSort((SysOAuthCode code) => code.ExpirationTime, SortDirection.Descending, 1);
-        request.Conditions.AddSort((SysOAuthCode code) => code.CreatedTime, SortDirection.Descending, 2);
+        request.Conditions.AddSort((SysOAuthCode code) => code.CreatedAt, SortDirection.Descending, 2);
         return request;
     }
 
@@ -265,6 +258,6 @@ public sealed class OAuthCodeQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 }

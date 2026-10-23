@@ -5,10 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Bot.Sms.Abstractions;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Messaging.Models;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
@@ -99,7 +96,7 @@ public sealed class SmsMessageSender : IMessageSender
             sms.Content = content ?? sms.Content;
             await client.Updateable(sms)
                 .UpdateColumns(s => new { s.SmsStatus, s.Content })
-                .WhereColumns(s => s.BasicId)
+                .WhereColumns(s => s.Id)
                 .ExecuteCommandAsync(cancellationToken);
         }
         else
@@ -156,7 +153,7 @@ public sealed class SmsMessageSender : IMessageSender
                 .SetColumns(s => s.SendTime == DateTimeOffset.UtcNow)
                 .SetColumns(s => s.Provider == providerName)
                 .SetColumns(s => s.ProviderMessageId == providerMessageId)
-                .Where(s => s.BasicId == sms.BasicId)
+                .Where(s => s.Id == sms.Id)
                 .ExecuteCommandAsync(cancellationToken);
 
             _logger.LogInformation("短信发送成功。MessageId: {MessageId}, To: {To}, Provider: {Provider}, ProviderMessageId: {ProviderMessageId}",
@@ -168,7 +165,7 @@ public sealed class SmsMessageSender : IMessageSender
                 Channel = envelope.Channel,
                 RecipientAddress = recipient.Address,
                 IsSuccess = true,
-                ProviderMessageId = sms.BasicId.ToString(),
+                ProviderMessageId = sms.Id.ToString(),
                 DispatchedAt = DateTimeOffset.UtcNow
             };
         }
@@ -179,7 +176,7 @@ public sealed class SmsMessageSender : IMessageSender
                 .SetColumns(s => s.SmsStatus == SmsStatus.Failed)
                 .SetColumns(s => s.ErrorMessage == ex.Message)
                 .SetColumns(s => s.RetryCount == s.RetryCount + 1)
-                .Where(s => s.BasicId == sms.BasicId)
+                .Where(s => s.Id == sms.Id)
                 .ExecuteCommandAsync(cancellationToken);
 
             _logger.LogError(ex, "短信发送失败。MessageId: {MessageId}, To: {To}", envelope.MessageId, recipient.Address);
@@ -191,7 +188,7 @@ public sealed class SmsMessageSender : IMessageSender
                 RecipientAddress = recipient.Address,
                 IsSuccess = false,
                 ErrorMessage = ex.Message,
-                ProviderMessageId = sms.BasicId.ToString(),
+                ProviderMessageId = sms.Id.ToString(),
                 DispatchedAt = DateTimeOffset.UtcNow
             };
         }

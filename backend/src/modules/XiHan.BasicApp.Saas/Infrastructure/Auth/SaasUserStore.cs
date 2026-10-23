@@ -3,9 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Authentication.Users;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
@@ -54,7 +52,7 @@ public sealed class SaasUserStore : IUserStore
         }
 
         using var accountScope = EnterAccountScope(user);
-        var security = await FindSecurityAsync(user.BasicId, cancellationToken);
+        var security = await FindSecurityAsync(user.Id, cancellationToken);
         return MapToUserInfo(user, security);
     }
 
@@ -211,7 +209,7 @@ public sealed class SaasUserStore : IUserStore
         using var accountScope = EnterAccountScope(user);
         return await _clientResolver.GetClientForEntity<SysUserSecurity>()
             .Queryable<SysUserSecurity>()
-            .Where(s => s.UserId == user.BasicId && !s.IsDeleted)
+            .Where(s => s.UserId == user.Id && !s.IsDeleted)
             .Select(s => s.FailedLoginAttempts)
             .FirstAsync(cancellationToken);
     }
@@ -237,7 +235,7 @@ public sealed class SaasUserStore : IUserStore
         }
 
         using var accountScope = EnterAccountScope(user);
-        var security = await FindSecurityAsync(user.BasicId, cancellationToken);
+        var security = await FindSecurityAsync(user.Id, cancellationToken);
         if (security is null)
         {
             return;
@@ -272,7 +270,7 @@ public sealed class SaasUserStore : IUserStore
         }
 
         using var accountScope = EnterAccountScope(user);
-        var userId = user.BasicId;
+        var userId = user.Id;
         await _clientResolver.GetClientForEntity<SysUserSecurity>()
             .Updateable<SysUserSecurity>()
             .SetColumns(s => s.FailedLoginAttempts == 0)
@@ -306,7 +304,7 @@ public sealed class SaasUserStore : IUserStore
         }
 
         using var accountScope = EnterAccountScope(user);
-        var security = await FindSecurityAsync(user.BasicId, cancellationToken);
+        var security = await FindSecurityAsync(user.Id, cancellationToken);
         if (security is null)
         {
             return;
@@ -356,7 +354,7 @@ public sealed class SaasUserStore : IUserStore
         using var accountScope = EnterAccountScope(user);
         // 取整行走实体属性绑定：DateTimeOffset? 列的标量投影会走 SqlSugar 值类型 ChangeType 路径，
         // DateTime→DateTimeOffset 直转抛 InvalidCastException（LockoutEndTime 非空时所有登录 500）
-        var security = await FindSecurityAsync(user.BasicId, cancellationToken);
+        var security = await FindSecurityAsync(user.Id, cancellationToken);
 
         return security?.LockoutEndTime?.UtcDateTime;
     }
@@ -368,7 +366,7 @@ public sealed class SaasUserStore : IUserStore
     {
         return new UserInfo
         {
-            UserId = user.BasicId.ToString(),
+            UserId = user.Id.ToString(),
             Username = user.UserName,
             PasswordHash = security?.Password ?? string.Empty,
             Email = user.Email,
@@ -424,7 +422,7 @@ public sealed class SaasUserStore : IUserStore
         return await _clientResolver.GetClientForEntity<SysUser>()
             .Queryable<SysUser>()
             .ClearTenantFilter()
-            .Where(u => u.BasicId == userId && !u.IsDeleted)
+            .Where(u => u.Id == userId && !u.IsDeleted)
             .FirstAsync(cancellationToken);
     }
 

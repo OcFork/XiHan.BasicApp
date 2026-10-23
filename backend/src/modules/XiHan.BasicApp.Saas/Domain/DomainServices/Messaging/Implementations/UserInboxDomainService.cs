@@ -61,7 +61,7 @@ public sealed class UserInboxDomainService
 
         var userNotification = await _userNotificationRepository.AddAsync(new SysUserNotification
         {
-            NotificationId = notification.BasicId,
+            NotificationId = notification.Id,
             UserId = command.UserId,
             NotificationStatus = NotificationStatus.Unread,
             ReadTime = null,

@@ -2,13 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Uow.Attributes;
-using XiHan.Framework.Web.Core.Clients;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -21,10 +19,20 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// 写入时解析并快照 操作人/目标用户/目标角色/权限 的名称与操作 IP，便于审计直读、且不随后续改名或删除而失真。
 /// 与 <c>AuthorizationChangedEventHandler</c>（负责缓存失效）职责分离；共享发布方的工作单元事务落库。
 /// </remarks>
-[UnitOfWork(true)]
 public sealed class PermissionChangeLogEventHandler
-    : ILocalEventHandler<AuthorizationChangedDomainEvent>
+    : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string AuthorizationChangedTopic = "authorization-changed";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<AuthorizationChangedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly ISqlSugarClientResolver _clientResolver;
 
     private readonly IClientInfoProvider _clientInfoProvider;
@@ -64,7 +72,7 @@ public sealed class PermissionChangeLogEventHandler
             ChangeReason = NormalizeText(eventData.Reason, 500),
             OperationIp = NormalizeText(_clientInfoProvider.GetCurrent().IpAddress, 50),
             ChangeTime = now,
-            CreatedTime = now
+            CreatedAt = now
         };
         entity.Description = NormalizeText(BuildDescription(entity, await ResolveRoleNameAsync(eventData.RelatedRoleId), eventData.RelatedRoleId), 500);
 
@@ -87,7 +95,7 @@ public sealed class PermissionChangeLogEventHandler
 
         var name = await _clientResolver.GetClientForEntity<SysUser>().Queryable<SysUser>()
             .ClearTenantFilter()
-            .Where(user => user.BasicId == userId.Value)
+            .Where(user => user.Id == userId.Value)
             .Select(user => user.UserName)
             .FirstAsync();
         return NormalizeText(name, 64);
@@ -105,7 +113,7 @@ public sealed class PermissionChangeLogEventHandler
 
         var name = await _clientResolver.GetClientForEntity<SysRole>().Queryable<SysRole>()
             .ClearTenantFilter()
-            .Where(role => role.BasicId == roleId.Value)
+            .Where(role => role.Id == roleId.Value)
             .Select(role => role.RoleName)
             .FirstAsync();
         return NormalizeText(name, 100);
@@ -123,7 +131,7 @@ public sealed class PermissionChangeLogEventHandler
 
         var name = await _clientResolver.GetClientForEntity<SysPermission>().Queryable<SysPermission>()
             .ClearTenantFilter()
-            .Where(permission => permission.BasicId == permissionId.Value)
+            .Where(permission => permission.Id == permissionId.Value)
             .Select(permission => permission.PermissionName)
             .FirstAsync();
         return NormalizeText(name, 200);

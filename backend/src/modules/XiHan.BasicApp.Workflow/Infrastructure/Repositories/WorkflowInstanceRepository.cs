@@ -4,8 +4,6 @@
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Repositories;
 
@@ -88,7 +86,7 @@ public sealed class WorkflowInstanceRepository(ISqlSugarClientResolver clientRes
             .GroupBy(instance => instance.CorrelationId!, StringComparer.Ordinal)
             .ToDictionary(
                 group => group.Key,
-                group => group.OrderByDescending(instance => instance.CreationTime).ThenByDescending(instance => instance.BasicId).First(),
+                group => group.OrderByDescending(instance => instance.CreationTime).ThenByDescending(instance => instance.Id).First(),
                 StringComparer.Ordinal);
     }
 

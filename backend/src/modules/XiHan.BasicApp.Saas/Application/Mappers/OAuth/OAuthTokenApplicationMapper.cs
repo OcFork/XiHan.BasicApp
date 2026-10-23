@@ -32,7 +32,7 @@ public static class OAuthTokenApplicationMapper
         var userId = token.UserId ?? session?.UserId;
         return new OAuthTokenListItemDto
         {
-            BasicId = token.BasicId,
+            Id = token.Id,
             ClientId = token.ClientId,
             AppName = app?.AppName,
             UserId = userId,
@@ -51,7 +51,7 @@ public static class OAuthTokenApplicationMapper
             IsRefreshTokenExpired = token.RefreshTokenExpirationTime.HasValue && token.RefreshTokenExpirationTime.Value <= now,
             IsRevoked = token.IsRevoked,
             RevokedTime = token.RevokedTime,
-            CreatedTime = token.CreatedTime
+            CreatedAt = token.CreatedAt
         };
     }
 
@@ -76,7 +76,7 @@ public static class OAuthTokenApplicationMapper
         var item = ToListItemDto(token, app, session, user, now);
         return new OAuthTokenDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             ClientId = item.ClientId,
             AppName = item.AppName,
             UserId = item.UserId,
@@ -95,7 +95,7 @@ public static class OAuthTokenApplicationMapper
             IsRefreshTokenExpired = item.IsRefreshTokenExpired,
             IsRevoked = item.IsRevoked,
             RevokedTime = item.RevokedTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = token.CreatedId,
             CreatedBy = token.CreatedBy
         };

@@ -6,9 +6,8 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Templating.Services;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -35,7 +34,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 条件总数限制：单条权限关联最多 5 个条件组（ConditionGroup），每组最多 10 条条件，超出应拒绝写入
 /// </remarks>
 [SugarTable(TableName = "Sys_Permission_Condition", TableDescription = "权限ABAC条件表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_RoPeId", nameof(RolePermissionId), OrderByType.Asc)]

@@ -6,8 +6,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -19,7 +17,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 修改当前用户密码
     /// </summary>
-    [UnitOfWork(true)]
     public async Task ChangePasswordAsync(ProfileChangePasswordDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("修改密码");
@@ -42,12 +39,12 @@ public sealed partial class ProfileAppService
         await PublishSecurityAuditAsync(LoginResult.PasswordChanged, "用户修改密码");
 
         await _notificationDispatchService.DispatchToUserAsync(
-            result.User.BasicId,
+            result.User.Id,
             "密码已修改",
             "您的账号密码已更新，如非本人操作，请立即联系管理员。",
             NotificationType.Security,
             "profile.password.changed",
-            result.User.BasicId,
+            result.User.Id,
             cancellationToken: cancellationToken);
 
         // 强制改密锁的解锁方式就是改密：改密成功即解除会话锁定，前端随后收起强制改密引导
@@ -88,7 +85,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 禁用双因素认证
     /// </summary>
-    [UnitOfWork(true)]
     public async Task Disable2FAAsync(ProfileTwoFactorVerifyDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("关闭两步验证");
@@ -113,7 +109,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 启用双因素认证
     /// </summary>
-    [UnitOfWork(true)]
     public async Task Enable2FAAsync(ProfileTwoFactorVerifyDto input, CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("开启两步验证");
@@ -152,7 +147,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 初始化 TOTP 双因素认证
     /// </summary>
-    [UnitOfWork(true)]
     public async Task<ProfileTwoFactorSetupDto> Setup2FAAsync(CancellationToken cancellationToken = default)
     {
         _currentUser.EnsureNotImpersonating("设置两步验证");

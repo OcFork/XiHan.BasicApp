@@ -2,10 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.EventBus.Abstractions.Local;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -15,8 +16,19 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// <remarks>
 /// 当文件的主存储发生切换（如从本地迁移到 OSS）时，记录审计日志。
 /// </remarks>
-public sealed class FilePrimaryStorageChangedEventHandler : ILocalEventHandler<FilePrimaryStorageChangedDomainEvent>
+public sealed class FilePrimaryStorageChangedEventHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string FilePrimaryStorageChangedTopic = "file-primary-storage-changed";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<FilePrimaryStorageChangedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly ISqlSugarClientResolver _clientResolver;
     private readonly ILogger<FilePrimaryStorageChangedEventHandler> _logger;
 
@@ -52,7 +64,7 @@ public sealed class FilePrimaryStorageChangedEventHandler : ILocalEventHandler<F
             {
                 await db.Updateable<SysFileStorage>()
                     .SetColumns(s => s.IsPrimary == false)
-                    .Where(s => s.BasicId == eventData.PreviousStorageId.Value)
+                    .Where(s => s.Id == eventData.PreviousStorageId.Value)
                     .ExecuteCommandAsync();
 
                 _logger.LogDebug(
@@ -63,7 +75,7 @@ public sealed class FilePrimaryStorageChangedEventHandler : ILocalEventHandler<F
             // 确保新主存储标记为主存储
             await db.Updateable<SysFileStorage>()
                 .SetColumns(s => s.IsPrimary == true)
-                .Where(s => s.BasicId == eventData.StorageId)
+                .Where(s => s.Id == eventData.StorageId)
                 .ExecuteCommandAsync();
 
             _logger.LogInformation(

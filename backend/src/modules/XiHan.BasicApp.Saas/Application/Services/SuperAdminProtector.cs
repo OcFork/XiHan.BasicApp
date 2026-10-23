@@ -5,9 +5,8 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -69,7 +68,7 @@ public sealed class SuperAdminProtector : ISuperAdminProtector
             role => role.TenantId == 0 && role.RoleCode == SaasRoleCodes.SuperAdmin,
             cancellationToken);
 
-        return roles.Select(role => role.BasicId).Distinct().ToList();
+        return roles.Select(role => role.Id).Distinct().ToList();
     }
 
     /// <summary>

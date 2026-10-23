@@ -33,13 +33,13 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 按状态筛选：IX_TeId_ReSt
 /// </remarks>
 [SugarTable(TableName = "Sys_Permission_Request", TableDescription = "权限申请表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_ReUsId", nameof(TenantId), OrderByType.Asc, nameof(RequestUserId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_ReSt", nameof(TenantId), OrderByType.Asc, nameof(RequestStatus), OrderByType.Asc)]
 [SugarIndex("IX_{table}_WoInId", nameof(WorkflowInstanceId), OrderByType.Asc)]
-public partial class SysPermissionRequest : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysPermissionRequest : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 申请人ID

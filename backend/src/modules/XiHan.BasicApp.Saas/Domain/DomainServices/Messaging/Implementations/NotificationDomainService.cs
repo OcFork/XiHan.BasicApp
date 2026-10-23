@@ -5,6 +5,7 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -110,7 +111,7 @@ public sealed class NotificationDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var notification = await GetNotificationOrThrowAsync(id, cancellationToken);
-        _ = await _userNotificationRepository.DeleteAsync(item => item.NotificationId == notification.BasicId, cancellationToken);
+        _ = await _userNotificationRepository.DeleteAsync(item => item.NotificationId == notification.Id, cancellationToken);
         if (!await _notificationRepository.DeleteAsync(notification, cancellationToken))
         {
             throw new InvalidOperationException("系统通知删除失败。");
@@ -125,7 +126,7 @@ public sealed class NotificationDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var notification = await GetNotificationOrThrowAsync(command.BasicId, cancellationToken);
+        var notification = await GetNotificationOrThrowAsync(command.Id, cancellationToken);
         var targetType = command.TargetType ?? notification.TargetType;
         IReadOnlyList<long> targetUserIds = command.UserIds ?? [];
         // 定向类型(用户/角色/部门)未显式传目标时，从 TargetValue 还原原目标 ID
@@ -187,11 +188,11 @@ public sealed class NotificationDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统通知主键必须大于 0。");
+        EnsureId(command.Id, "系统通知主键必须大于 0。");
         ValidateNotificationInput(command.NotificationType, command.TargetType, command.Title, command.Icon, command.Link, command.BusinessType, command.BusinessId, command.SendTime, command.ExpirationTime, command.Remark);
         var targetUserIds = command.TargetType == NotificationTargetType.All ? [] : NormalizeUserIds(command.UserIds);
 
-        var notification = await GetNotificationOrThrowAsync(command.BasicId, cancellationToken);
+        var notification = await GetNotificationOrThrowAsync(command.Id, cancellationToken);
         if (notification.IsPublished)
         {
             throw new InvalidOperationException("已发布通知不能直接更新，请重新创建通知。");
@@ -362,13 +363,13 @@ public sealed class NotificationDomainService
         // 偏好门控（强制/紧急不受门控）；门控后可能少于解析结果，但仅当目标解析为 0 才视为无效
         var deliverIds = await FilterByPreferenceAsync(recipientIds, notification, MessageChannel.SiteNotification, cancellationToken);
 
-        var existingItems = await _userNotificationRepository.GetListAsync(item => item.NotificationId == notification.BasicId, cancellationToken);
+        var existingItems = await _userNotificationRepository.GetListAsync(item => item.NotificationId == notification.Id, cancellationToken);
         var existingUserIds = existingItems.Select(item => item.UserId).ToHashSet();
         var addItems = deliverIds
             .Where(userId => !existingUserIds.Contains(userId))
             .Select(userId => new SysUserNotification
             {
-                NotificationId = notification.BasicId,
+                NotificationId = notification.Id,
                 UserId = userId,
                 NotificationStatus = NotificationStatus.Unread
             })

@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -79,7 +78,7 @@ public sealed class FileStorageRepository(ISqlSugarClientResolver clientResolver
         return excludeStorageId.HasValue
             ? UpdateAsync(
                 storage => new SysFileStorage { IsPrimary = false },
-                storage => storage.FileId == fileId && storage.BasicId != excludeStorageId.Value && storage.IsPrimary,
+                storage => storage.FileId == fileId && storage.Id != excludeStorageId.Value && storage.IsPrimary,
                 cancellationToken)
             : UpdateAsync(
                 storage => new SysFileStorage { IsPrimary = false },

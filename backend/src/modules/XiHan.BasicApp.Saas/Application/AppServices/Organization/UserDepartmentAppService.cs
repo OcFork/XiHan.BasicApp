@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
@@ -10,18 +11,14 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 用户部门命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户部门")]
 public sealed class UserDepartmentAppService
     : SaasApplicationService, IUserDepartmentAppService
 {
@@ -31,7 +28,7 @@ public sealed class UserDepartmentAppService
 
     private readonly IUserDepartmentRepository _userDepartmentRepository;
 
-    private readonly ILocalEventBus _localEventBus;
+    private readonly IMessagePublisher _localEventBus;
 
     private readonly IOperationPermissionGuard _operationPermissionGuard;
 
@@ -42,7 +39,7 @@ public sealed class UserDepartmentAppService
         IUserDomainService userDomainService,
         IPositionRepository positionRepository,
         IUserDepartmentRepository userDepartmentRepository,
-        ILocalEventBus localEventBus,
+        IMessagePublisher localEventBus,
         IOperationPermissionGuard operationPermissionGuard)
     {
         _userDomainService = userDomainService;
@@ -60,8 +57,6 @@ public sealed class UserDepartmentAppService
     /// <remarks>
     /// 入口与「分配部门」按钮同挂授予权限；本次含撤销项时再要撤销权限，只分配不撤销的提交不需要撤销权限。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserDepartment.Grant)]
     public async Task BatchUpdateUserDepartmentsAsync(UserDepartmentBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -94,20 +89,20 @@ public sealed class UserDepartmentAppService
         // 部门归属变更事件：订阅方同步部门群成员（入部门自动进群，移出部门即踢出部门群）
         foreach (var departmentId in result.RevokedDepartmentIds)
         {
-            await _localEventBus.PublishAsync(new UserDepartmentChangedDomainEvent(input.UserId, departmentId, isAssigned: false));
+            // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+            await _localEventBus.PublishAsync("user-department-changed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "user-department-changed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new UserDepartmentChangedDomainEvent(input.UserId, departmentId, isAssigned: false)) }, cancellationToken);
         }
 
         foreach (var departmentId in result.AssignedDepartmentIds)
         {
-            await _localEventBus.PublishAsync(new UserDepartmentChangedDomainEvent(input.UserId, departmentId, isAssigned: true));
+            // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+            await _localEventBus.PublishAsync("user-department-changed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "user-department-changed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new UserDepartmentChangedDomainEvent(input.UserId, departmentId, isAssigned: true)) }, cancellationToken);
         }
     }
 
     /// <summary>
     /// 更新用户部门归属
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserDepartment.Update)]
     public async Task<UserDepartmentDetailDto> UpdateUserDepartmentAsync(UserDepartmentUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -121,8 +116,6 @@ public sealed class UserDepartmentAppService
     /// <summary>
     /// 更新用户部门归属状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserDepartment.Status)]
     public async Task<UserDepartmentDetailDto> UpdateUserDepartmentStatusAsync(UserDepartmentStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

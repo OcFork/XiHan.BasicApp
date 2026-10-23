@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 权限 ABAC 条件查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限ABAC条件")]
 public sealed class PermissionConditionQueryService
     : SaasApplicationService, IPermissionConditionQueryService
 {
@@ -85,7 +81,6 @@ public sealed class PermissionConditionQueryService
     /// <param name="onlyValid">是否仅返回有效条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>ABAC 条件列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionCondition.Read)]
     public async Task<IReadOnlyList<PermissionConditionListItemDto>> GetRolePermissionConditionsAsync(
         long rolePermissionId,
         bool onlyValid = false,
@@ -140,7 +135,6 @@ public sealed class PermissionConditionQueryService
     /// <param name="onlyValid">是否仅返回有效条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>ABAC 条件列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionCondition.Read)]
     public async Task<IReadOnlyList<PermissionConditionListItemDto>> GetUserPermissionConditionsAsync(
         long userPermissionId,
         bool onlyValid = false,
@@ -194,7 +188,6 @@ public sealed class PermissionConditionQueryService
     /// <param name="id">ABAC 条件主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>ABAC 条件详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionCondition.Read)]
     public async Task<PermissionConditionDetailDto?> GetPermissionConditionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)

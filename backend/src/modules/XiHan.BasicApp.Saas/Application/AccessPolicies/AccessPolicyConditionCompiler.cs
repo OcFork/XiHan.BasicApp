@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Authorization.Conditions;
 using ConditionOperator = XiHan.Framework.Authorization.Conditions.ConditionOperator;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
@@ -45,7 +44,7 @@ public sealed class AccessPolicyConditionCompiler : IAccessPolicyRuleChecker
                 (ConditionOperator)(int)condition.Operator,
                 condition.ConditionValue,
                 condition.IsNegated,
-                condition.BasicId.ToString(CultureInfo.InvariantCulture)))));
+                condition.Id.ToString(CultureInfo.InvariantCulture)))));
     }
 
     /// <summary>

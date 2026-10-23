@@ -7,8 +7,6 @@ using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Connections;
-using XiHan.Framework.Utils.Security.Cryptography;
 
 namespace XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 
@@ -105,16 +103,16 @@ public sealed class CodeGenDataSourceDomainService : ICodeGenDataSourceDomainSer
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "数据源主键必须大于 0。");
+        EnsureId(command.Id, "数据源主键必须大于 0。");
         EnsureEnum(command.DatabaseType, nameof(command.DatabaseType));
 
         var sourceName = Required(command.SourceName, 100, nameof(command.SourceName), "数据源名称不能超过 100 个字符。");
-        if (await _dataSourceRepository.ExistsNameAsync(sourceName, command.BasicId, cancellationToken))
+        if (await _dataSourceRepository.ExistsNameAsync(sourceName, command.Id, cancellationToken))
         {
             throw new InvalidOperationException("数据源名称已存在。");
         }
 
-        var dataSource = await GetDataSourceOrThrowAsync(command.BasicId, cancellationToken);
+        var dataSource = await GetDataSourceOrThrowAsync(command.Id, cancellationToken);
 
         dataSource.SourceName = sourceName;
         dataSource.SourceDescription = Optional(command.SourceDescription, 500, nameof(command.SourceDescription), "数据源描述不能超过 500 个字符。");
@@ -139,12 +137,12 @@ public sealed class CodeGenDataSourceDomainService : ICodeGenDataSourceDomainSer
 
         if (command.IsDefault && !dataSource.IsDefault)
         {
-            await ClearExistingDefaultAsync(dataSource.BasicId, cancellationToken);
+            await ClearExistingDefaultAsync(dataSource.Id, cancellationToken);
         }
         dataSource.IsDefault = command.IsDefault;
 
         var updated = await _dataSourceRepository.UpdateAsync(dataSource, cancellationToken);
-        InvalidateConnection(dataSource.BasicId);
+        InvalidateConnection(dataSource.Id);
         return new CodeGenDataSourceCommandResult(updated);
     }
 
@@ -156,15 +154,15 @@ public sealed class CodeGenDataSourceDomainService : ICodeGenDataSourceDomainSer
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "数据源主键必须大于 0。");
+        EnsureId(command.Id, "数据源主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var dataSource = await GetDataSourceOrThrowAsync(command.BasicId, cancellationToken);
+        var dataSource = await GetDataSourceOrThrowAsync(command.Id, cancellationToken);
         dataSource.Status = command.Status;
         dataSource.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? dataSource.Remark;
 
         var updated = await _dataSourceRepository.UpdateAsync(dataSource, cancellationToken);
-        InvalidateConnection(dataSource.BasicId);
+        InvalidateConnection(dataSource.Id);
         return new CodeGenDataSourceCommandResult(updated);
     }
 
@@ -348,7 +346,7 @@ public sealed class CodeGenDataSourceDomainService : ICodeGenDataSourceDomainSer
             return;
         }
 
-        if (excludeId.HasValue && existingDefault.BasicId == excludeId.Value)
+        if (excludeId.HasValue && existingDefault.Id == excludeId.Value)
         {
             return;
         }

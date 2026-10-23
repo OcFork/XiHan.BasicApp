@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -22,7 +21,7 @@ public sealed class AccessPolicyConditionRepository(ISqlSugarClientResolver clie
         return await CreateQueryable()
             .Where(condition => condition.PolicyId == policyId)
             .OrderBy(condition => condition.ConditionGroup)
-            .OrderBy(condition => condition.BasicId)
+            .OrderBy(condition => condition.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -42,7 +41,7 @@ public sealed class AccessPolicyConditionRepository(ISqlSugarClientResolver clie
         return await CreateNoTenantQueryable()
             .Where(condition => ids.Contains(condition.PolicyId))
             .OrderBy(condition => condition.ConditionGroup)
-            .OrderBy(condition => condition.BasicId)
+            .OrderBy(condition => condition.Id)
             .ToListAsync(cancellationToken);
     }
 }

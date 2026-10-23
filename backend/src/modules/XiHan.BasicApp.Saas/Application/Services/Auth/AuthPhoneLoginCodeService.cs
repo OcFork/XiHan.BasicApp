@@ -5,9 +5,6 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.Framework.Authentication.OneTimeCode;
-using XiHan.Framework.Bot.Email.Abstractions;
-using XiHan.Framework.Bot.Sms.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

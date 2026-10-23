@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Uow;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 
@@ -23,6 +23,7 @@ public sealed class AccessPolicySnapshotProvider : IAccessPolicySnapshotProvider
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IDistributedCache _cache;
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly IOptionsMonitor<AccessPolicyOptions> _options;
     private readonly TimeProvider _timeProvider;
@@ -143,16 +144,17 @@ public sealed class AccessPolicySnapshotProvider : IAccessPolicySnapshotProvider
     {
         using var scope = _scopeFactory.CreateScope();
         var services = scope.ServiceProvider;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = services.GetRequiredService<ICurrentTenant>().Change(null);
         var policies = await services.GetRequiredService<IAccessPolicyRepository>().GetEnabledInAllTenantsAsync(cancellationToken);
         var conditions = await services.GetRequiredService<IAccessPolicyConditionRepository>()
-            .GetByPolicyIdsInAllTenantsAsync([.. policies.Select(policy => policy.BasicId)], cancellationToken);
+            .GetByPolicyIdsInAllTenantsAsync([.. policies.Select(policy => policy.Id)], cancellationToken);
         var compiler = services.GetRequiredService<AccessPolicyConditionCompiler>();
         var conditionsByPolicy = conditions.ToLookup(condition => condition.PolicyId);
         var compiled = new List<CompiledAccessPolicy>(policies.Count);
         foreach (var policy in policies)
         {
-            var set = compiler.Compile(conditionsByPolicy[policy.BasicId]);
+            var set = compiler.Compile(conditionsByPolicy[policy.Id]);
             if (set.IsEmpty)
             {
                 _logger.LogWarning("访问策略 {PolicyCode}（租户 {TenantId}）没有条件，不参与求值", policy.PolicyCode, policy.TenantId);
@@ -170,7 +172,7 @@ public sealed class AccessPolicySnapshotProvider : IAccessPolicySnapshotProvider
             }
 
             compiled.Add(new CompiledAccessPolicy(
-                policy.BasicId,
+                policy.Id,
                 policy.TenantId,
                 policy.PolicyCode,
                 policy.PolicyName,

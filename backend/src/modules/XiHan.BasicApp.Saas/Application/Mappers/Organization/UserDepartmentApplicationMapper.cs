@@ -25,7 +25,7 @@ public static class UserDepartmentApplicationMapper
 
         return new UserDepartmentListItemDto
         {
-            BasicId = userDepartment.BasicId,
+            Id = userDepartment.Id,
             UserId = userDepartment.UserId,
             DepartmentId = userDepartment.DepartmentId,
             DepartmentCode = department?.DepartmentCode,
@@ -41,7 +41,7 @@ public static class UserDepartmentApplicationMapper
             IsMain = userDepartment.IsMain,
             Status = userDepartment.Status,
             Remark = userDepartment.Remark,
-            CreatedTime = userDepartment.CreatedTime
+            CreatedAt = userDepartment.CreatedAt
         };
     }
 
@@ -58,7 +58,7 @@ public static class UserDepartmentApplicationMapper
 
         return new UserDepartmentDetailDto
         {
-            BasicId = userDepartment.BasicId,
+            Id = userDepartment.Id,
             UserId = userDepartment.UserId,
             DepartmentId = userDepartment.DepartmentId,
             DepartmentCode = department?.DepartmentCode,
@@ -74,7 +74,7 @@ public static class UserDepartmentApplicationMapper
             IsMain = userDepartment.IsMain,
             Status = userDepartment.Status,
             Remark = userDepartment.Remark,
-            CreatedTime = userDepartment.CreatedTime,
+            CreatedAt = userDepartment.CreatedAt,
             CreatedId = userDepartment.CreatedId,
             CreatedBy = userDepartment.CreatedBy
         };
@@ -86,7 +86,7 @@ public static class UserDepartmentApplicationMapper
     public static UserDepartmentStatusChangeCommand ToStatusCommand(UserDepartmentStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new UserDepartmentStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new UserDepartmentStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public static class UserDepartmentApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
         return new UserDepartmentUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.IsMain,
             input.Remark,
             input.PositionId,

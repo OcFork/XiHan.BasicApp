@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -61,7 +60,7 @@ public sealed class SaasAccessPolicySeeder(
             _ = await DbClient.Insertable(template.Conditions.Select(condition => new SysAccessPolicyCondition
             {
                 TenantId = 0,
-                PolicyId = policy.BasicId,
+                PolicyId = policy.Id,
                 ConditionGroup = condition.ConditionGroup,
                 AttributeName = condition.AttributeName,
                 Operator = condition.Operator,

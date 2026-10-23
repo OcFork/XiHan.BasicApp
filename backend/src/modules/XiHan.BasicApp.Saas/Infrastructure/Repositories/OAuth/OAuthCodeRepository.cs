@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -50,7 +49,7 @@ public sealed class OAuthCodeRepository(ISqlSugarClientResolver clientResolver)
         // 仅当 Is_Used=false 时翻转为 true，受影响行数=1 表示本次调用赢得竞态，可继续换取令牌。
         var affected = await DbClient.Updateable<SysOAuthCode>()
             .SetColumns(c => new SysOAuthCode { IsUsed = true, UsedTime = now })
-            .Where(c => c.BasicId == codeId && !c.IsUsed)
+            .Where(c => c.Id == codeId && !c.IsUsed)
             .ExecuteCommandAsync(cancellationToken);
         return affected == 1;
     }

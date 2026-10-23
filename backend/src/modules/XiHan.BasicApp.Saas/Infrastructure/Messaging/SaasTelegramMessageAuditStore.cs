@@ -4,8 +4,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Bot.Telegram.Abstractions;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 
@@ -62,7 +60,7 @@ public sealed class SaasTelegramMessageAuditStore : ITelegramMessageAuditStore
                 ElapsedMs = record.ElapsedMs,
                 SendTime = record.SendTime,
                 // 分表字段：以发送时间落表，保证审计行按业务时间归档
-                CreatedTime = record.SendTime
+                CreatedAt = record.SendTime
             };
 
             await using var scope = _scopeFactory.CreateAsyncScope();

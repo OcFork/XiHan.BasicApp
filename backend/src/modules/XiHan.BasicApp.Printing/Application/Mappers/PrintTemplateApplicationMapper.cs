@@ -5,7 +5,6 @@ using System.Globalization;
 using XiHan.BasicApp.Printing.Application.Dtos;
 using XiHan.BasicApp.Printing.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Domain.Entities;
-using XiHan.Framework.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.Mappers;
 
@@ -44,8 +43,8 @@ public static class PrintTemplateApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
         return new PrintTemplateUpdateCommand(
-            input.BasicId,
-            ParseRowVersion(input.RowVersion),
+            input.Id,
+            ParseRowVersion(input.ConcurrencyStamp),
             input.DataSourceCode,
             input.TemplateName,
             input.TemplateJson,
@@ -64,8 +63,8 @@ public static class PrintTemplateApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
         return new PrintTemplateStatusChangeCommand(
-            input.BasicId,
-            ParseRowVersion(input.RowVersion),
+            input.Id,
+            ParseRowVersion(input.ConcurrencyStamp),
             input.Status,
             input.Remark);
     }
@@ -79,7 +78,7 @@ public static class PrintTemplateApplicationMapper
     public static PrintTemplateDeleteCommand ToDeleteCommand(PrintTemplateDeleteDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new PrintTemplateDeleteCommand(input.BasicId, ParseRowVersion(input.RowVersion));
+        return new PrintTemplateDeleteCommand(input.Id, ParseRowVersion(input.ConcurrencyStamp));
     }
 
     /// <summary>
@@ -92,7 +91,7 @@ public static class PrintTemplateApplicationMapper
         ArgumentNullException.ThrowIfNull(template);
         return new PrintTemplateListItemDto
         {
-            BasicId = template.BasicId,
+            Id = template.Id,
             TemplateCode = template.TemplateCode,
             DataSourceCode = template.DataSourceCode,
             TemplateName = template.TemplateName,
@@ -101,7 +100,7 @@ public static class PrintTemplateApplicationMapper
             Status = template.Status,
             Sort = template.Sort,
             Remark = template.Remark,
-            RowVersion = template.RowVersion.ToString(CultureInfo.InvariantCulture)
+            ConcurrencyStamp = template.ConcurrencyStamp.ToString(CultureInfo.InvariantCulture)
         };
     }
 
@@ -116,7 +115,7 @@ public static class PrintTemplateApplicationMapper
         var item = ToListItemDto(template);
         return new PrintTemplateDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TemplateCode = item.TemplateCode,
             DataSourceCode = item.DataSourceCode,
             TemplateName = item.TemplateName,
@@ -126,9 +125,9 @@ public static class PrintTemplateApplicationMapper
             Status = item.Status,
             Sort = item.Sort,
             Remark = item.Remark,
-            RowVersion = item.RowVersion,
-            CreatedTime = template.CreatedTime,
-            ModifiedTime = template.ModifiedTime
+            ConcurrencyStamp = item.ConcurrencyStamp,
+            CreatedAt = template.CreatedAt,
+            ModifiedAt = template.ModifiedAt
         };
     }
 

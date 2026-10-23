@@ -9,11 +9,10 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 using XiHan.Framework.MultiTenancy.Abstractions;
@@ -29,7 +28,6 @@ namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 /// 但聊天要求 chat:read，这里不设权限码，原因见 <see cref="GetUserOptionsAsync"/>），
 /// 角色/岗位/部门只在设计流程时用，需要流程查看权限。角色、部门、岗位以编码返回（规则按编码引用）。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "审批人选择")]
 public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, IWorkflowDirectoryQueryService
 {
     private const int MaxOptionCount = 200;
@@ -76,7 +74,6 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
     /// 含已停用者、不做超管隐藏，审批详情里参与人的姓名本就照常显示。</item>
     /// </list>
     /// </remarks>
-    [HttpPost]
     public async Task<List<WorkflowUserOptionDto>> GetUserOptionsAsync(WorkflowUserOptionQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -109,7 +106,7 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
         }
 
         request.Conditions.AddFilter(nameof(SysUser.Status), EnableStatus.Enabled);
-        request.Conditions.AddSort(nameof(SysUser.CreatedTime), SortDirection.Descending, 0);
+        request.Conditions.AddSort(nameof(SysUser.CreatedAt), SortDirection.Descending, 0);
 
         // 超管隐藏：非超管用户的选择项中排除超管用户（超管自身不受限）
         if (!_superAdminProtector.IsCurrentUserSuperAdmin())
@@ -117,7 +114,7 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
             var protectedUserIds = await _superAdminProtector.GetProtectedUserIdsAsync(cancellationToken);
             if (protectedUserIds.Count > 0)
             {
-                request.Conditions.AddFilterIn<SysUser, long>(user => user.BasicId, protectedUserIds.Cast<object>(), QueryOperator.NotIn);
+                request.Conditions.AddFilterIn<SysUser, long>(user => user.Id, protectedUserIds.Cast<object>(), QueryOperator.NotIn);
             }
         }
 
@@ -128,7 +125,6 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
     /// <summary>
     /// 角色选项（平台角色与本租户角色；租户里不提供只在平台成立的超级管理员）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
     public async Task<List<WorkflowOrganizationOptionDto>> GetRoleOptionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -148,7 +144,6 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
     /// <summary>
     /// 岗位选项
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
     public async Task<List<WorkflowOrganizationOptionDto>> GetPositionOptionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -167,7 +162,6 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
     /// <summary>
     /// 部门树
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
     public async Task<List<WorkflowDepartmentOptionDto>> GetDepartmentTreeAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -189,7 +183,7 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
             {
                 Code = department.DepartmentCode,
                 Name = department.DepartmentName,
-                Children = BuildTree(departments, department.BasicId)
+                Children = BuildTree(departments, department.Id)
             })];
     }
 
@@ -197,7 +191,7 @@ public sealed class WorkflowDirectoryQueryService : WorkflowApplicationService, 
     {
         return new WorkflowUserOptionDto
         {
-            UserId = user.BasicId,
+            UserId = user.Id,
             UserName = user.UserName,
             DisplayName = !string.IsNullOrWhiteSpace(user.RealName) ? user.RealName
                 : !string.IsNullOrWhiteSpace(user.NickName) ? user.NickName

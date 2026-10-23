@@ -247,7 +247,8 @@ public sealed class SwitchTenantRequestDto
     /// 目标租户标识；为空或 0 表示切换到平台运维态（无租户上下文）
     /// </summary>
     /// <remarks>切换复用当前登录会话（设备信息随会话保留），不需要设备标识</remarks>
-    public long? TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string? TenantId { get; set; }
 }
 
 /// <summary>
@@ -370,7 +371,7 @@ public sealed class UserInfoDto
     /// <summary>
     /// 用户主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 用户名
@@ -410,7 +411,8 @@ public sealed class UserInfoDto
     /// <summary>
     /// 当前租户（为空表示处于平台运维态）
     /// </summary>
-    public long? TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string? TenantId { get; set; }
 
     /// <summary>
     /// 当前租户名称（平台为空）
@@ -471,7 +473,8 @@ public sealed class StartImpersonationRequestDto
     /// <summary>
     /// 目标租户主键；为空时沿用发起人当前上下文，平台运维态下按目标用户自身登录落点解析
     /// </summary>
-    public long? TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string? TenantId { get; set; }
 
     /// <summary>
     /// 模仿事由（落审计，最长 200 字符）
@@ -513,7 +516,7 @@ public sealed class MenuRouteDto
     /// <summary>
     /// 主键
     /// </summary>
-    public string? BasicId { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// 路由路径

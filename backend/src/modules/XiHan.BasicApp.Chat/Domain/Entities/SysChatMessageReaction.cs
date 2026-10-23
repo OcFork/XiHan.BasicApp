@@ -24,11 +24,11 @@ namespace XiHan.BasicApp.Chat.Domain.Entities;
 /// - toggle-off 物理删除；消息按保留期清理时由清理任务级联删除
 /// </remarks>
 [SugarTable(TableName = "Sys_Chat_Message_Reaction", TableDescription = "系统聊天消息表情回应表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_MeId_UsId_Em", nameof(TenantId), OrderByType.Asc, nameof(MessageId), OrderByType.Asc, nameof(UserId), OrderByType.Asc, nameof(Emoji), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_MeId", nameof(MessageId), OrderByType.Asc)]
-public partial class SysChatMessageReaction : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysChatMessageReaction : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 会话ID

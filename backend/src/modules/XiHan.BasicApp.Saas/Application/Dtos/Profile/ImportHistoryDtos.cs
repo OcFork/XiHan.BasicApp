@@ -11,7 +11,7 @@ public sealed class ImportHistoryDto
     /// <summary>
     /// 主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 页面码
@@ -51,7 +51,7 @@ public sealed class ImportHistoryDto
     /// <summary>
     /// 导入时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>

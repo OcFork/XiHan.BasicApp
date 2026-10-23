@@ -46,7 +46,7 @@ public static class OAuthAppApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new OAuthAppUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.AppName,
             input.AppDescription,
             input.AppType,
@@ -69,7 +69,7 @@ public static class OAuthAppApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new OAuthAppStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new OAuthAppStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public static class OAuthAppApplicationMapper
 
         return new OAuthAppSecretDto
         {
-            BasicId = app.BasicId,
+            Id = app.Id,
             ClientId = app.ClientId,
             ClientSecret = clientSecret
         };
@@ -101,7 +101,7 @@ public static class OAuthAppApplicationMapper
 
         return new OAuthAppListItemDto
         {
-            BasicId = app.BasicId,
+            Id = app.Id,
             AppName = app.AppName,
             AppDescription = app.AppDescription,
             ClientId = app.ClientId,
@@ -113,8 +113,8 @@ public static class OAuthAppApplicationMapper
             AuthorizationCodeLifetime = app.AuthorizationCodeLifetime,
             SkipConsent = app.SkipConsent,
             Status = app.Status,
-            CreatedTime = app.CreatedTime,
-            ModifiedTime = app.ModifiedTime
+            CreatedAt = app.CreatedAt,
+            ModifiedAt = app.ModifiedAt
         };
     }
 
@@ -130,7 +130,7 @@ public static class OAuthAppApplicationMapper
         var item = ToListItemDto(app);
         return new OAuthAppDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             AppName = item.AppName,
             AppDescription = item.AppDescription,
             ClientId = item.ClientId,
@@ -146,10 +146,10 @@ public static class OAuthAppApplicationMapper
             SkipConsent = item.SkipConsent,
             Status = item.Status,
             Remark = app.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = app.CreatedId,
             CreatedBy = app.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = app.ModifiedId,
             ModifiedBy = app.ModifiedBy
         };

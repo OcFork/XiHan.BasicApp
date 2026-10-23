@@ -78,7 +78,7 @@ public sealed class PermissionMergeDomainService
 
         // 第二阶段：批量加载权限实体（避免多次 DB 查询）
         var permissions = await _permissionRepository.GetByIdsAsync(allPermissionIds.ToList(), cancellationToken);
-        var permissionMap = permissions.ToDictionary(p => p.BasicId);
+        var permissionMap = permissions.ToDictionary(p => p.Id);
 
         // 合并角色授权
         foreach (var rp in rolePermissions)
@@ -86,7 +86,7 @@ public sealed class PermissionMergeDomainService
             if (permissionMap.TryGetValue(rp.PermissionId, out var permission))
             {
                 grants.Add(new PermissionGrantSnapshot(
-                    PermissionId: permission.BasicId,
+                    PermissionId: permission.Id,
                     PermissionCode: permission.PermissionCode,
                     Action: rp.PermissionAction,
                     Source: AuthorizationGrantSource.Role,
@@ -102,7 +102,7 @@ public sealed class PermissionMergeDomainService
             if (permissionMap.TryGetValue(up.PermissionId, out var permission))
             {
                 grants.Add(new PermissionGrantSnapshot(
-                    PermissionId: permission.BasicId,
+                    PermissionId: permission.Id,
                     PermissionCode: permission.PermissionCode,
                     Action: up.PermissionAction,
                     Source: AuthorizationGrantSource.User,
@@ -118,7 +118,7 @@ public sealed class PermissionMergeDomainService
             if (delegation.PermissionId.HasValue && permissionMap.TryGetValue(delegation.PermissionId.Value, out var permission))
             {
                 grants.Add(new PermissionGrantSnapshot(
-                    PermissionId: permission.BasicId,
+                    PermissionId: permission.Id,
                     PermissionCode: permission.PermissionCode,
                     Action: PermissionAction.Grant,
                     Source: AuthorizationGrantSource.Delegation,

@@ -13,12 +13,8 @@ using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Localization.Abstractions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 
@@ -30,7 +26,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 /// 导入闭环：扫描库表 → 构建表/列配置 → 落库 → 返回详情；
 /// 生成闭环：调用引擎后无论成败均写入 <see cref="SysCodeGenHistory"/> 留痕。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "代码生成")]
 public sealed class CodeGenerationAppService(
     ICodeGenerationEngine generationEngine,
     IDatabaseSchemaImporter schemaImporter,
@@ -53,7 +48,6 @@ public sealed class CodeGenerationAppService(
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
     /// <summary>列出可导入的数据库表（逆向工程）</summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<IReadOnlyList<string>> ListDatabaseTablesAsync(CodeGenDbTableQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -74,8 +68,6 @@ public sealed class CodeGenerationAppService(
     /// <param name="input">导入请求</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>表结构；表不存在返回 null</returns>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Import)]
     public async Task<CodeGenTableDetailDto> ImportTableAsync(CodeGenImportTableDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -101,7 +93,6 @@ public sealed class CodeGenerationAppService(
     }
 
     /// <summary>批量从数据库表导入（逐表隔离异常，返回成功/失败明细）</summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Import)]
     public async Task<CodeGenImportTablesResultDto> ImportTablesAsync(CodeGenImportTablesDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -142,9 +133,6 @@ public sealed class CodeGenerationAppService(
     }
 
     /// <summary>同步表结构：按最新库结构重算，人工改过的字段冻结，其余跟随重新推断</summary>
-    [HttpPost]
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Import)]
     public async Task<CodeGenSchemaSyncResultDto> SyncSchemaAsync(long tableId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -202,7 +190,7 @@ public sealed class CodeGenerationAppService(
         var removedNames = new List<string>();
         foreach (var current in existing.Where(column => !latestNames.Contains(column.ColumnName)))
         {
-            await _tableColumnRepository.DeleteByIdAsync(current.BasicId, cancellationToken);
+            await _tableColumnRepository.DeleteByIdAsync(current.Id, cancellationToken);
             removedNames.Add(current.ColumnName);
         }
 
@@ -375,7 +363,6 @@ public sealed class CodeGenerationAppService(
     /// <param name="input">生成请求</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>生成结果（含产物清单）</returns>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<CodeGenResultDto> PreviewAsync(CodeGenPreviewRequestDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -397,8 +384,6 @@ public sealed class CodeGenerationAppService(
     /// <param name="input">生成请求</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>生成结果（Zip 时含 Package 字节流）</returns>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Execute)]
     public async Task<CodeGenResultDto> GenerateAsync(CodeGenGenerateRequestDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

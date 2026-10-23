@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Security.Services;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 

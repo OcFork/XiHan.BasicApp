@@ -39,7 +39,7 @@ public static class AiPromptApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new AiPromptUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.PromptName,
             input.Category,
             input.Version,
@@ -56,7 +56,7 @@ public static class AiPromptApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new AiPromptStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new AiPromptStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public static class AiPromptApplicationMapper
 
         return new AiPromptListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             PromptCode = entity.PromptCode,
             PromptName = entity.PromptName,
             Category = entity.Category,
@@ -76,8 +76,8 @@ public static class AiPromptApplicationMapper
             IsEnabled = entity.IsEnabled,
             Sort = entity.Sort,
             Status = entity.Status,
-            CreatedTime = entity.CreatedTime,
-            ModifiedTime = entity.ModifiedTime
+            CreatedAt = entity.CreatedAt,
+            ModifiedAt = entity.ModifiedAt
         };
     }
 
@@ -91,7 +91,7 @@ public static class AiPromptApplicationMapper
         var item = ToListItemDto(entity);
         return new AiPromptDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             PromptCode = item.PromptCode,
             PromptName = item.PromptName,
             Category = item.Category,
@@ -99,8 +99,8 @@ public static class AiPromptApplicationMapper
             IsEnabled = item.IsEnabled,
             Sort = item.Sort,
             Status = item.Status,
-            CreatedTime = item.CreatedTime,
-            ModifiedTime = item.ModifiedTime,
+            CreatedAt = item.CreatedAt,
+            ModifiedAt = item.ModifiedAt,
             Content = entity.Content,
             Remark = entity.Remark,
             CreatedId = entity.CreatedId,

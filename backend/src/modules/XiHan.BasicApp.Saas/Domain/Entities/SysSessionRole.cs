@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -39,7 +38,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 凌晨自动扫描并失效 ExpirationTime 已过的会话角色
 /// </remarks>
 [SugarTable(TableName = "Sys_Session_Role", TableDescription = "系统会话角色映射表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_SeId_RoId", nameof(TenantId), OrderByType.Asc, nameof(SessionId), OrderByType.Asc, nameof(RoleId), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_SeId", nameof(SessionId), OrderByType.Asc)]

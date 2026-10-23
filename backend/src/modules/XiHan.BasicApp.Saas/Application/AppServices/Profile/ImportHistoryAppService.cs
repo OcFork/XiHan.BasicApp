@@ -6,8 +6,7 @@ using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Security.Users;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -15,8 +14,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 导入历史应用服务（写侧：导入执行完毕后由前端上报留痕，日志型只写不改）。
 /// 仅作行为留痕，导入数据本身经各资源端点逐行创建（权限/校验在各端点落地）。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "导入历史")]
 public sealed class ImportHistoryAppService
     : SaasApplicationService, IImportHistoryAppService
 {
@@ -84,7 +81,7 @@ public sealed class ImportHistoryAppService
     {
         return new ImportHistoryDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             PageCode = entity.PageCode,
             ResourceCode = entity.ResourceCode,
             FileName = entity.FileName,
@@ -92,7 +89,7 @@ public sealed class ImportHistoryAppService
             SuccessCount = entity.SuccessCount,
             FailCount = entity.FailCount,
             ErrorSummary = entity.ErrorSummary,
-            CreatedTime = entity.CreatedTime
+            CreatedAt = entity.CreatedAt
         };
     }
 }

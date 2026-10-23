@@ -4,8 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Uow;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -58,7 +56,7 @@ public sealed class TenantRepository(
         var query = CreateQueryable().Where(tenant => tenant.TenantCode == tenantCode);
         if (excludeId.HasValue)
         {
-            query = query.Where(tenant => tenant.BasicId != excludeId.Value);
+            query = query.Where(tenant => tenant.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

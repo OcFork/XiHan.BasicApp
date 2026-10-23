@@ -4,8 +4,6 @@
 using Microsoft.AspNetCore.Authorization;
 using XiHan.BasicApp.Saas.Application.Dtos.Metadata;
 using XiHan.BasicApp.Saas.Domain.Numbering;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices.Metadata;
 
@@ -17,9 +15,7 @@ namespace XiHan.BasicApp.Saas.Application.AppServices.Metadata;
 /// 目录由 <see cref="INumberingFormatter.GetSupportedTimeZones"/> 构建——它筛掉了当前运行环境无法解析的时区，
 /// 保证前端选出来的 ID 服务端一定能用。目录本身与编号业务无关，只是构建逻辑目前落在该实现内。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "时区元数据")]
-public sealed class TimeZoneMetadataAppService : ApplicationServiceBase
+public sealed class TimeZoneMetadataAppService
 {
     private readonly INumberingFormatter _formatter;
 

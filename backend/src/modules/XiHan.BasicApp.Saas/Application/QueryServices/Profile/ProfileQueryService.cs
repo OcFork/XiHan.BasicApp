@@ -5,7 +5,6 @@ using SqlSugar;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -96,7 +95,7 @@ public sealed class ProfileQueryService
 
         var user = await _userRepository.GetByIdIgnoreTenantAsync(userId, cancellationToken)
             ?? throw new InvalidOperationException("当前用户不存在。");
-        var security = await _userSecurityRepository.GetByUserIdAsync(user.BasicId, cancellationToken)
+        var security = await _userSecurityRepository.GetByUserIdAsync(user.Id, cancellationToken)
             ?? throw new InvalidOperationException("用户安全记录不存在。");
 
         return new ProfileUserSecurityContext(user, security);
@@ -344,7 +343,7 @@ public sealed class ProfileQueryService
     {
         return new UserProfileDto
         {
-            UserId = user.BasicId,
+            UserId = user.Id,
             UserName = user.UserName,
             RealName = user.RealName,
             NickName = user.NickName,

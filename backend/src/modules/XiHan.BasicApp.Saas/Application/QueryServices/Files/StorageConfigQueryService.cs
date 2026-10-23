@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 存储配置查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "存储配置")]
 public sealed class StorageConfigQueryService
     : SaasApplicationService, IStorageConfigQueryService
 {
@@ -55,8 +51,6 @@ public sealed class StorageConfigQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>存储配置分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.StorageConfig.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<StorageConfigListItemDto>> GetStorageConfigPageAsync(StorageConfigPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -87,7 +81,6 @@ public sealed class StorageConfigQueryService
     /// <param name="id">存储配置主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>存储配置详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.StorageConfig.Read)]
     public async Task<StorageConfigDetailDto?> GetStorageConfigDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -161,7 +154,7 @@ public sealed class StorageConfigQueryService
     {
         request.Conditions.AddSort((SysStorageConfig config) => config.IsDefault, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysStorageConfig config) => config.Sort, SortDirection.Ascending, 1);
-        request.Conditions.AddSort((SysStorageConfig config) => config.CreatedTime, SortDirection.Descending, 2);
+        request.Conditions.AddSort((SysStorageConfig config) => config.CreatedAt, SortDirection.Descending, 2);
     }
 
     /// <summary>

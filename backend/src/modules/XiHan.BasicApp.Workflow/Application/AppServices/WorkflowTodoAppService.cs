@@ -6,19 +6,11 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Domain.Entities;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Workflow.Abstractions;
-using XiHan.Framework.Workflow.Abstractions.Exceptions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.Stores;
-using XiHan.Framework.Workflow.Abstractions.UserTasks;
-using XiHan.Framework.Workflow.UserTasks;
 
 namespace XiHan.BasicApp.Workflow.Application.AppServices;
 
@@ -30,7 +22,6 @@ namespace XiHan.BasicApp.Workflow.Application.AppServices;
 /// 审批业务流程办理前先回调业务做只读校验（如不能审批自己的申请），校验失败待办保持不变；
 /// 每次办理、转办、加签都写一条审批记录，供「我的已办」与审批轨迹查询。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "我的待办")]
 public sealed class WorkflowTodoAppService : WorkflowApplicationService, IWorkflowTodoAppService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

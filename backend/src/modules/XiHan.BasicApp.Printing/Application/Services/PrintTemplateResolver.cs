@@ -10,8 +10,7 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.Framework.Caching.Distributed.Abstracts;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Printing.Application.Services;
@@ -92,14 +91,14 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
 
         return new ResolvedPrintTemplateDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             TemplateCode = item.TemplateCode,
             DataSourceCode = item.DataSourceCode,
             TemplateName = item.TemplateName,
             TemplateJson = item.TemplateJson,
             RequestedScope = scope,
             ResolvedScope = item.ResolvedScope,
-            RowVersion = item.RowVersion.ToString(CultureInfo.InvariantCulture)
+            ConcurrencyStamp = item.ConcurrencyStamp.ToString(CultureInfo.InvariantCulture)
         };
     }
 
@@ -156,13 +155,13 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
         return new PrintTemplateCacheItem
         {
             Found = true,
-            BasicId = template.BasicId,
+            Id = template.Id,
             TemplateCode = template.TemplateCode,
             DataSourceCode = template.DataSourceCode,
             TemplateName = template.TemplateName,
             TemplateJson = template.TemplateJson,
             ResolvedScope = resolvedScope,
-            RowVersion = template.RowVersion,
+            ConcurrencyStamp = template.ConcurrencyStamp,
             CachedAt = DateTimeOffset.UtcNow
         };
     }
@@ -187,6 +186,7 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
         }
 
         // 独立租户库必须把平台上下文保持到查询 await 完成，避免仓储解析回租户连接。
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = _currentTenant.Change(null);
         return await QueryAsync();
     }

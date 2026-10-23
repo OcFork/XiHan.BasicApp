@@ -13,7 +13,7 @@ public sealed class ProfileApiCredentialDto
     /// <summary>
     /// 凭证主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 凭证名称
@@ -43,7 +43,7 @@ public sealed class ProfileApiCredentialDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>
@@ -65,7 +65,7 @@ public sealed class ProfileApiCredentialSecretDto
     /// <summary>
     /// 凭证主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 应用键
@@ -86,7 +86,7 @@ public sealed class ProfileApiCredentialIdDto
     /// <summary>
     /// 凭证主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 }
 
 /// <summary>
@@ -97,7 +97,7 @@ public sealed class ProfileApiCredentialStatusDto
     /// <summary>
     /// 凭证主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 状态

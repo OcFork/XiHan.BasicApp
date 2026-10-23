@@ -10,10 +10,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -22,8 +18,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 条件命中记录查询应用服务：只看当前层（平台看平台策略的命中，租户看本租户策略与权限条件的命中）
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "条件命中记录")]
 public sealed class AccessPolicyHitQueryService
     : SaasApplicationService, IAccessPolicyHitQueryService
 {
@@ -42,8 +36,6 @@ public sealed class AccessPolicyHitQueryService
     /// <summary>
     /// 命中记录分页列表
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicyHit.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<AccessPolicyHitListItemDto>> GetAccessPolicyHitPageAsync(AccessPolicyHitPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -94,7 +86,6 @@ public sealed class AccessPolicyHitQueryService
     /// <summary>
     /// 命中记录详情
     /// </summary>
-    [PermissionAuthorize(SaasPermissionCodes.AccessPolicyHit.Read)]
     public async Task<AccessPolicyHitListItemDto?> GetAccessPolicyHitDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -104,7 +95,7 @@ public sealed class AccessPolicyHitQueryService
 
         cancellationToken.ThrowIfCancellationRequested();
         var hit = await _clientResolver.GetCurrentClient().Queryable<SysAccessPolicyHit>()
-            .Where(item => item.BasicId == id)
+            .Where(item => item.Id == id)
             .SplitTable()
             .FirstAsync(cancellationToken);
         return hit is null ? null : AccessPolicyApplicationMapper.ToHitListItemDto(hit);

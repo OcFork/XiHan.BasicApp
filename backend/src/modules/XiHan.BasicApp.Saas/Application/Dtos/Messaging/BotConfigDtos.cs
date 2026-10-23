@@ -137,7 +137,7 @@ public sealed class BotConfigStatusUpdateDto
     /// <summary>
     /// 机器人配置主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 是否启用
@@ -153,7 +153,7 @@ public sealed class BotConfigDefaultUpdateDto
     /// <summary>
     /// 机器人配置主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 }
 
 /// <summary>
@@ -205,12 +205,12 @@ public class BotConfigListItemDto : BasicAppDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 修改时间
     /// </summary>
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 }
 
 /// <summary>

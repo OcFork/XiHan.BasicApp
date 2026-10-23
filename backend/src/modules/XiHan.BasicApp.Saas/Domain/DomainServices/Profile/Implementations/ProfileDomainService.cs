@@ -6,10 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authentication.Otp;
 using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.Authentication.Users;
-using XiHan.Framework.Security.Password;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -84,7 +81,7 @@ public sealed class ProfileDomainService
         var (user, security) = await GetUserSecurityOrThrowAsync(command.UserId, cancellationToken);
         EnsurePasswordMatches(security, command.OldPassword);
         await EnsurePasswordMeetsPolicyAsync(user, command.NewPassword, cancellationToken);
-        await _passwordHistoryDomainService.EnsureNotReusedAsync(user.BasicId, command.NewPassword, cancellationToken);
+        await _passwordHistoryDomainService.EnsureNotReusedAsync(user.Id, command.NewPassword, cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         security.Password = _passwordHasher.HashPassword(command.NewPassword);
@@ -128,7 +125,7 @@ public sealed class ProfileDomainService
         EnsurePasswordMatches(security, command.Password);
 
         // 唯一索引是「归属租户 × 用户名」，查重按账号的归属租户而非当前活动租户
-        if (await _userRepository.ExistsUserNameInTenantAsync(user.TenantId, newUserName, user.BasicId, cancellationToken))
+        if (await _userRepository.ExistsUserNameInTenantAsync(user.TenantId, newUserName, user.Id, cancellationToken))
         {
             throw new InvalidOperationException("用户名已存在。");
         }
@@ -155,7 +152,7 @@ public sealed class ProfileDomainService
         if (command.ContactKind == ProfileContactKind.Email)
         {
             // 邮箱为登录身份标识，须全平台唯一
-            if (await _userRepository.ExistsEmailGloballyAsync(target, user.BasicId, cancellationToken))
+            if (await _userRepository.ExistsEmailGloballyAsync(target, user.Id, cancellationToken))
             {
                 throw new InvalidOperationException("邮箱已被其他账号使用。");
             }
@@ -193,7 +190,7 @@ public sealed class ProfileDomainService
         _ = await AsSelfWriteAsync(() => _userRepository.UpdateAsync(user, cancellationToken));
         _ = await AsSelfWriteAsync(() => _userSecurityRepository.UpdateAsync(security, cancellationToken));
 
-        return await RevokeCurrentUserSessionsAsync(user.BasicId, "用户在个人中心停用账号", command.OperatorUserId, cancellationToken);
+        return await RevokeCurrentUserSessionsAsync(user.Id, "用户在个人中心停用账号", command.OperatorUserId, cancellationToken);
     }
 
     /// <summary>
@@ -210,12 +207,12 @@ public sealed class ProfileDomainService
         await EnsureCurrentUserIsNotTenantOwnerAsync(user, cancellationToken);
 
         security.IsDeleted = true;
-        security.DeletedTime = DateTimeOffset.UtcNow;
+        security.DeletedAt = DateTimeOffset.UtcNow;
         security.SecurityStamp = NewSecurityStamp();
         _ = await AsSelfWriteAsync(() => _userSecurityRepository.UpdateAsync(security, cancellationToken));
         await AsSelfWriteAsync(() => _userRepository.SoftDeleteAsync(user, cancellationToken));
 
-        return await RevokeCurrentUserSessionsAsync(user.BasicId, "用户在个人中心注销账号", command.OperatorUserId, cancellationToken);
+        return await RevokeCurrentUserSessionsAsync(user.Id, "用户在个人中心注销账号", command.OperatorUserId, cancellationToken);
     }
 
     /// <summary>
@@ -407,7 +404,7 @@ public sealed class ProfileDomainService
         foreach (var account in providerAccounts)
         {
             account.IsDeleted = true;
-            account.DeletedTime = now;
+            account.DeletedAt = now;
         }
 
         _ = await AsSelfWriteAsync(() => _externalLoginRepository.UpdateRangeAsync(providerAccounts, cancellationToken));
@@ -471,7 +468,7 @@ public sealed class ProfileDomainService
         return new UserSessionRevokedDomainEvent(
             session.TenantId,
             session.UserId,
-            session.BasicId,
+            session.Id,
             session.UserSessionId,
             session.CurrentAccessTokenJti,
             revokeAllUserSessions,
@@ -487,7 +484,7 @@ public sealed class ProfileDomainService
     {
         return new UserSessionRevokedDomainEvent(
             sessionTenantKey,
-            user.BasicId,
+            user.Id,
             sessionId: null,
             userSessionId: null,
             accessTokenJti: null,
@@ -619,7 +616,7 @@ public sealed class ProfileDomainService
     /// </remarks>
     private async Task EnsureCurrentUserIsNotTenantOwnerAsync(SysUser user, CancellationToken cancellationToken)
     {
-        var memberships = await _tenantUserRepository.GetActiveByUserIdAsync(user.BasicId, DateTimeOffset.UtcNow, cancellationToken);
+        var memberships = await _tenantUserRepository.GetActiveByUserIdAsync(user.Id, DateTimeOffset.UtcNow, cancellationToken);
         if (memberships.Any(membership => membership.MemberType == TenantMemberType.Owner))
         {
             throw new InvalidOperationException("当前账号仍是租户所有者，不能自助关闭；请先联系平台把所有权转给其他成员。");
@@ -659,7 +656,7 @@ public sealed class ProfileDomainService
 
         var user = await _userRepository.GetByIdIgnoreTenantAsync(userId, cancellationToken)
             ?? throw new InvalidOperationException("当前用户不存在。");
-        var security = await _userSecurityRepository.GetByUserIdAsync(user.BasicId, cancellationToken)
+        var security = await _userSecurityRepository.GetByUserIdAsync(user.Id, cancellationToken)
             ?? throw new InvalidOperationException("用户安全记录不存在。");
 
         return (user, security);
@@ -707,7 +704,7 @@ public sealed class ProfileDomainService
     {
         var (user, _) = await GetUserSecurityOrThrowAsync(userId, cancellationToken);
         // 既取该用户自己的会话，也取由他发起的模仿会话（后者的 UserId 是被模仿者）
-        var sessions = (await _userSessionRepository.GetNotRevokedByUserIgnoreTenantAsync(user.BasicId, cancellationToken)).ToList();
+        var sessions = (await _userSessionRepository.GetNotRevokedByUserIgnoreTenantAsync(user.Id, cancellationToken)).ToList();
         if (sessions.Count == 0)
         {
             return new ProfileSessionRevokeResult([]);

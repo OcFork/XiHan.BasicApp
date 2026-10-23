@@ -6,7 +6,6 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Infrastructure.Messaging;
-using XiHan.Framework.Messaging.Models;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -53,7 +52,7 @@ public sealed class MessageDeliveryService
 
         // 落库为 Pending，再入业务发件箱（事务提交后）由后台异步发送
         var result = await _messageDomainService.CreateOutboxEmailAsync(renderedCommand, cancellationToken);
-        await _outbox.EnqueueAsync(SaasMessageChannelNames.Email, result.Email.BasicId, result.Email.TenantId, cancellationToken);
+        await _outbox.EnqueueAsync(SaasMessageChannelNames.Email, result.Email.Id, result.Email.TenantId, cancellationToken);
         return result;
     }
 
@@ -71,7 +70,7 @@ public sealed class MessageDeliveryService
 
         // 落库为 Pending，再入业务发件箱（事务提交后）由后台异步发送
         var result = await _messageDomainService.CreateOutboxSmsAsync(renderedCommand, cancellationToken);
-        await _outbox.EnqueueAsync(SaasMessageChannelNames.Sms, result.Sms.BasicId, result.Sms.TenantId, cancellationToken);
+        await _outbox.EnqueueAsync(SaasMessageChannelNames.Sms, result.Sms.Id, result.Sms.TenantId, cancellationToken);
         return result;
     }
 

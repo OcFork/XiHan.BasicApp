@@ -2,12 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Options;
-using XiHan.Framework.Data.SqlSugar.Initializers;
-using XiHan.Framework.Data.SqlSugar.Options;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Upgrade.Abstractions;
-using XiHan.Framework.Upgrade.Enums;
-using XiHan.Framework.Upgrade.Options;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Upgrade;
 
@@ -43,6 +39,7 @@ public sealed class SaasSchemaUpgrader(
 
         if (context.IsFresh(dataOptions.Value.DefaultConfigId))
         {
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (currentTenant.Change(null))
             {
                 _ = await engine.BaselineAsync(cancellationToken);

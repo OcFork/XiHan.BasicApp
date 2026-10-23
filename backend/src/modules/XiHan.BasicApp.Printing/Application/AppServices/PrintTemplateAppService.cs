@@ -12,13 +12,8 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Printing.Application.AppServices;
@@ -26,8 +21,6 @@ namespace XiHan.BasicApp.Printing.Application.AppServices;
 /// <summary>
 /// 打印模板命令 Dynamic API，负责权限、作用域、事务、缓存失效和结构化审计编排。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "打印模板")]
 public sealed class PrintTemplateAppService : PrintingApplicationService, IPrintTemplateAppService
 {
     private readonly IPrintTemplateDomainService _domainService;
@@ -74,8 +67,6 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>创建后的模板详情。</returns>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、JSON 或唯一性校验失败。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(PrintingPermissionCodes.Create)]
     public async Task<PrintTemplateDetailDto> CreatePrintTemplateAsync(
         PrintTemplateCreateDto input,
         CancellationToken cancellationToken = default)
@@ -92,7 +83,7 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
                 PrintTemplateApplicationMapper.ToCreateCommand(input), cancellationToken);
             // considerUow:true 使清理在事务提交后执行，不会把未提交数据提前暴露给其它请求。
             await _cacheInvalidator.InvalidatePrintTemplateAsync(cancellationToken);
-            LogResult("Create", result.Template.BasicId, result.Template.TemplateCode, input.Scope, true, null);
+            LogResult("Create", result.Template.Id, result.Template.TemplateCode, input.Scope, true, null);
             return PrintTemplateApplicationMapper.ToDetailDto(result.Template);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -109,8 +100,6 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>更新后的模板详情。</returns>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、JSON 或并发校验失败。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(PrintingPermissionCodes.Update)]
     public async Task<PrintTemplateDetailDto> UpdatePrintTemplateAsync(
         PrintTemplateUpdateDto input,
         CancellationToken cancellationToken = default)
@@ -119,19 +108,19 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
         await EnsureWritableScopeAsync(input.Scope, cancellationToken);
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysPrintTemplate), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysPrintTemplate), input.Id, input, cancellationToken);
 
         try
         {
             var result = await _domainService.UpdateAsync(
                 PrintTemplateApplicationMapper.ToUpdateCommand(input), cancellationToken);
             await _cacheInvalidator.InvalidatePrintTemplateAsync(cancellationToken);
-            LogResult("Update", result.Template.BasicId, result.Template.TemplateCode, input.Scope, true, null);
+            LogResult("Update", result.Template.Id, result.Template.TemplateCode, input.Scope, true, null);
             return PrintTemplateApplicationMapper.ToDetailDto(result.Template);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            LogResult("Update", input.BasicId, null, input.Scope, false, exception);
+            LogResult("Update", input.Id, null, input.Scope, false, exception);
             throw;
         }
     }
@@ -143,8 +132,6 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>变更后的模板详情。</returns>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、状态或并发校验失败。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(PrintingPermissionCodes.Status)]
     public async Task<PrintTemplateDetailDto> UpdatePrintTemplateStatusAsync(
         PrintTemplateStatusUpdateDto input,
         CancellationToken cancellationToken = default)
@@ -153,19 +140,19 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
         await EnsureWritableScopeAsync(input.Scope, cancellationToken);
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysPrintTemplate), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysPrintTemplate), input.Id, input, cancellationToken);
 
         try
         {
             var result = await _domainService.UpdateStatusAsync(
                 PrintTemplateApplicationMapper.ToStatusCommand(input), cancellationToken);
             await _cacheInvalidator.InvalidatePrintTemplateAsync(cancellationToken);
-            LogResult("Status", result.Template.BasicId, result.Template.TemplateCode, input.Scope, true, null);
+            LogResult("Status", result.Template.Id, result.Template.TemplateCode, input.Scope, true, null);
             return PrintTemplateApplicationMapper.ToDetailDto(result.Template);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            LogResult("Status", input.BasicId, null, input.Scope, false, exception);
+            LogResult("Status", input.Id, null, input.Scope, false, exception);
             throw;
         }
     }
@@ -176,8 +163,6 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="input">删除参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板仍启用、无权操作或并发冲突。</exception>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(PrintingPermissionCodes.Delete)]
     public async Task DeletePrintTemplateAsync(
         PrintTemplateDeleteDto input,
         CancellationToken cancellationToken = default)
@@ -188,11 +173,11 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
         {
             await _domainService.DeleteAsync(PrintTemplateApplicationMapper.ToDeleteCommand(input), cancellationToken);
             await _cacheInvalidator.InvalidatePrintTemplateAsync(cancellationToken);
-            LogResult("Delete", input.BasicId, null, input.Scope, true, null);
+            LogResult("Delete", input.Id, null, input.Scope, true, null);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            LogResult("Delete", input.BasicId, null, input.Scope, false, exception);
+            LogResult("Delete", input.Id, null, input.Scope, false, exception);
             throw;
         }
     }

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Web.Core.Access;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 

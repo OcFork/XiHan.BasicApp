@@ -11,11 +11,7 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -27,8 +23,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 流程发起与申请写入在同一工作单元内：流程未发布、首个节点解析不到审批人等发起失败时申请一并回滚。
 /// 审批通过后的自动授权由 <see cref="PermissionRequestWorkflowHandler"/> 在流程结束时完成。
 /// </remarks>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限申请")]
 public sealed class PermissionRequestAppService
     : SaasApplicationService, IPermissionRequestAppService
 {
@@ -66,8 +60,6 @@ public sealed class PermissionRequestAppService
     /// <summary>
     /// 提交权限申请并发起审批流程
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionRequest.Create)]
     public async Task<PermissionRequestDetailDto> CreatePermissionRequestAsync(PermissionRequestCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -89,8 +81,6 @@ public sealed class PermissionRequestAppService
     /// <summary>
     /// 撤回权限申请（同时撤回进行中的审批流程）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionRequest.Withdraw)]
     public async Task DeletePermissionRequestAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -107,8 +97,6 @@ public sealed class PermissionRequestAppService
     /// <summary>
     /// 修改权限申请并重新提交（撤回原审批流程后重新发起，已有的审批意见作废）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionRequest.Update)]
     public async Task<PermissionRequestDetailDto> UpdatePermissionRequestAsync(PermissionRequestUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -132,14 +120,12 @@ public sealed class PermissionRequestAppService
     /// <summary>
     /// 手工变更权限申请状态（驳回或撤回，同时撤回进行中的审批流程；不能直接置为已批准）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionRequest.Status)]
     public async Task<PermissionRequestDetailDto> UpdatePermissionRequestStatusAsync(PermissionRequestStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        await EnsureOperableAsync(input.BasicId, cancellationToken);
+        await EnsureOperableAsync(input.Id, cancellationToken);
         var result = await _permissionRequestDomainService.UpdatePermissionRequestStatusAsync(
             PermissionRequestApplicationMapper.ToStatusCommand(input, GetCurrentUserIdOrThrow()),
             cancellationToken);

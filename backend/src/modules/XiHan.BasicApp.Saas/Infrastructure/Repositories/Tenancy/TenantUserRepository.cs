@@ -5,8 +5,6 @@ using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -92,8 +90,8 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
         var userIds = members.Select(member => member.UserId).Distinct().ToList();
         var accounts = await CreateQueryable<SysUser>()
             .ClearTenantFilter()
-            .Where(user => userIds.Contains(user.BasicId))
-            .Select(user => new { user.BasicId, user.UserName, user.NickName, user.RealName, user.Email })
+            .Where(user => userIds.Contains(user.Id))
+            .Select(user => new { user.Id, user.UserName, user.NickName, user.RealName, user.Email })
             .ToListAsync(cancellationToken);
 
         var matched = members
@@ -101,7 +99,7 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
             .Select(member => member.UserId)
             .Concat(accounts
                 .Where(account => Matches(text, account.UserName, account.NickName, account.RealName, account.Email))
-                .Select(account => account.BasicId));
+                .Select(account => account.Id));
         return [.. matched.Distinct()];
     }
 

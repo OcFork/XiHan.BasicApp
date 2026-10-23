@@ -71,7 +71,7 @@ public sealed class AiAssistantDomainService : IAiAssistantDomainService
         var created = await _assistantRepository.AddAsync(assistant, cancellationToken);
         if (created.IsDefault)
         {
-            await ClearOtherDefaultsAsync(created.BasicId, cancellationToken);
+            await ClearOtherDefaultsAsync(created.Id, cancellationToken);
         }
 
         return new AiAssistantCommandResult(created);
@@ -85,8 +85,8 @@ public sealed class AiAssistantDomainService : IAiAssistantDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "助手主键必须大于 0。");
-        var assistant = await GetAssistantOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "助手主键必须大于 0。");
+        var assistant = await GetAssistantOrThrowAsync(command.Id, cancellationToken);
 
         // 助手编码不可变：会话按助手主键绑定，改编码不影响既有会话，但会让配置与人读标识脱节。
         assistant.AssistantName = Required(command.AssistantName, 100, nameof(command.AssistantName), "助手名称不能超过 100 个字符。");
@@ -107,7 +107,7 @@ public sealed class AiAssistantDomainService : IAiAssistantDomainService
         var updated = await _assistantRepository.UpdateAsync(assistant, cancellationToken);
         if (updated.IsDefault)
         {
-            await ClearOtherDefaultsAsync(updated.BasicId, cancellationToken);
+            await ClearOtherDefaultsAsync(updated.Id, cancellationToken);
         }
 
         return new AiAssistantCommandResult(updated);
@@ -121,10 +121,10 @@ public sealed class AiAssistantDomainService : IAiAssistantDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "助手主键必须大于 0。");
+        EnsureId(command.Id, "助手主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var assistant = await GetAssistantOrThrowAsync(command.BasicId, cancellationToken);
+        var assistant = await GetAssistantOrThrowAsync(command.Id, cancellationToken);
         assistant.Status = command.Status;
         assistant.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? assistant.Remark;
 
@@ -144,7 +144,7 @@ public sealed class AiAssistantDomainService : IAiAssistantDomainService
             throw new InvalidOperationException("已禁用的助手不能设为默认。");
         }
 
-        await ClearOtherDefaultsAsync(assistant.BasicId, cancellationToken);
+        await ClearOtherDefaultsAsync(assistant.Id, cancellationToken);
         if (!assistant.IsDefault)
         {
             assistant.IsDefault = true;

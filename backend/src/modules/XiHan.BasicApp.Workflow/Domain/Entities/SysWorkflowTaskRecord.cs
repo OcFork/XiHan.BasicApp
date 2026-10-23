@@ -19,8 +19,8 @@ namespace XiHan.BasicApp.Workflow.Domain.Entities;
 /// </remarks>
 [SugarTable(TableName = "Sys_Workflow_Task_Record", TableDescription = "系统工作流审批记录表")]
 [SugarIndex("IX_{table}_TeId_UsId_Ac", nameof(TenantId), OrderByType.Asc, nameof(UserId), OrderByType.Asc, nameof(Action), OrderByType.Asc)]
-[SugarIndex("IX_{table}_InId_CrTi", nameof(InstanceId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Asc)]
-public partial class SysWorkflowTaskRecord : BasicAppCreationEntity, IStrictMultiTenantEntity
+[SugarIndex("IX_{table}_InId_CrTi", nameof(InstanceId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Asc)]
+public partial class SysWorkflowTaskRecord : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 流程实例标识

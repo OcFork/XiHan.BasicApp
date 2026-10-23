@@ -19,7 +19,7 @@ public sealed class TraceTimelineItemDto : IFieldSecurityMultiSourceDto
     /// <summary>
     /// 日志主键（用于按类型回查完整详情）
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 条目时间（各类日志的主时间：访问/请求/操作/登录/异常/审计/变更时间）

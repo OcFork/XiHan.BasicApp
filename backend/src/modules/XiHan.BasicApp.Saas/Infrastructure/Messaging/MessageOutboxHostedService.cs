@@ -7,11 +7,9 @@ using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Messaging.Models;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Tasks.BackgroundServices;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 
@@ -33,7 +31,8 @@ public sealed class MessageOutboxMessage : IBackgroundTaskItem
     /// <summary>
     /// 邮件/短信行所属租户（平台为 0）：后台在该作用域内领取与发送
     /// </summary>
-    public long TenantId { get; init; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; init; } = string.Empty;
 
     /// <summary>
     /// 任务创建时间
@@ -125,6 +124,7 @@ public sealed class MessageOutboxHostedService : XiHanBackgroundServiceBase<Mess
             var outbox = scope.ServiceProvider.GetRequiredService<DbMessageOutbox>();
 
             // 邮件/短信行带落库时的租户戳：在该租户作用域内领取、加载与回写
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using var tenantScope = scope.ServiceProvider.GetRequiredService<ICurrentTenant>().Change(message.TenantId);
 
             // 原子领取：仅 Pending / 可重试 Failed 才置 Sending（去重 + 按 MaxRetryCount 自限，超限直接丢弃该消息）

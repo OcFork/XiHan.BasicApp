@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.AI.Domain.Entities;
 
@@ -26,7 +25,7 @@ namespace XiHan.BasicApp.AI.Domain.Entities;
 /// - 在线聊天页与助手一对一提问，回复经知识库检索增强
 /// </remarks>
 [SugarTable(TableName = "Sys_Ai_Assistant", TableDescription = "系统 AI 助手表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_AsCd", nameof(TenantId), OrderByType.Asc, nameof(AssistantCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]

@@ -90,7 +90,7 @@ public sealed class UserDataScopeDetailDto : BasicAppDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 创建人主键

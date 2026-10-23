@@ -10,16 +10,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 角色权限查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "角色权限")]
 public sealed class RolePermissionQueryService
     : SaasApplicationService, IRolePermissionQueryService
 {
@@ -72,7 +68,6 @@ public sealed class RolePermissionQueryService
     /// <param name="onlyValid">是否仅返回有效授权</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色权限列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RolePermission.Read)]
     public async Task<IReadOnlyList<RolePermissionListItemDto>> GetRolePermissionsAsync(long roleId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (roleId <= 0)
@@ -94,7 +89,7 @@ public sealed class RolePermissionQueryService
             ? await _rolePermissionRepository.GetValidByRoleIdsAsync([roleId], DateTimeOffset.UtcNow, cancellationToken)
             : await _rolePermissionRepository.GetListAsync(
                 rolePermission => rolePermission.RoleId == roleId,
-                rolePermission => rolePermission.CreatedTime,
+                rolePermission => rolePermission.CreatedAt,
                 cancellationToken);
 
         if (rolePermissions.Count == 0)
@@ -103,13 +98,13 @@ public sealed class RolePermissionQueryService
         }
 
         var permissionMap = await BuildPermissionMapAsync(rolePermissions.Select(rolePermission => rolePermission.PermissionId), cancellationToken);
-        var conditionCounts = await _permissionConditionRepository.CountForRolePermissionsAsync(rolePermissions.Select(rolePermission => rolePermission.BasicId), cancellationToken);
+        var conditionCounts = await _permissionConditionRepository.CountForRolePermissionsAsync(rolePermissions.Select(rolePermission => rolePermission.Id), cancellationToken);
 
         return [.. rolePermissions
             .Select(rolePermission => RolePermissionApplicationMapper.ToListItemDto(
                 rolePermission,
                 permissionMap.GetValueOrDefault(rolePermission.PermissionId),
-                conditionCounts.GetValueOrDefault(rolePermission.BasicId)))
+                conditionCounts.GetValueOrDefault(rolePermission.Id)))
             .OrderBy(item => item.PermissionCode)
             .ThenBy(item => item.PermissionId)];
     }
@@ -120,7 +115,6 @@ public sealed class RolePermissionQueryService
     /// <param name="id">角色权限绑定主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色权限详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RolePermission.Read)]
     public async Task<RolePermissionDetailDto?> GetRolePermissionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -159,6 +153,6 @@ public sealed class RolePermissionQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(permission => permission.BasicId);
+        return permissions.ToDictionary(permission => permission.Id);
     }
 }

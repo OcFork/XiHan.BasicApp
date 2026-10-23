@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 消息模板查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "消息模板")]
 public sealed class MessageTemplateQueryService
     : SaasApplicationService, IMessageTemplateQueryService
 {
@@ -52,8 +48,6 @@ public sealed class MessageTemplateQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>消息模板分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.MessageTemplate.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<MessageTemplateListItemDto>> GetMessageTemplatePageAsync(MessageTemplatePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -86,7 +80,6 @@ public sealed class MessageTemplateQueryService
     /// <param name="id">模板主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>消息模板详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.MessageTemplate.Read)]
     public async Task<MessageTemplateDetailDto?> GetMessageTemplateDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)

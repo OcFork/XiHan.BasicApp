@@ -8,9 +8,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
@@ -18,8 +15,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// <summary>
 /// 机器人配置命令应用服务（Webhook 型：钉钉/飞书/企业微信）
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "机器人配置")]
 public sealed class BotConfigAppService
     : SaasApplicationService, IBotConfigAppService
 {
@@ -39,8 +34,6 @@ public sealed class BotConfigAppService
     /// <summary>
     /// 创建机器人配置
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.BotConfig.Create)]
     public async Task<BotConfigDetailDto> CreateBotConfigAsync(BotConfigCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -59,15 +52,13 @@ public sealed class BotConfigAppService
     /// <summary>
     /// 更新机器人配置
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.BotConfig.Update)]
     public async Task<BotConfigDetailDto> UpdateBotConfigAsync(BotConfigUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysBotConfig), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysBotConfig), input.Id, input, cancellationToken);
 
         var result = await _botConfigDomainService.UpdateBotConfigAsync(
             BotConfigApplicationMapper.ToUpdateCommand(input),
@@ -79,15 +70,13 @@ public sealed class BotConfigAppService
     /// <summary>
     /// 更新机器人配置启停状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.BotConfig.Status)]
     public async Task<BotConfigDetailDto> UpdateBotConfigStatusAsync(BotConfigStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysBotConfig), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysBotConfig), input.Id, input, cancellationToken);
 
         var result = await _botConfigDomainService.UpdateBotConfigStatusAsync(
             BotConfigApplicationMapper.ToStatusCommand(input),
@@ -100,8 +89,6 @@ public sealed class BotConfigAppService
     /// 设置默认机器人配置（同租户同服务商内互斥）
     /// </summary>
     /// <remarks>Set 前缀不在动词约定表，保留完整方法名，默认 POST</remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.BotConfig.Update)]
     public async Task<BotConfigDetailDto> SetDefaultBotConfigAsync(BotConfigDefaultUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -117,8 +104,6 @@ public sealed class BotConfigAppService
     /// <summary>
     /// 删除机器人配置
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.BotConfig.Delete)]
     public async Task DeleteBotConfigAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

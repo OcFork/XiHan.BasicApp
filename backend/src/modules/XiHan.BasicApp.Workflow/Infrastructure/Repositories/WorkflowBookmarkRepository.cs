@@ -4,8 +4,6 @@
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Workflow.Abstractions;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Repositories;
 

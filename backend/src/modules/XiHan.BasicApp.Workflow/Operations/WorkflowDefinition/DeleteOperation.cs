@@ -1,0 +1,36 @@
+// 由 xihan migrate v4 生成；提交前请检查。
+
+using System.Globalization;
+using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Workflow.Application.AppServices;
+using XiHan.BasicApp.Workflow.Application.Business;
+using XiHan.BasicApp.Workflow.Application.Contracts;
+using XiHan.BasicApp.Workflow.Application.Dtos;
+using XiHan.BasicApp.Workflow.Application.Mappers;
+using XiHan.BasicApp.Workflow.Domain.Entities;
+using XiHan.BasicApp.Workflow.Domain.Permissions;
+using XiHan.BasicApp.Workflow.Operations;
+using XiHan.Framework.Kernel;
+using XiHan.Framework.Kernel.Operations;
+using XiHan.Framework.Primitives;
+
+namespace XiHan.BasicApp.Workflow.Operations.WorkflowDefinition;
+
+/// <summary>
+/// 由 xihan migrate v4 生成；提交前请检查。
+/// </summary>
+[Operation("workflow-definition.delete", Permission = WorkflowPermissionCodes.Delete)]
+public sealed class DeleteOperation(IWorkflowDefinitionAppService service) : IOperation<DeleteRequest, EmptyResponse>
+{
+    /// <inheritdoc />
+    public async ValueTask<Result<EmptyResponse>> HandleAsync(DeleteRequest request, InvocationContext context)
+    {
+        await service.DeleteAsync(request.Id, context.CancellationToken).ConfigureAwait(false);
+        return EmptyResponse.Instance;
+    }
+}
+
+/// <summary>
+/// 由 xihan migrate v4 生成；提交前请检查。
+/// </summary>
+public sealed record DeleteRequest(long Id);

@@ -4,7 +4,6 @@
 #pragma warning disable CS1591
 
 using XiHan.BasicApp.Core.Dtos;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
 
 namespace XiHan.BasicApp.Workflow.Application.Dtos;
 

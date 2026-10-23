@@ -8,7 +8,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
@@ -254,7 +254,7 @@ public sealed class AuthorizationSnapshotQueryService
 
         if (isSuperAdmin || isTenantOwner)
         {
-            var permissionIds = effectiveCatalog.Select(permission => permission.BasicId).ToHashSet();
+            var permissionIds = effectiveCatalog.Select(permission => permission.Id).ToHashSet();
             var allPermissionCodes = effectiveCatalog
                 .Select(permission => permission.PermissionCode)
                 .Where(code => !string.IsNullOrWhiteSpace(code))
@@ -270,7 +270,7 @@ public sealed class AuthorizationSnapshotQueryService
         }
 
         // 角色权限：每个角色按自己的有效继承链结算，角色级 Deny 只作用于本链
-        var heldChains = await LoadRoleChainsAsync(roles.Select(role => role.BasicId), "role", now, cancellationToken);
+        var heldChains = await LoadRoleChainsAsync(roles.Select(role => role.Id), "role", now, cancellationToken);
 
         var userPermissions = (await _userPermissionRepository.GetValidByUserIdAsync(userId, now, cancellationToken))
             .Where(item => item.TenantId == bindingScopeTenantId)
@@ -284,8 +284,8 @@ public sealed class AuthorizationSnapshotQueryService
         // 授权行上启用的条件：写在授予行上是「满足才授予」，写在禁止行上是「满足才禁止」
         var rolePermissionRows = heldChains.Rows.Concat(delegatedChains.Rows).ToList();
         var conditions = await _permissionConditionRepository.GetValidByAuthorizationIdsAsync(
-            rolePermissionRows.Select(row => row.BasicId),
-            userPermissions.Select(row => row.BasicId),
+            rolePermissionRows.Select(row => row.Id),
+            userPermissions.Select(row => row.Id),
             cancellationToken);
         var resolution = AuthorizationConditionResolver.Resolve(new AuthorizationGrantSources(
             [.. heldChains.Chains, .. delegatedChains.Chains],
@@ -295,8 +295,8 @@ public sealed class AuthorizationSnapshotQueryService
             conditions));
 
         // 只留作用侧允许当前上下文、且启用的权限
-        var effectivePermissions = effectiveCatalog.Where(permission => resolution.GrantedPermissionIds.Contains(permission.BasicId)).ToList();
-        var effectiveIds = effectivePermissions.Select(permission => permission.BasicId).ToHashSet();
+        var effectivePermissions = effectiveCatalog.Where(permission => resolution.GrantedPermissionIds.Contains(permission.Id)).ToList();
+        var effectiveIds = effectivePermissions.Select(permission => permission.Id).ToHashSet();
         var permissionCodes = effectivePermissions
             .Select(permission => permission.PermissionCode)
             .Where(code => !string.IsNullOrWhiteSpace(code))
@@ -317,7 +317,7 @@ public sealed class AuthorizationSnapshotQueryService
     {
         var codes = catalog
             .Where(permission => !string.IsNullOrWhiteSpace(permission.PermissionCode))
-            .ToDictionary(permission => permission.BasicId, permission => permission.PermissionCode);
+            .ToDictionary(permission => permission.Id, permission => permission.PermissionCode);
         var conditions = new AuthorizationConditions();
         foreach (var (permissionId, paths) in resolution.ConditionalGrants)
         {
@@ -409,7 +409,7 @@ public sealed class AuthorizationSnapshotQueryService
             return RoleChainSet.Empty;
         }
 
-        var roleIdList = enabledRoles.Select(role => role.BasicId).ToList();
+        var roleIdList = enabledRoles.Select(role => role.Id).ToList();
         var effectiveAncestors = await _roleHierarchyDomainService.GetEffectiveAncestorsAsync(roleIdList, cancellationToken);
         var chains = roleIdList
             .Select(roleId => new AuthorizationRoleChain($"{sourcePrefix}:{roleId}", effectiveAncestors[roleId].Keys.Append(roleId).ToHashSet()))

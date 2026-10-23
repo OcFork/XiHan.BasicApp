@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -36,13 +35,14 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 出站消息审计追溯（谁在何时向哪个会话发了什么）
 /// - 发送失败排查（错误码/错误信息/耗时）
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Telegram_Message_{year}{month}{day}", TableDescription = "系统Telegram出站消息审计表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_BoNa", nameof(BotName), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_ChId", nameof(ChatId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_Su", nameof(Success), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysTelegramMessage : BasicAppCreationEntity, ISplitTableEntity, IStrictMultiTenantEntity
+public partial class SysTelegramMessage : BasicAppCreationEntity, ISplitTableEntity, IMultiTenant
 {
     /// <summary>
     /// 机器人名称
@@ -127,5 +127,5 @@ public partial class SysTelegramMessage : BasicAppCreationEntity, ISplitTableEnt
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

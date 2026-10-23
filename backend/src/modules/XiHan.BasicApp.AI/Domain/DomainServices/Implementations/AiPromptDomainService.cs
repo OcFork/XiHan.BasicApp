@@ -62,8 +62,8 @@ public sealed class AiPromptDomainService : IAiPromptDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "提示词主键必须大于 0。");
-        var prompt = await GetPromptOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "提示词主键必须大于 0。");
+        var prompt = await GetPromptOrThrowAsync(command.Id, cancellationToken);
 
         // 编码不可变，故此处不更新 PromptCode。
         prompt.PromptName = Required(command.PromptName, 200, nameof(command.PromptName), "提示词名称不能超过 200 个字符。");
@@ -85,10 +85,10 @@ public sealed class AiPromptDomainService : IAiPromptDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "提示词主键必须大于 0。");
+        EnsureId(command.Id, "提示词主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var prompt = await GetPromptOrThrowAsync(command.BasicId, cancellationToken);
+        var prompt = await GetPromptOrThrowAsync(command.Id, cancellationToken);
         prompt.Status = command.Status;
         prompt.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? prompt.Remark;
 

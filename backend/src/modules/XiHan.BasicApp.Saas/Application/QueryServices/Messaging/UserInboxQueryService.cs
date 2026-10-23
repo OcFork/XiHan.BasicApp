@@ -63,7 +63,7 @@ public sealed class UserInboxQueryService
         }
 
         userNotifications = [.. userNotifications
-            .OrderByDescending(item => item.CreatedTime)
+            .OrderByDescending(item => item.CreatedAt)
             .Take(MaxInboxItems * 3)];
 
         var notificationIds = userNotifications
@@ -71,18 +71,18 @@ public sealed class UserInboxQueryService
             .Distinct()
             .ToArray();
         var notifications = await _notificationRepository.GetListAsync(
-            item => SqlFunc.ContainsArray(notificationIds, item.BasicId) &&
+            item => SqlFunc.ContainsArray(notificationIds, item.Id) &&
                     item.IsPublished &&
                     SqlFunc.IsNull(item.ExpirationTime, expireFallback) > now,
             cancellationToken);
-        var notificationMap = notifications.ToDictionary(item => item.BasicId);
+        var notificationMap = notifications.ToDictionary(item => item.Id);
 
         return [.. userNotifications
             .Where(item => notificationMap.ContainsKey(item.NotificationId))
             .Select(item => UserNotificationDispatchService.ToInboxItem(item, notificationMap[item.NotificationId]))
             .Where(item => !unreadOnly || item.NotificationStatus == NotificationStatus.Unread || (item.NeedConfirm && !item.ConfirmTime.HasValue))
             .OrderByDescending(item => item.SendTime)
-            .ThenByDescending(item => item.BasicId)
+            .ThenByDescending(item => item.Id)
             .Take(MaxInboxItems)];
     }
 
@@ -154,23 +154,23 @@ public sealed class UserInboxQueryService
         var startFallback = now.AddYears(-100);
         var expireFallback = now.AddYears(100);
         var ordered = userNotifications
-            .OrderByDescending(item => item.CreatedTime)
+            .OrderByDescending(item => item.CreatedAt)
             .Take(MaxInboxItems * 3)
             .ToList();
         var notificationIds = ordered.Select(item => item.NotificationId).Distinct().ToArray();
         var notifications = await _notificationRepository.GetListAsync(
-            item => SqlFunc.ContainsArray(notificationIds, item.BasicId) &&
+            item => SqlFunc.ContainsArray(notificationIds, item.Id) &&
                     item.IsPublished &&
                     SqlFunc.IsNull(item.StartTime, startFallback) <= now &&
                     SqlFunc.IsNull(item.ExpirationTime, expireFallback) > now,
             cancellationToken);
-        var notificationMap = notifications.Where(notificationFlagFilter).ToDictionary(item => item.BasicId);
+        var notificationMap = notifications.Where(notificationFlagFilter).ToDictionary(item => item.Id);
 
         return [.. ordered
             .Where(item => notificationMap.ContainsKey(item.NotificationId))
             .Select(item => UserNotificationDispatchService.ToInboxItem(item, notificationMap[item.NotificationId]))
             .OrderByDescending(item => item.SendTime)
-            .ThenByDescending(item => item.BasicId)
+            .ThenByDescending(item => item.Id)
             .Take(MaxInboxItems)];
     }
 }

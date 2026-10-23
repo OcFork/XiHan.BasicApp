@@ -24,7 +24,7 @@ public static class RoleDataScopeApplicationMapper
 
         return new RoleDataScopeListItemDto
         {
-            BasicId = scope.BasicId,
+            Id = scope.Id,
             RoleId = scope.RoleId,
             DepartmentId = scope.DepartmentId,
             DepartmentCode = department?.DepartmentCode,
@@ -37,7 +37,7 @@ public static class RoleDataScopeApplicationMapper
             ExpirationTime = scope.ExpirationTime,
             Status = scope.Status,
             Remark = scope.Remark,
-            CreatedTime = scope.CreatedTime
+            CreatedAt = scope.CreatedAt
         };
     }
 
@@ -53,7 +53,7 @@ public static class RoleDataScopeApplicationMapper
 
         return new RoleDataScopeDetailDto
         {
-            BasicId = scope.BasicId,
+            Id = scope.Id,
             RoleId = scope.RoleId,
             DepartmentId = scope.DepartmentId,
             DepartmentCode = department?.DepartmentCode,
@@ -66,7 +66,7 @@ public static class RoleDataScopeApplicationMapper
             ExpirationTime = scope.ExpirationTime,
             Status = scope.Status,
             Remark = scope.Remark,
-            CreatedTime = scope.CreatedTime,
+            CreatedAt = scope.CreatedAt,
             CreatedId = scope.CreatedId,
             CreatedBy = scope.CreatedBy
         };

@@ -13,17 +13,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 用户角色命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户角色")]
 public sealed class UserRoleAppService
     : SaasApplicationService, IUserRoleAppService
 {
@@ -70,8 +65,6 @@ public sealed class UserRoleAppService
     /// <remarks>
     /// 入口与「分配角色」按钮同挂授予权限；本次含撤销项时再要撤销权限，只加不减的提交不需要撤销权限。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Grant)]
     public async Task BatchUpdateUserRolesAsync(UserRoleBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -89,7 +82,7 @@ public sealed class UserRoleAppService
         var revokingRoleIds = revokeIds.Count == 0
             ? []
             : (await _userRoleRepository.GetListAsync(
-                userRole => revokeIds.Contains(userRole.BasicId) && userRole.UserId == input.UserId,
+                userRole => revokeIds.Contains(userRole.Id) && userRole.UserId == input.UserId,
                 cancellationToken)).Select(userRole => userRole.RoleId).ToList();
         foreach (var roleId in input.GrantRoleIds.Concat(revokingRoleIds).Distinct())
         {
@@ -129,8 +122,6 @@ public sealed class UserRoleAppService
     /// <remarks>
     /// 入口与「角色成员」按钮同挂授予权限；本次含移出项时再要撤销权限，只加人的提交不需要撤销权限。
     /// </remarks>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Grant)]
     public async Task BatchUpdateRoleMembersAsync(RoleMemberBatchUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -148,7 +139,7 @@ public sealed class UserRoleAppService
         var revokingUserIds = revokeIds.Count == 0
             ? []
             : (await _userRoleRepository.GetListAsync(
-                userRole => revokeIds.Contains(userRole.BasicId) && userRole.RoleId == input.RoleId,
+                userRole => revokeIds.Contains(userRole.Id) && userRole.RoleId == input.RoleId,
                 cancellationToken)).Select(userRole => userRole.UserId).ToList();
         foreach (var userId in input.GrantUserIds.Concat(revokingUserIds).Distinct())
         {
@@ -188,15 +179,13 @@ public sealed class UserRoleAppService
     /// <summary>
     /// 更新用户角色
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Update)]
     public async Task<UserRoleDetailDto> UpdateUserRoleAsync(UserRoleUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 超管保护：解析该用户角色记录的 UserId/RoleId，非超管不得修改超管用户的角色或 super_admin 角色绑定
-        await EnsureCanWriteUserRoleAsync(input.BasicId, cancellationToken);
+        await EnsureCanWriteUserRoleAsync(input.Id, cancellationToken);
 
         var result = await _userDomainService.UpdateUserRoleAsync(UserRoleApplicationMapper.ToUpdateCommand(input), cancellationToken);
         await _cacheInvalidator.InvalidateAuthorizationAsync(cancellationToken: cancellationToken);
@@ -215,15 +204,13 @@ public sealed class UserRoleAppService
     /// <summary>
     /// 更新用户角色状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.UserRole.Status)]
     public async Task<UserRoleDetailDto> UpdateUserRoleStatusAsync(UserRoleStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 超管保护：解析该用户角色记录的 UserId/RoleId，非超管不得启停超管用户的角色或 super_admin 角色绑定
-        await EnsureCanWriteUserRoleAsync(input.BasicId, cancellationToken);
+        await EnsureCanWriteUserRoleAsync(input.Id, cancellationToken);
 
         var result = await _userDomainService.UpdateUserRoleStatusAsync(UserRoleApplicationMapper.ToStatusCommand(input), cancellationToken);
         await _cacheInvalidator.InvalidateAuthorizationAsync(cancellationToken: cancellationToken);

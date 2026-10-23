@@ -5,9 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Identity;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authentication.Jwt;
 using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -96,7 +94,7 @@ public sealed class LoginSessionDomainService
         var normalizedDeviceId = NormalizeNullable(deviceId, 200);
         if (normalizedDeviceId is not null)
         {
-            var staleSessions = await _userSessionRepository.GetActiveByUserAndDeviceIgnoreTenantAsync(user.BasicId, normalizedDeviceId, cancellationToken);
+            var staleSessions = await _userSessionRepository.GetActiveByUserAndDeviceIgnoreTenantAsync(user.Id, normalizedDeviceId, cancellationToken);
             if (staleSessions.Count > 0)
             {
                 foreach (var stale in staleSessions)
@@ -113,14 +111,14 @@ public sealed class LoginSessionDomainService
                     _ = await _userSessionRepository.UpdateRangeAsync([.. staleSessions], cancellationToken);
                 }
 
-                _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([.. staleSessions.Select(item => item.BasicId)], now, cancellationToken);
+                _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([.. staleSessions.Select(item => item.Id)], now, cancellationToken);
                 supersededSessionBusinessIds.AddRange(staleSessions.Select(item => item.UserSessionId));
             }
         }
 
         var session = new SysUserSession
         {
-            UserId = user.BasicId,
+            UserId = user.Id,
             CurrentAccessTokenJti = accessTokenJti,
             UserSessionId = sessionBusinessId,
             DeviceType = DeviceType.Web,
@@ -150,7 +148,7 @@ public sealed class LoginSessionDomainService
 
         if (tenantId is > 0)
         {
-            await TouchMembershipAsync(tenantId.Value, user.BasicId, now, cancellationToken);
+            await TouchMembershipAsync(tenantId.Value, user.Id, now, cancellationToken);
         }
 
         return new LoginSessionIssueResult(session, supersededSessionBusinessIds);
@@ -207,7 +205,7 @@ public sealed class LoginSessionDomainService
             _ = await _userSessionRepository.UpdateAsync(currentSession, cancellationToken);
         }
 
-        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([currentSession.BasicId], now, cancellationToken);
+        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([currentSession.Id], now, cancellationToken);
 
         var session = new SysUserSession
         {
@@ -266,7 +264,7 @@ public sealed class LoginSessionDomainService
         session.ExpirationTime = ToDateTimeOffset(tokenResult.RefreshTokenExpiresAt);
         _ = await _userSessionRepository.UpdateAsync(session, cancellationToken);
 
-        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([session.BasicId], now, cancellationToken);
+        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([session.Id], now, cancellationToken);
         _ = await _oauthTokenRepository.AddAsync(CreateOAuthToken(session, accessTokenJti, tokenResult), cancellationToken);
 
         return session;
@@ -279,7 +277,7 @@ public sealed class LoginSessionDomainService
     {
         return new SysOAuthToken
         {
-            SessionId = session.BasicId,
+            SessionId = session.Id,
             AccessTokenJti = accessTokenJti,
             AccessToken = null,
             RefreshToken = tokenResult.RefreshToken,
@@ -361,7 +359,7 @@ public sealed class LoginSessionDomainService
         var expiresAt = now.Add(lifetime);
         var session = new SysUserSession
         {
-            UserId = target.BasicId,
+            UserId = target.Id,
             CurrentAccessTokenJti = accessTokenJti,
             UserSessionId = sessionBusinessId,
             DeviceType = originSession.DeviceType,
@@ -389,14 +387,14 @@ public sealed class LoginSessionDomainService
 
         var oauthToken = new SysOAuthToken
         {
-            SessionId = session.BasicId,
+            SessionId = session.Id,
             AccessTokenJti = accessTokenJti,
             AccessToken = null,
             // 模仿令牌不许刷新，台账也不留刷新令牌：留了就能在 OAuth 令牌端点用 refresh_token 授权换出长效链
             RefreshToken = null,
             TokenType = tokenResult.TokenType,
             ClientId = SaasOAuthClientIds.Web,
-            UserId = target.BasicId,
+            UserId = target.Id,
             GrantType = GrantType.Password,
             Scopes = SaasOAuthClientIds.DefaultScope,
             Status = EnableStatus.Enabled,
@@ -443,7 +441,7 @@ public sealed class LoginSessionDomainService
         }
 
         // 令牌台账跨租户吊销（令牌行带签发时的租户戳）
-        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([impersonationSession.BasicId], now, cancellationToken);
+        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([impersonationSession.Id], now, cancellationToken);
 
         return impersonationSession;
     }
@@ -495,7 +493,7 @@ public sealed class LoginSessionDomainService
         }
 
         // 令牌台账跨租户吊销（令牌行带签发时的租户戳）
-        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([session.BasicId], now, cancellationToken);
+        _ = await _oauthTokenRepository.RevokeBySessionIdsAsync([session.Id], now, cancellationToken);
 
         return session;
     }

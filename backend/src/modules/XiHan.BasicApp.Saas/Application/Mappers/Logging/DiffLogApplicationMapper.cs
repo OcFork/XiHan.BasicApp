@@ -22,7 +22,7 @@ public static class DiffLogApplicationMapper
 
         return new DiffLogListItemDto
         {
-            BasicId = diffLog.BasicId,
+            Id = diffLog.Id,
             UserId = diffLog.UserId,
             UserName = diffLog.UserName,
             SessionId = diffLog.SessionId,
@@ -50,7 +50,7 @@ public static class DiffLogApplicationMapper
             ExceptionStackTrace = diffLog.ExceptionStackTrace,
             ExtendData = diffLog.ExtendData,
             Remark = diffLog.Remark,
-            CreatedTime = diffLog.CreatedTime
+            CreatedAt = diffLog.CreatedAt
         };
     }
 
@@ -66,7 +66,7 @@ public static class DiffLogApplicationMapper
         var item = ToListItemDto(diffLog);
         return new DiffLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             SessionId = item.SessionId,
@@ -94,7 +94,7 @@ public static class DiffLogApplicationMapper
             ExceptionStackTrace = item.ExceptionStackTrace,
             ExtendData = item.ExtendData,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = diffLog.CreatedId,
             CreatedBy = diffLog.CreatedBy
         };

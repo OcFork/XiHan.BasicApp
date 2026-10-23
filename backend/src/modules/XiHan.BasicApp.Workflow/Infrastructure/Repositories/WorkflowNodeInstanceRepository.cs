@@ -4,7 +4,6 @@
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Repositories;
 
@@ -27,7 +26,7 @@ public sealed class WorkflowNodeInstanceRepository(ISqlSugarClientResolver clien
         return await CreateQueryable()
             .Where(nodeInstance => nodeInstance.InstanceId == instanceId)
             .OrderBy(nodeInstance => nodeInstance.StartTime)
-            .OrderBy(nodeInstance => nodeInstance.BasicId)
+            .OrderBy(nodeInstance => nodeInstance.Id)
             .ToListAsync(cancellationToken);
     }
 

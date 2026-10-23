@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -21,7 +20,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
         cancellationToken.ThrowIfCancellationRequested();
 
         var rows = await CreateQueryable()
-            .Where(task => task.BasicId == id && task.CreatedId == userId)
+            .Where(task => task.Id == id && task.CreatedId == userId)
             .Take(1)
             .ToListAsync(cancellationToken);
         return rows.FirstOrDefault();
@@ -38,7 +37,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
         // 条件更新抢占：仅当仍为 Pending 才置 Processing，防重复投递/多 worker 重复领取
         var claimed = await UpdateAsync(
             task => new SysExportTask { Status = ExportTaskStatus.Processing, StartedTime = now, Progress = 0 },
-            task => task.BasicId == id && task.Status == ExportTaskStatus.Pending,
+            task => task.Id == id && task.Status == ExportTaskStatus.Pending,
             cancellationToken);
         if (!claimed)
         {
@@ -46,7 +45,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
         }
 
         var rows = await CreateQueryable()
-            .Where(task => task.BasicId == id)
+            .Where(task => task.Id == id)
             .Take(1)
             .ToListAsync(cancellationToken);
         var candidate = rows.FirstOrDefault();
@@ -69,8 +68,8 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
 
         return await CreateQueryable()
             .Where(task => task.Status == ExportTaskStatus.Pending)
-            .OrderBy(task => task.CreatedTime)
-            .Select(task => task.BasicId)
+            .OrderBy(task => task.CreatedAt)
+            .Select(task => task.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -81,7 +80,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
     {
         await UpdateAsync(
             task => new SysExportTask { ProcessedCount = processedCount, Progress = progress },
-            task => task.BasicId == id,
+            task => task.Id == id,
             cancellationToken);
     }
 
@@ -103,7 +102,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
                 FinishedTime = now,
                 ErrorMessage = null
             },
-            task => task.BasicId == id,
+            task => task.Id == id,
             cancellationToken);
     }
 
@@ -119,7 +118,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
                 ErrorMessage = errorMessage,
                 FinishedTime = now
             },
-            task => task.BasicId == id,
+            task => task.Id == id,
             cancellationToken);
     }
 
@@ -135,7 +134,7 @@ public sealed class ExportTaskRepository(ISqlSugarClientResolver clientResolver)
                 ErrorMessage = "已取消",
                 FinishedTime = now
             },
-            task => task.BasicId == id && task.CreatedId == userId && task.Status == ExportTaskStatus.Pending,
+            task => task.Id == id && task.CreatedId == userId && task.Status == ExportTaskStatus.Pending,
             cancellationToken);
     }
 

@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 
@@ -305,7 +304,8 @@ public sealed class UserStatisticsAggregationTask
 
     private sealed class SnapshotData
     {
-        public long TenantId { get; set; }
+        // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+        public string TenantId { get; set; } = string.Empty;
 
         public long UserId { get; set; }
 

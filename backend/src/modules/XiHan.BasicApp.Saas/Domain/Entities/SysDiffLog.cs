@@ -34,8 +34,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 删除：
 /// - 合规要求下禁止删除；仅允许按保留期归档（通常 ≥ 6 个月）
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
+// xihan-migrate(V4-02): ITraceableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Diff_Log_{year}{month}{day}", TableDescription = "系统差异日志表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_UsId", nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_AuTy", nameof(AuditType), OrderByType.Asc)]
@@ -45,7 +47,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{split_table}_RiLe", nameof(RiskLevel), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_EnId", nameof(EntityId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_TrId", nameof(TraceId), OrderByType.Asc)]
-public partial class SysDiffLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IStrictMultiTenantEntity
+public partial class SysDiffLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID
@@ -214,5 +216,5 @@ public partial class SysDiffLog : BasicAppCreationEntity, ISplitTableEntity, ITr
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

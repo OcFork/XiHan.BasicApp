@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -15,7 +14,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// <c>TenantId</c> 表示实际规则所属范围，<see cref="RequestTenantId"/> 表示原始调用租户，两者在共享全局规则场景下不同。
 /// </remarks>
 [SugarTable(TableName = "Sys_Numbering_Allocation", TableDescription = "业务编号分配记录表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_Ru_ReTe_IdKe", nameof(TenantId), OrderByType.Asc, nameof(RuleId), OrderByType.Asc, nameof(RequestTenantId), OrderByType.Asc, nameof(IdempotencyKey), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_Ru_GeTi", nameof(RuleId), OrderByType.Asc, nameof(GeneratedTime), OrderByType.Desc)]

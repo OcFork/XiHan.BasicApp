@@ -6,16 +6,12 @@ using XiHan.BasicApp.CodeGeneration.Application.Dtos;
 using XiHan.BasicApp.CodeGeneration.Application.Mappers;
 using XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 using XiHan.BasicApp.CodeGeneration.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 
 /// <summary>
 /// 代码生成列配置命令应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "列配置")]
 public sealed class CodeGenTableColumnAppService : CodeGenerationApplicationService, ICodeGenTableColumnAppService
 {
     private readonly ICodeGenTableColumnDomainService _columnDomainService;
@@ -31,8 +27,6 @@ public sealed class CodeGenTableColumnAppService : CodeGenerationApplicationServ
     /// <summary>
     /// 按表整体保存列配置（前端表格批量提交）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Update)]
     public async Task BatchSaveAsync(CodeGenTableColumnBatchSaveDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -44,8 +38,6 @@ public sealed class CodeGenTableColumnAppService : CodeGenerationApplicationServ
     /// <summary>
     /// 更新单列配置
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Update)]
     public async Task<CodeGenTableColumnListItemDto> UpdateAsync(CodeGenTableColumnUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

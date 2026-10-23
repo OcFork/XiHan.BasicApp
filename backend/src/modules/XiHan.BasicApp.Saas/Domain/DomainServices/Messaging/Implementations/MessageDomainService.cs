@@ -89,9 +89,9 @@ public sealed class MessageDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统邮件主键必须大于 0。");
+        EnsureId(command.Id, "系统邮件主键必须大于 0。");
         ValidateEmailInput(command.EmailType, command.FromEmail, command.FromName, command.ToEmail, command.CcEmail, command.BccEmail, command.Subject, command.MaxRetryCount, command.BusinessType, command.BusinessId, command.Remark);
-        var email = await GetEmailOrThrowAsync(command.BasicId, cancellationToken);
+        var email = await GetEmailOrThrowAsync(command.Id, cancellationToken);
         EnsureMessageEditable(email.EmailStatus, "邮件");
 
         email.ReceiveUserId = command.ReceiveUserId;
@@ -124,10 +124,10 @@ public sealed class MessageDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统邮件主键必须大于 0。");
+        EnsureId(command.Id, "系统邮件主键必须大于 0。");
         EnsureEnum(command.EmailStatus, nameof(command.EmailStatus));
         EnsureOptionalNonNegative(command.RetryCount, nameof(command.RetryCount), "重试次数不能小于 0。");
-        var email = await GetEmailOrThrowAsync(command.BasicId, cancellationToken);
+        var email = await GetEmailOrThrowAsync(command.Id, cancellationToken);
 
         email.EmailStatus = command.EmailStatus;
         if (command.EmailStatus == EmailStatus.Pending)
@@ -207,9 +207,9 @@ public sealed class MessageDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统短信主键必须大于 0。");
+        EnsureId(command.Id, "系统短信主键必须大于 0。");
         ValidateSmsInput(command.SmsType, command.ToPhone, command.Content, command.Provider, command.MaxRetryCount, command.BusinessType, command.BusinessId, command.Remark);
-        var sms = await GetSmsOrThrowAsync(command.BasicId, cancellationToken);
+        var sms = await GetSmsOrThrowAsync(command.Id, cancellationToken);
         EnsureMessageEditable(sms.SmsStatus, "短信");
 
         sms.ReceiverId = command.ReceiverId;
@@ -236,11 +236,11 @@ public sealed class MessageDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统短信主键必须大于 0。");
+        EnsureId(command.Id, "系统短信主键必须大于 0。");
         EnsureEnum(command.SmsStatus, nameof(command.SmsStatus));
         EnsureOptionalNonNegative(command.RetryCount, nameof(command.RetryCount), "重试次数不能小于 0。");
         EnsureOptionalNonNegative(command.Cost, nameof(command.Cost), "短信成本不能小于 0。");
-        var sms = await GetSmsOrThrowAsync(command.BasicId, cancellationToken);
+        var sms = await GetSmsOrThrowAsync(command.Id, cancellationToken);
 
         sms.SmsStatus = command.SmsStatus;
         if (command.SmsStatus == SmsStatus.Pending)

@@ -11,8 +11,6 @@ using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,7 +20,6 @@ namespace XiHan.BasicApp.AI.Application.QueryServices;
 /// <summary>
 /// 知识文档查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "知识库")]
 public sealed class KnowledgeDocumentQueryService : AiApplicationService, IKnowledgeDocumentQueryService
 {
     private readonly IKnowledgeDocumentRepository _documentRepository;
@@ -44,8 +41,6 @@ public sealed class KnowledgeDocumentQueryService : AiApplicationService, IKnowl
     /// <summary>
     /// 获取文档分页列表
     /// </summary>
-    [PermissionAuthorize(KnowledgePermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<KnowledgeListItemDto>> GetPageAsync(KnowledgePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -81,7 +76,6 @@ public sealed class KnowledgeDocumentQueryService : AiApplicationService, IKnowl
     /// <summary>
     /// 获取文档详情
     /// </summary>
-    [PermissionAuthorize(KnowledgePermissionCodes.Read)]
     public async Task<KnowledgeDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -142,6 +136,6 @@ public sealed class KnowledgeDocumentQueryService : AiApplicationService, IKnowl
     private static void ApplyDocumentSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysKnowledgeDocument document) => document.Sort, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysKnowledgeDocument document) => document.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysKnowledgeDocument document) => document.CreatedAt, SortDirection.Descending, 1);
     }
 }

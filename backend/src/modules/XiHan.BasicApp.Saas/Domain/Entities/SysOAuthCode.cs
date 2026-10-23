@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -36,14 +35,14 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - PKCE 增强的 SPA/Mobile 授权
 /// </remarks>
 [SugarTable(TableName = "Sys_OAuth_Code", TableDescription = "系统OAuth授权码表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_Co", nameof(Code), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_ClId", nameof(ClientId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_UsId", nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_ExTi", nameof(ExpirationTime), OrderByType.Desc)]
 [PlatformDataSource]
-public partial class SysOAuthCode : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysOAuthCode : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 授权码

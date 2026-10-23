@@ -13,7 +13,7 @@ public sealed class TenantMemberUpdateDto
     /// <summary>
     /// 租户成员主键
     /// </summary>
-    public long BasicId { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// 成员类型

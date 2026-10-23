@@ -7,9 +7,6 @@ using XiHan.BasicApp.CodeGeneration.Application.Mappers;
 using XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
@@ -17,7 +14,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 /// <summary>
 /// 代码生成数据源命令应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "数据源")]
 public sealed class CodeGenDataSourceAppService : CodeGenerationApplicationService, ICodeGenDataSourceAppService
 {
     private readonly ICodeGenDataSourceDomainService _dataSourceDomainService;
@@ -36,8 +32,6 @@ public sealed class CodeGenDataSourceAppService : CodeGenerationApplicationServi
     /// <summary>
     /// 创建数据源
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Create)]
     public async Task<CodeGenDataSourceDetailDto> CreateAsync(CodeGenDataSourceCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -54,15 +48,13 @@ public sealed class CodeGenDataSourceAppService : CodeGenerationApplicationServi
     /// <summary>
     /// 更新数据源
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Update)]
     public async Task<CodeGenDataSourceDetailDto> UpdateAsync(CodeGenDataSourceUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysCodeGenDataSource), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysCodeGenDataSource), input.Id, input, cancellationToken);
 
         var result = await _dataSourceDomainService.UpdateDataSourceAsync(
             CodeGenDataSourceApplicationMapper.ToUpdateCommand(input), cancellationToken);
@@ -72,15 +64,13 @@ public sealed class CodeGenDataSourceAppService : CodeGenerationApplicationServi
     /// <summary>
     /// 更新数据源状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Update)]
     public async Task<CodeGenDataSourceDetailDto> UpdateStatusAsync(CodeGenDataSourceStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysCodeGenDataSource), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysCodeGenDataSource), input.Id, input, cancellationToken);
 
         var result = await _dataSourceDomainService.UpdateDataSourceStatusAsync(
             CodeGenDataSourceApplicationMapper.ToStatusCommand(input), cancellationToken);
@@ -90,8 +80,6 @@ public sealed class CodeGenDataSourceAppService : CodeGenerationApplicationServi
     /// <summary>
     /// 删除数据源
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Delete)]
     public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -101,8 +89,6 @@ public sealed class CodeGenDataSourceAppService : CodeGenerationApplicationServi
     /// <summary>
     /// 测试数据源连接（测试通过方可启用/保存）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<CodeGenConnectionTestResultDto> TestConnectionAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

@@ -7,7 +7,7 @@ using XiHan.BasicApp.Chat.Domain.Configurations;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Data.SqlSugar.Clients;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Chat.Infrastructure.Tasks;
@@ -58,6 +58,7 @@ public sealed class ChatRetentionCleanupTask
     public async Task<string> ExecuteAsync()
     {
         int retentionDays;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             retentionDays = await ResolveRetentionDaysAsync();
@@ -102,12 +103,12 @@ public sealed class ChatRetentionCleanupTask
         // 会漏掉「老消息 + 新回应」这一类，正是悬空外键的来源。
         var reactionCount = await client.Deleteable<SysChatMessageReaction>()
             .Where(reaction => SqlFunc.Subqueryable<SysChatMessage>()
-                .Where(message => message.BasicId == reaction.MessageId && message.CreatedTime < cutoff)
+                .Where(message => message.Id == reaction.MessageId && message.CreatedAt < cutoff)
                 .Any())
             .ExecuteCommandAsync();
 
         var messageCount = await client.Deleteable<SysChatMessage>()
-            .Where(message => message.CreatedTime < cutoff)
+            .Where(message => message.CreatedAt < cutoff)
             .ExecuteCommandAsync();
 
         return (reactionCount, messageCount);

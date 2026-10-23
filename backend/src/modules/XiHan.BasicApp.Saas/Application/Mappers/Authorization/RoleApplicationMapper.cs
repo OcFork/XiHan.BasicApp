@@ -41,7 +41,7 @@ public static class RoleApplicationMapper
 
         return new RoleListItemDto
         {
-            BasicId = role.BasicId,
+            Id = role.Id,
             RoleCode = role.RoleCode,
             RoleName = role.RoleName,
             RoleDescription = role.RoleDescription,
@@ -51,8 +51,8 @@ public static class RoleApplicationMapper
             MaxMembers = role.MaxMembers,
             Status = role.Status,
             Sort = role.Sort,
-            CreatedTime = role.CreatedTime,
-            ModifiedTime = role.ModifiedTime
+            CreatedAt = role.CreatedAt,
+            ModifiedAt = role.ModifiedAt
         };
     }
 
@@ -67,7 +67,7 @@ public static class RoleApplicationMapper
 
         return new RoleDetailDto
         {
-            BasicId = role.BasicId,
+            Id = role.Id,
             RoleCode = role.RoleCode,
             RoleName = role.RoleName,
             RoleDescription = role.RoleDescription,
@@ -78,10 +78,10 @@ public static class RoleApplicationMapper
             Status = role.Status,
             Sort = role.Sort,
             Remark = role.Remark,
-            CreatedTime = role.CreatedTime,
+            CreatedAt = role.CreatedAt,
             CreatedId = role.CreatedId,
             CreatedBy = role.CreatedBy,
-            ModifiedTime = role.ModifiedTime,
+            ModifiedAt = role.ModifiedAt,
             ModifiedId = role.ModifiedId,
             ModifiedBy = role.ModifiedBy
         };
@@ -98,7 +98,7 @@ public static class RoleApplicationMapper
 
         return new RoleSelectItemDto
         {
-            BasicId = role.BasicId,
+            Id = role.Id,
             RoleCode = role.RoleCode,
             RoleName = role.RoleName,
             RoleType = role.RoleType,
@@ -112,7 +112,7 @@ public static class RoleApplicationMapper
     public static RoleStatusChangeCommand ToStatusCommand(RoleStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new RoleStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new RoleStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ public static class RoleApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new RoleUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.RoleName,
             input.RoleDescription,
             input.RoleType,

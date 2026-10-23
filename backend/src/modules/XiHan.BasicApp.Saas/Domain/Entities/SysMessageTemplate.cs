@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -30,7 +29,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - Status: 启用/停用（停用模板查找时跳过，回退全局或调用方内置内容）
 /// </remarks>
 [SugarTable(TableName = "Sys_Message_Template", TableDescription = "系统消息模板表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_Ch_TeCo", nameof(TenantId), OrderByType.Asc, nameof(Channel), OrderByType.Asc, nameof(TemplateCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]

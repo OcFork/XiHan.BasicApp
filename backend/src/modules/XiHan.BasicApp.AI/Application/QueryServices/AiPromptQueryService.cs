@@ -11,8 +11,6 @@ using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,7 +20,6 @@ namespace XiHan.BasicApp.AI.Application.QueryServices;
 /// <summary>
 /// AI 提示词查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "提示词")]
 public sealed class AiPromptQueryService : AiApplicationService, IAiPromptQueryService
 {
     private readonly IAiPromptRepository _promptRepository;
@@ -44,8 +41,6 @@ public sealed class AiPromptQueryService : AiApplicationService, IAiPromptQueryS
     /// <summary>
     /// 获取提示词分页列表
     /// </summary>
-    [PermissionAuthorize(AiPromptPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<AiPromptListItemDto>> GetPageAsync(AiPromptPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -81,7 +76,6 @@ public sealed class AiPromptQueryService : AiApplicationService, IAiPromptQueryS
     /// <summary>
     /// 获取提示词详情
     /// </summary>
-    [PermissionAuthorize(AiPromptPermissionCodes.Read)]
     public async Task<AiPromptDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -147,6 +141,6 @@ public sealed class AiPromptQueryService : AiApplicationService, IAiPromptQueryS
     private static void ApplyPromptSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysAiPrompt prompt) => prompt.Sort, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysAiPrompt prompt) => prompt.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysAiPrompt prompt) => prompt.CreatedAt, SortDirection.Descending, 1);
     }
 }

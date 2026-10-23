@@ -37,7 +37,7 @@ public partial class SysDepartmentHierarchy : IValidatableObject
     /// <returns>闭包行（未设置租户）</returns>
     public static IReadOnlyList<SysDepartmentHierarchy> BuildClosure(IReadOnlyList<SysDepartment> departments)
     {
-        var departmentMap = departments.ToDictionary(department => department.BasicId);
+        var departmentMap = departments.ToDictionary(department => department.Id);
         var rows = new List<SysDepartmentHierarchy>();
 
         foreach (var department in departments.OrderBy(department => department.ParentId ?? 0).ThenBy(department => department.Sort).ThenBy(department => department.DepartmentCode, StringComparer.Ordinal))
@@ -49,10 +49,10 @@ public partial class SysDepartmentHierarchy : IValidatableObject
                 var pathNodes = chain.Take(depth + 1).Reverse().ToArray();
                 rows.Add(new SysDepartmentHierarchy
                 {
-                    AncestorId = ancestor.BasicId,
-                    DescendantId = department.BasicId,
+                    AncestorId = ancestor.Id,
+                    DescendantId = department.Id,
                     Depth = depth,
-                    Path = string.Join("/", pathNodes.Select(node => node.BasicId)),
+                    Path = string.Join("/", pathNodes.Select(node => node.Id)),
                     PathName = string.Join("/", pathNodes.Select(node => node.DepartmentName))
                 });
             }
@@ -94,7 +94,7 @@ public partial class SysDepartmentHierarchy : IValidatableObject
 
         while (true)
         {
-            if (!visited.Add(cursor.BasicId))
+            if (!visited.Add(cursor.Id))
             {
                 throw new InvalidOperationException("部门层级存在环路，不能重建闭包表。");
             }

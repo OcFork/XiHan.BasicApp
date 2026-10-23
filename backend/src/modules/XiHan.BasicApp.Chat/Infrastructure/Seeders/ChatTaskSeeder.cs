@@ -6,7 +6,6 @@ using XiHan.BasicApp.Chat.Infrastructure.Tasks;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Chat.Infrastructure.Seeders;
 

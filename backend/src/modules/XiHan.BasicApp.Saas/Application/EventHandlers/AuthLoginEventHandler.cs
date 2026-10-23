@@ -3,15 +3,14 @@
 
 using Microsoft.Extensions.Logging;
 using SqlSugar;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Auditing;
-using XiHan.Framework.Auditing.Pipelines;
+using XiHan.BasicApp.Saas.Security;
+using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -19,11 +18,43 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// 认证登录事件处理器
 /// </summary>
 public sealed class AuthLoginEventHandler
-    : ILocalEventHandler<AuthLoginSucceededDomainEvent>,
-      ILocalEventHandler<AuthLoginFailedDomainEvent>,
-      ILocalEventHandler<AuthLogoutDomainEvent>,
-      ILocalEventHandler<AuthSecurityAuditDomainEvent>
+    : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string AuthLoginSucceededTopic = "auth-login-succeeded";
+
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string AuthLoginFailedTopic = "auth-login-failed";
+
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string AuthLogoutTopic = "auth-logout";
+
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string AuthSecurityAuditTopic = "auth-security-audit";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        switch (delivery.Topic)
+        {
+            case AuthLoginSucceededTopic:
+                await HandleEventAsync(JsonSerializer.Deserialize<AuthLoginSucceededDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+                return Result.Success();
+            case AuthLoginFailedTopic:
+                await HandleEventAsync(JsonSerializer.Deserialize<AuthLoginFailedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+                return Result.Success();
+            case AuthLogoutTopic:
+                await HandleEventAsync(JsonSerializer.Deserialize<AuthLogoutDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+                return Result.Success();
+            case AuthSecurityAuditTopic:
+                await HandleEventAsync(JsonSerializer.Deserialize<AuthSecurityAuditDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+                return Result.Success();
+            default:
+                return Result.Success();
+        }
+    }
+
     private readonly ILoginLogPipeline _loginLogPipeline;
 
     private readonly IUserNotificationDispatchService _notificationDispatchService;
@@ -243,7 +274,7 @@ public sealed class AuthLoginEventHandler
                 .Where(session => session.UserId == eventData.UserId
                     && session.Status == SessionStatus.Active
                     && (session.ExpirationTime == null || session.ExpirationTime > DateTimeOffset.UtcNow)
-                    && session.BasicId != eventData.SessionRecordId)
+                    && session.Id != eventData.SessionRecordId)
                 .CountAsync();
             if (otherActiveCount <= 0)
             {
@@ -253,14 +284,14 @@ public sealed class AuthLoginEventHandler
             // 设备识别：本次会话的 DeviceId 此前出现过 → 已知设备
             var currentDeviceId = await db.Queryable<SysUserSession>()
                 .ClearTenantFilter()
-                .Where(session => session.BasicId == eventData.SessionRecordId)
+                .Where(session => session.Id == eventData.SessionRecordId)
                 .Select(session => session.DeviceId)
                 .FirstAsync();
             var isKnownDevice = !string.IsNullOrWhiteSpace(currentDeviceId)
                 && await db.Queryable<SysUserSession>()
                     .ClearTenantFilter()
                     .Where(session => session.UserId == eventData.UserId
-                        && session.BasicId != eventData.SessionRecordId
+                        && session.Id != eventData.SessionRecordId
                         && session.DeviceId == currentDeviceId)
                     .AnyAsync();
 
@@ -282,7 +313,7 @@ public sealed class AuthLoginEventHandler
         {
             var db = _clientResolver.GetClientForEntity<SysUserSession>();
             return await db.Queryable<SysUserSession>()
-                .Where(session => session.BasicId == sessionRecordId)
+                .Where(session => session.Id == sessionRecordId)
                 .FirstAsync();
         }
         catch (Exception ex)

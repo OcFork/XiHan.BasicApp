@@ -44,7 +44,7 @@ public sealed class CodeGenTableColumnDomainService : ICodeGenTableColumnDomainS
         {
             ArgumentNullException.ThrowIfNull(columnCommand);
 
-            var column = await GetColumnOrThrowAsync(columnCommand.BasicId, cancellationToken);
+            var column = await GetColumnOrThrowAsync(columnCommand.Id, cancellationToken);
             if (column.TableId != command.TableId)
             {
                 throw new InvalidOperationException("批量保存的列配置必须属于同一张表。");
@@ -72,7 +72,7 @@ public sealed class CodeGenTableColumnDomainService : ICodeGenTableColumnDomainS
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var column = await GetColumnOrThrowAsync(command.BasicId, cancellationToken);
+        var column = await GetColumnOrThrowAsync(command.Id, cancellationToken);
 
         // dirty-tracking：应用前后 diff，把值发生变化的字段并入"已人工修改"集合，
         // 供同步表结构时冻结（保留人工值），其余字段跟随最新表结构重新推断

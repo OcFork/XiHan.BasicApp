@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 密码历史查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "密码历史")]
 public sealed class PasswordHistoryQueryService
     : SaasApplicationService, IPasswordHistoryQueryService
 {
@@ -54,8 +50,6 @@ public sealed class PasswordHistoryQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>密码历史分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PasswordHistory.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<PasswordHistoryListItemDto>> GetPasswordHistoryPageAsync(PasswordHistoryPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -86,7 +80,6 @@ public sealed class PasswordHistoryQueryService
     /// <param name="id">密码历史主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>密码历史详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PasswordHistory.Read)]
     public async Task<PasswordHistoryDetailDto?> GetPasswordHistoryDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -135,7 +128,7 @@ public sealed class PasswordHistoryQueryService
         }
 
         request.Conditions.AddSort((SysPasswordHistory history) => history.ChangedTime, SortDirection.Descending, 0);
-        request.Conditions.AddSort((SysPasswordHistory history) => history.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysPasswordHistory history) => history.CreatedAt, SortDirection.Descending, 1);
         return request;
     }
 
@@ -184,6 +177,6 @@ public sealed class PasswordHistoryQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 }

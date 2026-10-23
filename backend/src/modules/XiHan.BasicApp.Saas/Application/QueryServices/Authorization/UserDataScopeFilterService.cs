@@ -6,8 +6,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.ValueObjects;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -129,12 +129,12 @@ public sealed class UserDataScopeFilterService : IUserDataScopeFilterService
     {
         if (scope != DataPermissionScope.Custom)
         {
-            return [new DataScopeGrantSnapshot(membership.BasicId, AuthorizationGrantSource.User, scope, [], IncludeChildren: false, EffectivePeriod.Always)];
+            return [new DataScopeGrantSnapshot(membership.Id, AuthorizationGrantSource.User, scope, [], IncludeChildren: false, EffectivePeriod.Always)];
         }
 
         var rows = await _userDataScopeRepository.GetValidByUserIdAsync(membership.UserId, cancellationToken);
         return [.. rows.Select(row => new DataScopeGrantSnapshot(
-            row.BasicId,
+            row.Id,
             AuthorizationGrantSource.User,
             DataPermissionScope.Custom,
             [row.DepartmentId],
@@ -158,7 +158,7 @@ public sealed class UserDataScopeFilterService : IUserDataScopeFilterService
         var grants = roles
             .Where(role => role.DataScope != DataPermissionScope.Custom)
             .Select(role => new DataScopeGrantSnapshot(
-                role.BasicId,
+                role.Id,
                 AuthorizationGrantSource.Role,
                 role.DataScope,
                 [],
@@ -168,13 +168,13 @@ public sealed class UserDataScopeFilterService : IUserDataScopeFilterService
 
         var customRoleIds = roles
             .Where(role => role.DataScope == DataPermissionScope.Custom)
-            .Select(role => role.BasicId)
+            .Select(role => role.Id)
             .ToList();
         if (customRoleIds.Count > 0)
         {
             var rows = await _roleDataScopeRepository.GetValidByRoleIdsAsync(customRoleIds, now, cancellationToken);
             grants.AddRange(rows.Select(row => new DataScopeGrantSnapshot(
-                row.BasicId,
+                row.Id,
                 AuthorizationGrantSource.Role,
                 DataPermissionScope.Custom,
                 [row.DepartmentId],

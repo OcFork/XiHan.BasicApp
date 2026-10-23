@@ -5,10 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Web.RealTime.Attributes;
-using XiHan.Framework.Web.RealTime.Hubs;
-using XiHan.Framework.Web.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Hubs;
 

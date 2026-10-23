@@ -4,7 +4,6 @@
 #pragma warning disable CS1591
 
 using XiHan.BasicApp.Core.Dtos;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
 
 namespace XiHan.BasicApp.Workflow.Application.Dtos;
 
@@ -62,7 +61,7 @@ public class WorkflowDefinitionListItemDto : BasicAppDto
     public WorkflowDefinitionStatus Status { get; set; }
     public bool EnableCompensation { get; set; }
     public DateTimeOffset? PublishTime { get; set; }
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 /// <summary>

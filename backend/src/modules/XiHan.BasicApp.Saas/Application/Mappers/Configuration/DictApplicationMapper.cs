@@ -37,7 +37,7 @@ public static class DictApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new DictUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.DictName,
             input.DictType,
             input.DictDescription,
@@ -52,7 +52,7 @@ public static class DictApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new DictStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new DictStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public static class DictApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new DictItemUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ParentId,
             input.ItemName,
             input.ItemValue,
@@ -102,7 +102,7 @@ public static class DictApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new DictItemStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new DictItemStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public static class DictApplicationMapper
 
         return new DictListItemDto
         {
-            BasicId = dict.BasicId,
+            Id = dict.Id,
             DictCode = dict.DictCode,
             DictName = dict.DictName,
             DictType = dict.DictType,
@@ -125,8 +125,8 @@ public static class DictApplicationMapper
             IsGlobal = dict.TenantId == 0,
             Status = dict.Status,
             Sort = dict.Sort,
-            CreatedTime = dict.CreatedTime,
-            ModifiedTime = dict.ModifiedTime
+            CreatedAt = dict.CreatedAt,
+            ModifiedAt = dict.ModifiedAt
         };
     }
 
@@ -142,7 +142,7 @@ public static class DictApplicationMapper
         var item = ToListItemDto(dict);
         return new DictDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             DictCode = item.DictCode,
             DictName = item.DictName,
             DictType = item.DictType,
@@ -151,10 +151,10 @@ public static class DictApplicationMapper
             Status = item.Status,
             Sort = item.Sort,
             Remark = dict.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = dict.CreatedId,
             CreatedBy = dict.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = dict.ModifiedId,
             ModifiedBy = dict.ModifiedBy
         };
@@ -171,7 +171,7 @@ public static class DictApplicationMapper
 
         return new DictItemListItemDto
         {
-            BasicId = dictItem.BasicId,
+            Id = dictItem.Id,
             DictId = dictItem.DictId,
             ParentId = dictItem.ParentId,
             ItemCode = dictItem.ItemCode,
@@ -181,8 +181,8 @@ public static class DictApplicationMapper
             IsDefault = dictItem.IsDefault,
             Status = dictItem.Status,
             Sort = dictItem.Sort,
-            CreatedTime = dictItem.CreatedTime,
-            ModifiedTime = dictItem.ModifiedTime
+            CreatedAt = dictItem.CreatedAt,
+            ModifiedAt = dictItem.ModifiedAt
         };
     }
 
@@ -198,7 +198,7 @@ public static class DictApplicationMapper
         var item = ToItemListItemDto(dictItem);
         return new DictItemDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             DictId = item.DictId,
             ParentId = item.ParentId,
             ItemCode = item.ItemCode,
@@ -210,10 +210,10 @@ public static class DictApplicationMapper
             Sort = item.Sort,
             Metadata = dictItem.Metadata,
             Remark = dictItem.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = dictItem.CreatedId,
             CreatedBy = dictItem.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = dictItem.ModifiedId,
             ModifiedBy = dictItem.ModifiedBy
         };
@@ -230,7 +230,7 @@ public static class DictApplicationMapper
 
         return new DictItemTreeNodeDto
         {
-            BasicId = dictItem.BasicId,
+            Id = dictItem.Id,
             DictId = dictItem.DictId,
             ParentId = dictItem.ParentId,
             ItemCode = dictItem.ItemCode,

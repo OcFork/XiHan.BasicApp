@@ -5,6 +5,7 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -103,8 +104,8 @@ public sealed class MenuDomainService
 
         ValidateUpdateCommand(command);
 
-        var menu = await GetEditableMenuOrThrowAsync(command.BasicId, cancellationToken);
-        _ = await ValidateParentAsync(command.ParentId, menu.BasicId, cancellationToken);
+        var menu = await GetEditableMenuOrThrowAsync(command.Id, cancellationToken);
+        _ = await ValidateParentAsync(command.ParentId, menu.Id, cancellationToken);
         var permission = await ValidatePermissionAsync(command.PermissionId, command.MenuType, cancellationToken);
 
         menu.ParentId = command.ParentId;
@@ -142,18 +143,18 @@ public sealed class MenuDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "菜单主键必须大于 0。");
         }
 
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var menu = await GetEditableMenuOrThrowAsync(command.BasicId, cancellationToken);
+        var menu = await GetEditableMenuOrThrowAsync(command.Id, cancellationToken);
         SysPermission? permission = null;
         if (command.Status == EnableStatus.Enabled)
         {
-            _ = await ValidateParentAsync(menu.ParentId, menu.BasicId, cancellationToken);
+            _ = await ValidateParentAsync(menu.ParentId, menu.Id, cancellationToken);
             permission = await ValidatePermissionAsync(menu.PermissionId, menu.MenuType, cancellationToken);
         }
         else if (menu.PermissionId.HasValue)
@@ -176,7 +177,7 @@ public sealed class MenuDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var menu = await GetEditableMenuOrThrowAsync(id, cancellationToken);
-        if (await _menuRepository.AnyAsync(child => child.ParentId == menu.BasicId, cancellationToken))
+        if (await _menuRepository.AnyAsync(child => child.ParentId == menu.Id, cancellationToken))
         {
             throw new InvalidOperationException("菜单存在子节点，不能直接删除。");
         }
@@ -212,7 +213,7 @@ public sealed class MenuDomainService
 
     private static void ValidateUpdateCommand(MenuUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "菜单主键必须大于 0。");
         }
@@ -416,7 +417,7 @@ public sealed class MenuDomainService
                 throw new InvalidOperationException("菜单父子关系不能形成环路。");
             }
 
-            if (!visited.Add(cursor.BasicId))
+            if (!visited.Add(cursor.Id))
             {
                 throw new InvalidOperationException("菜单父子关系存在环路。");
             }

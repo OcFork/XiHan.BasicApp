@@ -40,13 +40,13 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 租户隔离：严格——配置带访问密钥，租户只看自己的；租户未自配默认存储时，上传显式回退平台默认（见 StorageProviderResolver），文件记住所用配置。
 /// </remarks>
 [SugarTable(TableName = "Sys_Storage_Config", TableDescription = "系统存储配置表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_CoCd", nameof(TenantId), OrderByType.Asc, nameof(ConfigCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_TeId_StTy", nameof(TenantId), OrderByType.Asc, nameof(StorageType), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe_IsEn", nameof(TenantId), OrderByType.Asc, nameof(IsDefault), OrderByType.Desc, nameof(IsEnabled), OrderByType.Asc)]
-public partial class SysStorageConfig : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysStorageConfig : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 配置编码（租户内唯一标识）

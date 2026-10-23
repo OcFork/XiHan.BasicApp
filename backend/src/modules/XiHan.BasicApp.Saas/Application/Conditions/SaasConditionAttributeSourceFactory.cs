@@ -3,11 +3,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using XiHan.Framework.Authorization.Conditions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Extensions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

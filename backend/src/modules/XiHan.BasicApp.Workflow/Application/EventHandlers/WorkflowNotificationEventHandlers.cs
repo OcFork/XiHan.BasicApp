@@ -3,15 +3,15 @@
 
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Workflow.Abstractions.Events;
-using XiHan.Framework.Workflow.Abstractions.Stores;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Workflow.Application.EventHandlers;
 
@@ -85,8 +85,19 @@ internal static class WorkflowNotificationDispatcher
 /// <remarks>
 /// 处理器须经 XiHanLocalEventBusOptions.Handlers 登记，裸 AddTransient 不会被订阅。
 /// </remarks>
-public class WorkflowUserTaskCreatedNotificationHandler : ILocalEventHandler<WorkflowUserTaskCreatedEventData>
+public class WorkflowUserTaskCreatedNotificationHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string WorkflowUserTaskCreatedEventDataTopic = "workflow-user-task-created-event-data";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<WorkflowUserTaskCreatedEventData>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly IUserNotificationDispatchService _dispatchService;
     private readonly ILogger<WorkflowUserTaskCreatedNotificationHandler> _logger;
 
@@ -132,8 +143,19 @@ public class WorkflowUserTaskCreatedNotificationHandler : ILocalEventHandler<Wor
 /// <summary>
 /// 人工任务转办通知处理器（通知新受理人）
 /// </summary>
-public class WorkflowUserTaskTransferredNotificationHandler : ILocalEventHandler<WorkflowUserTaskTransferredEventData>
+public class WorkflowUserTaskTransferredNotificationHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string WorkflowUserTaskTransferredEventDataTopic = "workflow-user-task-transferred-event-data";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<WorkflowUserTaskTransferredEventData>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly IUserNotificationDispatchService _dispatchService;
     private readonly ILogger<WorkflowUserTaskTransferredNotificationHandler> _logger;
 
@@ -166,8 +188,19 @@ public class WorkflowUserTaskTransferredNotificationHandler : ILocalEventHandler
 /// <summary>
 /// 流程实例故障通知处理器（通知发起人）
 /// </summary>
-public class WorkflowInstanceFaultedNotificationHandler : ILocalEventHandler<WorkflowInstanceFaultedEventData>
+public class WorkflowInstanceFaultedNotificationHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string WorkflowInstanceFaultedEventDataTopic = "workflow-instance-faulted-event-data";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<WorkflowInstanceFaultedEventData>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly IUserNotificationDispatchService _dispatchService;
     private readonly ILogger<WorkflowInstanceFaultedNotificationHandler> _logger;
 
@@ -210,8 +243,19 @@ public class WorkflowInstanceFaultedNotificationHandler : ILocalEventHandler<Wor
 /// 依次审批每轮生成待办都会带上抄送人，同一实例同一节点对同一人只记一次。
 /// 记录失败只记日志，不影响待办与通知。
 /// </remarks>
-public class WorkflowCarbonCopyRecordHandler : ILocalEventHandler<WorkflowUserTaskCreatedEventData>
+public class WorkflowCarbonCopyRecordHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string WorkflowUserTaskCreatedEventDataTopic = "workflow-user-task-created-event-data";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<WorkflowUserTaskCreatedEventData>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly WorkflowTaskRecordWriter _recordWriter;
     private readonly IWorkflowTaskRecordRepository _recordRepository;
     private readonly IWorkflowInstanceStore _instanceStore;

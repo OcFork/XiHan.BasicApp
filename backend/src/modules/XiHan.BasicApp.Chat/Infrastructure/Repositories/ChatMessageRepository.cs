@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -25,11 +24,11 @@ public sealed class ChatMessageRepository(ISqlSugarClientResolver clientResolver
         var query = CreateQueryable().Where(message => message.ConversationId == conversationId);
         if (beforeMessageId is { } before && before > 0)
         {
-            query = query.Where(message => message.BasicId < before);
+            query = query.Where(message => message.Id < before);
         }
 
         return await query
-            .OrderByDescending(message => message.BasicId)
+            .OrderByDescending(message => message.Id)
             .Take(take)
             .ToListAsync(cancellationToken);
     }
@@ -55,17 +54,17 @@ public sealed class ChatMessageRepository(ISqlSugarClientResolver clientResolver
         cancellationToken.ThrowIfCancellationRequested();
 
         var before = await CreateQueryable()
-            .Where(message => message.ConversationId == conversationId && message.BasicId < aroundMessageId)
-            .OrderByDescending(message => message.BasicId)
+            .Where(message => message.ConversationId == conversationId && message.Id < aroundMessageId)
+            .OrderByDescending(message => message.Id)
             .Take(beforeTake)
             .ToListAsync(cancellationToken);
         var fromTarget = await CreateQueryable()
-            .Where(message => message.ConversationId == conversationId && message.BasicId >= aroundMessageId)
-            .OrderBy(message => message.BasicId)
+            .Where(message => message.ConversationId == conversationId && message.Id >= aroundMessageId)
+            .OrderBy(message => message.Id)
             .Take(afterTake + 1)
             .ToListAsync(cancellationToken);
 
-        return [.. before.OrderBy(message => message.BasicId), .. fromTarget];
+        return [.. before.OrderBy(message => message.Id), .. fromTarget];
     }
 
     /// <summary>
@@ -80,11 +79,11 @@ public sealed class ChatMessageRepository(ISqlSugarClientResolver clientResolver
             .Where(message => message.Content!.Contains(keyword) || message.Attachments!.Contains(keyword));
         if (beforeMessageId is { } before && before > 0)
         {
-            query = query.Where(message => message.BasicId < before);
+            query = query.Where(message => message.Id < before);
         }
 
         return await query
-            .OrderByDescending(message => message.BasicId)
+            .OrderByDescending(message => message.Id)
             .Take(take)
             .ToListAsync(cancellationToken);
     }

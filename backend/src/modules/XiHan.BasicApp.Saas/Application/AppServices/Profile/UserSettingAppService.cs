@@ -10,11 +10,8 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Hubs;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Web.RealTime.Constants;
-using XiHan.Framework.Web.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -23,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// 并向该用户全部在线连接推送 UserSettingChanged 实现多端实时同步）。
 /// 不解释 SettingValue 语义，仅作个人设置载荷的跨端持久化。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户设置")]
 public sealed class UserSettingAppService
     : SaasApplicationService, IUserSettingAppService
 {

@@ -46,7 +46,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 存量文件管理与清理
 /// </remarks>
 [SugarTable(TableName = "Sys_File", TableDescription = "系统文件表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("IX_{table}_FiNa", nameof(FileName), OrderByType.Asc)]
@@ -55,7 +55,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_ExTi", nameof(ExpirationTime), OrderByType.Desc)]
 [SugarIndex("IX_{table}_TeId_FiHa", nameof(TenantId), OrderByType.Asc, nameof(FileHash), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_St_IsDe_FiSi", nameof(TenantId), OrderByType.Asc, nameof(Status), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, nameof(FileSize), OrderByType.Asc)]
-public partial class SysFile : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysFile : BasicAppFullAuditedEntity, IMultiTenant
 {
     #region 基本信息
 

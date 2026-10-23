@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -31,7 +30,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 撤销其他会话
     /// </summary>
-    [UnitOfWork(true)]
     public async Task RevokeOtherSessionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -46,7 +44,6 @@ public sealed partial class ProfileAppService
     /// <summary>
     /// 撤销指定会话
     /// </summary>
-    [UnitOfWork(true)]
     public async Task RevokeSessionAsync(ProfileSessionRevokeDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

@@ -52,7 +52,7 @@ public static class NotificationApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new NotificationUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.NotificationType,
             input.Title,
             input.Content,
@@ -82,7 +82,7 @@ public static class NotificationApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new NotificationPublishCommand(input.BasicId, input.TargetType, input.UserIds);
+        return new NotificationPublishCommand(input.Id, input.TargetType, input.UserIds);
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public static class NotificationApplicationMapper
 
         return new NotificationPublishResultDto
         {
-            BasicId = result.Notification.BasicId,
+            Id = result.Notification.Id,
             RecipientCount = result.RecipientCount,
             SendTime = result.Notification.SendTime
         };
@@ -111,7 +111,7 @@ public static class NotificationApplicationMapper
 
         return new NotificationListItemDto
         {
-            BasicId = notification.BasicId,
+            Id = notification.Id,
             SendUserId = notification.SendUserId,
             NotificationType = notification.NotificationType,
             Title = notification.Title,
@@ -133,8 +133,8 @@ public static class NotificationApplicationMapper
             IsPopup = notification.IsPopup,
             IsPublished = notification.IsPublished,
             Remark = notification.Remark,
-            CreatedTime = notification.CreatedTime,
-            ModifiedTime = notification.ModifiedTime
+            CreatedAt = notification.CreatedAt,
+            ModifiedAt = notification.ModifiedAt
         };
     }
 
@@ -150,7 +150,7 @@ public static class NotificationApplicationMapper
         var item = ToListItemDto(notification);
         return new NotificationDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             SendUserId = item.SendUserId,
             NotificationType = item.NotificationType,
             Title = item.Title,
@@ -172,10 +172,10 @@ public static class NotificationApplicationMapper
             IsPopup = item.IsPopup,
             IsPublished = item.IsPublished,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = notification.CreatedId,
             CreatedBy = notification.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = notification.ModifiedId,
             ModifiedBy = notification.ModifiedBy
         };
@@ -192,13 +192,13 @@ public static class NotificationApplicationMapper
 
         return new UserNotificationListItemDto
         {
-            BasicId = userNotification.BasicId,
+            Id = userNotification.Id,
             NotificationId = userNotification.NotificationId,
             UserId = userNotification.UserId,
             NotificationStatus = userNotification.NotificationStatus,
             ReadTime = userNotification.ReadTime,
             ConfirmTime = userNotification.ConfirmTime,
-            CreatedTime = userNotification.CreatedTime
+            CreatedAt = userNotification.CreatedAt
         };
     }
 
@@ -239,7 +239,7 @@ public static class NotificationApplicationMapper
         var item = ToUserListItemDto(userNotification, notification);
         return new UserNotificationDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             NotificationId = item.NotificationId,
             UserId = item.UserId,
             NotificationStatus = item.NotificationStatus,
@@ -252,7 +252,7 @@ public static class NotificationApplicationMapper
             NeedConfirm = item.NeedConfirm,
             ReadTime = item.ReadTime,
             ConfirmTime = item.ConfirmTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = userNotification.CreatedId,
             CreatedBy = userNotification.CreatedBy
         };

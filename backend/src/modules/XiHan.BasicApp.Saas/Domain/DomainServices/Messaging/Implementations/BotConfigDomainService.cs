@@ -78,12 +78,12 @@ public sealed class BotConfigDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var config = await GetBotConfigOrThrowAsync(command.BasicId, cancellationToken);
+        var config = await GetBotConfigOrThrowAsync(command.Id, cancellationToken);
 
         // 默认行变更服务商时，须在目标服务商分组内重新保证互斥（否则目标分组可能出现两条默认行）
         if (config.IsDefault && config.Provider != command.Provider)
         {
-            await ClearDefaultConfigsAsync(command.Provider, config.BasicId, cancellationToken);
+            await ClearDefaultConfigsAsync(command.Provider, config.Id, cancellationToken);
         }
 
         config.ConfigName = command.ConfigName.Trim();
@@ -111,8 +111,8 @@ public sealed class BotConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "机器人配置主键必须大于 0。");
-        var config = await GetBotConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "机器人配置主键必须大于 0。");
+        var config = await GetBotConfigOrThrowAsync(command.Id, cancellationToken);
         if (config.IsDefault && !command.IsEnabled)
         {
             throw new InvalidOperationException("默认机器人配置不能停用，请先将同服务商其他启用配置设为默认。");
@@ -130,11 +130,11 @@ public sealed class BotConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "机器人配置主键必须大于 0。");
-        var config = await GetBotConfigOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "机器人配置主键必须大于 0。");
+        var config = await GetBotConfigOrThrowAsync(command.Id, cancellationToken);
         EnsureEnabledDefault(config.IsEnabled);
 
-        await ClearDefaultConfigsAsync(config.Provider, config.BasicId, cancellationToken);
+        await ClearDefaultConfigsAsync(config.Provider, config.Id, cancellationToken);
         config.IsDefault = true;
 
         return new BotConfigCommandResult(await _botConfigRepository.UpdateAsync(config, cancellationToken));
@@ -212,7 +212,7 @@ public sealed class BotConfigDomainService
 
     private static void ValidateUpdateCommand(BotConfigUpdateCommand command)
     {
-        EnsureId(command.BasicId, "机器人配置主键必须大于 0。");
+        EnsureId(command.Id, "机器人配置主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.ConfigName);
         ValidateCommonInput(command.Provider, command.WebhookUrl, command.Sort);
     }
@@ -231,7 +231,7 @@ public sealed class BotConfigDomainService
         return excludeId.HasValue
             ? _botConfigRepository.UpdateAsync(
                 config => new SysBotConfig { IsDefault = false },
-                config => config.Provider == provider && config.IsDefault && config.BasicId != excludeId.Value,
+                config => config.Provider == provider && config.IsDefault && config.Id != excludeId.Value,
                 cancellationToken)
             : _botConfigRepository.UpdateAsync(
                 config => new SysBotConfig { IsDefault = false },

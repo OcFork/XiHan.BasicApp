@@ -45,7 +45,7 @@ public static class NumberingApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
         return new NumberingRuleUpdateCommand(
-            input.BasicId, input.RuleName, input.Prefix, input.Separator, input.DateFormat, input.SerialLength,
+            input.Id, input.RuleName, input.Prefix, input.Separator, input.DateFormat, input.SerialLength,
             input.ResetCycle, input.TimeZoneId, input.AllowTenantUse, input.Sort, input.Remark);
     }
 
@@ -61,7 +61,7 @@ public static class NumberingApplicationMapper
         ArgumentNullException.ThrowIfNull(rule);
         return new NumberingRuleListItemDto
         {
-            BasicId = rule.BasicId,
+            Id = rule.Id,
             RuleCode = rule.RuleCode,
             RuleName = rule.RuleName,
             Prefix = rule.Prefix,
@@ -93,7 +93,7 @@ public static class NumberingApplicationMapper
         var item = ToListItemDto(rule);
         return new NumberingRuleDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             RuleCode = item.RuleCode,
             RuleName = item.RuleName,
             Prefix = item.Prefix,
@@ -110,8 +110,8 @@ public static class NumberingApplicationMapper
             Status = item.Status,
             Sort = item.Sort,
             Remark = item.Remark,
-            CreatedTime = rule.CreatedTime,
-            ModifiedTime = rule.ModifiedTime
+            CreatedAt = rule.CreatedAt,
+            ModifiedAt = rule.ModifiedAt
         };
     }
 
@@ -132,7 +132,7 @@ public static class NumberingApplicationMapper
         ArgumentNullException.ThrowIfNull(formatter);
         return new NumberingAllocationListItemDto
         {
-            BasicId = allocation.BasicId,
+            Id = allocation.Id,
             RuleId = allocation.RuleId,
             RuleCode = allocation.RuleCode,
             RequestTenantId = allocation.RequestTenantId,

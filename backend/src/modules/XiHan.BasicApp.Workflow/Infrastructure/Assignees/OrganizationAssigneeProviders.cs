@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Workflow.Abstractions.Assignees;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Assignees;
 
@@ -125,7 +124,7 @@ public sealed class DepartmentAssigneeProvider(WorkflowOrganizationDirectory dir
     protected override async Task<IReadOnlyList<long>> ResolveUserIdsAsync(IReadOnlyList<string> codes, CancellationToken cancellationToken)
     {
         var departments = await Directory.GetDepartmentsAsync(codes, cancellationToken);
-        return await Directory.GetDepartmentMemberIdsAsync(departments.Select(department => department.BasicId), cancellationToken);
+        return await Directory.GetDepartmentMemberIdsAsync(departments.Select(department => department.Id), cancellationToken);
     }
 }
 

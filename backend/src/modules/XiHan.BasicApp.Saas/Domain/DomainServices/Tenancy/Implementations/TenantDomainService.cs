@@ -5,7 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
@@ -184,8 +184,9 @@ public sealed class TenantDomainService
             throw new InvalidOperationException("只有平台账号才能作为支持人员入驻租户。");
         }
 
-        using var tenantScope = _currentTenant.Change(tenant.BasicId, tenant.TenantName);
-        var existing = await _tenantUserRepository.GetMembershipAsync(tenant.BasicId, command.UserId, cancellationToken);
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
+        var existing = await _tenantUserRepository.GetMembershipAsync(tenant.Id, command.UserId, cancellationToken);
         if (existing is not null)
         {
             throw new UserFriendlyException("该账号已经是该租户的成员。");
@@ -194,7 +195,7 @@ public sealed class TenantDomainService
         var now = DateTimeOffset.UtcNow;
         var member = new SysTenantUser
         {
-            TenantId = tenant.BasicId,
+            TenantId = tenant.Id,
             UserId = command.UserId,
             MemberType = TenantMemberType.PlatformAdmin,
             InviteStatus = TenantMemberInviteStatus.Accepted,
@@ -220,7 +221,8 @@ public sealed class TenantDomainService
         RequirePlatformContext("支持人员的入驻与离场只能在平台执行。");
         var tenant = await GetTenantOrThrowAsync(tenantId, cancellationToken);
 
-        using var tenantScope = _currentTenant.Change(tenant.BasicId, tenant.TenantName);
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
         var member = await GetTenantMemberOrThrowAsync(memberId, cancellationToken);
         if (member.MemberType != TenantMemberType.PlatformAdmin)
         {
@@ -251,7 +253,8 @@ public sealed class TenantDomainService
         EnsureId(command.MemberId, "租户成员主键必须大于 0。");
         var tenant = await GetTenantOrThrowAsync(command.TenantId, cancellationToken);
 
-        using var tenantScope = _currentTenant.Change(tenant.BasicId, tenant.TenantName);
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
         var now = DateTimeOffset.UtcNow;
 
         var owners = await _tenantUserRepository.GetListAsync(member => member.MemberType == TenantMemberType.Owner, cancellationToken);
@@ -263,7 +266,7 @@ public sealed class TenantDomainService
         };
 
         var newOwner = await GetTenantMemberOrThrowAsync(command.MemberId, cancellationToken);
-        if (newOwner.BasicId == previousOwner.BasicId)
+        if (newOwner.Id == previousOwner.Id)
         {
             throw new UserFriendlyException("该成员已经是所有者。");
         }
@@ -279,7 +282,7 @@ public sealed class TenantDomainService
         }
 
         var ownerRole = (await _roleRepository.GetListAsync(
-                role => role.TenantId == tenant.BasicId && role.RoleCode == SaasRoleCodes.TenantOwner && role.RoleType == RoleType.System,
+                role => role.TenantId == tenant.Id && role.RoleCode == SaasRoleCodes.TenantOwner && role.RoleType == RoleType.System,
                 cancellationToken))
             .SingleOrDefault()
             ?? throw new InvalidOperationException("租户缺少所有者角色，数据不一致。");
@@ -313,7 +316,7 @@ public sealed class TenantDomainService
         await _tenantRepository.SoftDeleteAsync(tenant, cancellationToken);
 
         // 库隔离租户的运行时连接按租户缓存，删除后必须失效，否则残留连接仍可被解析出来
-        _connectionCacheInvalidator.Invalidate(tenant.BasicId);
+        _connectionCacheInvalidator.Invalidate(tenant.Id);
     }
 
     /// <summary>
@@ -343,9 +346,9 @@ public sealed class TenantDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateCommand(command);
-        var tenant = await GetTenantOrThrowAsync(command.BasicId, cancellationToken);
+        var tenant = await GetTenantOrThrowAsync(command.Id, cancellationToken);
         var domain = NormalizeNullable(command.Domain);
-        await EnsureDomainAvailableAsync(domain, tenant.BasicId, cancellationToken);
+        await EnsureDomainAvailableAsync(domain, tenant.Id, cancellationToken);
 
         var previousEditionId = tenant.EditionId;
 
@@ -364,7 +367,7 @@ public sealed class TenantDomainService
         ApplyConnectionSettings(tenant, command.DatabaseType, command.ConnectionString, requireConnectionString: false);
 
         var updated = await _tenantRepository.UpdateAsync(tenant, cancellationToken);
-        _connectionCacheInvalidator.Invalidate(tenant.BasicId);
+        _connectionCacheInvalidator.Invalidate(tenant.Id);
 
         // 套餐变更（含降级）：回收超出新版本白名单的存量角色/用户直授权限行（REQ-5.3）
         if (previousEditionId != command.EditionId)
@@ -385,7 +388,7 @@ public sealed class TenantDomainService
 
         ValidateMemberUpdateCommand(command);
         _ = RequireTenantContext();
-        var member = await GetTenantMemberOrThrowAsync(command.BasicId, cancellationToken);
+        var member = await GetTenantMemberOrThrowAsync(command.Id, cancellationToken);
         EnsureNotSupportMember(member);
         EnsureOwnerCanBeChanged(member, command.MemberType);
         if (command.MemberType != member.MemberType)
@@ -420,11 +423,11 @@ public sealed class TenantDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "租户成员主键必须大于 0。");
+        EnsureId(command.Id, "租户成员主键必须大于 0。");
         ValidateEnum(command.InviteStatus, nameof(command.InviteStatus));
 
         _ = RequireTenantContext();
-        var member = await GetTenantMemberOrThrowAsync(command.BasicId, cancellationToken);
+        var member = await GetTenantMemberOrThrowAsync(command.Id, cancellationToken);
         EnsureNotSupportMember(member);
         EnsureOwnerStaysAccepted(member, command.InviteStatus);
 
@@ -457,11 +460,11 @@ public sealed class TenantDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "租户成员主键必须大于 0。");
+        EnsureId(command.Id, "租户成员主键必须大于 0。");
         ValidateEnum(command.Status, nameof(command.Status));
 
         _ = RequireTenantContext();
-        var member = await GetTenantMemberOrThrowAsync(command.BasicId, cancellationToken);
+        var member = await GetTenantMemberOrThrowAsync(command.Id, cancellationToken);
         EnsureNotSupportMember(member);
         if (member.MemberType == TenantMemberType.Owner && command.Status == ValidityStatus.Invalid)
         {
@@ -485,10 +488,10 @@ public sealed class TenantDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "租户主键必须大于 0。");
+        EnsureId(command.Id, "租户主键必须大于 0。");
         ValidateEnum(command.TenantStatus, nameof(command.TenantStatus));
 
-        var tenant = await GetTenantOrThrowAsync(command.BasicId, cancellationToken);
+        var tenant = await GetTenantOrThrowAsync(command.Id, cancellationToken);
         tenant.ChangeStatus(command.TenantStatus, command.OperatorUserId, NormalizeNullable(command.Reason));
 
         return new TenantCommandResult(await _tenantRepository.UpdateAsync(tenant, cancellationToken), DateTimeOffset.UtcNow);
@@ -585,7 +588,7 @@ public sealed class TenantDomainService
 
     private static void ValidateUpdateCommand(TenantUpdateCommand command)
     {
-        EnsureId(command.BasicId, "租户主键必须大于 0。");
+        EnsureId(command.Id, "租户主键必须大于 0。");
         ArgumentException.ThrowIfNullOrWhiteSpace(command.TenantName);
         ValidateCommonInput(command.EditionId, command.UserLimit, command.StorageLimit);
     }
@@ -637,7 +640,7 @@ public sealed class TenantDomainService
     private async Task MoveOwnerRoleBindingAsync(SysRole ownerRole, long previousUserId, long newUserId, CancellationToken cancellationToken)
     {
         var bindings = await _userRoleRepository.GetListAsync(
-            userRole => userRole.RoleId == ownerRole.BasicId && (userRole.UserId == previousUserId || userRole.UserId == newUserId),
+            userRole => userRole.RoleId == ownerRole.Id && (userRole.UserId == previousUserId || userRole.UserId == newUserId),
             cancellationToken);
 
         var updating = new List<SysUserRole>();
@@ -654,7 +657,7 @@ public sealed class TenantDomainService
             _ = await _userRoleRepository.AddAsync(new SysUserRole
             {
                 UserId = newUserId,
-                RoleId = ownerRole.BasicId,
+                RoleId = ownerRole.Id,
                 Status = ValidityStatus.Valid,
                 GrantReason = "所有权转移"
             }, cancellationToken);
@@ -684,7 +687,7 @@ public sealed class TenantDomainService
 
     private static void ValidateMemberUpdateCommand(TenantMemberUpdateCommand command)
     {
-        EnsureId(command.BasicId, "租户成员主键必须大于 0。");
+        EnsureId(command.Id, "租户成员主键必须大于 0。");
         ValidateEnum(command.MemberType, nameof(command.MemberType));
         ValidateEffectivePeriod(command.EffectiveTime, command.ExpirationTime);
     }
@@ -714,7 +717,7 @@ public sealed class TenantDomainService
         }
 
         var existingTenant = await _tenantRepository.GetByDomainAsync(domain, cancellationToken);
-        if (existingTenant is not null && (!excludeId.HasValue || existingTenant.BasicId != excludeId.Value))
+        if (existingTenant is not null && (!excludeId.HasValue || existingTenant.Id != excludeId.Value))
         {
             throw new InvalidOperationException("租户域名已存在。");
         }

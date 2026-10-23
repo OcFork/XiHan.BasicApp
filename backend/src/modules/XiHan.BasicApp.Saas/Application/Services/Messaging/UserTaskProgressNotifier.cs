@@ -3,9 +3,6 @@
 
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.Framework.Core.DependencyInjection.ServiceLifetimes;
-using XiHan.Framework.Web.RealTime.Constants;
-using XiHan.Framework.Web.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -13,7 +10,7 @@ namespace XiHan.BasicApp.Saas.Application.Services;
 /// 用户后台任务进度推送服务实现（经通知 Hub 的 TaskProgress 事件）
 /// </summary>
 public sealed class UserTaskProgressNotifier
-    : IUserTaskProgressNotifier, IScopedDependency
+    : IUserTaskProgressNotifier
 {
     private readonly IRealtimeNotificationService<BasicAppNotificationHub> _realtimeNotificationService;
 

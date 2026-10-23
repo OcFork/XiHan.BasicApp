@@ -4,8 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Bot.Telegram.Abstractions;
-using XiHan.Framework.Bot.Telegram.Options;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;

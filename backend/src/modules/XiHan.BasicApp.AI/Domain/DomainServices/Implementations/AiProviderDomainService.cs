@@ -5,8 +5,6 @@ using System.Diagnostics;
 using Microsoft.Extensions.AI;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Repositories;
-using XiHan.Framework.AI.Abstractions.Configuration;
-using XiHan.Framework.AI.Providers;
 
 namespace XiHan.BasicApp.AI.Domain.DomainServices.Implementations;
 
@@ -92,7 +90,7 @@ public sealed class AiProviderDomainService : IAiProviderDomainService
         var created = await _providerRepository.AddAsync(provider, cancellationToken);
         if (created.IsDefault)
         {
-            await ClearOtherDefaultsAsync(created.BasicId, cancellationToken);
+            await ClearOtherDefaultsAsync(created.Id, cancellationToken);
         }
 
         return new AiProviderCommandResult(created);
@@ -106,10 +104,10 @@ public sealed class AiProviderDomainService : IAiProviderDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "provider 主键必须大于 0。");
+        EnsureId(command.Id, "provider 主键必须大于 0。");
         EnsureTemperature(command.Temperature);
 
-        var provider = await GetProviderOrThrowAsync(command.BasicId, cancellationToken);
+        var provider = await GetProviderOrThrowAsync(command.Id, cancellationToken);
 
         // 配置编码不可变，故此处不更新 ConfigCode。
         provider.ConfigName = Required(command.ConfigName, 200, nameof(command.ConfigName), "配置名称不能超过 200 个字符。");
@@ -137,7 +135,7 @@ public sealed class AiProviderDomainService : IAiProviderDomainService
         var updated = await _providerRepository.UpdateAsync(provider, cancellationToken);
         if (updated.IsDefault)
         {
-            await ClearOtherDefaultsAsync(updated.BasicId, cancellationToken);
+            await ClearOtherDefaultsAsync(updated.Id, cancellationToken);
         }
 
         return new AiProviderCommandResult(updated);
@@ -151,10 +149,10 @@ public sealed class AiProviderDomainService : IAiProviderDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "provider 主键必须大于 0。");
+        EnsureId(command.Id, "provider 主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var provider = await GetProviderOrThrowAsync(command.BasicId, cancellationToken);
+        var provider = await GetProviderOrThrowAsync(command.Id, cancellationToken);
         provider.Status = command.Status;
         provider.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? provider.Remark;
 
@@ -174,7 +172,7 @@ public sealed class AiProviderDomainService : IAiProviderDomainService
             throw new InvalidOperationException("已禁用的 provider 不能设为默认。");
         }
 
-        await ClearOtherDefaultsAsync(provider.BasicId, cancellationToken);
+        await ClearOtherDefaultsAsync(provider.Id, cancellationToken);
         if (!provider.IsDefault)
         {
             provider.IsDefault = true;

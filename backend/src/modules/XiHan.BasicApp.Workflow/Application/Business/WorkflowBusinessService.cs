@@ -4,19 +4,10 @@
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Timing;
-using XiHan.Framework.Uow;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
-using XiHan.Framework.Workflow.Abstractions.Engine;
-using XiHan.Framework.Workflow.Abstractions.Exceptions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.Stores;
-using XiHan.Framework.Workflow.Abstractions.UserTasks;
 
 namespace XiHan.BasicApp.Workflow.Application.Business;
 
@@ -38,9 +29,10 @@ public sealed class WorkflowBusinessService : IWorkflowBusinessService
     private readonly IWorkflowInstanceRepository _instanceRepository;
     private readonly IWorkflowUserTaskService _userTaskService;
     private readonly ICurrentUser _currentUser;
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ILogger<WorkflowBusinessService> _logger;
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 构造函数
@@ -57,7 +49,7 @@ public sealed class WorkflowBusinessService : IWorkflowBusinessService
         ICurrentUser currentUser,
         IUnitOfWorkManager unitOfWorkManager,
         ILogger<WorkflowBusinessService> logger,
-        IClock clock)
+        TimeProvider clock)
     {
         _registry = registry;
         _userNameResolver = userNameResolver;
@@ -140,7 +132,7 @@ public sealed class WorkflowBusinessService : IWorkflowBusinessService
         {
             try
             {
-                await _engine.CancelAsync(instance.BasicId.ToString(CultureInfo.InvariantCulture), reason, cancellationToken);
+                await _engine.CancelAsync(instance.Id.ToString(CultureInfo.InvariantCulture), reason, cancellationToken);
             }
             catch (WorkflowException ex)
             {
@@ -172,8 +164,8 @@ public sealed class WorkflowBusinessService : IWorkflowBusinessService
         var pendingTasks = new Dictionary<long, List<WorkflowUserTask>>();
         foreach (var instance in instances.Values.Where(item => item.Status == WorkflowInstanceStatus.Running))
         {
-            pendingTasks[instance.BasicId] = await _userTaskService.GetPendingByInstanceAsync(
-                instance.BasicId.ToString(CultureInfo.InvariantCulture), cancellationToken);
+            pendingTasks[instance.Id] = await _userTaskService.GetPendingByInstanceAsync(
+                instance.Id.ToString(CultureInfo.InvariantCulture), cancellationToken);
         }
 
         var names = await _userNameResolver.ResolveAsync(
@@ -183,7 +175,7 @@ public sealed class WorkflowBusinessService : IWorkflowBusinessService
         var result = new Dictionary<string, WorkflowBusinessProgress>(StringComparer.Ordinal);
         foreach (var (businessId, instance) in instances)
         {
-            var tasks = pendingTasks.GetValueOrDefault(instance.BasicId) ?? [];
+            var tasks = pendingTasks.GetValueOrDefault(instance.Id) ?? [];
             var pendingNodeNames = new List<string>();
             foreach (var nodeId in tasks.Select(task => task.NodeId).Distinct(StringComparer.Ordinal))
             {
@@ -192,7 +184,7 @@ public sealed class WorkflowBusinessService : IWorkflowBusinessService
 
             result[businessId] = new WorkflowBusinessProgress
             {
-                InstanceId = instance.BasicId,
+                InstanceId = instance.Id,
                 Status = instance.Status,
                 Outcome = instance.Outcome,
                 PendingNodeNames = pendingNodeNames,

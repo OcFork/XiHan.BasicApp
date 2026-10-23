@@ -32,12 +32,12 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 客户端强制升级提示
 /// </remarks>
 [SugarTable(TableName = "Sys_Version", TableDescription = "系统版本表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_ApVe", nameof(AppVersion), OrderByType.Asc)]
 [SugarIndex("IX_{table}_DbVe", nameof(DbVersion), OrderByType.Asc)]
 [SugarIndex("IX_{table}_IsUp", nameof(IsUpgrading), OrderByType.Asc)]
-public partial class SysVersion : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysVersion : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 应用版本

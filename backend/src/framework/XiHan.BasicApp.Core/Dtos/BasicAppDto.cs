@@ -1,7 +1,6 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.Framework.Application.Contracts.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 
 namespace XiHan.BasicApp.Core.Dtos;

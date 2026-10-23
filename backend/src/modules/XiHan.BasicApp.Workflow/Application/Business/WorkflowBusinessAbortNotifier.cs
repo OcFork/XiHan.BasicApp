@@ -3,11 +3,7 @@
 
 using System.Globalization;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow;
-using XiHan.Framework.Uow.Options;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Workflow.Application.Business;
 
@@ -21,6 +17,7 @@ namespace XiHan.BasicApp.Workflow.Application.Business;
 public sealed class WorkflowBusinessAbortNotifier
 {
     private readonly WorkflowBusinessRegistry _registry;
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ICurrentUser _currentUser;
 
@@ -73,6 +70,7 @@ public sealed class WorkflowBusinessAbortNotifier
                 return;
             }
 
+            // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
             using var unitOfWork = _unitOfWorkManager.Begin(new XiHanUnitOfWorkOptions(isTransactional: true), requiresNew: true);
             await handler.OnAbortedAsync(context, cancellationToken);
             await unitOfWork.CompleteAsync(cancellationToken);

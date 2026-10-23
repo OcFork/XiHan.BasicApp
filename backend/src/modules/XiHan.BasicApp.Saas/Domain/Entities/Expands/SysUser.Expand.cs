@@ -34,7 +34,7 @@ public partial class SysUser
     [Newtonsoft.Json.JsonIgnore]
     [System.Text.Json.Serialization.JsonIgnore]
     [SugarColumn(IsIgnore = true)]
-    [Navigate(NavigateType.OneToOne, nameof(BasicId), nameof(SysUserSecurity.UserId))]
+    [Navigate(NavigateType.OneToOne, nameof(Id), nameof(SysUserSecurity.UserId))]
     public virtual SysUserSecurity? Security { get; set; }
 
     /// <summary>

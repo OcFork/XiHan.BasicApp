@@ -11,10 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -23,8 +19,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 访问日志查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "访问日志")]
 public sealed class AccessLogQueryService
     : SaasApplicationService, IAccessLogQueryService
 {
@@ -48,8 +42,6 @@ public sealed class AccessLogQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>访问日志分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.AccessLog.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<AccessLogListItemDto>> GetAccessLogPageAsync(AccessLogPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -91,7 +83,6 @@ public sealed class AccessLogQueryService
     /// <param name="id">访问日志主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>访问日志详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.AccessLog.Read)]
     public async Task<AccessLogDetailDto?> GetAccessLogDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -102,7 +93,7 @@ public sealed class AccessLogQueryService
         cancellationToken.ThrowIfCancellationRequested();
 
         var accessLog = await DbClient.Queryable<SysAccessLog>()
-            .Where(x => x.BasicId == id)
+            .Where(x => x.Id == id)
             .SplitTable()
             .FirstAsync(cancellationToken);
         return accessLog is null ? null : AccessLogApplicationMapper.ToDetailDto(accessLog);

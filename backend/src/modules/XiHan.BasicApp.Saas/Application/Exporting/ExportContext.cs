@@ -50,7 +50,8 @@ public sealed class ExportContext
     /// <summary>
     /// 发起租户ID
     /// </summary>
-    public long TenantId { get; init; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; init; } = string.Empty;
 
     /// <summary>
     /// 总行数（Provider 首页查询后回填，供进度计算；未知为 null）

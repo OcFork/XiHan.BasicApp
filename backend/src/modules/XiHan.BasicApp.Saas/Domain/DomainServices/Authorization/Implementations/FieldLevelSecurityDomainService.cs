@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -104,7 +105,7 @@ public sealed class FieldLevelSecurityDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var policy = await GetMaintainablePolicyOrThrowAsync(command.BasicId, cancellationToken);
+        var policy = await GetMaintainablePolicyOrThrowAsync(command.Id, cancellationToken);
         var definition = NormalizeDefinition(
             command.TargetType,
             command.TargetId,
@@ -116,7 +117,7 @@ public sealed class FieldLevelSecurityDomainService
             command.MaskReplacement,
             command.IsEditable);
         var (targetCode, targetName) = await GetAvailableTargetSummaryOrThrowAsync(command.TargetType, command.TargetId, DateTimeOffset.UtcNow, cancellationToken);
-        await EnsurePolicyNotExistsAsync(definition, policy.BasicId, cancellationToken);
+        await EnsurePolicyNotExistsAsync(definition, policy.Id, cancellationToken);
 
         definition.ApplyTo(policy);
         policy.Remark = NormalizeNullable(command.Remark);
@@ -134,7 +135,7 @@ public sealed class FieldLevelSecurityDomainService
         cancellationToken.ThrowIfCancellationRequested();
         ValidateEnum(command.Status, nameof(command.Status));
 
-        var policy = await GetMaintainablePolicyOrThrowAsync(command.BasicId, cancellationToken);
+        var policy = await GetMaintainablePolicyOrThrowAsync(command.Id, cancellationToken);
         (string? Code, string? Name) target;
         if (command.Status == EnableStatus.Enabled)
         {
@@ -262,7 +263,7 @@ public sealed class FieldLevelSecurityDomainService
                     && policy.TargetId == definition.TargetId
                     && policy.EntityName == definition.EntityName
                     && policy.FieldName == definition.FieldName
-                    && policy.BasicId != excludeId.Value,
+                    && policy.Id != excludeId.Value,
                 cancellationToken)
             : await _fieldLevelSecurityRepository.AnyAsync(
                 policy => policy.TargetType == definition.TargetType

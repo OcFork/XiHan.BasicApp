@@ -7,10 +7,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -121,7 +119,7 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
         }
 
         // 「是不是超管」是全局事实，由保护守卫跨租户判定
-        if (await _superAdminProtector.IsProtectedUserAsync(target.BasicId, cancellationToken))
+        if (await _superAdminProtector.IsProtectedUserAsync(target.Id, cancellationToken))
         {
             throw new UserFriendlyException("不能模仿超级管理员。");
         }
@@ -153,7 +151,7 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
                 ?? throw new UserFriendlyException("目标租户不存在或不可用。");
             targetTenantName = tenant.TenantName;
 
-            var targetMembership = await _tenantUserRepository.GetMembershipAsync(targetTenantId.Value, target.BasicId, cancellationToken);
+            var targetMembership = await _tenantUserRepository.GetMembershipAsync(targetTenantId.Value, target.Id, cancellationToken);
             EnsureMembershipUsable(targetMembership, now, "目标用户不是该租户的有效成员。");
 
             if (!operatorIsSuperAdmin)
@@ -217,7 +215,7 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
         }
 
         var permissions = await _permissionRepository.GetListAsync(
-            permission => ids.Contains(permission.BasicId),
+            permission => ids.Contains(permission.Id),
             cancellationToken);
 
         if (checkSide && !_currentTenant.IsPlatformOperation())
@@ -338,7 +336,7 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
             return null;
         }
 
-        var memberships = await _tenantUserRepository.GetActiveByUserIdAsync(target.BasicId, now, cancellationToken);
+        var memberships = await _tenantUserRepository.GetActiveByUserIdAsync(target.Id, now, cancellationToken);
         return memberships.Count switch
         {
             1 => memberships[0].TenantId,

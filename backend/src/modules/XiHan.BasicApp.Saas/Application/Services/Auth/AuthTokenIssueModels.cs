@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Authentication.Jwt;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

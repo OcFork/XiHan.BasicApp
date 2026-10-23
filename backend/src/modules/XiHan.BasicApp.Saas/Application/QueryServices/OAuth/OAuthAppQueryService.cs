@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// OAuth 应用查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "OAuth应用")]
 public sealed class OAuthAppQueryService
     : SaasApplicationService, IOAuthAppQueryService
 {
@@ -55,8 +51,6 @@ public sealed class OAuthAppQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>OAuth 应用分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.OAuthApp.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<OAuthAppListItemDto>> GetOAuthAppPageAsync(OAuthAppPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -83,7 +77,6 @@ public sealed class OAuthAppQueryService
     /// <param name="id">OAuth 应用主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>OAuth 应用详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.OAuthApp.Read)]
     public async Task<OAuthAppDetailDto?> GetOAuthAppDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -156,7 +149,7 @@ public sealed class OAuthAppQueryService
     private static void ApplyOAuthAppSorts(BasicAppPRDto request)
     {
         request.Conditions.AddSort((SysOAuthApp app) => app.Status, SortDirection.Descending, 0);
-        request.Conditions.AddSort((SysOAuthApp app) => app.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysOAuthApp app) => app.CreatedAt, SortDirection.Descending, 1);
         request.Conditions.AddSort((SysOAuthApp app) => app.AppName, SortDirection.Ascending, 2);
     }
 

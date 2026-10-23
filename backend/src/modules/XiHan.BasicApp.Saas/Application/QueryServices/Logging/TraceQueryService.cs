@@ -10,10 +10,6 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -21,8 +17,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// 链路追踪查询应用服务
 /// 按维度（用户名 / 会话标识 / TraceId / IP / 用户主键）+ 时间范围跨多类日志聚合成一条倒序时间线
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "链路追踪")]
 public sealed class TraceQueryService
     : SaasApplicationService, ITraceQueryService
 {
@@ -64,8 +58,6 @@ public sealed class TraceQueryService
     /// <param name="input">追踪查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>链路追踪时间线结果</returns>
-    [PermissionAuthorize(SaasPermissionCodes.LogTrace.Read)]
-    [HttpPost]
     public async Task<TraceTimelineResultDto> GetTraceTimelineAsync(TraceTimelineQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

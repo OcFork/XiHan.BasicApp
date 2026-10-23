@@ -43,7 +43,7 @@ public static class FileApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new FileDeleteCommand(input.BasicId, input.Reason);
+        return new FileDeleteCommand(input.Id, input.Reason);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static class FileApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new FilePrimaryStorageSwitchCommand(input.BasicId, input.StorageId, input.Remark);
+        return new FilePrimaryStorageSwitchCommand(input.Id, input.StorageId, input.Remark);
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public static class FileApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new FileStatusUpdateCommand(input.BasicId, input.Status, input.Remark);
+        return new FileStatusUpdateCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public static class FileApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new FileStorageStatusUpdateCommand(input.BasicId, input.Status, input.UploadFailureReason, input.Remark);
+        return new FileStorageStatusUpdateCommand(input.Id, input.Status, input.UploadFailureReason, input.Remark);
     }
 
     /// <summary>
@@ -87,7 +87,7 @@ public static class FileApplicationMapper
 
         return new FileListItemDto
         {
-            BasicId = file.BasicId,
+            Id = file.Id,
             FileName = file.FileName,
             OriginalName = file.OriginalName,
             FileExtension = file.FileExtension,
@@ -108,8 +108,8 @@ public static class FileApplicationMapper
             IsTemporary = file.IsTemporary,
             RetentionDays = file.RetentionDays,
             Status = file.Status,
-            CreatedTime = file.CreatedTime,
-            ModifiedTime = file.ModifiedTime
+            CreatedAt = file.CreatedAt,
+            ModifiedAt = file.ModifiedAt
         };
     }
 
@@ -125,7 +125,7 @@ public static class FileApplicationMapper
         var item = ToListItemDto(file);
         return new FileDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             FileName = item.FileName,
             OriginalName = item.OriginalName,
             FileExtension = item.FileExtension,
@@ -155,10 +155,10 @@ public static class FileApplicationMapper
             Tags = file.Tags,
             Remark = file.Remark,
             ExtendData = file.ExtendData,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = file.CreatedId,
             CreatedBy = file.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = file.ModifiedId,
             ModifiedBy = file.ModifiedBy
         };
@@ -175,7 +175,7 @@ public static class FileApplicationMapper
 
         return new FileStorageListItemDto
         {
-            BasicId = storage.BasicId,
+            Id = storage.Id,
             FileId = storage.FileId,
             StorageType = storage.StorageType,
             StorageProvider = storage.StorageProvider,
@@ -198,8 +198,8 @@ public static class FileApplicationMapper
             StorageClass = storage.StorageClass,
             CacheControl = storage.CacheControl,
             Sort = storage.Sort,
-            CreatedTime = storage.CreatedTime,
-            ModifiedTime = storage.ModifiedTime
+            CreatedAt = storage.CreatedAt,
+            ModifiedAt = storage.ModifiedAt
         };
     }
 
@@ -215,7 +215,7 @@ public static class FileApplicationMapper
         var item = ToStorageListItemDto(storage);
         return new FileStorageDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             FileId = item.FileId,
             StorageType = item.StorageType,
             StorageProvider = item.StorageProvider,
@@ -248,10 +248,10 @@ public static class FileApplicationMapper
             Sort = item.Sort,
             Remark = storage.Remark,
             ExtendData = storage.ExtendData,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = storage.CreatedId,
             CreatedBy = storage.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = storage.ModifiedId,
             ModifiedBy = storage.ModifiedBy
         };
@@ -265,7 +265,7 @@ public static class FileApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new FileMetadataUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.Width,
             input.Height,
             input.Duration,
@@ -290,6 +290,6 @@ public static class FileApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(probe);
 
-        return new FileStorageVerifyCommand(input.BasicId, probe.Exists, probe.MetadataSize, probe.ExternalUrl, input.Remark);
+        return new FileStorageVerifyCommand(input.Id, probe.Exists, probe.MetadataSize, probe.ExternalUrl, input.Remark);
     }
 }

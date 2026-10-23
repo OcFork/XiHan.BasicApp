@@ -5,7 +5,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -159,7 +158,7 @@ public abstract class PermissionCatalogWriterBase(
         return (await DbClient.Queryable<SysResource>()
                 .Where(resource => resource.TenantId == 0 && codes.Contains(resource.ResourceCode))
                 .ToListAsync())
-            .ToDictionary(resource => resource.ResourceCode, resource => resource.BasicId, StringComparer.Ordinal);
+            .ToDictionary(resource => resource.ResourceCode, resource => resource.Id, StringComparer.Ordinal);
     }
 
     private async Task<Dictionary<string, long>> LoadOperationIdsAsync(string label, IReadOnlyList<PermissionSeed> permissions)
@@ -177,7 +176,7 @@ public abstract class PermissionCatalogWriterBase(
         var operationIds = (await DbClient.Queryable<SysOperation>()
                 .Where(operation => operation.TenantId == 0 && codes.Contains(operation.OperationCode))
                 .ToListAsync())
-            .ToDictionary(operation => operation.OperationCode, operation => operation.BasicId, StringComparer.Ordinal);
+            .ToDictionary(operation => operation.OperationCode, operation => operation.Id, StringComparer.Ordinal);
 
         var missing = codes.Where(code => !operationIds.ContainsKey(code)).ToList();
         return missing.Count == 0

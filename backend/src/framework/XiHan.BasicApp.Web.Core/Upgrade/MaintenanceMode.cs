@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.Json;
-using XiHan.Framework.Upgrade.Abstractions;
 
 namespace XiHan.BasicApp.Web.Core.Upgrade;
 

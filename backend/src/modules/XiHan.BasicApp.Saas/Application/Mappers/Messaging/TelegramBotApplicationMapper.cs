@@ -39,7 +39,7 @@ public static class TelegramBotApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new TelegramBotUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.BotName,
             input.Token,
             input.AdminUsers,
@@ -57,7 +57,7 @@ public static class TelegramBotApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new TelegramBotStatusChangeCommand(input.BasicId, input.IsEnabled);
+        return new TelegramBotStatusChangeCommand(input.Id, input.IsEnabled);
     }
 
     /// <summary>
@@ -71,14 +71,14 @@ public static class TelegramBotApplicationMapper
 
         return new TelegramBotListItemDto
         {
-            BasicId = bot.BasicId,
+            Id = bot.Id,
             BotName = bot.BotName,
             HasToken = !string.IsNullOrEmpty(bot.Token),
             EnableFallbackReply = bot.EnableFallbackReply,
             IsEnabled = bot.IsEnabled,
             Sort = bot.Sort,
-            CreatedTime = bot.CreatedTime,
-            ModifiedTime = bot.ModifiedTime
+            CreatedAt = bot.CreatedAt,
+            ModifiedAt = bot.ModifiedAt
         };
     }
 
@@ -93,7 +93,7 @@ public static class TelegramBotApplicationMapper
 
         return new TelegramBotDetailDto
         {
-            BasicId = bot.BasicId,
+            Id = bot.Id,
             BotName = bot.BotName,
             HasToken = !string.IsNullOrEmpty(bot.Token),
             AdminUsers = bot.AdminUsers,
@@ -103,10 +103,10 @@ public static class TelegramBotApplicationMapper
             IsEnabled = bot.IsEnabled,
             Sort = bot.Sort,
             Remark = bot.Remark,
-            CreatedTime = bot.CreatedTime,
+            CreatedAt = bot.CreatedAt,
             CreatedId = bot.CreatedId,
             CreatedBy = bot.CreatedBy,
-            ModifiedTime = bot.ModifiedTime,
+            ModifiedAt = bot.ModifiedAt,
             ModifiedId = bot.ModifiedId,
             ModifiedBy = bot.ModifiedBy
         };

@@ -8,9 +8,7 @@ using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Permissions;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
@@ -23,7 +21,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 /// 运行时按其列配置（<see cref="SysCodeGenTableColumn"/>）暴露字段 schema，并按表名动态分页只读数据，
 /// 全程不生成/编译任何实体代码。本切片仅 schema/list，写入/DDL 留待后续阶段。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "零代码运行时")]
 public sealed class DynamicRuntimeAppService : CodeGenerationApplicationService, IDynamicRuntimeAppService
 {
     private readonly ICodeGenTableRepository _tableRepository;
@@ -49,7 +46,6 @@ public sealed class DynamicRuntimeAppService : CodeGenerationApplicationService,
     /// <summary>
     /// 获取指定已配置表的字段 schema
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<DynamicRuntimeSchemaDto> GetSchemaAsync(long tableId, CancellationToken ct = default)
     {
         var table = await GetEnabledTableAsync(tableId, ct);
@@ -72,7 +68,7 @@ public sealed class DynamicRuntimeAppService : CodeGenerationApplicationService,
 
         return new DynamicRuntimeSchemaDto
         {
-            TableId = table.BasicId,
+            TableId = table.Id,
             TableName = table.TableName,
             ClassName = table.ClassName,
             TableComment = table.TableComment,
@@ -83,7 +79,6 @@ public sealed class DynamicRuntimeAppService : CodeGenerationApplicationService,
     /// <summary>
     /// 按表名动态分页查询指定已配置表的数据（只读）
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<DynamicRuntimePageResultDto> GetPageAsync(DynamicRuntimePageQueryDto input, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -94,7 +89,7 @@ public sealed class DynamicRuntimeAppService : CodeGenerationApplicationService,
 
         // 安全：表名只来自已配置且启用的 SysCodeGenTable 记录，绝不直接使用用户传入的表名字符串，故无 SQL 注入面。
         var table = await GetEnabledTableAsync(input.TableId, ct);
-        var columns = await _columnRepository.GetByTableIdAsync(table.BasicId, ct);
+        var columns = await _columnRepository.GetByTableIdAsync(table.Id, ct);
 
         var client = _clientResolver.GetCurrentClient();
         RefAsync<int> total = 0;

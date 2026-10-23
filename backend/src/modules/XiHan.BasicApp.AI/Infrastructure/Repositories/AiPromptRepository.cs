@@ -5,7 +5,6 @@ using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.AI.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Repositories;
 
@@ -41,7 +40,7 @@ public sealed class AiPromptRepository(ISqlSugarClientResolver clientResolver)
         var query = CreateQueryable().Where(prompt => prompt.PromptCode == code);
         if (excludeId.HasValue)
         {
-            query = query.Where(prompt => prompt.BasicId != excludeId.Value);
+            query = query.Where(prompt => prompt.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

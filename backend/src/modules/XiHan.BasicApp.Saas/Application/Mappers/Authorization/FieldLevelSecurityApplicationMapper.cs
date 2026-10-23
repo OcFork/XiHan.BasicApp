@@ -41,7 +41,7 @@ public static class FieldLevelSecurityApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new FieldLevelSecurityUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.TargetType,
             input.TargetId,
             input.EntityName,
@@ -61,7 +61,7 @@ public static class FieldLevelSecurityApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new FieldLevelSecurityStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new FieldLevelSecurityStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public static class FieldLevelSecurityApplicationMapper
         ArgumentNullException.ThrowIfNull(catalog);
 
         var entity = catalog.Find(policy.EntityName);
-        dto.BasicId = policy.BasicId;
+        dto.Id = policy.Id;
         dto.TargetType = policy.TargetType;
         dto.TargetId = policy.TargetId;
         dto.TargetCode = targetCode;
@@ -148,8 +148,8 @@ public static class FieldLevelSecurityApplicationMapper
         dto.IsGlobal = policy.IsGlobal;
         dto.Status = policy.Status;
         dto.Remark = policy.Remark;
-        dto.CreatedTime = policy.CreatedTime;
-        dto.ModifiedTime = policy.ModifiedTime;
+        dto.CreatedAt = policy.CreatedAt;
+        dto.ModifiedAt = policy.ModifiedAt;
         return dto;
     }
 }

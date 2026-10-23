@@ -49,4 +49,9 @@
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- xihan-migrate(V4-09): 用 MessageCatalog.FromEmbeddedResources("webhost", typeof(<本程序集里的类型>)) 加载嵌入目录并加进本地化特性；键为 webhost.<资源>.<键>。 -->
+        <EmbeddedResource Include="Localization/*.json" LogicalName="Localization/%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>

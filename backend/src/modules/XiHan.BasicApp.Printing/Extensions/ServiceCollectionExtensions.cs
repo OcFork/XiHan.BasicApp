@@ -10,7 +10,6 @@ using XiHan.BasicApp.Printing.Application.Services;
 using XiHan.BasicApp.Printing.Domain.DataSources;
 using XiHan.BasicApp.Printing.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Infrastructure.Seeders;
-using XiHan.Framework.Data.Extensions.DependencyInjection;
 using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Extensions;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;

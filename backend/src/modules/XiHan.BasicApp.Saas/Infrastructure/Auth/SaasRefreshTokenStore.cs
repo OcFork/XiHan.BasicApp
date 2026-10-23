@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Cryptography;
 using System.Text;
-using XiHan.Framework.Authentication.Jwt;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
 

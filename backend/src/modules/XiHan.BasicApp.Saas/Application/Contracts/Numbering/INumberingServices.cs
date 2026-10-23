@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Application.Contracts.Services;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 
 namespace XiHan.BasicApp.Saas.Application.Contracts;

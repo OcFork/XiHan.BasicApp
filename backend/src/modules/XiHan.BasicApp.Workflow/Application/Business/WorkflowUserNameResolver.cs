@@ -57,7 +57,7 @@ public sealed class WorkflowUserNameResolver
             var name = !string.IsNullOrWhiteSpace(user.RealName) ? user.RealName
                 : !string.IsNullOrWhiteSpace(user.NickName) ? user.NickName
                 : user.UserName;
-            result[user.BasicId.ToString(CultureInfo.InvariantCulture)] = name;
+            result[user.Id.ToString(CultureInfo.InvariantCulture)] = name;
         }
 
         return result;

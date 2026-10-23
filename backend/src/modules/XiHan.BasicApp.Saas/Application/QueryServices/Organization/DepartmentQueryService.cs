@@ -14,9 +14,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -27,8 +25,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 部门查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "部门")]
 public sealed class DepartmentQueryService
     : SaasApplicationService, IDepartmentQueryService
 {
@@ -73,8 +69,6 @@ public sealed class DepartmentQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>部门分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Department.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<DepartmentListItemDto>> GetDepartmentPageAsync(DepartmentPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -92,7 +86,6 @@ public sealed class DepartmentQueryService
     /// <param name="id">部门主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>部门详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Department.Read)]
     public async Task<DepartmentDetailDto?> GetDepartmentDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -112,7 +105,6 @@ public sealed class DepartmentQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>部门树</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Department.Read)]
     public async Task<IReadOnlyList<DepartmentTreeNodeDto>> GetDepartmentTreeAsync(DepartmentTreeQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -148,7 +140,6 @@ public sealed class DepartmentQueryService
     /// <remarks>供消息定向等下拉一次取全，不走分页。</remarks>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>启用部门列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Department.Read)]
     public async Task<IReadOnlyList<DepartmentListItemDto>> GetEnabledDepartmentsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -297,13 +288,13 @@ public sealed class DepartmentQueryService
     /// </summary>
     private static IReadOnlyList<DepartmentTreeNodeDto> BuildTree(IReadOnlyList<DepartmentTreeNodeDto> nodes)
     {
-        var nodeMap = nodes.ToDictionary(node => node.BasicId);
+        var nodeMap = nodes.ToDictionary(node => node.Id);
         var roots = new List<DepartmentTreeNodeDto>();
 
         foreach (var node in nodes.OrderBy(node => node.Sort).ThenBy(node => node.DepartmentCode, StringComparer.Ordinal))
         {
             if (node.ParentId.HasValue
-                && node.ParentId.Value != node.BasicId
+                && node.ParentId.Value != node.Id
                 && nodeMap.TryGetValue(node.ParentId.Value, out var parent))
             {
                 parent.Children.Add(node);

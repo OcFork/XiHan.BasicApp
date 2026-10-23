@@ -4,6 +4,7 @@
 using System.Globalization;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -139,15 +140,15 @@ public sealed class TenantQuotaDomainService
         Dictionary<long, SysTenantEdition> editionMap = editionIds.Count == 0
             ? []
             : (await _tenantEditionRepository.GetByIdsAsync(editionIds, cancellationToken))
-                .ToDictionary(edition => edition.BasicId);
+                .ToDictionary(edition => edition.Id);
 
         // 席位（成员关系在平台库）一次分组拿全；存储见 SumUsedStorageAsync
-        var presentIds = tenants.Select(tenant => tenant.BasicId).ToList();
+        var presentIds = tenants.Select(tenant => tenant.Id).ToList();
         var seatMap = await _tenantUserRepository.CountActiveMembersByTenantIdsAsync(presentIds, DateTimeOffset.UtcNow, cancellationToken);
         var storageMap = await SumUsedStorageAsync(tenants, cancellationToken);
 
         return tenants.ToDictionary(
-            tenant => tenant.BasicId,
+            tenant => tenant.Id,
             tenant =>
             {
                 var edition = tenant.EditionId.HasValue
@@ -155,11 +156,11 @@ public sealed class TenantQuotaDomainService
                     : null;
 
                 return new TenantQuotaSnapshot(
-                    tenant.BasicId,
+                    tenant.Id,
                     tenant.UserLimit ?? edition?.UserLimit,
-                    seatMap.GetValueOrDefault(tenant.BasicId),
+                    seatMap.GetValueOrDefault(tenant.Id),
                     tenant.StorageLimit ?? edition?.StorageLimit,
-                    storageMap.GetValueOrDefault(tenant.BasicId));
+                    storageMap.GetValueOrDefault(tenant.Id));
             });
     }
 
@@ -174,10 +175,11 @@ public sealed class TenantQuotaDomainService
     {
         var fieldIds = tenants
             .Where(tenant => tenant.IsolationMode != TenantIsolationMode.Database)
-            .Select(tenant => tenant.BasicId)
+            .Select(tenant => tenant.Id)
             .ToList();
 
         Dictionary<long, long> usage;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             usage = new Dictionary<long, long>(await _fileRepository.SumUsedStorageByTenantIdsAsync(fieldIds, cancellationToken));
@@ -186,9 +188,10 @@ public sealed class TenantQuotaDomainService
         foreach (var tenant in tenants.Where(tenant => tenant.IsolationMode == TenantIsolationMode.Database
             && tenant.ConfigStatus == TenantConfigStatus.Configured))
         {
-            using (_currentTenant.Change(tenant.BasicId))
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+            using (_currentTenant.Change(tenant.Id))
             {
-                usage[tenant.BasicId] = await _fileRepository.SumUsedStorageAsync(cancellationToken);
+                usage[tenant.Id] = await _fileRepository.SumUsedStorageAsync(cancellationToken);
             }
         }
 

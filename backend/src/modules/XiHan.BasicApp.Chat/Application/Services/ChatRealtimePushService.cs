@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Hubs;
-using XiHan.Framework.Core.DependencyInjection.ServiceLifetimes;
-using XiHan.Framework.Web.RealTime.Services;
 
 namespace XiHan.BasicApp.Chat.Application.Services;
 
@@ -63,7 +61,7 @@ public interface IChatRealtimePushService
 /// 推送失败只记日志，绝不影响消息落库（与站内信投递同款 best-effort 语义）。
 /// 按成员 userId 点发而非 SignalR 组：不受断线重连丢组影响，未打开聊天页也能收到角标更新。
 /// </remarks>
-public sealed class ChatRealtimePushService : IChatRealtimePushService, IScopedDependency
+public sealed class ChatRealtimePushService : IChatRealtimePushService
 {
     private readonly IRealtimeNotificationService<BasicAppChatHub> _realtimeService;
 
@@ -111,7 +109,7 @@ public sealed class ChatRealtimePushService : IChatRealtimePushService, IScopedD
                     }).ToArray(),
                     isRecalled = message.IsRecalled,
                     clientMessageId = message.ClientMessageId,
-                    createdTime = message.CreatedTime,
+                    createdTime = message.CreatedAt,
                     replyToMessageId = message.ReplyToMessageId?.ToString(),
                     replyPreview = message.ReplyPreview,
                     editedTime = message.EditedTime,
@@ -121,7 +119,7 @@ public sealed class ChatRealtimePushService : IChatRealtimePushService, IScopedD
                 },
                 conversation = new
                 {
-                    conversationId = conversation.BasicId.ToString(),
+                    conversationId = conversation.Id.ToString(),
                     conversationType = conversation.ConversationType.ToString(),
                     conversationName = conversation.ConversationName,
                     lastMessageTime = conversation.LastMessageTime,

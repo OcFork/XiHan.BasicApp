@@ -6,12 +6,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Bot.DingTalk.Abstractions;
-using XiHan.Framework.Bot.DingTalk.Options;
-using XiHan.Framework.Bot.Lark.Abstractions;
-using XiHan.Framework.Bot.Lark.Options;
-using XiHan.Framework.Bot.WeCom.Abstractions;
-using XiHan.Framework.Bot.WeCom.Options;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

@@ -10,11 +10,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Numbering;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow;
-using XiHan.Framework.Uow.Options;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -74,6 +71,7 @@ public sealed class NumberGenerator : INumberGenerator
     /// <summary>
     /// 工作单元管理器，用于加入调用方事务或在没有环境事务时自行开启事务。
     /// </summary>
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     /// <summary>
@@ -213,6 +211,7 @@ public sealed class NumberGenerator : INumberGenerator
         {
             // 平台作用域承担两件事：让仓储的租户写谓词不再追加当前租户条件，使条件更新能命中 TenantId=0 的全局行；
             // 并满足框架审计在写入分配记录时的租户归属校验。库隔离部署下它还决定连接选择，因此必须在开启事务之前切换。
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using var platformScope = _currentTenant.Change(null);
             return await AllocateInTransactionAsync(resolved, requestTenantId, normalized, fingerprint, cancellationToken);
         }
@@ -251,6 +250,7 @@ public sealed class NumberGenerator : INumberGenerator
         string fingerprint,
         CancellationToken cancellationToken)
     {
+        // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
         using var unitOfWork = _unitOfWorkManager.Begin(
             new XiHanUnitOfWorkOptions(isTransactional: true), requiresNew: true);
         var result = await AllocateOnceAsync(resolved, requestTenantId, request, fingerprint, cancellationToken);
@@ -292,7 +292,7 @@ public sealed class NumberGenerator : INumberGenerator
 
             _logger.LogInformation(
                 "业务编号幂等重放：AllocationId={AllocationId}, RuleId={RuleId}, RequestTenantId={RequestTenantId}, OperatorId={OperatorId}, StartValue={StartValue}, EndValue={EndValue}, Result=Success",
-                existing.BasicId, existing.RuleId, requestTenantId, _currentUser.UserId, existing.StartValue, existing.EndValue);
+                existing.Id, existing.RuleId, requestTenantId, _currentUser.UserId, existing.StartValue, existing.EndValue);
             return BuildResult(existing, resolved.ResolvedScope, true);
         }
 
@@ -374,7 +374,7 @@ public sealed class NumberGenerator : INumberGenerator
 
         _logger.LogInformation(
             "业务编号分配成功：AllocationId={AllocationId}, RuleId={RuleId}, RuleCode={RuleCode}, OwnerTenantId={OwnerTenantId}, RequestTenantId={RequestTenantId}, OperatorId={OperatorId}, Period={Period}, StartValue={StartValue}, EndValue={EndValue}, Count={Count}, Result=Success",
-            allocation.BasicId, resolved.RuleId, rule.RuleCode, resolved.OwnerTenantId, requestTenantId, _currentUser.UserId, periodKey, startValue, endValue, request.Count);
+            allocation.Id, resolved.RuleId, rule.RuleCode, resolved.OwnerTenantId, requestTenantId, _currentUser.UserId, periodKey, startValue, endValue, request.Count);
         return BuildResult(allocation, resolved.ResolvedScope, false);
     }
 
@@ -476,7 +476,7 @@ public sealed class NumberGenerator : INumberGenerator
 
             var globalRule = await _ruleRepository.FindByCodeInScopeAsync(0, ruleCode, true, cancellationToken)
                 ?? throw new UserFriendlyException("未找到可用的全局编号规则。");
-            return new ResolvedNumberingRule(globalRule.BasicId, 0, NumberingScope.Global);
+            return new ResolvedNumberingRule(globalRule.Id, 0, NumberingScope.Global);
         }
 
         if (scope is NumberingScope.Auto or NumberingScope.Tenant)
@@ -485,7 +485,7 @@ public sealed class NumberGenerator : INumberGenerator
             var tenantRule = await _ruleRepository.FindByCodeInScopeAsync(requestTenantId, ruleCode, true, cancellationToken);
             if (tenantRule is not null)
             {
-                return new ResolvedNumberingRule(tenantRule.BasicId, requestTenantId, NumberingScope.Tenant);
+                return new ResolvedNumberingRule(tenantRule.Id, requestTenantId, NumberingScope.Tenant);
             }
 
             if (scope == NumberingScope.Tenant)
@@ -495,6 +495,7 @@ public sealed class NumberGenerator : INumberGenerator
         }
 
         // 回退查询只需在平台上下文读取规则定位信息；真正分配会重新切换平台上下文后再开启事务。
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = _currentTenant.Change(null);
         var fallback = await _ruleRepository.FindByCodeInScopeAsync(0, ruleCode, true, cancellationToken);
         if (fallback is null || !fallback.AllowTenantUse)
@@ -502,7 +503,7 @@ public sealed class NumberGenerator : INumberGenerator
             throw new UserFriendlyException("未找到向当前租户开放的全局编号规则。");
         }
 
-        return new ResolvedNumberingRule(fallback.BasicId, 0, NumberingScope.Global);
+        return new ResolvedNumberingRule(fallback.Id, 0, NumberingScope.Global);
     }
 
     /// <summary>

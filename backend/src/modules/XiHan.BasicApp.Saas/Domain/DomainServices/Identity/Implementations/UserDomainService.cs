@@ -6,10 +6,9 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authentication.Users;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Repositories;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Password;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -204,7 +203,7 @@ public sealed class UserDomainService
         await CreateUserSecurityAsync(savedUser, command.InitialPassword, now, command.Remark, cancellationToken);
         if (!isPlatform)
         {
-            await CreateTenantMembershipAsync(savedUser.BasicId, command, now, cancellationToken);
+            await CreateTenantMembershipAsync(savedUser.Id, command, now, cancellationToken);
         }
 
         return new UserCommandResult(savedUser);
@@ -223,7 +222,7 @@ public sealed class UserDomainService
 
         ValidateUpdateCommand(command);
 
-        var user = await GetUserOrThrowAsync(command.BasicId, cancellationToken);
+        var user = await GetUserOrThrowAsync(command.Id, cancellationToken);
         var normalizedEmail = NormalizeNullable(command.Email);
         var normalizedPhone = NormalizeNullable(command.Phone);
         var emailChanged = !string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase);
@@ -231,7 +230,7 @@ public sealed class UserDomainService
 
         if (emailChanged)
         {
-            await EnsureEmailUniqueAsync(normalizedEmail, user.BasicId, cancellationToken);
+            await EnsureEmailUniqueAsync(normalizedEmail, user.Id, cancellationToken);
         }
 
         user.RealName = NormalizeNullable(command.RealName);
@@ -247,7 +246,7 @@ public sealed class UserDomainService
         var savedUser = await _userRepository.UpdateAsync(user, cancellationToken);
         if (emailChanged || phoneChanged)
         {
-            await ResetContactVerificationAsync(savedUser.BasicId, emailChanged, phoneChanged, cancellationToken);
+            await ResetContactVerificationAsync(savedUser.Id, emailChanged, phoneChanged, cancellationToken);
         }
 
         return new UserCommandResult(savedUser);
@@ -264,7 +263,7 @@ public sealed class UserDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户主键必须大于 0。");
         }
@@ -272,7 +271,7 @@ public sealed class UserDomainService
         ValidateEnum(command.Status, nameof(command.Status));
         ValidateOptionalLength(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。");
 
-        var user = await GetUserOrThrowAsync(command.BasicId, cancellationToken);
+        var user = await GetUserOrThrowAsync(command.Id, cancellationToken);
         if (command.Status == EnableStatus.Disabled)
         {
             await EnsureUserCanBeDisabledAsync(user, cancellationToken);
@@ -284,7 +283,7 @@ public sealed class UserDomainService
         var savedUser = await _userRepository.UpdateAsync(user, cancellationToken);
         if (command.Status == EnableStatus.Disabled)
         {
-            await RefreshSecurityStampAsync(savedUser.BasicId, cancellationToken);
+            await RefreshSecurityStampAsync(savedUser.Id, cancellationToken);
         }
 
         return new UserCommandResult(savedUser);
@@ -309,13 +308,14 @@ public sealed class UserDomainService
             membership.InviteStatus = TenantMemberInviteStatus.Revoked;
             membership.Status = ValidityStatus.Invalid;
             membership.RespondedTime ??= now;
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (_currentTenant.Change(membership.TenantId))
             {
                 _ = await _tenantUserRepository.UpdateAsync(membership, cancellationToken);
             }
         }
 
-        await SoftDeleteUserSecurityAsync(user.BasicId, cancellationToken);
+        await SoftDeleteUserSecurityAsync(user.Id, cancellationToken);
         await _userRepository.SoftDeleteAsync(user, cancellationToken);
     }
 
@@ -339,7 +339,7 @@ public sealed class UserDomainService
         var (user, security) = await GetUserSecurityOrThrowAsync(command.UserId, cancellationToken);
         await EnsureUserCanBeResetAsync(user, cancellationToken);
         await EnsurePasswordMeetsPolicyAsync(user, command.NewPassword, cancellationToken);
-        await _passwordHistoryDomainService.EnsureNotReusedAsync(user.BasicId, command.NewPassword, cancellationToken);
+        await _passwordHistoryDomainService.EnsureNotReusedAsync(user.Id, command.NewPassword, cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         security.Password = _passwordHasher.HashPassword(command.NewPassword);
@@ -489,7 +489,7 @@ public sealed class UserDomainService
         var revoking = revokeIds.Count == 0
             ? []
             : (await _userRoleRepository.GetListAsync(
-                userRole => revokeIds.Contains(userRole.BasicId)
+                userRole => revokeIds.Contains(userRole.Id)
                     && userRole.UserId == command.UserId
                     && userRole.Status == ValidityStatus.Valid,
                 cancellationToken))
@@ -498,7 +498,7 @@ public sealed class UserDomainService
         if (revoking.Count > 0)
         {
             var revokingRoleIds = revoking.Select(userRole => userRole.RoleId).Distinct().ToList();
-            foreach (var revokingRole in await _roleRepository.GetListAsync(role => revokingRoleIds.Contains(role.BasicId), cancellationToken))
+            foreach (var revokingRole in await _roleRepository.GetListAsync(role => revokingRoleIds.Contains(role.Id), cancellationToken))
             {
                 EnsureSystemRoleBindingKept(revokingRole);
             }
@@ -508,8 +508,8 @@ public sealed class UserDomainService
         var roleMap = grantRoleIds.Count == 0
             ? []
             : (await _roleRepository.GetListAsync(
-                role => grantRoleIds.Contains(role.BasicId), cancellationToken))
-                .ToDictionary(role => role.BasicId);
+                role => grantRoleIds.Contains(role.Id), cancellationToken))
+                .ToDictionary(role => role.Id);
         foreach (var roleId in grantRoleIds)
         {
             EnsureAssignableRole(roleMap.GetValueOrDefault(roleId));
@@ -651,8 +651,8 @@ public sealed class UserDomainService
         var revoking = revokeIds.Count == 0
             ? []
             : (await _userRoleRepository.GetListAsync(
-                userRole => revokeIds.Contains(userRole.BasicId)
-                    && userRole.RoleId == role.BasicId
+                userRole => revokeIds.Contains(userRole.Id)
+                    && userRole.RoleId == role.Id
                     && userRole.Status == ValidityStatus.Valid,
                 cancellationToken))
                 .Where(userRole => !grantUserIdSet.Contains(userRole.UserId))
@@ -661,7 +661,7 @@ public sealed class UserDomainService
         var existingMap = grantUserIds.Count == 0
             ? []
             : (await _userRoleRepository.GetListAsync(
-                userRole => userRole.RoleId == role.BasicId && grantUserIds.Contains(userRole.UserId),
+                userRole => userRole.RoleId == role.Id && grantUserIds.Contains(userRole.UserId),
                 cancellationToken)).ToDictionary(userRole => userRole.UserId);
 
         var updating = new List<SysUserRole>();
@@ -675,7 +675,7 @@ public sealed class UserDomainService
                 adding.Add(new SysUserRole
                 {
                     UserId = userId,
-                    RoleId = role.BasicId,
+                    RoleId = role.Id,
                     Status = ValidityStatus.Valid
                 });
                 grantedUserIds.Add(userId);
@@ -708,7 +708,7 @@ public sealed class UserDomainService
         {
             var finalRoleIds = (await _userRoleRepository.GetValidByUserIdAsync(userId, now, cancellationToken))
                 .Select(userRole => userRole.RoleId)
-                .Append(role.BasicId)
+                .Append(role.Id)
                 .Distinct();
             await EnsureNoSoDConflictAsync(finalRoleIds, cancellationToken);
         }
@@ -750,7 +750,7 @@ public sealed class UserDomainService
         ValidateUserRoleUpdateCommand(command);
 
         var now = DateTimeOffset.UtcNow;
-        var userRole = await GetUserRoleOrThrowAsync(command.BasicId, cancellationToken);
+        var userRole = await GetUserRoleOrThrowAsync(command.Id, cancellationToken);
         var tenantMember = await GetAssignableTenantMemberOrThrowAsync(userRole.UserId, now, "分配角色", cancellationToken);
         var role = await GetAssignableRoleOrThrowAsync(userRole.RoleId, cancellationToken);
         var occupiedBefore = OccupiesSeat(userRole, now);
@@ -780,7 +780,7 @@ public sealed class UserDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户角色绑定主键必须大于 0。");
         }
@@ -788,7 +788,7 @@ public sealed class UserDomainService
         ValidateEnum(command.Status, nameof(command.Status));
 
         var now = DateTimeOffset.UtcNow;
-        var userRole = await GetUserRoleOrThrowAsync(command.BasicId, cancellationToken);
+        var userRole = await GetUserRoleOrThrowAsync(command.Id, cancellationToken);
         var tenantMember = command.Status == ValidityStatus.Valid
             ? await GetAssignableTenantMemberOrThrowAsync(userRole.UserId, now, "分配角色", cancellationToken)
             : await _tenantUserRepository.GetMembershipAsync(userRole.UserId, cancellationToken);
@@ -857,7 +857,7 @@ public sealed class UserDomainService
         if (revokeIds.Count > 0)
         {
             var revoking = (await _userPermissionRepository.GetListAsync(
-                userPermission => revokeIds.Contains(userPermission.BasicId) && userPermission.UserId == command.UserId,
+                userPermission => revokeIds.Contains(userPermission.Id) && userPermission.UserId == command.UserId,
                 cancellationToken)).ToList();
             if (revoking.Count > 0)
             {
@@ -876,8 +876,8 @@ public sealed class UserDomainService
         {
             var permissionIds = grants.Keys.ToList();
             var permissions = await _permissionRepository.GetListAsync(
-                permission => permissionIds.Contains(permission.BasicId), cancellationToken);
-            var permissionMap = permissions.ToDictionary(permission => permission.BasicId);
+                permission => permissionIds.Contains(permission.Id), cancellationToken);
+            var permissionMap = permissions.ToDictionary(permission => permission.Id);
             foreach (var permissionId in permissionIds)
             {
                 if (!permissionMap.TryGetValue(permissionId, out var permission))
@@ -964,7 +964,7 @@ public sealed class UserDomainService
         ValidateUserPermissionUpdateCommand(command);
 
         var now = DateTimeOffset.UtcNow;
-        var userPermission = await GetUserPermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var userPermission = await GetUserPermissionOrThrowAsync(command.Id, cancellationToken);
         var tenantMember = await GetAssignableTenantMemberOrThrowAsync(userPermission.UserId, now, "维护直授权限", cancellationToken);
         var permission = await GetGrantablePermissionOrThrowAsync(userPermission.PermissionId, cancellationToken);
 
@@ -989,7 +989,7 @@ public sealed class UserDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户直授权限绑定主键必须大于 0。");
         }
@@ -997,7 +997,7 @@ public sealed class UserDomainService
         ValidateEnum(command.Status, nameof(command.Status));
 
         var now = DateTimeOffset.UtcNow;
-        var userPermission = await GetUserPermissionOrThrowAsync(command.BasicId, cancellationToken);
+        var userPermission = await GetUserPermissionOrThrowAsync(command.Id, cancellationToken);
         var tenantMember = command.Status == ValidityStatus.Valid
             ? await GetAssignableTenantMemberOrThrowAsync(userPermission.UserId, now, "维护直授权限", cancellationToken)
             : await _tenantUserRepository.GetMembershipAsync(userPermission.UserId, cancellationToken);
@@ -1170,7 +1170,7 @@ public sealed class UserDomainService
         // 一个用户的部门归属不多，整批读出后在内存里定终态，主部门的唯一性才能一次算清
         var relations = await _userDepartmentRepository.GetListAsync(
             relation => relation.UserId == command.UserId,
-            relation => relation.CreatedTime,
+            relation => relation.CreatedAt,
             cancellationToken);
         var relationMap = relations.ToDictionary(relation => relation.DepartmentId);
         var assignedDepartmentIds = assigns.Select(assign => assign.DepartmentId).ToHashSet();
@@ -1178,14 +1178,14 @@ public sealed class UserDomainService
 
         // 撤销只认本用户名下、仍为有效状态的记录；同一部门本次既撤又分配时以分配为准
         var revoking = relations
-            .Where(relation => revokeIds.Contains(relation.BasicId)
+            .Where(relation => revokeIds.Contains(relation.Id)
                 && relation.Status == ValidityStatus.Valid
                 && !assignedDepartmentIds.Contains(relation.DepartmentId))
             .ToList();
         foreach (var relation in revoking)
         {
             relation.Status = ValidityStatus.Invalid;
-            updating[relation.BasicId] = relation;
+            updating[relation.Id] = relation;
         }
 
         // 留下的有效归属按创建先后排在前，本次新进的按下发顺序接在后，作为主部门的接任次序
@@ -1212,7 +1212,7 @@ public sealed class UserDomainService
             }
             else
             {
-                updating[relation.BasicId] = relation;
+                updating[relation.Id] = relation;
             }
 
             relation.PositionId = NormalizePositionId(assign.PositionId);
@@ -1235,7 +1235,7 @@ public sealed class UserDomainService
             if (relation.IsMain != isMain)
             {
                 relation.IsMain = isMain;
-                updating[relation.BasicId] = relation;
+                updating[relation.Id] = relation;
             }
         }
 
@@ -1271,7 +1271,7 @@ public sealed class UserDomainService
         ValidateDepartmentUpdateCommand(command);
 
         var now = DateTimeOffset.UtcNow;
-        var userDepartment = await GetUserDepartmentOrThrowAsync(command.BasicId, cancellationToken);
+        var userDepartment = await GetUserDepartmentOrThrowAsync(command.Id, cancellationToken);
         if (userDepartment.Status != ValidityStatus.Valid)
         {
             throw new InvalidOperationException("无效用户部门归属不能更新。");
@@ -1281,7 +1281,7 @@ public sealed class UserDomainService
         var department = await GetAssignableDepartmentOrThrowAsync(userDepartment.DepartmentId, cancellationToken);
         if (command.IsMain)
         {
-            await ClearOtherMainDepartmentsAsync(userDepartment.UserId, userDepartment.BasicId, cancellationToken);
+            await ClearOtherMainDepartmentsAsync(userDepartment.UserId, userDepartment.Id, cancellationToken);
         }
 
         userDepartment.PositionId = NormalizePositionId(command.PositionId);
@@ -1306,7 +1306,7 @@ public sealed class UserDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户部门归属主键必须大于 0。");
         }
@@ -1314,7 +1314,7 @@ public sealed class UserDomainService
         ValidateEnum(command.Status, nameof(command.Status));
 
         var now = DateTimeOffset.UtcNow;
-        var userDepartment = await GetUserDepartmentOrThrowAsync(command.BasicId, cancellationToken);
+        var userDepartment = await GetUserDepartmentOrThrowAsync(command.Id, cancellationToken);
         var department = command.Status == ValidityStatus.Valid
             ? await GetAssignableDepartmentOrThrowAsync(userDepartment.DepartmentId, cancellationToken)
             : await _departmentRepository.GetByIdAsync(userDepartment.DepartmentId, cancellationToken);
@@ -1324,7 +1324,7 @@ public sealed class UserDomainService
             _ = await GetAssignableTenantMemberOrThrowAsync(userDepartment.UserId, now, "分配部门", cancellationToken);
             if (userDepartment.IsMain)
             {
-                await ClearOtherMainDepartmentsAsync(userDepartment.UserId, userDepartment.BasicId, cancellationToken);
+                await ClearOtherMainDepartmentsAsync(userDepartment.UserId, userDepartment.Id, cancellationToken);
             }
         }
         else
@@ -1338,7 +1338,7 @@ public sealed class UserDomainService
         var savedUserDepartment = await _userDepartmentRepository.UpdateAsync(userDepartment, cancellationToken);
         if (command.Status != ValidityStatus.Valid)
         {
-            await PromoteMainDepartmentIfNeededAsync(savedUserDepartment.UserId, savedUserDepartment.BasicId, cancellationToken);
+            await PromoteMainDepartmentIfNeededAsync(savedUserDepartment.UserId, savedUserDepartment.Id, cancellationToken);
         }
 
         return new UserDepartmentCommandResult(savedUserDepartment, department);
@@ -1359,9 +1359,9 @@ public sealed class UserDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        ValidateRevokeCommand(command.BasicId, command.Reason, "会话主键必须大于 0。");
+        ValidateRevokeCommand(command.Id, command.Reason, "会话主键必须大于 0。");
 
-        var session = await GetSessionOrThrowAsync(command.BasicId, cancellationToken);
+        var session = await GetSessionOrThrowAsync(command.Id, cancellationToken);
         // 会话在当前上下文；账号可能注册在别处（外部成员），按主键跨租户取来展示
         var user = await _userRepository.GetByIdIgnoreTenantAsync(session.UserId, cancellationToken);
         UserSessionRevokedDomainEvent? domainEvent = null;
@@ -1393,7 +1393,7 @@ public sealed class UserDomainService
         var user = await GetUserOrThrowAsync(command.UserId, cancellationToken);
         // 既取该用户自己的会话，也取由他发起的模仿会话（后者的 UserId 是被模仿者）；
         // 会话行带登录落点的租户戳，同一账号的会话散落在不同租户下，须跨租户取全
-        var sessions = (await _userSessionRepository.GetNotRevokedByUserIgnoreTenantAsync(user.BasicId, cancellationToken)).ToList();
+        var sessions = (await _userSessionRepository.GetNotRevokedByUserIgnoreTenantAsync(user.Id, cancellationToken)).ToList();
 
         if (sessions.Count == 0)
         {
@@ -1468,7 +1468,7 @@ public sealed class UserDomainService
         return new UserSessionRevokedDomainEvent(
             session.TenantId,
             session.UserId,
-            session.BasicId,
+            session.Id,
             session.UserSessionId,
             session.CurrentAccessTokenJti,
             revokeAllUserSessions,
@@ -1487,7 +1487,7 @@ public sealed class UserDomainService
     {
         return new UserSessionRevokedDomainEvent(
             sessionTenantKey,
-            user.BasicId,
+            user.Id,
             sessionId: null,
             userSessionId: null,
             accessTokenJti: null,
@@ -1527,7 +1527,7 @@ public sealed class UserDomainService
     /// </summary>
     private static void ValidateUpdateCommand(UserUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户主键必须大于 0。");
         }
@@ -1638,7 +1638,7 @@ public sealed class UserDomainService
     /// </summary>
     private static void ValidateUserRoleUpdateCommand(UserRoleUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户角色绑定主键必须大于 0。");
         }
@@ -1651,7 +1651,7 @@ public sealed class UserDomainService
     /// </summary>
     private static void ValidateUserPermissionUpdateCommand(UserPermissionUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户直授权限绑定主键必须大于 0。");
         }
@@ -1686,7 +1686,7 @@ public sealed class UserDomainService
     /// </summary>
     private static void ValidateDepartmentUpdateCommand(UserDepartmentUpdateCommand command)
     {
-        if (command.BasicId <= 0)
+        if (command.Id <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(command), "用户部门归属主键必须大于 0。");
         }
@@ -1788,7 +1788,7 @@ public sealed class UserDomainService
         var passwordHash = _passwordHasher.HashPassword(password);
         var userSecurity = new SysUserSecurity
         {
-            UserId = user.BasicId,
+            UserId = user.Id,
             Password = passwordHash,
             LastPasswordChangeTime = now,
             // 初始密码由管理员设置
@@ -1889,7 +1889,7 @@ public sealed class UserDomainService
         }
 
         // 停用账号在所有租户都登录不了：它是任何一个租户的所有者都不能直接停用
-        var memberships = await _tenantUserRepository.GetAllByUserIdIgnoreTenantAsync(user.BasicId, cancellationToken);
+        var memberships = await _tenantUserRepository.GetAllByUserIdIgnoreTenantAsync(user.Id, cancellationToken);
         if (memberships.Any(IsActiveOwner))
         {
             throw new InvalidOperationException("该账号是租户所有者，不能直接停用；请先由平台转移所有权。");
@@ -1907,7 +1907,7 @@ public sealed class UserDomainService
         }
 
         // 删除账号会让它在所有租户消失：它是任何一个租户的所有者都不能直接删除
-        var memberships = await _tenantUserRepository.GetAllByUserIdIgnoreTenantAsync(user.BasicId, cancellationToken);
+        var memberships = await _tenantUserRepository.GetAllByUserIdIgnoreTenantAsync(user.Id, cancellationToken);
         if (memberships.Any(IsActiveOwner))
         {
             throw new InvalidOperationException("该账号是租户所有者，不能直接删除；请先由平台转移所有权。");
@@ -1978,7 +1978,7 @@ public sealed class UserDomainService
         }
 
         security.IsDeleted = true;
-        security.DeletedTime = DateTimeOffset.UtcNow;
+        security.DeletedAt = DateTimeOffset.UtcNow;
         security.SecurityStamp = NewSecurityStamp();
         _ = await _userSecurityRepository.UpdateAsync(security, cancellationToken);
     }
@@ -1996,7 +1996,7 @@ public sealed class UserDomainService
         }
 
         var user = await GetUserOrThrowAsync(userId, cancellationToken);
-        var security = await _userSecurityRepository.GetFirstAsync(item => item.UserId == user.BasicId, cancellationToken)
+        var security = await _userSecurityRepository.GetFirstAsync(item => item.UserId == user.Id, cancellationToken)
             ?? throw new InvalidOperationException("用户安全记录不存在。");
 
         return (user, security);
@@ -2012,7 +2012,7 @@ public sealed class UserDomainService
             throw new InvalidOperationException("系统内置账号不能通过用户安全服务锁定。");
         }
 
-        var membership = await _tenantUserRepository.GetMembershipAsync(user.BasicId, cancellationToken);
+        var membership = await _tenantUserRepository.GetMembershipAsync(user.Id, cancellationToken);
         if (membership?.MemberType == TenantMemberType.Owner)
         {
             throw new InvalidOperationException("租户所有者账号不能通过用户安全服务锁定。");
@@ -2029,7 +2029,7 @@ public sealed class UserDomainService
             throw new InvalidOperationException("系统内置账号不能通过用户安全服务重置密码。");
         }
 
-        var membership = await _tenantUserRepository.GetMembershipAsync(user.BasicId, cancellationToken);
+        var membership = await _tenantUserRepository.GetMembershipAsync(user.Id, cancellationToken);
         if (membership?.MemberType == TenantMemberType.Owner)
         {
             throw new InvalidOperationException("租户所有者账号不能通过用户安全服务重置密码。");
@@ -2075,7 +2075,7 @@ public sealed class UserDomainService
             return;
         }
 
-        var occupied = await _userRoleRepository.CountOccupiedByRoleIdAsync(role.BasicId, now, cancellationToken);
+        var occupied = await _userRoleRepository.CountOccupiedByRoleIdAsync(role.Id, now, cancellationToken);
         if (occupied - leaving + joining > role.MaxMembers)
         {
             throw new InvalidOperationException($"角色「{role.RoleName}」最多 {role.MaxMembers} 个成员，当前已有 {occupied} 个。");
@@ -2091,7 +2091,7 @@ public sealed class UserDomainService
 
         var finalRoleIds = (await _userRoleRepository.GetValidByUserIdAsync(userId, now, cancellationToken))
             .Select(userRole => userRole.RoleId)
-            .Append(role.BasicId)
+            .Append(role.Id)
             .Distinct();
         await EnsureNoSoDConflictAsync(finalRoleIds, cancellationToken);
     }
@@ -2293,7 +2293,7 @@ public sealed class UserDomainService
             relation => relation.UserId == userId && relation.IsMain,
             cancellationToken);
         var targets = excludeId.HasValue
-            ? mainDepartments.Where(relation => relation.BasicId != excludeId.Value).ToList()
+            ? mainDepartments.Where(relation => relation.Id != excludeId.Value).ToList()
             : mainDepartments.ToList();
         if (targets.Count == 0)
         {
@@ -2321,8 +2321,8 @@ public sealed class UserDomainService
         }
 
         var candidates = await _userDepartmentRepository.GetListAsync(
-            relation => relation.UserId == userId && relation.Status == ValidityStatus.Valid && relation.BasicId != revokedId,
-            relation => relation.CreatedTime,
+            relation => relation.UserId == userId && relation.Status == ValidityStatus.Valid && relation.Id != revokedId,
+            relation => relation.CreatedAt,
             cancellationToken);
         var nextMain = candidates.FirstOrDefault();
         if (nextMain is null)

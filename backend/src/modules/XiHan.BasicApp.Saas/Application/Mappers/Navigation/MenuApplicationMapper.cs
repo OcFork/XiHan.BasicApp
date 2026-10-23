@@ -54,7 +54,7 @@ public static class MenuApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new MenuUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ParentId,
             input.PermissionId,
             input.MenuName,
@@ -86,7 +86,7 @@ public static class MenuApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new MenuStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new MenuStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public static class MenuApplicationMapper
 
         return new MenuListItemDto
         {
-            BasicId = menu.BasicId,
+            Id = menu.Id,
             ParentId = menu.ParentId,
             PermissionId = menu.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -125,8 +125,8 @@ public static class MenuApplicationMapper
             BadgeDot = menu.BadgeDot,
             Status = menu.Status,
             Sort = menu.Sort,
-            CreatedTime = menu.CreatedTime,
-            ModifiedTime = menu.ModifiedTime
+            CreatedAt = menu.CreatedAt,
+            ModifiedAt = menu.ModifiedAt
         };
     }
 
@@ -142,7 +142,7 @@ public static class MenuApplicationMapper
 
         return new MenuDetailDto
         {
-            BasicId = menu.BasicId,
+            Id = menu.Id,
             ParentId = menu.ParentId,
             PermissionId = menu.PermissionId,
             PermissionCode = permission?.PermissionCode,
@@ -170,10 +170,10 @@ public static class MenuApplicationMapper
             Status = menu.Status,
             Sort = menu.Sort,
             Remark = menu.Remark,
-            CreatedTime = menu.CreatedTime,
+            CreatedAt = menu.CreatedAt,
             CreatedId = menu.CreatedId,
             CreatedBy = menu.CreatedBy,
-            ModifiedTime = menu.ModifiedTime,
+            ModifiedAt = menu.ModifiedAt,
             ModifiedId = menu.ModifiedId,
             ModifiedBy = menu.ModifiedBy
         };
@@ -191,7 +191,7 @@ public static class MenuApplicationMapper
 
         return new MenuTreeNodeDto
         {
-            BasicId = menu.BasicId,
+            Id = menu.Id,
             ParentId = menu.ParentId,
             PermissionId = menu.PermissionId,
             PermissionCode = permission?.PermissionCode,

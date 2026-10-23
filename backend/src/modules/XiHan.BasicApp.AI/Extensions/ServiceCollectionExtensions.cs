@@ -10,11 +10,6 @@ using XiHan.BasicApp.AI.Infrastructure.Configuration;
 using XiHan.BasicApp.AI.Infrastructure.Security;
 using XiHan.BasicApp.AI.Infrastructure.Seeders;
 using XiHan.BasicApp.AI.Infrastructure.Skills;
-using XiHan.Framework.AI.Abstractions.Configuration;
-using XiHan.Framework.AI.Abstractions.Prompts;
-using XiHan.Framework.AI.Abstractions.Skills;
-using XiHan.Framework.AI.Extensions.DependencyInjection;
-using XiHan.Framework.Data.Extensions.DependencyInjection;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.Saas.Extensions;
 

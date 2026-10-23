@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 用户安全查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户安全")]
 public sealed class UserSecurityQueryService
     : SaasApplicationService, IUserSecurityQueryService
 {
@@ -54,8 +50,6 @@ public sealed class UserSecurityQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户安全分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserSecurity.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<UserSecurityListItemDto>> GetUserSecurityPageAsync(UserSecurityPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -88,7 +82,6 @@ public sealed class UserSecurityQueryService
     /// <param name="userId">用户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户安全详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserSecurity.Read)]
     public async Task<UserSecurityDetailDto?> GetUserSecurityDetailAsync(long userId, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -104,7 +97,7 @@ public sealed class UserSecurityQueryService
             return null;
         }
 
-        var security = await _userSecurityRepository.GetFirstAsync(item => item.UserId == user.BasicId, cancellationToken);
+        var security = await _userSecurityRepository.GetFirstAsync(item => item.UserId == user.Id, cancellationToken);
         return security is null
             ? null
             : UserSecurityApplicationMapper.ToDetailDto(security, user, DateTimeOffset.UtcNow);
@@ -160,7 +153,7 @@ public sealed class UserSecurityQueryService
 
         request.Conditions.AddSort((SysUserSecurity security) => security.IsLocked, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysUserSecurity security) => security.LastFailedLoginTime, SortDirection.Descending, 1);
-        request.Conditions.AddSort((SysUserSecurity security) => security.CreatedTime, SortDirection.Descending, 2);
+        request.Conditions.AddSort((SysUserSecurity security) => security.CreatedAt, SortDirection.Descending, 2);
         return request;
     }
 
@@ -219,6 +212,6 @@ public sealed class UserSecurityQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 }

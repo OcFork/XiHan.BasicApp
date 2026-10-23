@@ -11,10 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -23,8 +19,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// API 日志查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "API日志")]
 public sealed class ApiLogQueryService
     : SaasApplicationService, IApiLogQueryService
 {
@@ -52,8 +46,6 @@ public sealed class ApiLogQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>API 日志分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ApiLog.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<ApiLogListItemDto>> GetApiLogPageAsync(ApiLogPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -95,7 +87,6 @@ public sealed class ApiLogQueryService
     /// <param name="id">API 日志主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>API 日志详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.ApiLog.Read)]
     public async Task<ApiLogDetailDto?> GetApiLogDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -106,7 +97,7 @@ public sealed class ApiLogQueryService
         cancellationToken.ThrowIfCancellationRequested();
 
         var apiLog = await DbClient.Queryable<SysOpenApiLog>()
-            .Where(x => x.BasicId == id)
+            .Where(x => x.Id == id)
             .SplitTable()
             .FirstAsync(cancellationToken);
         return apiLog is null ? null : ApiLogApplicationMapper.ToDetailDto(apiLog);

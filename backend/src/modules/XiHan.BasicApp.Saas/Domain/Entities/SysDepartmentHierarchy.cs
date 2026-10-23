@@ -39,14 +39,14 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 部门变更时 Path 刷新
 /// </remarks>
 [SugarTable(TableName = "Sys_Department_Hierarchy", TableDescription = "系统部门继承关系表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_AnId_DeId", nameof(TenantId), OrderByType.Asc, nameof(AncestorId), OrderByType.Asc, nameof(DescendantId), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_DeId", nameof(DescendantId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_De", nameof(Depth), OrderByType.Asc)]
 [SugarIndex("IX_{table}_AnId_De", nameof(AncestorId), OrderByType.Asc, nameof(Depth), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_AnId", nameof(TenantId), OrderByType.Asc, nameof(AncestorId), OrderByType.Asc)]
-public partial class SysDepartmentHierarchy : BasicAppCreationEntity, IStrictMultiTenantEntity
+public partial class SysDepartmentHierarchy : BasicAppCreationEntity, IMultiTenant
 {
     /// <summary>
     /// 祖先部门ID

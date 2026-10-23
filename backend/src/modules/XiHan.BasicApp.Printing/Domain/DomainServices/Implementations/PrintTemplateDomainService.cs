@@ -8,7 +8,7 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Printing.Domain.DomainServices;
@@ -255,7 +255,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
     /// </summary>
     private static void EnsureExpectedVersion(SysPrintTemplate template, long expectedRowVersion)
     {
-        if (expectedRowVersion < 0 || template.RowVersion != expectedRowVersion)
+        if (expectedRowVersion < 0 || template.ConcurrencyStamp != expectedRowVersion)
         {
             throw new UserFriendlyException("打印模板已被其他用户修改，请刷新后重试。");
         }
@@ -413,7 +413,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
             _logger.LogInformation(
                 "打印模板操作成功。Operation={Operation}, TemplateId={TemplateId}, TemplateCode={TemplateCode}, TenantId={TenantId}, Scope={Scope}, Result=Success",
                 operation,
-                template.BasicId,
+                template.Id,
                 template.TemplateCode,
                 template.TenantId,
                 template.IsGlobal ? PrintTemplateScope.Global : PrintTemplateScope.Tenant);
@@ -424,7 +424,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
             exception,
             "打印模板操作失败。Operation={Operation}, TemplateId={TemplateId}, TemplateCode={TemplateCode}, TenantId={TenantId}, Scope={Scope}, Result=Failed",
             operation,
-            template.BasicId,
+            template.Id,
             template.TemplateCode,
             template.TenantId,
             template.IsGlobal ? PrintTemplateScope.Global : PrintTemplateScope.Tenant);

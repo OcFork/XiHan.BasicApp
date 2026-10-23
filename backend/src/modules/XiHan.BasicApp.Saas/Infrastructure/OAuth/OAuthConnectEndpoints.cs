@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Authentication.OAuth;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.OAuth;
 

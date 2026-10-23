@@ -46,7 +46,7 @@ public static class AiAssistantApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new AiAssistantUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.AssistantName,
             input.Avatar,
             input.Description,
@@ -70,7 +70,7 @@ public static class AiAssistantApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new AiAssistantStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new AiAssistantStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public static class AiAssistantApplicationMapper
 
         return new AiAssistantOptionDto
         {
-            AssistantId = entity.BasicId,
+            AssistantId = entity.Id,
             AssistantCode = entity.AssistantCode,
             AssistantName = entity.AssistantName,
             Avatar = entity.Avatar,
@@ -121,7 +121,7 @@ public static class AiAssistantApplicationMapper
     private static TDto Fill<TDto>(TDto dto, SysAiAssistant entity)
         where TDto : AiAssistantListItemDto
     {
-        dto.BasicId = entity.BasicId;
+        dto.Id = entity.Id;
         dto.AssistantCode = entity.AssistantCode;
         dto.AssistantName = entity.AssistantName;
         dto.Avatar = entity.Avatar;
@@ -136,8 +136,8 @@ public static class AiAssistantApplicationMapper
         dto.IsEnabled = entity.IsEnabled;
         dto.Sort = entity.Sort;
         dto.Status = entity.Status;
-        dto.CreatedTime = entity.CreatedTime;
-        dto.ModifiedTime = entity.ModifiedTime;
+        dto.CreatedAt = entity.CreatedAt;
+        dto.ModifiedAt = entity.ModifiedAt;
         return dto;
     }
 }

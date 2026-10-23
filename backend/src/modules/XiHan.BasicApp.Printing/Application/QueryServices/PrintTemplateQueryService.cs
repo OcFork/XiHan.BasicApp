@@ -15,9 +15,7 @@ using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Permissions;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -28,8 +26,6 @@ namespace XiHan.BasicApp.Printing.Application.QueryServices;
 /// <summary>
 /// 打印模板查询 Dynamic API，负责字段安全、租户范围、全局开放限制和按编码解析。
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "打印模板")]
 public sealed class PrintTemplateQueryService : PrintingApplicationService, IPrintTemplateQueryService
 {
     private readonly IPrintTemplateRepository _repository;
@@ -62,8 +58,6 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     /// <param name="input">分页和过滤参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>模板分页。</returns>
-    [HttpPost]
-    [PermissionAuthorize(PrintingPermissionCodes.Read)]
     public async Task<PageResultDtoBase<PrintTemplateListItemDto>> GetPrintTemplatePageAsync(
         PrintTemplatePageQueryDto input,
         CancellationToken cancellationToken = default)
@@ -80,8 +74,6 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     /// <param name="input">分页和过滤参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>已启用且开放的全局模板分页。</returns>
-    [HttpPost]
-    [PermissionAuthorize(PrintingPermissionCodes.Read)]
     public async Task<PageResultDtoBase<PrintTemplateListItemDto>> GetAvailableGlobalPrintTemplatePageAsync(
         PrintTemplatePageQueryDto input,
         CancellationToken cancellationToken = default)
@@ -99,7 +91,6 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     /// <param name="scope">查询作用域。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>模板详情；不存在时返回 <see langword="null"/>。</returns>
-    [PermissionAuthorize(PrintingPermissionCodes.Read)]
     public async Task<PrintTemplateDetailDto?> GetPrintTemplateDetailAsync(
         long id,
         PrintTemplateScope scope = PrintTemplateScope.Auto,
@@ -138,7 +129,6 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>命中的模板及实际作用域。</returns>
     /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板不存在、未启用或未向当前租户开放。</exception>
-    [PermissionAuthorize(PrintingPermissionCodes.Use)]
     public async Task<ResolvedPrintTemplateDto> GetResolvedPrintTemplateByCodeAsync(
         string templateCode,
         PrintTemplateScope scope = PrintTemplateScope.Auto,
@@ -272,6 +262,7 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     {
         if (scope.IsGlobal && !_currentTenant.IsPlatformOperation())
         {
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using var platformScope = _currentTenant.Change(null);
             return await action();
         }

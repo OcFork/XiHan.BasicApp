@@ -3,8 +3,7 @@
 
 using System.ComponentModel;
 using Microsoft.Extensions.AI;
-using XiHan.Framework.AI.Abstractions.Rag;
-using XiHan.Framework.AI.Abstractions.Skills;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Skills;

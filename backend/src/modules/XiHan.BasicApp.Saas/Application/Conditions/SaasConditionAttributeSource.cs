@@ -6,9 +6,6 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using XiHan.BasicApp.Saas.Domain.Conditions;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Authorization.Conditions;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

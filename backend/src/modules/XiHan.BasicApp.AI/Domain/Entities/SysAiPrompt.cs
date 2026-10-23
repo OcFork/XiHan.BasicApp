@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.AI.Domain.Entities;
 
@@ -13,7 +12,7 @@ namespace XiHan.BasicApp.AI.Domain.Entities;
 /// </summary>
 /// <remarks>非机密，无需加密；按 PromptCode 取用，支持版本；无默认标记(按名显式选取)。</remarks>
 [SugarTable(TableName = "Sys_Ai_Prompt", TableDescription = "系统 AI 提示词模板表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_PrCd", nameof(TenantId), OrderByType.Asc, nameof(PromptCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]

@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Data.SqlSugar.Routing;
 using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -14,7 +13,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 不存储完整 Token/RefreshToken，仅通过 AccessTokenJti 与 Token 表关联，便于黑名单与撤销。
 /// </summary>
 [SugarTable(TableName = "Sys_User_Session", TableDescription = "系统用户会话表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_UsSeId", nameof(UserSessionId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
@@ -24,7 +23,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{table}_ExTi", nameof(ExpirationTime), OrderByType.Desc)]
 [SugarIndex("IX_{table}_ImUsId", nameof(ImpersonatorUserId), OrderByType.Asc)]
 [PlatformDataSource]
-public partial class SysUserSession : BasicAppFullAuditedEntity, IStrictMultiTenantEntity
+public partial class SysUserSession : BasicAppFullAuditedEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID

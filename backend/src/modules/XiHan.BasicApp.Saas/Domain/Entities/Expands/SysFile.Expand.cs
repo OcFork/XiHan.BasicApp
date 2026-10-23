@@ -83,7 +83,7 @@ public partial class SysFile
             }
         }
 
-        storage.FileId = BasicId;
+        storage.FileId = Id;
         Storages.Add(storage);
     }
 
@@ -100,7 +100,7 @@ public partial class SysFile
 
         foreach (var storage in Storages)
         {
-            storage.IsPrimary = storage.BasicId == storageId;
+            storage.IsPrimary = storage.Id == storageId;
         }
     }
 

@@ -4,13 +4,8 @@
 using Microsoft.AspNetCore.Http;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Auditing;
-using XiHan.Framework.Auditing.Writers;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -63,6 +58,7 @@ public class SaasApiLogWriter : IApiLogWriter
 
         // 落在记录产生时的租户，而不是写入时的环境上下文（位于租户解析之前的中间件、排队异步写入时环境里都没有请求的租户）；
         // 切入该租户再取连接，库隔离租户的日志进它自己的库
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(record.TenantId);
         var entity = new SysOpenApiLog
         {
@@ -111,7 +107,7 @@ public class SaasApiLogWriter : IApiLogWriter
         {
             return await _clientResolver.GetClientForEntity<SysUser>().Queryable<SysUser>()
                 .ClearTenantFilter()
-                .Where(user => user.BasicId == userId)
+                .Where(user => user.Id == userId)
                 .Select(user => user.UserName)
                 .FirstAsync(cancellationToken);
         }

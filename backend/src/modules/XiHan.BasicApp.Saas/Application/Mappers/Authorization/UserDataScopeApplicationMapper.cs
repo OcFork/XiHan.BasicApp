@@ -25,9 +25,9 @@ public static class UserDataScopeApplicationMapper
 
         return new UserDataScopeListItemDto
         {
-            BasicId = scope.BasicId,
+            Id = scope.Id,
             UserId = scope.UserId,
-            TenantMemberId = tenantMember?.BasicId,
+            TenantMemberId = tenantMember?.Id,
             TenantMemberDisplayName = tenantMember?.DisplayName,
             TenantMemberType = tenantMember?.MemberType,
             TenantMemberInviteStatus = tenantMember?.InviteStatus,
@@ -41,7 +41,7 @@ public static class UserDataScopeApplicationMapper
             IncludeChildren = scope.IncludeChildren,
             Status = scope.Status,
             Remark = scope.Remark,
-            CreatedTime = scope.CreatedTime
+            CreatedAt = scope.CreatedAt
         };
     }
 
@@ -58,9 +58,9 @@ public static class UserDataScopeApplicationMapper
 
         return new UserDataScopeDetailDto
         {
-            BasicId = scope.BasicId,
+            Id = scope.Id,
             UserId = scope.UserId,
-            TenantMemberId = tenantMember?.BasicId,
+            TenantMemberId = tenantMember?.Id,
             TenantMemberDisplayName = tenantMember?.DisplayName,
             TenantMemberType = tenantMember?.MemberType,
             TenantMemberInviteStatus = tenantMember?.InviteStatus,
@@ -74,7 +74,7 @@ public static class UserDataScopeApplicationMapper
             IncludeChildren = scope.IncludeChildren,
             Status = scope.Status,
             Remark = scope.Remark,
-            CreatedTime = scope.CreatedTime,
+            CreatedAt = scope.CreatedAt,
             CreatedId = scope.CreatedId,
             CreatedBy = scope.CreatedBy
         };

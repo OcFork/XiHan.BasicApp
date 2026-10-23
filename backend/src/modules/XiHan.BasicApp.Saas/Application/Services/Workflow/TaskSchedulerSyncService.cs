@@ -8,8 +8,6 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Tasks;
-using XiHan.Framework.Tasks.ScheduledJobs.Abstractions;
-using XiHan.Framework.Tasks.ScheduledJobs.Models;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -162,7 +160,7 @@ public sealed class TaskSchedulerSyncService
             TenantId = task.TenantId,
             DefaultParameters = new Dictionary<string, object?>
             {
-                ["taskId"] = task.BasicId,
+                ["taskId"] = task.Id,
                 ["taskClass"] = task.TaskClass,
                 ["taskMethod"] = task.TaskMethod,
                 ["taskParams"] = task.TaskParams

@@ -11,17 +11,12 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
 /// <summary>
 /// 权限委托命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限委托")]
 public sealed class PermissionDelegationAppService
     : SaasApplicationService, IPermissionDelegationAppService
 {
@@ -82,8 +77,6 @@ public sealed class PermissionDelegationAppService
     /// <summary>
     /// 创建权限委托
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionDelegation.Create)]
     public async Task<PermissionDelegationDetailDto> CreatePermissionDelegationAsync(PermissionDelegationCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -102,8 +95,6 @@ public sealed class PermissionDelegationAppService
     /// <summary>
     /// 撤销权限委托
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionDelegation.Revoke)]
     public async Task DeletePermissionDelegationAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -116,8 +107,6 @@ public sealed class PermissionDelegationAppService
     /// <summary>
     /// 更新权限委托
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionDelegation.Update)]
     public async Task<PermissionDelegationDetailDto> UpdatePermissionDelegationAsync(PermissionDelegationUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -136,14 +125,12 @@ public sealed class PermissionDelegationAppService
     /// <summary>
     /// 更新权限委托状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.PermissionDelegation.Status)]
     public async Task<PermissionDelegationDetailDto> UpdatePermissionDelegationStatusAsync(PermissionDelegationStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var delegation = await _permissionDelegationQueryService.GetPermissionDelegationDetailAsync(input.BasicId, cancellationToken)
+        var delegation = await _permissionDelegationQueryService.GetPermissionDelegationDetailAsync(input.Id, cancellationToken)
             ?? throw new InvalidOperationException("权限委托不存在。");
         await EnsureCanDelegateAsync(delegation.PermissionId, delegation.RoleId, cancellationToken);
 

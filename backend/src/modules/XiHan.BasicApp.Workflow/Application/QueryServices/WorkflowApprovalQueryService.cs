@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
@@ -16,19 +17,9 @@ using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Core.Exceptions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Timing;
-using XiHan.Framework.Workflow.Abstractions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.Stores;
-using XiHan.Framework.Workflow.Abstractions.UserTasks;
-using XiHan.Framework.Workflow.UserTasks;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 
@@ -40,7 +31,6 @@ namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 /// 详情按参与关系鉴权：发起人、当前或曾经的审批人、被抄送人，或拥有流程查看权限者，其余一律拒绝——
 /// 详情里带着业务单据数据，不能凭实例主键随意读取。
 /// </remarks>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "审批中心")]
 public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, IWorkflowApprovalQueryService
 {
     /// <summary>
@@ -58,7 +48,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
     private readonly WorkflowUserNameResolver _userNameResolver;
     private readonly IPermissionChecker _permissionChecker;
     private readonly ICurrentUser _currentUser;
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 应用 API 的序列化选项：业务单据是网络契约的一部分，枚举、长整型主键与时间要与接口返回同一口径
@@ -79,7 +69,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
         WorkflowUserNameResolver userNameResolver,
         IPermissionChecker permissionChecker,
         ICurrentUser currentUser,
-        IClock clock,
+        TimeProvider clock,
         IOptions<Microsoft.AspNetCore.Mvc.JsonOptions> apiJsonOptions)
     {
         _recordRepository = recordRepository;
@@ -99,7 +89,6 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
     /// <summary>
     /// 分页查询我的已办
     /// </summary>
-    [HttpPost]
     public Task<PageResultDtoBase<WorkflowApprovalRecordItemDto>> GetDonePageAsync(WorkflowApprovalPageQueryDto input, CancellationToken cancellationToken = default)
     {
         var userId = RequireCurrentUserId();
@@ -110,7 +99,6 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
     /// <summary>
     /// 分页查询抄送我的
     /// </summary>
-    [HttpPost]
     public Task<PageResultDtoBase<WorkflowApprovalRecordItemDto>> GetCcPageAsync(WorkflowApprovalPageQueryDto input, CancellationToken cancellationToken = default)
     {
         var userId = RequireCurrentUserId();
@@ -120,7 +108,6 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
     /// <summary>
     /// 分页查询我发起的（只含顶层实例）
     /// </summary>
-    [HttpPost]
     public async Task<PageResultDtoBase<WorkflowApprovalInstanceItemDto>> GetStartedPageAsync(WorkflowApprovalPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -150,8 +137,8 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
         var pendingByInstance = new Dictionary<long, List<WorkflowUserTask>>();
         foreach (var instance in page.Items.Where(item => item.Status == WorkflowInstanceStatus.Running))
         {
-            pendingByInstance[instance.BasicId] = await _userTaskService.GetPendingByInstanceAsync(
-                instance.BasicId.ToString(CultureInfo.InvariantCulture), cancellationToken);
+            pendingByInstance[instance.Id] = await _userTaskService.GetPendingByInstanceAsync(
+                instance.Id.ToString(CultureInfo.InvariantCulture), cancellationToken);
         }
 
         var assigneeNames = await _userNameResolver.ResolveAsync(
@@ -160,7 +147,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
         var items = new List<WorkflowApprovalInstanceItemDto>(page.Items.Count);
         foreach (var instance in page.Items)
         {
-            var tasks = pendingByInstance.GetValueOrDefault(instance.BasicId) ?? [];
+            var tasks = pendingByInstance.GetValueOrDefault(instance.Id) ?? [];
             var pendingNodeNames = new List<string>();
             foreach (var nodeId in tasks.Select(task => task.NodeId).Distinct(StringComparer.Ordinal))
             {
@@ -169,7 +156,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
 
             items.Add(new WorkflowApprovalInstanceItemDto
             {
-                BasicId = instance.BasicId,
+                Id = instance.Id,
                 DefinitionCode = instance.DefinitionCode,
                 DefinitionVersion = instance.DefinitionVersion,
                 Name = instance.Name,
@@ -266,11 +253,11 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
                 record => record.CorrelationId!);
         }
 
-        request.Conditions.AddSort((SysWorkflowTaskRecord record) => record.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysWorkflowTaskRecord record) => record.CreatedAt, SortDirection.Descending, 0);
 
         var page = await _recordRepository.GetPagedAsync(request, predicate, cancellationToken);
         var instances = (await _instanceRepository.GetByIdsAsync(page.Items.Select(record => record.InstanceId).Distinct(), cancellationToken))
-            .ToDictionary(instance => instance.BasicId);
+            .ToDictionary(instance => instance.Id);
         var starterNames = await _userNameResolver.ResolveAsync(instances.Values.Select(instance => instance.StarterId), cancellationToken);
         var businessNames = GetBusinessNames();
 
@@ -279,7 +266,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
             var instance = instances.GetValueOrDefault(record.InstanceId);
             return new WorkflowApprovalRecordItemDto
             {
-                BasicId = record.BasicId,
+                Id = record.Id,
                 InstanceId = record.InstanceId,
                 TaskId = record.TaskId.ToString(CultureInfo.InvariantCulture),
                 InstanceName = record.InstanceName,
@@ -291,7 +278,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
                 Action = record.Action,
                 Outcome = record.Outcome,
                 Comment = record.Comment,
-                CreatedTime = record.CreatedTime,
+                CreatedAt = record.CreatedAt,
                 BusinessName = instance is { ParentInstanceId: null } ? businessNames.GetValueOrDefault(record.DefinitionCode) : null,
                 StarterId = instance?.StarterId,
                 StarterName = instance?.StarterId is { } starterId ? starterNames.GetValueOrDefault(starterId) : null,
@@ -431,7 +418,7 @@ public sealed class WorkflowApprovalQueryService : WorkflowApplicationService, I
                 Outcome = record.Outcome,
                 Comment = record.Comment,
                 TargetUserNames = [.. SplitTargets(record.TargetUserIds).Select(id => names.GetValueOrDefault(id) ?? id)],
-                Time = record.CreatedTime
+                Time = record.CreatedAt
             });
         }
 

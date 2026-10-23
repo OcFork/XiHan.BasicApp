@@ -73,8 +73,8 @@ public sealed class AccessPolicyDomainService : IAccessPolicyDomainService
             TemplateCode = NormalizeNullable(command.TemplateCode),
             Remark = NormalizeNullable(command.Remark)
         }, cancellationToken);
-        await ReplaceConditionsAsync(policy.BasicId, command.Conditions, cancellationToken);
-        return new AccessPolicyCommandResult(policy.BasicId);
+        await ReplaceConditionsAsync(policy.Id, command.Conditions, cancellationToken);
+        return new AccessPolicyCommandResult(policy.Id);
     }
 
     /// <summary>
@@ -87,7 +87,7 @@ public sealed class AccessPolicyDomainService : IAccessPolicyDomainService
 
         ValidateCommon(command.PolicyName, command.Description, command.Priority, command.EffectiveTime, command.ExpirationTime, command.Remark);
         ValidateConditions(command.Conditions);
-        var policy = await GetPolicyOrThrowAsync(command.BasicId, cancellationToken);
+        var policy = await GetPolicyOrThrowAsync(command.Id, cancellationToken);
         policy.PolicyName = command.PolicyName.Trim();
         policy.Description = NormalizeNullable(command.Description);
         policy.Priority = command.Priority;
@@ -95,8 +95,8 @@ public sealed class AccessPolicyDomainService : IAccessPolicyDomainService
         policy.ExpirationTime = command.ExpirationTime;
         policy.Remark = NormalizeNullable(command.Remark);
         _ = await _policyRepository.UpdateAsync(policy, cancellationToken);
-        await ReplaceConditionsAsync(policy.BasicId, command.Conditions, cancellationToken);
-        return new AccessPolicyCommandResult(policy.BasicId);
+        await ReplaceConditionsAsync(policy.Id, command.Conditions, cancellationToken);
+        return new AccessPolicyCommandResult(policy.Id);
     }
 
     /// <summary>
@@ -108,10 +108,10 @@ public sealed class AccessPolicyDomainService : IAccessPolicyDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateEnum(command.Action, nameof(command.Action));
-        var policy = await GetPolicyOrThrowAsync(command.BasicId, cancellationToken);
+        var policy = await GetPolicyOrThrowAsync(command.Id, cancellationToken);
         policy.Action = command.Action;
         _ = await _policyRepository.UpdateAsync(policy, cancellationToken);
-        return new AccessPolicyCommandResult(policy.BasicId);
+        return new AccessPolicyCommandResult(policy.Id);
     }
 
     /// <summary>
@@ -123,16 +123,16 @@ public sealed class AccessPolicyDomainService : IAccessPolicyDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateEnum(command.Status, nameof(command.Status));
-        var policy = await GetPolicyOrThrowAsync(command.BasicId, cancellationToken);
+        var policy = await GetPolicyOrThrowAsync(command.Id, cancellationToken);
         if (command.Status == EnableStatus.Enabled)
         {
-            var conditions = await _conditionRepository.GetByPolicyIdAsync(policy.BasicId, cancellationToken);
+            var conditions = await _conditionRepository.GetByPolicyIdAsync(policy.Id, cancellationToken);
             ValidateConditions([.. conditions.Select(ToCommand)]);
         }
 
         policy.Status = command.Status;
         _ = await _policyRepository.UpdateAsync(policy, cancellationToken);
-        return new AccessPolicyCommandResult(policy.BasicId);
+        return new AccessPolicyCommandResult(policy.Id);
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ public sealed class AccessPolicyDomainService : IAccessPolicyDomainService
     {
         cancellationToken.ThrowIfCancellationRequested();
         var policy = await GetPolicyOrThrowAsync(id, cancellationToken);
-        _ = await _conditionRepository.DeleteAsync(condition => condition.PolicyId == policy.BasicId, cancellationToken);
+        _ = await _conditionRepository.DeleteAsync(condition => condition.PolicyId == policy.Id, cancellationToken);
         if (!await _policyRepository.DeleteAsync(policy, cancellationToken))
         {
             throw new InvalidOperationException("访问策略删除失败。");

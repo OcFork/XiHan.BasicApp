@@ -15,9 +15,6 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -27,8 +24,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 租户版本查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "租户版本")]
 public sealed class TenantEditionQueryService
     : SaasApplicationService, ITenantEditionQueryService
 {
@@ -66,8 +61,6 @@ public sealed class TenantEditionQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户版本分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<TenantEditionListItemDto>> GetTenantEditionPageAsync(TenantEditionPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -93,7 +86,6 @@ public sealed class TenantEditionQueryService
     /// <param name="id">租户版本主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户版本详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Read)]
     public async Task<TenantEditionDetailDto?> GetTenantEditionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -112,7 +104,6 @@ public sealed class TenantEditionQueryService
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>已启用租户版本列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantEdition.Read)]
     public async Task<IReadOnlyList<TenantEditionListItemDto>> GetEnabledTenantEditionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -201,7 +192,7 @@ public sealed class TenantEditionQueryService
     {
         request.Conditions.AddSort((SysTenantEdition edition) => edition.IsDefault, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysTenantEdition edition) => edition.Sort, SortDirection.Ascending, 1);
-        request.Conditions.AddSort((SysTenantEdition edition) => edition.CreatedTime, SortDirection.Descending, 2);
+        request.Conditions.AddSort((SysTenantEdition edition) => edition.CreatedAt, SortDirection.Descending, 2);
     }
 
     /// <summary>

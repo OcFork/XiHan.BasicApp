@@ -43,7 +43,7 @@ public static class SmsConfigApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new SmsConfigUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ConfigName,
             input.Provider,
             input.AccessKeyId,
@@ -63,7 +63,7 @@ public static class SmsConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new SmsConfigStatusChangeCommand(input.BasicId, input.IsEnabled);
+        return new SmsConfigStatusChangeCommand(input.Id, input.IsEnabled);
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public static class SmsConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new SmsConfigDefaultChangeCommand(input.BasicId);
+        return new SmsConfigDefaultChangeCommand(input.Id);
     }
 
     /// <summary>
@@ -87,7 +87,7 @@ public static class SmsConfigApplicationMapper
 
         return new SmsConfigListItemDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             Provider = config.Provider,
@@ -98,8 +98,8 @@ public static class SmsConfigApplicationMapper
             IsDefault = config.IsDefault,
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
-            CreatedTime = config.CreatedTime,
-            ModifiedTime = config.ModifiedTime
+            CreatedAt = config.CreatedAt,
+            ModifiedAt = config.ModifiedAt
         };
     }
 
@@ -114,7 +114,7 @@ public static class SmsConfigApplicationMapper
 
         return new SmsConfigDetailDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             ConfigCode = config.ConfigCode,
             ConfigName = config.ConfigName,
             Provider = config.Provider,
@@ -128,10 +128,10 @@ public static class SmsConfigApplicationMapper
             IsEnabled = config.IsEnabled,
             Sort = config.Sort,
             Remark = config.Remark,
-            CreatedTime = config.CreatedTime,
+            CreatedAt = config.CreatedAt,
             CreatedId = config.CreatedId,
             CreatedBy = config.CreatedBy,
-            ModifiedTime = config.ModifiedTime,
+            ModifiedAt = config.ModifiedAt,
             ModifiedId = config.ModifiedId,
             ModifiedBy = config.ModifiedBy
         };

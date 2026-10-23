@@ -44,8 +44,8 @@ public sealed class FileDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var file = await GetFileOrThrowAsync(command.BasicId, cancellationToken);
-        var storages = await _fileStorageRepository.GetByFileIdAsync(file.BasicId, cancellationToken);
+        var file = await GetFileOrThrowAsync(command.Id, cancellationToken);
+        var storages = await _fileStorageRepository.GetByFileIdAsync(file.Id, cancellationToken);
         file.Status = FileStatus.Deleted;
         file.Remark = Optional(command.Reason, 500, nameof(command.Reason), "删除原因不能超过 500 个字符。") ?? file.Remark;
         _ = await _fileRepository.UpdateAsync(file, cancellationToken);
@@ -59,7 +59,7 @@ public sealed class FileDomainService
         if (storages.Count > 0)
         {
             _ = await _fileStorageRepository.UpdateRangeAsync(storages, cancellationToken);
-            _ = await _fileStorageRepository.DeleteAsync(storage => storage.FileId == file.BasicId, cancellationToken);
+            _ = await _fileStorageRepository.DeleteAsync(storage => storage.FileId == file.Id, cancellationToken);
         }
 
         if (!await _fileRepository.DeleteAsync(file, cancellationToken))
@@ -117,7 +117,7 @@ public sealed class FileDomainService
             throw new InvalidOperationException("文件状态非正常，无法秒传。");
         }
 
-        var primaryStorage = await _fileStorageRepository.GetPrimaryByFileIdAsync(existing.BasicId, cancellationToken)
+        var primaryStorage = await _fileStorageRepository.GetPrimaryByFileIdAsync(existing.Id, cancellationToken)
             ?? throw new InvalidOperationException("文件缺少可用主存储，无法秒传。");
         if (primaryStorage.Status != FileStorageStatus.Normal)
         {
@@ -136,23 +136,23 @@ public sealed class FileDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统文件主键必须大于 0。");
+        EnsureId(command.Id, "系统文件主键必须大于 0。");
         EnsureId(command.StorageId, "系统文件存储主键必须大于 0。");
-        _ = await GetFileOrThrowAsync(command.BasicId, cancellationToken);
+        _ = await GetFileOrThrowAsync(command.Id, cancellationToken);
         var storage = await GetFileStorageOrThrowAsync(command.StorageId, cancellationToken);
-        if (storage.FileId != command.BasicId)
+        if (storage.FileId != command.Id)
         {
             throw new InvalidOperationException("存储副本不属于当前文件。");
         }
 
         _fileStorageDomainService.EnsureCanBecomePrimary(storage);
-        var previousStorage = await _fileStorageRepository.GetPrimaryByFileIdAsync(command.BasicId, cancellationToken);
-        await _fileStorageRepository.ClearPrimaryAsync(command.BasicId, storage.BasicId, cancellationToken);
+        var previousStorage = await _fileStorageRepository.GetPrimaryByFileIdAsync(command.Id, cancellationToken);
+        await _fileStorageRepository.ClearPrimaryAsync(command.Id, storage.Id, cancellationToken);
         storage.IsPrimary = true;
         storage.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? storage.Remark;
         storage = await _fileStorageRepository.UpdateAsync(storage, cancellationToken);
 
-        return new FilePrimaryStorageSwitchCommandResult(storage, previousStorage?.BasicId);
+        return new FilePrimaryStorageSwitchCommandResult(storage, previousStorage?.Id);
     }
 
     /// <summary>
@@ -163,11 +163,11 @@ public sealed class FileDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统文件主键必须大于 0。");
+        EnsureId(command.Id, "系统文件主键必须大于 0。");
         ValidateMutableMetadata(command.AccessLevel, command.RetentionDays, command.Width, command.Height, command.Duration, command.ThumbnailFileId);
         _fileStorageDomainService.EnsureUploadMetadata(1, command.IsTemporary, command.ExpirationTime, command.RetentionDays);
 
-        var file = await GetFileOrThrowAsync(command.BasicId, cancellationToken);
+        var file = await GetFileOrThrowAsync(command.Id, cancellationToken);
         ApplyMutableMetadata(file, command);
         return new FileCommandResult(await _fileRepository.UpdateAsync(file, cancellationToken));
     }
@@ -180,9 +180,9 @@ public sealed class FileDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统文件主键必须大于 0。");
+        EnsureId(command.Id, "系统文件主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
-        var file = await GetFileOrThrowAsync(command.BasicId, cancellationToken);
+        var file = await GetFileOrThrowAsync(command.Id, cancellationToken);
         file.Status = command.Status;
         file.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? file.Remark;
 
@@ -197,9 +197,9 @@ public sealed class FileDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统文件存储主键必须大于 0。");
+        EnsureId(command.Id, "系统文件存储主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
-        var storage = await GetFileStorageOrThrowAsync(command.BasicId, cancellationToken);
+        var storage = await GetFileStorageOrThrowAsync(command.Id, cancellationToken);
         storage.Status = command.Status;
         storage.UploadFailureReason = Optional(command.UploadFailureReason, 500, nameof(command.UploadFailureReason), "上传失败原因不能超过 500 个字符。");
         storage.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? storage.Remark;
@@ -283,7 +283,7 @@ public sealed class FileDomainService
 
         var storage = new SysFileStorage
         {
-            FileId = file.BasicId,
+            FileId = file.Id,
             StorageType = command.StorageType,
             StorageConfigId = command.StorageConfigId,
             StorageProvider = Optional(command.StorageProvider, 50, nameof(command.StorageProvider), "存储提供商不能超过 50 个字符。"),
@@ -307,7 +307,7 @@ public sealed class FileDomainService
             Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。")
         };
 
-        await _fileStorageRepository.ClearPrimaryAsync(file.BasicId, excludeStorageId: null, cancellationToken);
+        await _fileStorageRepository.ClearPrimaryAsync(file.Id, excludeStorageId: null, cancellationToken);
         storage = await _fileStorageRepository.AddAsync(storage, cancellationToken);
         return new FileUploadCommandResult(file, storage);
     }

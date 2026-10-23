@@ -9,10 +9,7 @@ using XiHan.BasicApp.AI.Application.Dtos;
 using XiHan.BasicApp.AI.Application.Mappers;
 using XiHan.BasicApp.AI.Domain.Permissions;
 using XiHan.BasicApp.AI.Infrastructure.Configuration;
-using XiHan.Framework.AI.Abstractions.Chat;
-using XiHan.Framework.AI.Abstractions.Rag;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.AI.Application.AppServices;
@@ -20,7 +17,6 @@ namespace XiHan.BasicApp.AI.Application.AppServices;
 /// <summary>
 /// 知识检索/问答应用服务（RAG 试玩：检索 → 注入 → 会话生成带引用答案）
 /// </summary>
-[DynamicApi(Group = "BasicApp.AI", GroupName = "AI 服务", Tag = "知识检索")]
 public sealed class KnowledgeQueryAppService : AiApplicationService, IKnowledgeQueryAppService
 {
     private const int MaxTopK = 20;
@@ -51,8 +47,6 @@ public sealed class KnowledgeQueryAppService : AiApplicationService, IKnowledgeQ
     /// <summary>
     /// 检索知识并（可选）生成带引用的答案
     /// </summary>
-    [PermissionAuthorize(KnowledgePermissionCodes.Execute)]
-    [HttpPost]
     public async Task<KnowledgeQueryResultDto> QueryAsync(KnowledgeQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

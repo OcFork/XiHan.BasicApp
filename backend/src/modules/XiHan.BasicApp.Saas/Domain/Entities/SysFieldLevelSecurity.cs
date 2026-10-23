@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Data.SqlSugar.Routing;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -32,7 +31,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 角色「运维」对 SysAiProvider.ApiKey：隐藏但可编辑（只能换新密钥，看不到旧的）
 /// </remarks>
 [SugarTable(TableName = "Sys_Field_Level_Security", TableDescription = "系统字段级安全表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_TaTy_TaId_EnNa_FiNa", nameof(TenantId), OrderByType.Asc, nameof(TargetType), OrderByType.Asc, nameof(TargetId), OrderByType.Asc, nameof(EntityName), OrderByType.Asc, nameof(FieldName), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]

@@ -6,10 +6,7 @@ using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Authorization.Permissions;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Security.Extensions;
-using XiHan.Framework.Security.Users;
+using XiHan.BasicApp.Saas.Security;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

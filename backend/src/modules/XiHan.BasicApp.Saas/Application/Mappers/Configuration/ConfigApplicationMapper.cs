@@ -42,7 +42,7 @@ public static class ConfigApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new ConfigUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ConfigName,
             input.ConfigGroup,
             input.ConfigValue,
@@ -62,7 +62,7 @@ public static class ConfigApplicationMapper
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        return new ConfigStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new ConfigStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public static class ConfigApplicationMapper
 
         return new ConfigListItemDto
         {
-            BasicId = config.BasicId,
+            Id = config.Id,
             IsGlobal = config.IsGlobal,
             ConfigName = config.ConfigName,
             ConfigGroup = config.ConfigGroup,
@@ -88,8 +88,8 @@ public static class ConfigApplicationMapper
             IsEncrypted = config.IsEncrypted,
             Status = config.Status,
             Sort = config.Sort,
-            CreatedTime = config.CreatedTime,
-            ModifiedTime = config.ModifiedTime,
+            CreatedAt = config.CreatedAt,
+            ModifiedAt = config.ModifiedAt,
             HasCurrentValue = !string.IsNullOrWhiteSpace(config.ConfigValue),
             HasFallbackValue = !string.IsNullOrWhiteSpace(config.DefaultValue),
             HasNote = !string.IsNullOrWhiteSpace(config.Remark)
@@ -108,7 +108,7 @@ public static class ConfigApplicationMapper
         var item = ToListItemDto(config);
         return new ConfigDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             IsGlobal = item.IsGlobal,
             ConfigName = item.ConfigName,
             ConfigGroup = item.ConfigGroup,
@@ -120,8 +120,8 @@ public static class ConfigApplicationMapper
             IsEncrypted = item.IsEncrypted,
             Status = item.Status,
             Sort = item.Sort,
-            CreatedTime = item.CreatedTime,
-            ModifiedTime = item.ModifiedTime,
+            CreatedAt = item.CreatedAt,
+            ModifiedAt = item.ModifiedAt,
             HasCurrentValue = item.HasCurrentValue,
             HasFallbackValue = item.HasFallbackValue,
             HasNote = item.HasNote,

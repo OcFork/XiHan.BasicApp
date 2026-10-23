@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 用户部门归属查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户部门")]
 public sealed class UserDepartmentQueryService
     : SaasApplicationService, IUserDepartmentQueryService
 {
@@ -71,7 +67,6 @@ public sealed class UserDepartmentQueryService
     /// <param name="onlyValid">是否仅返回有效归属</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户部门归属列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserDepartment.Read)]
     public async Task<IReadOnlyList<UserDepartmentListItemDto>> GetUserDepartmentsAsync(long userId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -88,7 +83,7 @@ public sealed class UserDepartmentQueryService
             ? await _userDepartmentRepository.GetValidByUserIdAsync(userId, cancellationToken)
             : await _userDepartmentRepository.GetListAsync(
                 userDepartment => userDepartment.UserId == userId,
-                userDepartment => userDepartment.CreatedTime,
+                userDepartment => userDepartment.CreatedAt,
                 cancellationToken);
 
         return await MapListAsync(userDepartments, cancellationToken);
@@ -102,7 +97,6 @@ public sealed class UserDepartmentQueryService
     /// <param name="onlyValid">是否仅返回有效归属</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>部门用户归属列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserDepartment.Read)]
     public async Task<IReadOnlyList<UserDepartmentListItemDto>> GetDepartmentUsersAsync(long departmentId, bool includeChildren = false, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (departmentId <= 0)
@@ -119,11 +113,11 @@ public sealed class UserDepartmentQueryService
         var userDepartments = onlyValid
             ? await _userDepartmentRepository.GetListAsync(
                 userDepartment => departmentIds.Contains(userDepartment.DepartmentId) && userDepartment.Status == ValidityStatus.Valid,
-                userDepartment => userDepartment.CreatedTime,
+                userDepartment => userDepartment.CreatedAt,
                 cancellationToken)
             : await _userDepartmentRepository.GetListAsync(
                 userDepartment => departmentIds.Contains(userDepartment.DepartmentId),
-                userDepartment => userDepartment.CreatedTime,
+                userDepartment => userDepartment.CreatedAt,
                 cancellationToken);
 
         return await MapListAsync(userDepartments, cancellationToken);
@@ -135,7 +129,6 @@ public sealed class UserDepartmentQueryService
     /// <param name="id">用户部门归属主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户部门归属详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserDepartment.Read)]
     public async Task<UserDepartmentDetailDto?> GetUserDepartmentDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -216,7 +209,7 @@ public sealed class UserDepartmentQueryService
         }
 
         var positions = await _positionRepository.GetByIdsAsync(ids, cancellationToken);
-        return positions.ToDictionary(position => position.BasicId);
+        return positions.ToDictionary(position => position.Id);
     }
 
     /// <summary>
@@ -238,6 +231,6 @@ public sealed class UserDepartmentQueryService
         }
 
         var departments = await _departmentRepository.GetByIdsAsync(ids, cancellationToken);
-        return departments.ToDictionary(department => department.BasicId);
+        return departments.ToDictionary(department => department.Id);
     }
 }

@@ -18,7 +18,8 @@ public sealed record SaasConditionContext
     /// <summary>
     /// 租户主键，0 为平台
     /// </summary>
-    public required long TenantId { get; init; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public required string TenantId { get; init; } = string.Empty;
 
     /// <summary>
     /// 求值时刻

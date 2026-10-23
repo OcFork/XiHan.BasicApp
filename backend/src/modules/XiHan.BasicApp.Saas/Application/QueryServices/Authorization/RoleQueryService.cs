@@ -15,9 +15,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -28,8 +26,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 角色查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "角色")]
 public sealed class RoleQueryService
     : SaasApplicationService, IRoleQueryService
 {
@@ -78,8 +74,6 @@ public sealed class RoleQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Role.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<RoleListItemDto>> GetRolePageAsync(RolePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -113,7 +107,6 @@ public sealed class RoleQueryService
     /// <param name="id">角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Role.Read)]
     public async Task<RoleDetailDto?> GetRoleDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -140,7 +133,6 @@ public sealed class RoleQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>已启用角色选择项</returns>
-    [PermissionAuthorize(SaasPermissionCodes.Role.Read)]
     public async Task<IReadOnlyList<RoleSelectItemDto>> GetEnabledRolesAsync(RoleSelectQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

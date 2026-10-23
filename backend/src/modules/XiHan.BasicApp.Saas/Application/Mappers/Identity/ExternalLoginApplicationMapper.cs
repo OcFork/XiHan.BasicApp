@@ -23,7 +23,7 @@ public static class ExternalLoginApplicationMapper
 
         return new ExternalLoginListItemDto
         {
-            BasicId = externalLogin.BasicId,
+            Id = externalLogin.Id,
             UserId = externalLogin.UserId,
             UserName = user?.UserName,
             RealName = user?.RealName,
@@ -33,8 +33,8 @@ public static class ExternalLoginApplicationMapper
             ProviderDisplayName = externalLogin.ProviderDisplayName,
             ExternalEmailMasked = MaskEmail(externalLogin.Email),
             LastLoginTime = externalLogin.LastLoginTime,
-            CreatedTime = externalLogin.CreatedTime,
-            ModifiedTime = externalLogin.ModifiedTime
+            CreatedAt = externalLogin.CreatedAt,
+            ModifiedAt = externalLogin.ModifiedAt
         };
     }
 
@@ -51,7 +51,7 @@ public static class ExternalLoginApplicationMapper
         var item = ToListItemDto(externalLogin, user);
         return new ExternalLoginDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             RealName = item.RealName,
@@ -61,10 +61,10 @@ public static class ExternalLoginApplicationMapper
             ProviderDisplayName = item.ProviderDisplayName,
             ExternalEmailMasked = item.ExternalEmailMasked,
             LastLoginTime = item.LastLoginTime,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = externalLogin.CreatedId,
             CreatedBy = externalLogin.CreatedBy,
-            ModifiedTime = item.ModifiedTime,
+            ModifiedAt = item.ModifiedAt,
             ModifiedId = externalLogin.ModifiedId,
             ModifiedBy = externalLogin.ModifiedBy
         };

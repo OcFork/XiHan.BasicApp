@@ -3,9 +3,6 @@
 
 using Serilog;
 using XiHan.BasicApp.WebHost;
-using XiHan.Framework.Core.Extensions.DependencyInjection;
-using XiHan.Framework.Utils.Logging;
-using XiHan.Framework.Web.Core.Extensions.DependencyInjection;
 
 try
 {

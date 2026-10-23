@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

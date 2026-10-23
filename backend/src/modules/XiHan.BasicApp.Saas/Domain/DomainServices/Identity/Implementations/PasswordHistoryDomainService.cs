@@ -4,8 +4,8 @@
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Security.Password;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -74,19 +74,20 @@ public sealed class PasswordHistoryDomainService : IPasswordHistoryDomainService
         ArgumentNullException.ThrowIfNull(user);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (user.BasicId <= 0 || string.IsNullOrEmpty(newPasswordHash))
+        if (user.Id <= 0 || string.IsNullOrEmpty(newPasswordHash))
         {
             return;
         }
 
         var entry = new SysPasswordHistory
         {
-            UserId = user.BasicId,
+            UserId = user.Id,
             PasswordHash = newPasswordHash,
             ChangedTime = changedTime
         };
 
         // 账号域数据写在注册地：外部成员在别的租户里改密码，历史也落回它的注册地
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(user.TenantId))
         {
             _ = await _passwordHistoryRepository.AddAsync(entry, cancellationToken);

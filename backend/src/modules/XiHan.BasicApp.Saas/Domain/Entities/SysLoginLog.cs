@@ -38,8 +38,10 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 风控：短时间大量失败 → 临时封禁 IP
 /// - 合规审计
 /// </remarks>
+// xihan-migrate(V4-02): ISplitTableEntity 没有 5.0 对应物；请声明为应用自己的接口。
+// xihan-migrate(V4-02): ITraceableEntity 没有 5.0 对应物；请声明为应用自己的接口。
 [SugarTable(TableName = "Sys_Login_Log_{year}{month}{day}", TableDescription = "系统登录日志表"), SplitTable(SplitType.Month)]
-[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{split_table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{split_table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_UsId", nameof(UserId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_LoRe", nameof(LoginResult), OrderByType.Asc)]
@@ -50,7 +52,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 [SugarIndex("IX_{split_table}_DeId", nameof(DeviceId), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_IsRi", nameof(IsRiskLogin), OrderByType.Asc)]
 [SugarIndex("IX_{split_table}_SeId", nameof(SessionId), OrderByType.Asc)]
-public partial class SysLoginLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IStrictMultiTenantEntity
+public partial class SysLoginLog : BasicAppCreationEntity, ISplitTableEntity, ITraceableEntity, IMultiTenant
 {
     /// <summary>
     /// 用户ID
@@ -147,5 +149,5 @@ public partial class SysLoginLog : BasicAppCreationEntity, ISplitTableEntity, IT
     /// </summary>
     [SugarColumn(ColumnName = "Created_Time", IsNullable = false, ColumnDescription = "创建时间")]
     [SplitField]
-    public override DateTimeOffset CreatedTime { get; set; }
+    public override DateTimeOffset CreatedAt { get; set; }
 }

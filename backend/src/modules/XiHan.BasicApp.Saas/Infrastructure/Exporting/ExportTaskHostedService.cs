@@ -8,9 +8,8 @@ using System.Text.Json.Serialization;
 using XiHan.BasicApp.Saas.Application.Exporting;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.Framework.Caching.Distributed.Abstracts;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Tasks.BackgroundServices;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Exporting;
 
@@ -27,7 +26,8 @@ public sealed class ExportTaskMessage : IBackgroundTaskItem
     /// <summary>
     /// 导出任务所属租户（平台为 0）：后台在该作用域内领取与执行
     /// </summary>
-    public long TenantId { get; init; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; init; } = string.Empty;
 
     /// <summary>
     /// 任务创建时间
@@ -118,6 +118,7 @@ public sealed class ExportTaskHostedService : XiHanBackgroundServiceBase<ExportT
             var repository = scope.ServiceProvider.GetRequiredService<IExportTaskRepository>();
 
             // 任务行带发起租户的戳：在该租户作用域内领取
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using var tenantScope = scope.ServiceProvider.GetRequiredService<ICurrentTenant>().Change(message.TenantId);
 
             // 原子领取：仅 Pending 才置 Processing（去重 + 跳过已取消/已执行/重复投递）

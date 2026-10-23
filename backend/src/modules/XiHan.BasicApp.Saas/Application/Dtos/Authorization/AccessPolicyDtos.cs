@@ -4,7 +4,6 @@
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Authorization.Conditions;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 
 namespace XiHan.BasicApp.Saas.Application.Dtos;
@@ -58,7 +57,8 @@ public class AccessPolicyListItemDto : BasicAppDto
     /// <summary>
     /// 所属层，0 为平台
     /// </summary>
-    public long TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string TenantId { get; set; } = string.Empty;
 
     /// <summary>
     /// 策略编码
@@ -128,12 +128,12 @@ public class AccessPolicyListItemDto : BasicAppDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 修改时间
     /// </summary>
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 }
 
 /// <summary>

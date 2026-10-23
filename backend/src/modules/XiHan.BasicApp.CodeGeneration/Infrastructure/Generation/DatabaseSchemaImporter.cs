@@ -4,8 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 using XiHan.BasicApp.CodeGeneration.Domain.Generation;
-using XiHan.Framework.Data.SqlSugar.Connections;
-using XiHan.Framework.Data.SqlSugar.Metadata;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Generation;
 

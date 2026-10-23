@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -37,7 +36,7 @@ public sealed class PositionRepository(ISqlSugarClientResolver clientResolver)
         var query = CreateQueryable().Where(position => position.PositionCode == positionCode.Trim());
         if (excludeId.HasValue)
         {
-            query = query.Where(position => position.BasicId != excludeId.Value);
+            query = query.Where(position => position.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

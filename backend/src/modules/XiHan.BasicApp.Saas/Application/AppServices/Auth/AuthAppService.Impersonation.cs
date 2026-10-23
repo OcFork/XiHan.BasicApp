@@ -8,10 +8,6 @@ using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Extensions;
-using XiHan.Framework.Uow.Attributes;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -36,8 +32,6 @@ public sealed partial class AuthAppService
     /// <param name="input">模仿登录参数</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>模仿态的登录令牌</returns>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Impersonation.Start)]
     public async Task<LoginTokenDto> StartImpersonationAsync(StartImpersonationRequestDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -76,7 +70,7 @@ public sealed partial class AuthAppService
 
         using var tenantScope = _currentTenant.Change(plan.TargetTenantId, plan.TargetTenantName);
 
-        var targetSnapshot = await _authorizationSnapshotQueryService.BuildAsync(plan.Target.BasicId, now, cancellationToken);
+        var targetSnapshot = await _authorizationSnapshotQueryService.BuildAsync(plan.Target.Id, now, cancellationToken);
         IReadOnlyCollection<string> tokenPermissions = targetSnapshot.Permissions.Contains("*") ? ["*"] : [];
         var tokenIssue = _authTokenIssueService.IssueAccessToken(
             new AuthAccessTokenIssueCommand(
@@ -111,7 +105,7 @@ public sealed partial class AuthAppService
 
         await PublishSecurityAuditAsync(
             plan.TargetTenantId,
-            plan.Target.BasicId,
+            plan.Target.Id,
             plan.Target.UserName,
             LoginResult.ImpersonationStarted,
             $"管理员 {operatorUserName}({operatorUserId}) 以本账号身份登录，有效期 {(int)lifetime.TotalMinutes} 分钟");
@@ -130,7 +124,6 @@ public sealed partial class AuthAppService
     /// </remarks>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>发起人本人身份的登录令牌</returns>
-    [UnitOfWork(true)]
     public async Task<LoginTokenDto> StopImpersonationAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -203,7 +196,7 @@ public sealed partial class AuthAppService
 
         using var originScope = _currentTenant.Change(originTenantId, originTenantName);
 
-        var operatorSnapshot = await _authorizationSnapshotQueryService.BuildAsync(operatorUser.BasicId, now, cancellationToken);
+        var operatorSnapshot = await _authorizationSnapshotQueryService.BuildAsync(operatorUser.Id, now, cancellationToken);
         IReadOnlyCollection<string> operatorTokenPermissions = operatorSnapshot.Permissions.Contains("*") ? ["*"] : [];
         var accessTokenJti = Guid.NewGuid().ToString("N");
 
@@ -318,7 +311,7 @@ public sealed partial class AuthAppService
         try
         {
             _ = await _userNotificationDispatchService.DispatchToUserAsync(
-                target.BasicId,
+                target.Id,
                 "管理员以你的身份登录",
                 $"管理员 {operatorUserName ?? operatorUserId.ToString()} 已以你的账号身份登录，用于排查问题，有效期 {(int)lifetime.TotalMinutes} 分钟。期间的操作会记录在登录日志里。",
                 NotificationType.Security,
@@ -328,7 +321,7 @@ public sealed partial class AuthAppService
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            _logger.LogWarning(exception, "模仿登录通知投递失败：目标用户 {TargetUserId}", target.BasicId);
+            _logger.LogWarning(exception, "模仿登录通知投递失败：目标用户 {TargetUserId}", target.Id);
         }
     }
 }

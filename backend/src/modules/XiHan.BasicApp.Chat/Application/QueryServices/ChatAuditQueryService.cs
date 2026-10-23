@@ -8,10 +8,6 @@ using XiHan.BasicApp.Chat.Application.Contracts;
 using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Domain.Entities;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -22,8 +18,6 @@ namespace XiHan.BasicApp.Chat.Application.QueryServices;
 /// <summary>
 /// 聊天审计查询应用服务（管理侧跨会话合规查询，权限 chat:audit）
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "聊天审计")]
 public sealed class ChatAuditQueryService
     : ChatApplicationService, IChatAuditQueryService
 {
@@ -42,8 +36,6 @@ public sealed class ChatAuditQueryService
     /// <summary>
     /// 聊天消息审计分页
     /// </summary>
-    [HttpPost]
-    [PermissionAuthorize(ChatPermissionCodes.Audit)]
     public async Task<PageResultDtoBase<ChatAuditListItemDto>> GetChatMessagePageAsync(ChatAuditPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -58,8 +50,8 @@ public sealed class ChatAuditQueryService
         var query = DbClient.Queryable<SysChatMessage>()
             .WhereIF(input.ConversationId is > 0, message => message.ConversationId == input.ConversationId!.Value)
             .WhereIF(input.SenderUserId is > 0, message => message.SenderUserId == input.SenderUserId!.Value)
-            .WhereIF(input.CreatedTimeStart.HasValue, message => message.CreatedTime >= input.CreatedTimeStart!.Value)
-            .WhereIF(input.CreatedTimeEnd.HasValue, message => message.CreatedTime <= input.CreatedTimeEnd!.Value)
+            .WhereIF(input.CreatedTimeStart.HasValue, message => message.CreatedAt >= input.CreatedTimeStart!.Value)
+            .WhereIF(input.CreatedTimeEnd.HasValue, message => message.CreatedAt <= input.CreatedTimeEnd!.Value)
             .WhereIF(!input.IncludeRecalled, message => !message.IsRecalled)
             .WhereIF(!string.IsNullOrEmpty(keyword), message =>
                 message.Content!.Contains(keyword!)
@@ -70,7 +62,7 @@ public sealed class ChatAuditQueryService
         query = query.ApplyFilters(input.Conditions.Filters);
         query = input.Conditions.Sorts.Count > 0
             ? query.ApplySorts(input.Conditions.Sorts)
-            : query.OrderByDescending(message => message.CreatedTime);
+            : query.OrderByDescending(message => message.CreatedAt);
 
         RefAsync<int> totalCount = 0;
         var entities = await query
@@ -85,16 +77,16 @@ public sealed class ChatAuditQueryService
         // 批量带出会话名称/类型（免逐行 JOIN）
         var conversationIds = entities.Select(message => message.ConversationId).Distinct().ToList();
         var conversations = await DbClient.Queryable<SysChatConversation>()
-            .Where(conversation => conversationIds.Contains(conversation.BasicId))
+            .Where(conversation => conversationIds.Contains(conversation.Id))
             .ToListAsync(cancellationToken);
-        var conversationMap = conversations.ToDictionary(conversation => conversation.BasicId);
+        var conversationMap = conversations.ToDictionary(conversation => conversation.Id);
 
         var items = entities.Select(message =>
         {
             var conversation = conversationMap.GetValueOrDefault(message.ConversationId);
             return new ChatAuditListItemDto
             {
-                BasicId = message.BasicId,
+                Id = message.Id,
                 ConversationId = message.ConversationId,
                 ConversationName = conversation?.ConversationName,
                 ConversationType = conversation?.ConversationType ?? ChatConversationType.Single,
@@ -105,7 +97,7 @@ public sealed class ChatAuditQueryService
                 FileName = BuildAttachmentSummary(message.Attachments),
                 IsRecalled = message.IsRecalled,
                 EditedTime = message.EditedTime,
-                CreatedTime = message.CreatedTime
+                CreatedAt = message.CreatedAt
             };
         }).ToList();
         return new PageResultDtoBase<ChatAuditListItemDto>(items, page);

@@ -2,10 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.EventBus.Abstractions.Local;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -15,8 +16,19 @@ namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 /// <remarks>
 /// 当文件上传完成后，创建主存储记录并触发病毒扫描（桩实现）。
 /// </remarks>
-public sealed class FileUploadedEventHandler : ILocalEventHandler<FileUploadedDomainEvent>
+public sealed class FileUploadedEventHandler : IMessageHandler
 {
+    /// <summary>由 xihan migrate v4 生成；提交前请检查。</summary>
+    public const string FileUploadedTopic = "file-uploaded";
+
+    /// <inheritdoc />
+    public async ValueTask<Result> HandleAsync(MessageDelivery delivery, InvocationContext context, CancellationToken cancellationToken)
+    {
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await HandleEventAsync(JsonSerializer.Deserialize<FileUploadedDomainEvent>(delivery.Envelope.Data.Span)!).ConfigureAwait(false);
+        return Result.Success();
+    }
+
     private readonly ISqlSugarClientResolver _clientResolver;
     private readonly ILogger<FileUploadedEventHandler> _logger;
 
@@ -60,7 +72,7 @@ public sealed class FileUploadedEventHandler : ILocalEventHandler<FileUploadedDo
             var db = _clientResolver.GetCurrentClient();
 
             var existing = await db.Queryable<SysFileStorage>()
-                .Where(s => s.BasicId == eventData.StorageId && !s.IsDeleted)
+                .Where(s => s.Id == eventData.StorageId && !s.IsDeleted)
                 .FirstAsync();
 
             if (existing is not null)

@@ -12,8 +12,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -23,8 +21,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 系统文件查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "系统文件")]
 public sealed class FileQueryService
     : SaasApplicationService, IFileQueryService
 {
@@ -62,8 +58,6 @@ public sealed class FileQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统文件分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<FileListItemDto>> GetFilePageAsync(FilePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -88,7 +82,6 @@ public sealed class FileQueryService
     /// <param name="id">系统文件主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统文件详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
     public async Task<FileDetailDto?> GetFileDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -108,8 +101,6 @@ public sealed class FileQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统文件存储分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<FileStorageListItemDto>> GetFileStoragePageAsync(FileStoragePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -129,7 +120,6 @@ public sealed class FileQueryService
     /// <param name="fileId">系统文件主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统文件存储列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
     public async Task<IReadOnlyList<FileStorageListItemDto>> GetFileStoragesAsync(long fileId, CancellationToken cancellationToken = default)
     {
         if (fileId <= 0)
@@ -144,7 +134,7 @@ public sealed class FileQueryService
             cancellationToken);
 
         return [.. storages
-            .OrderByDescending(storage => storage.CreatedTime)
+            .OrderByDescending(storage => storage.CreatedAt)
             .Select(FileApplicationMapper.ToStorageListItemDto)];
     }
 
@@ -154,7 +144,6 @@ public sealed class FileQueryService
     /// <param name="id">系统文件存储主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>系统文件存储详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.File.Read)]
     public async Task<FileStorageDetailDto?> GetFileStorageDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -256,7 +245,7 @@ public sealed class FileQueryService
     /// <param name="request">系统文件分页请求</param>
     private static void ApplyFileSorts(BasicAppPRDto request)
     {
-        request.Conditions.AddSort((SysFile file) => file.CreatedTime, SortDirection.Descending, 0);
+        request.Conditions.AddSort((SysFile file) => file.CreatedAt, SortDirection.Descending, 0);
         request.Conditions.AddSort((SysFile file) => file.FileType, SortDirection.Ascending, 1);
         request.Conditions.AddSort((SysFile file) => file.FileName, SortDirection.Ascending, 2);
     }

@@ -10,16 +10,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 账号管理页面查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "账号管理")]
 public sealed class UserManagementQueryService
     : SaasApplicationService, IUserManagementQueryService
 {
@@ -106,7 +102,6 @@ public sealed class UserManagementQueryService
     /// <param name="userId">用户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>账号管理详情聚合视图</returns>
-    [PermissionAuthorize(SaasPermissionCodes.User.Read)]
     public async Task<UserManagementDetailDto?> GetUserManagementDetailAsync(long userId, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -133,16 +128,16 @@ public sealed class UserManagementQueryService
         var now = DateTimeOffset.UtcNow;
         var userDetail = UserApplicationMapper.ToDetailDto(user);
         userDetail.IsExternalMember = !_userDirectory.IsHomeAccount(user);
-        var tenantMember = await _tenantUserRepository.GetMembershipAsync(user.BasicId, cancellationToken);
+        var tenantMember = await _tenantUserRepository.GetMembershipAsync(user.Id, cancellationToken);
 
         return new UserManagementDetailDto
         {
             User = userDetail,
             TenantMembership = tenantMember is null ? null : TenantMemberApplicationMapper.ToListItemDto(tenantMember, now),
-            Departments = await GetDepartmentsAsync(user.BasicId, cancellationToken),
-            Roles = await GetRolesAsync(user.BasicId, tenantMember, now, cancellationToken),
-            Permissions = await GetPermissionsAsync(user.BasicId, tenantMember, now, cancellationToken),
-            DataScopes = await GetDataScopesAsync(user.BasicId, tenantMember, cancellationToken),
+            Departments = await GetDepartmentsAsync(user.Id, cancellationToken),
+            Roles = await GetRolesAsync(user.Id, tenantMember, now, cancellationToken),
+            Permissions = await GetPermissionsAsync(user.Id, tenantMember, now, cancellationToken),
+            DataScopes = await GetDataScopesAsync(user.Id, tenantMember, cancellationToken),
             Security = await GetSecurityAsync(user, now, cancellationToken),
             Sessions = await GetSessionsAsync(user, now, cancellationToken),
             Statistics = await GetStatisticsAsync(user, cancellationToken),
@@ -156,7 +151,7 @@ public sealed class UserManagementQueryService
     {
         var userDepartments = await _userDepartmentRepository.GetListAsync(
             item => item.UserId == userId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (userDepartments.Count == 0)
@@ -183,7 +178,7 @@ public sealed class UserManagementQueryService
     {
         var userRoles = await _userRoleRepository.GetListAsync(
             item => item.UserId == userId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (userRoles.Count == 0)
@@ -211,7 +206,7 @@ public sealed class UserManagementQueryService
     {
         var userPermissions = await _userPermissionRepository.GetListAsync(
             item => item.UserId == userId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (userPermissions.Count == 0)
@@ -220,7 +215,7 @@ public sealed class UserManagementQueryService
         }
 
         var permissionMap = await BuildPermissionMapAsync(userPermissions.Select(item => item.PermissionId), cancellationToken);
-        var conditionCounts = await _permissionConditionRepository.CountForUserPermissionsAsync(userPermissions.Select(item => item.BasicId), cancellationToken);
+        var conditionCounts = await _permissionConditionRepository.CountForUserPermissionsAsync(userPermissions.Select(item => item.Id), cancellationToken);
 
         return [.. userPermissions
             .Select(item => UserPermissionApplicationMapper.ToListItemDto(
@@ -228,7 +223,7 @@ public sealed class UserManagementQueryService
                 permissionMap.GetValueOrDefault(item.PermissionId),
                 tenantMember,
                 now,
-                conditionCounts.GetValueOrDefault(item.BasicId)))
+                conditionCounts.GetValueOrDefault(item.Id)))
             .OrderBy(item => item.PermissionCode)
             .ThenBy(item => item.PermissionId)];
     }
@@ -240,7 +235,7 @@ public sealed class UserManagementQueryService
     {
         var dataScopes = await _userDataScopeRepository.GetListAsync(
             item => item.UserId == userId,
-            item => item.CreatedTime,
+            item => item.CreatedAt,
             cancellationToken);
 
         if (dataScopes.Count == 0)
@@ -262,7 +257,7 @@ public sealed class UserManagementQueryService
     private async Task<UserSecurityDetailDto?> GetSecurityAsync(SysUser user, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var security = await _userSecurityRepository.GetFirstAsync(
-            item => item.UserId == user.BasicId,
+            item => item.UserId == user.Id,
             cancellationToken);
 
         return security is null
@@ -273,7 +268,7 @@ public sealed class UserManagementQueryService
     private async Task<List<UserSessionListItemDto>> GetSessionsAsync(SysUser user, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var sessions = await _userSessionRepository.GetListAsync(
-            item => item.UserId == user.BasicId,
+            item => item.UserId == user.Id,
             item => item.LastActivityTime,
             cancellationToken);
 
@@ -288,7 +283,7 @@ public sealed class UserManagementQueryService
     private async Task<List<UserStatisticsDetailDto>> GetStatisticsAsync(SysUser user, CancellationToken cancellationToken)
     {
         var statistics = await _userStatisticsRepository.GetListAsync(
-            item => item.UserId == user.BasicId,
+            item => item.UserId == user.Id,
             item => item.StatisticsDate,
             cancellationToken);
 
@@ -302,28 +297,28 @@ public sealed class UserManagementQueryService
     private async Task<List<ExternalLoginListItemDto>> GetExternalLoginsAsync(SysUser user, CancellationToken cancellationToken)
     {
         var externalLogins = await _externalLoginRepository.GetListAsync(
-            item => item.UserId == user.BasicId,
-            item => item.CreatedTime,
+            item => item.UserId == user.Id,
+            item => item.CreatedAt,
             cancellationToken);
 
         return [.. externalLogins
             .Select(item => ExternalLoginApplicationMapper.ToListItemDto(item, user))
             .OrderBy(item => item.Provider)
             .ThenByDescending(item => item.LastLoginTime)
-            .ThenByDescending(item => item.CreatedTime)];
+            .ThenByDescending(item => item.CreatedAt)];
     }
 
     private async Task<List<PasswordHistoryListItemDto>> GetPasswordHistoriesAsync(SysUser user, CancellationToken cancellationToken)
     {
         var passwordHistories = await _passwordHistoryRepository.GetListAsync(
-            item => item.UserId == user.BasicId,
+            item => item.UserId == user.Id,
             item => item.ChangedTime,
             cancellationToken);
 
         return [.. passwordHistories
             .Select(item => PasswordHistoryApplicationMapper.ToListItemDto(item, user))
             .OrderByDescending(item => item.ChangedTime)
-            .ThenByDescending(item => item.CreatedTime)
+            .ThenByDescending(item => item.CreatedAt)
             .Take(MaxPasswordHistoryCount)];
     }
 
@@ -340,7 +335,7 @@ public sealed class UserManagementQueryService
         }
 
         var departments = await _departmentRepository.GetByIdsAsync(ids, cancellationToken);
-        return departments.ToDictionary(item => item.BasicId);
+        return departments.ToDictionary(item => item.Id);
     }
 
     private async Task<IReadOnlyDictionary<long, SysRole>> BuildRoleMapAsync(IEnumerable<long> roleIds, CancellationToken cancellationToken)
@@ -356,7 +351,7 @@ public sealed class UserManagementQueryService
         }
 
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
-        return roles.ToDictionary(item => item.BasicId);
+        return roles.ToDictionary(item => item.Id);
     }
 
     private async Task<IReadOnlyDictionary<long, SysPermission>> BuildPermissionMapAsync(IEnumerable<long> permissionIds, CancellationToken cancellationToken)
@@ -372,6 +367,6 @@ public sealed class UserManagementQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(item => item.BasicId);
+        return permissions.ToDictionary(item => item.Id);
     }
 }

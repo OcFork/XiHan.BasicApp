@@ -6,10 +6,6 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
-using XiHan.Framework.Workflow.Abstractions.Definitions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
-using XiHan.Framework.Workflow.Abstractions.UserTasks;
-using XiHan.Framework.Workflow.Builders;
 
 namespace XiHan.BasicApp.Workflow.Application.Mappers;
 
@@ -30,7 +26,7 @@ public static class WorkflowApplicationMapper
     {
         return new WorkflowDefinitionListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             Code = entity.Code,
             Name = entity.Name,
             Version = entity.Version,
@@ -39,7 +35,7 @@ public static class WorkflowApplicationMapper
             Status = entity.Status,
             EnableCompensation = entity.EnableCompensation,
             PublishTime = WorkflowTimes.ToOffset(entity.PublishTime, clockKind),
-            CreatedTime = entity.CreatedTime
+            CreatedAt = entity.CreatedAt
         };
     }
 
@@ -50,7 +46,7 @@ public static class WorkflowApplicationMapper
     {
         return new WorkflowDefinitionDetailDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             Code = entity.Code,
             Name = entity.Name,
             Version = entity.Version,
@@ -59,7 +55,7 @@ public static class WorkflowApplicationMapper
             Status = entity.Status,
             EnableCompensation = entity.EnableCompensation,
             PublishTime = WorkflowTimes.ToOffset(entity.PublishTime, clockKind),
-            CreatedTime = entity.CreatedTime,
+            CreatedAt = entity.CreatedAt,
             DefinitionJson = entity.DefinitionJson
         };
     }
@@ -71,7 +67,7 @@ public static class WorkflowApplicationMapper
     {
         return new WorkflowDefinitionDetailDto
         {
-            BasicId = WorkflowStoreMapper.ParseId(definition.Id),
+            Id = WorkflowStoreMapper.ParseId(definition.Id),
             Code = definition.Code,
             Name = definition.Name,
             Version = definition.Version,
@@ -80,7 +76,7 @@ public static class WorkflowApplicationMapper
             Status = definition.Status,
             EnableCompensation = definition.EnableCompensation,
             PublishTime = WorkflowTimes.ToOffset(definition.PublishTime, clockKind),
-            CreatedTime = WorkflowTimes.ToOffset(definition.CreationTime, clockKind),
+            CreatedAt = WorkflowTimes.ToOffset(definition.CreationTime, clockKind),
             DefinitionJson = WorkflowDefinitionJsonSerializer.Serialize(definition)
         };
     }
@@ -92,7 +88,7 @@ public static class WorkflowApplicationMapper
     {
         return new WorkflowInstanceListItemDto
         {
-            BasicId = entity.BasicId,
+            Id = entity.Id,
             DefinitionCode = entity.DefinitionCode,
             DefinitionVersion = entity.DefinitionVersion,
             Name = entity.Name,
@@ -117,7 +113,7 @@ public static class WorkflowApplicationMapper
     {
         return new WorkflowInstanceListItemDto
         {
-            BasicId = WorkflowStoreMapper.ParseId(instance.Id),
+            Id = WorkflowStoreMapper.ParseId(instance.Id),
             DefinitionCode = instance.DefinitionCode,
             DefinitionVersion = instance.DefinitionVersion,
             Name = instance.Name,
@@ -146,7 +142,7 @@ public static class WorkflowApplicationMapper
     {
         return new WorkflowInstanceDetailDto
         {
-            BasicId = WorkflowStoreMapper.ParseId(instance.Id),
+            Id = WorkflowStoreMapper.ParseId(instance.Id),
             DefinitionCode = instance.DefinitionCode,
             DefinitionVersion = instance.DefinitionVersion,
             Name = instance.Name,

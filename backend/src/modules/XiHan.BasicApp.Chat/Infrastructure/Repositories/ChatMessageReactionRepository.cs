@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -30,7 +29,7 @@ public sealed class ChatMessageReactionRepository(ISqlSugarClientResolver client
         var ids = messageIds.ToList();
         return await CreateQueryable()
             .Where(reaction => ids.Contains(reaction.MessageId))
-            .OrderBy(reaction => reaction.CreatedTime)
+            .OrderBy(reaction => reaction.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 

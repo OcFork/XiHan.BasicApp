@@ -7,11 +7,6 @@ using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.Framework.Authentication.OneTimeCode;
-using XiHan.Framework.Authentication.Otp;
-using XiHan.Framework.Bot.Email.Abstractions;
-using XiHan.Framework.Bot.Email.Options;
-using XiHan.Framework.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -119,7 +114,7 @@ public sealed class ProfileVerificationService
         var purpose = method == TwoFactorMethod.Email
             ? ProfileVerificationPurpose.TwoFactorEmail
             : ProfileVerificationPurpose.TwoFactorPhone;
-        _ = await ConsumeCodeAsync(context.User.BasicId, purpose, code, cancellationToken);
+        _ = await ConsumeCodeAsync(context.User.Id, purpose, code, cancellationToken);
     }
 
     /// <summary>
@@ -144,12 +139,12 @@ public sealed class ProfileVerificationService
         var trimmedTarget = target.Trim();
 
         // 防刷：封禁 → 发送间隔（60s）→ 日配额（target 10 次 / IP 50 次）依序检查，通过后记账
-        await _verificationThrottleService.EnsureSendAllowedAsync(user.BasicId, purpose, trimmedTarget, cancellationToken);
+        await _verificationThrottleService.EnsureSendAllowedAsync(user.Id, purpose, trimmedTarget, cancellationToken);
 
         // 目标联系方式作为负载随码暂存，消费成功后取回（改绑场景即待生效的新邮箱/新手机号）
         var issued = await _oneTimeCodeService.IssueAsync(
             Purpose,
-            BuildTarget(user.BasicId, purpose),
+            BuildTarget(user.Id, purpose),
             payload: trimmedTarget,
             new OneTimeCodeOptions { CodeLength = 6, ExpiresInSeconds = VerificationCodeSeconds },
             cancellationToken);
@@ -173,7 +168,7 @@ public sealed class ProfileVerificationService
             await _messageDeliveryService.CreateSmsAsync(
                 new SmsCreateCommand(
                     SenderId: null,
-                    ReceiverId: user.BasicId,
+                    ReceiverId: user.Id,
                     SmsType: SmsType.VerificationCode,
                     ToPhone: trimmedTarget,
                     Content: content,
@@ -183,7 +178,7 @@ public sealed class ProfileVerificationService
                     ScheduledTime: null,
                     MaxRetryCount: 3,
                     BusinessType: VerificationCodeBusinessType,
-                    BusinessId: user.BasicId,
+                    BusinessId: user.Id,
                     Remark: null),
                 cancellationToken);
         }
@@ -192,7 +187,7 @@ public sealed class ProfileVerificationService
             await _messageDeliveryService.CreateEmailAsync(
                 new EmailCreateCommand(
                     SendUserId: null,
-                    ReceiveUserId: user.BasicId,
+                    ReceiveUserId: user.Id,
                     EmailType: EmailType.Verification,
                     FromEmail: emailConfig?.From.FromMail ?? string.Empty,
                     FromName: emailConfig?.From.FromName,
@@ -209,7 +204,7 @@ public sealed class ProfileVerificationService
                     ScheduledTime: null,
                     MaxRetryCount: 3,
                     BusinessType: VerificationCodeBusinessType,
-                    BusinessId: user.BasicId,
+                    BusinessId: user.Id,
                     Remark: null),
                 cancellationToken);
         }
@@ -233,13 +228,13 @@ public sealed class ProfileVerificationService
         var trimmedPhone = phone.Trim();
 
         // 防刷：与安全操作发码共用同一套限流（封禁 → 间隔 → 日配额）
-        await _verificationThrottleService.EnsureSendAllowedAsync(user.BasicId, ProfileVerificationPurpose.TwoFactorPhone, trimmedPhone, cancellationToken);
+        await _verificationThrottleService.EnsureSendAllowedAsync(user.Id, ProfileVerificationPurpose.TwoFactorPhone, trimmedPhone, cancellationToken);
 
         // 登录 2FA 与安全操作 2FA 共享 TwoFactorPhone 用途（同一在途码，重发覆盖旧码）；
         // 负载暂存手机号以满足消费侧非空校验，与改绑场景语义保持一致
         var issued = await _oneTimeCodeService.IssueAsync(
             Purpose,
-            BuildTarget(user.BasicId, ProfileVerificationPurpose.TwoFactorPhone),
+            BuildTarget(user.Id, ProfileVerificationPurpose.TwoFactorPhone),
             payload: trimmedPhone,
             new OneTimeCodeOptions { CodeLength = 6, ExpiresInSeconds = VerificationCodeSeconds },
             cancellationToken);
@@ -260,7 +255,7 @@ public sealed class ProfileVerificationService
         await _messageDeliveryService.CreateSmsAsync(
             new SmsCreateCommand(
                 SenderId: null,
-                ReceiverId: user.BasicId,
+                ReceiverId: user.Id,
                 SmsType: SmsType.VerificationCode,
                 ToPhone: trimmedPhone,
                 Content: content,
@@ -270,7 +265,7 @@ public sealed class ProfileVerificationService
                 ScheduledTime: null,
                 MaxRetryCount: 3,
                 BusinessType: SmsLoginCodeBusinessType,
-                BusinessId: user.BasicId,
+                BusinessId: user.Id,
                 Remark: null),
             cancellationToken);
 

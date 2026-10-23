@@ -11,8 +11,6 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -22,8 +20,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 会话角色查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "会话角色")]
 public sealed class SessionRoleQueryService
     : SaasApplicationService, ISessionRoleQueryService
 {
@@ -68,8 +64,6 @@ public sealed class SessionRoleQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>会话角色分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.SessionRole.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<SessionRoleListItemDto>> GetSessionRolePageAsync(SessionRolePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -111,7 +105,6 @@ public sealed class SessionRoleQueryService
     /// <param name="id">会话角色主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>会话角色详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.SessionRole.Read)]
     public async Task<SessionRoleDetailDto?> GetSessionRoleDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -182,7 +175,7 @@ public sealed class SessionRoleQueryService
         }
 
         request.Conditions.AddSort((SysSessionRole sessionRole) => sessionRole.ActivatedTime, SortDirection.Descending, 0);
-        request.Conditions.AddSort((SysSessionRole sessionRole) => sessionRole.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysSessionRole sessionRole) => sessionRole.CreatedAt, SortDirection.Descending, 1);
         return request;
     }
 
@@ -253,7 +246,7 @@ public sealed class SessionRoleQueryService
         }
 
         var sessions = await _userSessionRepository.GetByIdsAsync(ids, cancellationToken);
-        return sessions.ToDictionary(session => session.BasicId);
+        return sessions.ToDictionary(session => session.Id);
     }
 
     /// <summary>
@@ -272,7 +265,7 @@ public sealed class SessionRoleQueryService
         }
 
         var roles = await _roleRepository.GetByIdsAsync(ids, cancellationToken);
-        return roles.ToDictionary(role => role.BasicId);
+        return roles.ToDictionary(role => role.Id);
     }
 
     /// <summary>
@@ -291,6 +284,6 @@ public sealed class SessionRoleQueryService
         }
 
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-        return users.ToDictionary(user => user.BasicId);
+        return users.ToDictionary(user => user.Id);
     }
 }

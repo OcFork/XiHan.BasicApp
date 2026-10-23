@@ -4,9 +4,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.Framework.Caching.Distributed.Abstracts;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Uow;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 
@@ -25,6 +22,7 @@ public sealed class DbMessageOutbox
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRedisDelayQueue<MessageOutboxMessage> _queue;
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     /// <summary>
@@ -77,14 +75,14 @@ public sealed class DbMessageOutbox
         {
             return await client.Updateable<SysSms>()
                 .SetColumns(s => s.SmsStatus == SmsStatus.Sending)
-                .Where(s => s.BasicId == entityId && !s.IsDeleted
+                .Where(s => s.Id == entityId && !s.IsDeleted
                     && (s.SmsStatus == SmsStatus.Pending || (s.SmsStatus == SmsStatus.Failed && s.RetryCount < s.MaxRetryCount)))
                 .ExecuteCommandAsync(cancellationToken) > 0;
         }
 
         return await client.Updateable<SysEmail>()
             .SetColumns(e => e.EmailStatus == EmailStatus.Sending)
-            .Where(e => e.BasicId == entityId && !e.IsDeleted
+            .Where(e => e.Id == entityId && !e.IsDeleted
                 && (e.EmailStatus == EmailStatus.Pending || (e.EmailStatus == EmailStatus.Failed && e.RetryCount < e.MaxRetryCount)))
             .ExecuteCommandAsync(cancellationToken) > 0;
     }
@@ -116,7 +114,7 @@ public sealed class DbMessageOutbox
             .Where(e => !e.IsDeleted
                 && (e.ScheduledTime == null || e.ScheduledTime <= now)
                 && (e.EmailStatus == EmailStatus.Pending || (e.EmailStatus == EmailStatus.Failed && e.RetryCount < e.MaxRetryCount)))
-            .Select(e => e.BasicId)
+            .Select(e => e.Id)
             .ToListAsync(cancellationToken);
         result.AddRange(emailIds.Select(id => new MessageOutboxMessage { Channel = SaasMessageChannelNames.Email, EntityId = id, TenantId = scopeTenantId, CreatedAt = now }));
 
@@ -124,7 +122,7 @@ public sealed class DbMessageOutbox
             .Where(s => !s.IsDeleted
                 && (s.ScheduledTime == null || s.ScheduledTime <= now)
                 && (s.SmsStatus == SmsStatus.Pending || (s.SmsStatus == SmsStatus.Failed && s.RetryCount < s.MaxRetryCount)))
-            .Select(s => s.BasicId)
+            .Select(s => s.Id)
             .ToListAsync(cancellationToken);
         result.AddRange(smsIds.Select(id => new MessageOutboxMessage { Channel = SaasMessageChannelNames.Sms, EntityId = id, TenantId = scopeTenantId, CreatedAt = now }));
 

@@ -3,8 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using XiHan.BasicApp.Saas.Domain.Conditions;
-using XiHan.Framework.Security.Claims;
-using XiHan.Framework.Web.Api.Security.OpenApi;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

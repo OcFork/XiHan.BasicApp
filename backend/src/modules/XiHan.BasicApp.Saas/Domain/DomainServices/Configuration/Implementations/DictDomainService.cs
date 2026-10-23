@@ -5,7 +5,7 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Core.Exceptions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
@@ -133,8 +133,8 @@ public sealed class DictDomainService
 
         // 全局字典的字典项可能落在租户里（历史数据），删除前看所有租户
         var hasItems = dict.TenantId == 0
-            ? await _dictItemRepository.AnyIgnoreTenantAsync(item => item.DictId == dict.BasicId, cancellationToken)
-            : await _dictItemRepository.AnyAsync(item => item.DictId == dict.BasicId, cancellationToken);
+            ? await _dictItemRepository.AnyIgnoreTenantAsync(item => item.DictId == dict.Id, cancellationToken)
+            : await _dictItemRepository.AnyAsync(item => item.DictId == dict.Id, cancellationToken);
         if (hasItems)
         {
             throw new InvalidOperationException("系统字典存在字典项，不能直接删除。");
@@ -154,7 +154,7 @@ public sealed class DictDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         var dictItem = await GetDictItemOrThrowAsync(id, cancellationToken);
-        if (await _dictItemRepository.AnyAsync(item => item.ParentId == dictItem.BasicId, cancellationToken))
+        if (await _dictItemRepository.AnyAsync(item => item.ParentId == dictItem.Id, cancellationToken))
         {
             throw new InvalidOperationException("系统字典项存在子节点，不能直接删除。");
         }
@@ -173,8 +173,8 @@ public sealed class DictDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统字典主键必须大于 0。");
-        var dict = await GetDictOrThrowAsync(command.BasicId, cancellationToken);
+        EnsureId(command.Id, "系统字典主键必须大于 0。");
+        var dict = await GetDictOrThrowAsync(command.Id, cancellationToken);
         dict.DictName = Required(command.DictName, 100, nameof(command.DictName), "字典名称不能超过 100 个字符。");
         dict.DictType = Required(command.DictType, 50, nameof(command.DictType), "字典类型不能超过 50 个字符。");
         dict.DictDescription = Optional(command.DictDescription, 500, nameof(command.DictDescription), "字典描述不能超过 500 个字符。");
@@ -193,11 +193,11 @@ public sealed class DictDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateDictItemUpdateCommand(command);
-        var dictItem = await GetDictItemOrThrowAsync(command.BasicId, cancellationToken);
-        _ = await ValidateParentAsync(dictItem.DictId, command.ParentId, dictItem.BasicId, cancellationToken);
+        var dictItem = await GetDictItemOrThrowAsync(command.Id, cancellationToken);
+        _ = await ValidateParentAsync(dictItem.DictId, command.ParentId, dictItem.Id, cancellationToken);
         if (command.IsDefault)
         {
-            await ClearDefaultItemsAsync(dictItem.DictId, dictItem.BasicId, cancellationToken);
+            await ClearDefaultItemsAsync(dictItem.DictId, dictItem.Id, cancellationToken);
         }
 
         dictItem.ParentId = command.ParentId;
@@ -220,10 +220,10 @@ public sealed class DictDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统字典项主键必须大于 0。");
+        EnsureId(command.Id, "系统字典项主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var dictItem = await GetDictItemOrThrowAsync(command.BasicId, cancellationToken);
+        var dictItem = await GetDictItemOrThrowAsync(command.Id, cancellationToken);
         dictItem.Status = command.Status;
         dictItem.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? dictItem.Remark;
 
@@ -238,10 +238,10 @@ public sealed class DictDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统字典主键必须大于 0。");
+        EnsureId(command.Id, "系统字典主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var dict = await GetDictOrThrowAsync(command.BasicId, cancellationToken);
+        var dict = await GetDictOrThrowAsync(command.Id, cancellationToken);
         dict.Status = command.Status;
         dict.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? dict.Remark;
 
@@ -265,7 +265,7 @@ public sealed class DictDomainService
 
     private static void ValidateDictItemUpdateCommand(DictItemUpdateCommand command)
     {
-        EnsureId(command.BasicId, "系统字典项主键必须大于 0。");
+        EnsureId(command.Id, "系统字典项主键必须大于 0。");
         EnsureOptionalId(command.ParentId, nameof(command.ParentId), "父级字典项主键必须大于 0。");
     }
 
@@ -352,7 +352,7 @@ public sealed class DictDomainService
         return excludeItemId.HasValue
             ? _dictItemRepository.UpdateAsync(
                 item => new SysDictItem { IsDefault = false },
-                item => item.DictId == dictId && item.BasicId != excludeItemId.Value && item.IsDefault,
+                item => item.DictId == dictId && item.Id != excludeItemId.Value && item.IsDefault,
                 cancellationToken)
             : _dictItemRepository.UpdateAsync(
                 item => new SysDictItem { IsDefault = false },
@@ -376,7 +376,7 @@ public sealed class DictDomainService
                 throw new InvalidOperationException("系统字典项父子关系不能形成环路。");
             }
 
-            if (!visited.Add(cursor.BasicId))
+            if (!visited.Add(cursor.Id))
             {
                 throw new InvalidOperationException("系统字典项父子关系存在环路。");
             }

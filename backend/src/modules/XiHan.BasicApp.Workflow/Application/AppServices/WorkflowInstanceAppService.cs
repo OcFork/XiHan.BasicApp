@@ -3,26 +3,18 @@
 
 using System.Globalization;
 using System.Text.Json;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Timing;
-using XiHan.Framework.Workflow.Abstractions.Engine;
-using XiHan.Framework.Workflow.Abstractions.Exceptions;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
 
 namespace XiHan.BasicApp.Workflow.Application.AppServices;
 
 /// <summary>
 /// 工作流实例命令应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "流程实例")]
 public sealed class WorkflowInstanceAppService : WorkflowApplicationService, IWorkflowInstanceAppService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -30,12 +22,12 @@ public sealed class WorkflowInstanceAppService : WorkflowApplicationService, IWo
     private readonly IWorkflowEngine _engine;
     private readonly ICurrentUser _currentUser;
     private readonly WorkflowBusinessAbortNotifier _abortNotifier;
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 构造函数
     /// </summary>
-    public WorkflowInstanceAppService(IWorkflowEngine engine, ICurrentUser currentUser, WorkflowBusinessAbortNotifier abortNotifier, IClock clock)
+    public WorkflowInstanceAppService(IWorkflowEngine engine, ICurrentUser currentUser, WorkflowBusinessAbortNotifier abortNotifier, TimeProvider clock)
     {
         _engine = engine;
         _currentUser = currentUser;
@@ -46,7 +38,6 @@ public sealed class WorkflowInstanceAppService : WorkflowApplicationService, IWo
     /// <summary>
     /// 发起实例（当前用户为发起人）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Execute)]
     public async Task<WorkflowInstanceListItemDto> StartAsync(WorkflowInstanceStartDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -69,12 +60,11 @@ public sealed class WorkflowInstanceAppService : WorkflowApplicationService, IWo
     /// <summary>
     /// 取消实例（定义启用补偿时按执行逆序补偿；审批业务流程同时回写单据为已撤回）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Execute)]
     public async Task<WorkflowInstanceListItemDto> CancelAsync(WorkflowInstanceOperationDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var instance = await TranslateAsync(() => _engine.CancelAsync(ToWorkflowId(input.BasicId), input.Reason, cancellationToken));
+        var instance = await TranslateAsync(() => _engine.CancelAsync(ToWorkflowId(input.Id), input.Reason, cancellationToken));
         await _abortNotifier.NotifyAsync(instance, input.Reason, cancellationToken);
         return WorkflowApplicationMapper.ToListItemDto(instance, _clock.Kind);
     }
@@ -82,12 +72,11 @@ public sealed class WorkflowInstanceAppService : WorkflowApplicationService, IWo
     /// <summary>
     /// 终止实例（不补偿；审批业务流程同时回写单据为已撤回）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Execute)]
     public async Task<WorkflowInstanceListItemDto> TerminateAsync(WorkflowInstanceOperationDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var instance = await TranslateAsync(() => _engine.TerminateAsync(ToWorkflowId(input.BasicId), input.Reason, cancellationToken));
+        var instance = await TranslateAsync(() => _engine.TerminateAsync(ToWorkflowId(input.Id), input.Reason, cancellationToken));
         await _abortNotifier.NotifyAsync(instance, input.Reason, cancellationToken);
         return WorkflowApplicationMapper.ToListItemDto(instance, _clock.Kind);
     }
@@ -95,43 +84,39 @@ public sealed class WorkflowInstanceAppService : WorkflowApplicationService, IWo
     /// <summary>
     /// 重试故障实例
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Execute)]
     public async Task<WorkflowInstanceListItemDto> RetryAsync(WorkflowInstanceIdDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var instance = await TranslateAsync(() => _engine.RetryAsync(ToWorkflowId(input.BasicId), cancellationToken));
+        var instance = await TranslateAsync(() => _engine.RetryAsync(ToWorkflowId(input.Id), cancellationToken));
         return WorkflowApplicationMapper.ToListItemDto(instance, _clock.Kind);
     }
 
     /// <summary>
     /// 挂起实例
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Update)]
     public async Task<WorkflowInstanceListItemDto> SuspendAsync(WorkflowInstanceOperationDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var instance = await TranslateAsync(() => _engine.SuspendAsync(ToWorkflowId(input.BasicId), input.Reason, cancellationToken));
+        var instance = await TranslateAsync(() => _engine.SuspendAsync(ToWorkflowId(input.Id), input.Reason, cancellationToken));
         return WorkflowApplicationMapper.ToListItemDto(instance, _clock.Kind);
     }
 
     /// <summary>
     /// 恢复挂起实例
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Update)]
     public async Task<WorkflowInstanceListItemDto> ResumeAsync(WorkflowInstanceIdDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var instance = await TranslateAsync(() => _engine.ResumeAsync(ToWorkflowId(input.BasicId), cancellationToken));
+        var instance = await TranslateAsync(() => _engine.ResumeAsync(ToWorkflowId(input.Id), cancellationToken));
         return WorkflowApplicationMapper.ToListItemDto(instance, _clock.Kind);
     }
 
     /// <summary>
     /// 发布信号（恢复匹配的等待信号节点）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Execute)]
     public async Task<WorkflowSignalPublishResultDto> PublishSignalAsync(WorkflowSignalPublishDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

@@ -4,7 +4,6 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -61,7 +60,7 @@ public sealed class ConfigRepository(ISqlSugarClientResolver clientResolver)
         var query = CreateQueryable().Where(config => config.ConfigKey == configKey.Trim());
         if (excludeId.HasValue)
         {
-            query = query.Where(config => config.BasicId != excludeId.Value);
+            query = query.Where(config => config.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

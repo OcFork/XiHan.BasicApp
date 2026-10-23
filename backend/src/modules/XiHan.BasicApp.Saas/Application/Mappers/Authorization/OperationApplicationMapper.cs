@@ -46,7 +46,7 @@ public static class OperationApplicationMapper
 
         return new OperationListItemDto
         {
-            BasicId = operation.BasicId,
+            Id = operation.Id,
             OperationCode = operation.OperationCode,
             OperationName = operation.OperationName,
             OperationTypeCode = operation.OperationTypeCode,
@@ -60,8 +60,8 @@ public static class OperationApplicationMapper
             IsGlobal = operation.IsGlobal,
             Status = operation.Status,
             Sort = operation.Sort,
-            CreatedTime = operation.CreatedTime,
-            ModifiedTime = operation.ModifiedTime
+            CreatedAt = operation.CreatedAt,
+            ModifiedAt = operation.ModifiedAt
         };
     }
 
@@ -76,7 +76,7 @@ public static class OperationApplicationMapper
 
         return new OperationDetailDto
         {
-            BasicId = operation.BasicId,
+            Id = operation.Id,
             OperationCode = operation.OperationCode,
             OperationName = operation.OperationName,
             OperationTypeCode = operation.OperationTypeCode,
@@ -91,10 +91,10 @@ public static class OperationApplicationMapper
             Status = operation.Status,
             Sort = operation.Sort,
             Remark = operation.Remark,
-            CreatedTime = operation.CreatedTime,
+            CreatedAt = operation.CreatedAt,
             CreatedId = operation.CreatedId,
             CreatedBy = operation.CreatedBy,
-            ModifiedTime = operation.ModifiedTime,
+            ModifiedAt = operation.ModifiedAt,
             ModifiedId = operation.ModifiedId,
             ModifiedBy = operation.ModifiedBy
         };
@@ -111,7 +111,7 @@ public static class OperationApplicationMapper
 
         return new OperationSelectItemDto
         {
-            BasicId = operation.BasicId,
+            Id = operation.Id,
             OperationCode = operation.OperationCode,
             OperationName = operation.OperationName,
             OperationTypeCode = operation.OperationTypeCode,
@@ -128,7 +128,7 @@ public static class OperationApplicationMapper
     public static OperationStatusCommand ToStatusCommand(OperationStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new OperationStatusCommand(input.BasicId, input.Status, input.Remark);
+        return new OperationStatusCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -139,7 +139,7 @@ public static class OperationApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new OperationUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.OperationName,
             input.OperationTypeCode,
             input.Category,

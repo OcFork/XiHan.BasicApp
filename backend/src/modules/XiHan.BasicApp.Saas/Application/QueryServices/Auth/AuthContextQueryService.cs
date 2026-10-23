@@ -62,7 +62,7 @@ public sealed class AuthContextQueryService
             throw new InvalidOperationException("租户已过期。");
         }
 
-        return new LoginTenantContext(tenant.BasicId, tenant.TenantName);
+        return new LoginTenantContext(tenant.Id, tenant.TenantName);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public sealed class AuthContextQueryService
             return null;
         }
 
-        return new LoginTenantContext(tenant.BasicId, tenant.TenantName);
+        return new LoginTenantContext(tenant.Id, tenant.TenantName);
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ public sealed class AuthContextQueryService
         var isAvailable = new AvailableTenantSpecification(now);
         var tenants = (await _tenantRepository.GetByIdsAsync(memberships.Select(membership => membership.TenantId).Distinct(), cancellationToken))
             .Where(isAvailable.IsSatisfiedBy)
-            .ToDictionary(tenant => tenant.BasicId);
+            .ToDictionary(tenant => tenant.Id);
 
         return [.. memberships
             .Where(membership => tenants.ContainsKey(membership.TenantId))
@@ -141,7 +141,7 @@ public sealed class AuthContextQueryService
 
         return new UserInfoDto
         {
-            BasicId = user.BasicId,
+            Id = user.Id,
             UserName = user.UserName,
             NickName = user.NickName ?? user.RealName,
             Avatar = user.Avatar,

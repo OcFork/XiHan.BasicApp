@@ -5,6 +5,7 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -112,7 +113,7 @@ public sealed class ConfigDomainService
         cancellationToken.ThrowIfCancellationRequested();
 
         ValidateUpdateConfigCommand(command);
-        var config = await GetConfigOrThrowAsync(command.BasicId, cancellationToken);
+        var config = await GetConfigOrThrowAsync(command.Id, cancellationToken);
         ValidateLoginAutoBan(config.ConfigKey, config.TenantId, command.ConfigValue);
         config.ConfigName = Required(command.ConfigName, 100, nameof(command.ConfigName), "配置名称不能超过 100 个字符。");
         config.ConfigGroup = Optional(command.ConfigGroup, 100, nameof(command.ConfigGroup), "配置分组不能超过 100 个字符。");
@@ -136,10 +137,10 @@ public sealed class ConfigDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统配置主键必须大于 0。");
+        EnsureId(command.Id, "系统配置主键必须大于 0。");
         EnsureEnum(command.Status, nameof(command.Status));
 
-        var config = await GetConfigOrThrowAsync(command.BasicId, cancellationToken);
+        var config = await GetConfigOrThrowAsync(command.Id, cancellationToken);
         config.Status = command.Status;
         config.Remark = Optional(command.Remark, 500, nameof(command.Remark), "备注不能超过 500 个字符。") ?? config.Remark;
 
@@ -230,7 +231,7 @@ public sealed class ConfigDomainService
 
     private static void ValidateUpdateConfigCommand(ConfigUpdateCommand command)
     {
-        EnsureId(command.BasicId, "系统配置主键必须大于 0。");
+        EnsureId(command.Id, "系统配置主键必须大于 0。");
         EnsureEnum(command.ConfigType, nameof(command.ConfigType));
         EnsureEnum(command.DataType, nameof(command.DataType));
     }

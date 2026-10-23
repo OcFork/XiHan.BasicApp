@@ -40,14 +40,14 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 按部门汇总统计（销售额/工时/审批量）
 /// </remarks>
 [SugarTable(TableName = "Sys_Department", TableDescription = "系统部门表")]
-[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedTime), OrderByType.Desc)]
+[SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]
 [SugarIndex("IX_{table}_CrId", nameof(CreatedId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_IsDe", nameof(TenantId), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc)]
 [SugarIndex("UX_{table}_TeId_DeCo", nameof(TenantId), OrderByType.Asc, nameof(DepartmentCode), OrderByType.Asc, nameof(IsDeleted), OrderByType.Asc, true)]
 [SugarIndex("IX_{table}_PaId", nameof(ParentId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_St", nameof(TenantId), OrderByType.Asc, nameof(Status), OrderByType.Asc)]
 [SugarIndex("IX_{table}_LeId", nameof(LeaderId), OrderByType.Asc)]
-public partial class SysDepartment : BasicAppAggregateRoot, IStrictMultiTenantEntity
+public partial class SysDepartment : BasicAppAggregateRoot, IMultiTenant
 {
     /// <summary>
     /// 父级部门ID

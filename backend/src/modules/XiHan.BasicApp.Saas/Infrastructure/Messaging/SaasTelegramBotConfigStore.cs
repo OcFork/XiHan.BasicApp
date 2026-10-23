@@ -6,8 +6,6 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Bot.Telegram.Abstractions;
-using XiHan.Framework.Bot.Telegram.Options;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 
@@ -95,7 +93,7 @@ public sealed class SaasTelegramBotConfigStore : ITelegramBotConfigStore
 
             configs.Add(new TelegramBotConfig
             {
-                Id = bot.BasicId,
+                Id = bot.Id,
                 Name = bot.BotName,
                 Token = token,
                 AdminUsers = ParseLongList(bot.AdminUsers, bot.BotName, "AdminUsers"),

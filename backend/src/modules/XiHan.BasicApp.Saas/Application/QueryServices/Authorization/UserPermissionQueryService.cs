@@ -10,16 +10,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 用户直授权限查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "用户直授权限")]
 public sealed class UserPermissionQueryService
     : SaasApplicationService, IUserPermissionQueryService
 {
@@ -72,7 +68,6 @@ public sealed class UserPermissionQueryService
     /// <param name="onlyValid">是否仅返回当前有效直授权限</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户直授权限列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserPermission.Read)]
     public async Task<IReadOnlyList<UserPermissionListItemDto>> GetUserPermissionsAsync(long userId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (userId <= 0)
@@ -95,7 +90,7 @@ public sealed class UserPermissionQueryService
             ? await _userPermissionRepository.GetValidByUserIdAsync(userId, now, cancellationToken)
             : await _userPermissionRepository.GetListAsync(
                 userPermission => userPermission.UserId == userId,
-                userPermission => userPermission.CreatedTime,
+                userPermission => userPermission.CreatedAt,
                 cancellationToken);
 
         if (userPermissions.Count == 0)
@@ -104,7 +99,7 @@ public sealed class UserPermissionQueryService
         }
 
         var permissionMap = await BuildPermissionMapAsync(userPermissions.Select(userPermission => userPermission.PermissionId), cancellationToken);
-        var conditionCounts = await _permissionConditionRepository.CountForUserPermissionsAsync(userPermissions.Select(userPermission => userPermission.BasicId), cancellationToken);
+        var conditionCounts = await _permissionConditionRepository.CountForUserPermissionsAsync(userPermissions.Select(userPermission => userPermission.Id), cancellationToken);
 
         return [.. userPermissions
             .Select(userPermission => UserPermissionApplicationMapper.ToListItemDto(
@@ -112,7 +107,7 @@ public sealed class UserPermissionQueryService
                 permissionMap.GetValueOrDefault(userPermission.PermissionId),
                 tenantMember,
                 now,
-                conditionCounts.GetValueOrDefault(userPermission.BasicId)))
+                conditionCounts.GetValueOrDefault(userPermission.Id)))
             .OrderBy(item => item.PermissionCode)
             .ThenBy(item => item.PermissionId)];
     }
@@ -123,7 +118,6 @@ public sealed class UserPermissionQueryService
     /// <param name="id">用户直授权限绑定主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>用户直授权限详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.UserPermission.Read)]
     public async Task<UserPermissionDetailDto?> GetUserPermissionDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -163,6 +157,6 @@ public sealed class UserPermissionQueryService
         }
 
         var permissions = await _permissionRepository.GetByIdsAsync(ids, cancellationToken);
-        return permissions.ToDictionary(permission => permission.BasicId);
+        return permissions.ToDictionary(permission => permission.Id);
     }
 }

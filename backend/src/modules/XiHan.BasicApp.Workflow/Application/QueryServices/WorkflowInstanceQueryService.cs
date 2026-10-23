@@ -12,20 +12,15 @@ using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
-using XiHan.Framework.Timing;
-using XiHan.Framework.Workflow.Abstractions.Stores;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 
 /// <summary>
 /// 工作流实例查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.Workflow", GroupName = "工作流服务", Tag = "流程实例")]
 public sealed class WorkflowInstanceQueryService : WorkflowApplicationService, IWorkflowInstanceQueryService
 {
     private readonly IWorkflowInstanceRepository _instanceRepository;
@@ -37,7 +32,7 @@ public sealed class WorkflowInstanceQueryService : WorkflowApplicationService, I
     /// </summary>
     private readonly IFieldSecurityService _fieldSecurity;
 
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     /// <summary>
     /// 构造函数
@@ -47,7 +42,7 @@ public sealed class WorkflowInstanceQueryService : WorkflowApplicationService, I
         IWorkflowInstanceStore instanceStore,
         IWorkflowBookmarkStore bookmarkStore,
         IFieldSecurityService fieldSecurityService,
-        IClock clock)
+        TimeProvider clock)
     {
         _instanceRepository = instanceRepository;
         _instanceStore = instanceStore;
@@ -59,8 +54,6 @@ public sealed class WorkflowInstanceQueryService : WorkflowApplicationService, I
     /// <summary>
     /// 分页查询实例
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<WorkflowInstanceListItemDto>> GetPageAsync(WorkflowInstancePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -86,7 +79,6 @@ public sealed class WorkflowInstanceQueryService : WorkflowApplicationService, I
     /// <summary>
     /// 获取实例详情（含变量、执行历史与待恢复等待点）
     /// </summary>
-    [PermissionAuthorize(WorkflowPermissionCodes.Read)]
     public async Task<WorkflowInstanceDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)

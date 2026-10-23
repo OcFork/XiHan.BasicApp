@@ -26,9 +26,9 @@ public static class UserRoleApplicationMapper
 
         return new UserRoleListItemDto
         {
-            BasicId = userRole.BasicId,
+            Id = userRole.Id,
             UserId = userRole.UserId,
-            TenantMemberId = tenantMember?.BasicId,
+            TenantMemberId = tenantMember?.Id,
             TenantMemberDisplayName = tenantMember?.DisplayName,
             TenantMemberType = tenantMember?.MemberType,
             TenantMemberInviteStatus = tenantMember?.InviteStatus,
@@ -46,7 +46,7 @@ public static class UserRoleApplicationMapper
             Status = userRole.Status,
             IsExpired = userRole.ExpirationTime.HasValue && userRole.ExpirationTime.Value <= now,
             Remark = userRole.Remark,
-            CreatedTime = userRole.CreatedTime
+            CreatedAt = userRole.CreatedAt
         };
     }
 
@@ -64,9 +64,9 @@ public static class UserRoleApplicationMapper
 
         return new UserRoleDetailDto
         {
-            BasicId = userRole.BasicId,
+            Id = userRole.Id,
             UserId = userRole.UserId,
-            TenantMemberId = tenantMember?.BasicId,
+            TenantMemberId = tenantMember?.Id,
             TenantMemberDisplayName = tenantMember?.DisplayName,
             TenantMemberType = tenantMember?.MemberType,
             TenantMemberInviteStatus = tenantMember?.InviteStatus,
@@ -85,7 +85,7 @@ public static class UserRoleApplicationMapper
             Status = userRole.Status,
             IsExpired = userRole.ExpirationTime.HasValue && userRole.ExpirationTime.Value <= now,
             Remark = userRole.Remark,
-            CreatedTime = userRole.CreatedTime,
+            CreatedAt = userRole.CreatedAt,
             CreatedId = userRole.CreatedId,
             CreatedBy = userRole.CreatedBy
         };
@@ -97,7 +97,7 @@ public static class UserRoleApplicationMapper
     public static UserRoleStatusChangeCommand ToStatusCommand(UserRoleStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new UserRoleStatusChangeCommand(input.BasicId, input.Status, input.Remark);
+        return new UserRoleStatusChangeCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public static class UserRoleApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new UserRoleUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.EffectiveTime,
             input.ExpirationTime,
             input.GrantReason,

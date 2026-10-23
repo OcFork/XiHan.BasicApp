@@ -13,8 +13,6 @@ using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using MenuType = XiHan.BasicApp.Saas.Domain.Entities.MenuType;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -24,7 +22,6 @@ namespace XiHan.BasicApp.CodeGeneration.Application.QueryServices;
 /// <summary>
 /// 代码生成表配置查询应用服务
 /// </summary>
-[DynamicApi(Group = "BasicApp.CodeGen", GroupName = "代码生成服务", Tag = "表配置")]
 public sealed class CodeGenTableQueryService : CodeGenerationApplicationService, ICodeGenTableQueryService
 {
     private readonly ICodeGenTableRepository _tableRepository;
@@ -54,7 +51,6 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
     /// 获取表配置全量列表
     /// </summary>
     /// <remarks>供主子表选择等下拉一次取全，不走分页。</remarks>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<IReadOnlyList<CodeGenTableListItemDto>> GetOptionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -70,8 +66,6 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
     /// <summary>
     /// 获取表配置分页列表
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<CodeGenTableListItemDto>> GetPageAsync(CodeGenTablePageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -108,7 +102,6 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
     /// <summary>
     /// 获取表配置详情
     /// </summary>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<CodeGenTableDetailDto?> GetDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -124,7 +117,7 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
             return null;
         }
 
-        var columns = await _columnRepository.GetByTableIdAsync(table.BasicId, cancellationToken);
+        var columns = await _columnRepository.GetByTableIdAsync(table.Id, cancellationToken);
         return CodeGenTableApplicationMapper.ToDetailDto(table, columns);
     }
 
@@ -136,7 +129,6 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
     /// 只有目录可选：页面挂在菜单下会被当成父路由；目录还须有菜单码，生成的菜单登记按菜单码找父级。
     /// 与代码生成同一个查看权限，不要求菜单管理权限。
     /// </remarks>
-    [PermissionAuthorize(CodeGenPermissionCodes.Read)]
     public async Task<IReadOnlyList<CodeGenParentMenuOptionDto>> GetParentMenuOptionsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -150,7 +142,7 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
             .ThenBy(menu => menu.MenuName, StringComparer.Ordinal)
             .Select(menu => new CodeGenParentMenuOptionDto
             {
-                Value = menu.BasicId,
+                Value = menu.Id,
                 Label = menu.MenuName,
                 ParentValue = menu.ParentId,
                 Selectable = menu.MenuType == MenuType.Directory && !string.IsNullOrWhiteSpace(menu.MenuCode)

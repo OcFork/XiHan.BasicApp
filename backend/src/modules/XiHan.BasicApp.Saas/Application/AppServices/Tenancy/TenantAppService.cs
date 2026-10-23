@@ -11,13 +11,7 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authentication.Users;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Core.Exceptions;
-using XiHan.Framework.Security.Password;
-using XiHan.Framework.Security.Users;
-using XiHan.Framework.Uow.Attributes;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.BasicApp.Saas.Application.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
@@ -25,8 +19,6 @@ namespace XiHan.BasicApp.Saas.Application.AppServices;
 /// <summary>
 /// 租户命令应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "租户")]
 public sealed class TenantAppService
     : SaasApplicationService, ITenantAppService
 {
@@ -76,8 +68,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 创建租户（不带管理员：之后经 <see cref="InitializeTenantAdminAsync"/> 开通，库隔离租户先初始化数据库）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Create)]
     public async Task<TenantDetailDto> CreateTenantAsync(TenantCreateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -135,15 +125,13 @@ public sealed class TenantAppService
     /// <summary>
     /// 更新租户基础资料
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Update)]
     public async Task<TenantDetailDto> UpdateTenantAsync(TenantUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenant), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenant), input.Id, input, cancellationToken);
 
         var result = await _tenantDomainService.UpdateTenantAsync(TenantApplicationMapper.ToUpdateCommand(input), cancellationToken);
         // 租户可能更换版本：失效版本门控缓存（事务提交后生效）
@@ -154,15 +142,13 @@ public sealed class TenantAppService
     /// <summary>
     /// 更新租户状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Status)]
     public async Task<TenantDetailDto> UpdateTenantStatusAsync(TenantStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
 
         // 字段安全：只读字段不能改，表单交回的脱敏值还原为原值
-        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenant), input.BasicId, input, cancellationToken);
+        await _fieldSecurity.EnsureUpdatableAsync(typeof(SysTenant), input.Id, input, cancellationToken);
 
         var result = await _tenantDomainService.UpdateTenantStatusAsync(
             TenantApplicationMapper.ToStatusCommand(input, _currentUser.UserId),
@@ -176,9 +162,6 @@ public sealed class TenantAppService
     /// <remarks>
     /// 非事务：DDL（建库）不可在事务内执行；建库/建表/种子在租户独立库上进行，配置状态写回平台库。
     /// </remarks>
-    [UnitOfWork(false)]
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.InitDb)]
     public async Task<TenantDetailDto> InitializeDatabaseAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -190,9 +173,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 初始化租户管理员：管理员账号 + 所有者成员关系与所有者角色（库隔离租户要先初始化数据库）
     /// </summary>
-    [UnitOfWork(true)]
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Create)]
     public async Task<TenantDetailDto> InitializeTenantAdminAsync(TenantAdminInitializeDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -218,8 +198,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 删除租户（软删，要求租户已停用或暂停）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.Delete)]
     public async Task DeleteTenantAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -232,8 +210,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 添加租户成员（把已有用户直接加入租户，立即生效）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Create)]
     public async Task<TenantMemberDetailDto> AddTenantMemberAsync(TenantMemberAddDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -248,8 +224,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 支持人员入驻：把平台账号以支持成员身份加入租户（平台）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.SupportMember)]
     public async Task<TenantMemberDetailDto> AddTenantSupportMemberAsync(TenantSupportMemberAddDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -264,8 +238,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 支持人员离场：撤销平台账号在租户的支持成员身份（平台）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.SupportMember)]
     public async Task RemoveTenantSupportMemberAsync(long tenantId, long memberId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -276,9 +248,6 @@ public sealed class TenantAppService
     /// 所有权转移：把租户所有者身份转给该租户的另一名成员，原所有者改为管理员（平台）
     /// </summary>
     /// <returns>接任所有者的成员关系</returns>
-    [UnitOfWork(true)]
-    [HttpPost]
-    [PermissionAuthorize(SaasPermissionCodes.Tenant.TransferOwner)]
     public async Task<TenantMemberDetailDto> TransferTenantOwnerAsync(TenantOwnerTransferDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -297,8 +266,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 邀请租户成员（落待接受邀请，被邀请人接受后生效）
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Invite)]
     public async Task<TenantMemberDetailDto> InviteTenantMemberAsync(TenantMemberInviteDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -313,8 +280,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 撤销租户成员
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Revoke)]
     public async Task DeleteTenantMemberAsync(long id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -324,8 +289,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 更新租户成员
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Update)]
     public async Task<TenantMemberDetailDto> UpdateTenantMemberAsync(TenantMemberUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -338,8 +301,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 更新租户成员邀请状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.InviteStatus)]
     public async Task<TenantMemberDetailDto> UpdateTenantMemberInviteStatusAsync(TenantMemberInviteStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -354,8 +315,6 @@ public sealed class TenantAppService
     /// <summary>
     /// 更新租户成员状态
     /// </summary>
-    [UnitOfWork(true)]
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Status)]
     public async Task<TenantMemberDetailDto> UpdateTenantMemberStatusAsync(TenantMemberStatusUpdateDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

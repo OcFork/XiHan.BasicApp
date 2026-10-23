@@ -6,11 +6,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.Framework.Bot.Clients;
-using XiHan.Framework.Bot.Enums;
-using XiHan.Framework.Bot.Models;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Messaging.Models;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

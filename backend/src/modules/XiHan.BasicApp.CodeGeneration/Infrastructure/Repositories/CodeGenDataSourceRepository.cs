@@ -4,7 +4,6 @@
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Repositories;
 
@@ -38,7 +37,7 @@ public sealed class CodeGenDataSourceRepository(ISqlSugarClientResolver clientRe
         var query = CreateQueryable().Where(source => source.SourceName == sourceName.Trim());
         if (excludeId.HasValue)
         {
-            query = query.Where(source => source.BasicId != excludeId.Value);
+            query = query.Where(source => source.Id != excludeId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);

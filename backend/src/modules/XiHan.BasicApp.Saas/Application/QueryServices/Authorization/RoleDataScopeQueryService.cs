@@ -9,16 +9,12 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
 /// <summary>
 /// 角色数据范围查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "角色数据范围")]
 public sealed class RoleDataScopeQueryService
     : SaasApplicationService, IRoleDataScopeQueryService
 {
@@ -64,7 +60,6 @@ public sealed class RoleDataScopeQueryService
     /// <param name="onlyValid">是否仅返回当前有效数据范围</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色数据范围列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RoleDataScope.Read)]
     public async Task<IReadOnlyList<RoleDataScopeListItemDto>> GetRoleDataScopesAsync(long roleId, bool onlyValid = false, CancellationToken cancellationToken = default)
     {
         if (roleId <= 0)
@@ -86,7 +81,7 @@ public sealed class RoleDataScopeQueryService
             ? await _roleDataScopeRepository.GetValidByRoleIdsAsync([roleId], DateTimeOffset.UtcNow, cancellationToken)
             : await _roleDataScopeRepository.GetListAsync(
                 scope => scope.RoleId == roleId,
-                scope => scope.CreatedTime,
+                scope => scope.CreatedAt,
                 cancellationToken);
 
         if (scopes.Count == 0)
@@ -110,7 +105,6 @@ public sealed class RoleDataScopeQueryService
     /// <param name="id">角色数据范围主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>角色数据范围详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.RoleDataScope.Read)]
     public async Task<RoleDataScopeDetailDto?> GetRoleDataScopeDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -149,6 +143,6 @@ public sealed class RoleDataScopeQueryService
         }
 
         var departments = await _departmentRepository.GetByIdsAsync(ids, cancellationToken);
-        return departments.ToDictionary(department => department.BasicId);
+        return departments.ToDictionary(department => department.Id);
     }
 }

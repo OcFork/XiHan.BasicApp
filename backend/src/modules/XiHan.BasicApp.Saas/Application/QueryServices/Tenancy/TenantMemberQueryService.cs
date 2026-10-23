@@ -12,8 +12,7 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Enums;
 using XiHan.Framework.Domain.Shared.Paging.Models;
@@ -24,8 +23,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 租户成员查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "租户成员")]
 public sealed class TenantMemberQueryService
     : SaasApplicationService, ITenantMemberQueryService
 {
@@ -60,8 +57,6 @@ public sealed class TenantMemberQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户成员分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<TenantMemberListItemDto>> GetTenantMemberPageAsync(TenantMemberPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -69,6 +64,7 @@ public sealed class TenantMemberQueryService
 
         // 成员关系属于租户：租户只看本租户；平台不带租户时看平台自己的（0 号），带租户时切入该租户查看
         var tenantId = ResolveMemberTenantId(input.TenantId);
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(tenantId);
         var request = BuildTenantMemberPageRequest(input);
 
@@ -91,7 +87,7 @@ public sealed class TenantMemberQueryService
         // 批量解析成员身份（一次 IN 查询，不做 N+1）。忽略租户过滤：跨租户成员的 SysUser 属于来源租户。
         var users = await _userRepository.GetListByIdsIgnoreTenantAsync(
             [.. members.Items.Select(member => member.UserId)], cancellationToken);
-        var userMap = users.ToDictionary(user => user.BasicId);
+        var userMap = users.ToDictionary(user => user.Id);
 
         return members.Map(member =>
         {
@@ -113,7 +109,6 @@ public sealed class TenantMemberQueryService
     /// <param name="id">租户成员主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户成员详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.TenantMember.Read)]
     public async Task<TenantMemberDetailDto?> GetTenantMemberDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -191,7 +186,7 @@ public sealed class TenantMemberQueryService
         }
 
         request.Conditions.AddSort((SysTenantUser member) => member.MemberType, SortDirection.Ascending, 0);
-        request.Conditions.AddSort((SysTenantUser member) => member.CreatedTime, SortDirection.Descending, 1);
+        request.Conditions.AddSort((SysTenantUser member) => member.CreatedAt, SortDirection.Descending, 1);
         return request;
     }
 }

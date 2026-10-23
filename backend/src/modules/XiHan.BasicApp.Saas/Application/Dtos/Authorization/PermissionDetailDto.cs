@@ -110,7 +110,7 @@ public sealed class PermissionDetailDto : BasicAppDto
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 创建人主键
@@ -125,7 +125,7 @@ public sealed class PermissionDetailDto : BasicAppDto
     /// <summary>
     /// 修改时间
     /// </summary>
-    public DateTimeOffset? ModifiedTime { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
 
     /// <summary>
     /// 修改人主键

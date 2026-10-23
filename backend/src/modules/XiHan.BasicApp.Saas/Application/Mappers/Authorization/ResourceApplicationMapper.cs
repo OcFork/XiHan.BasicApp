@@ -43,7 +43,7 @@ public static class ResourceApplicationMapper
 
         return new ResourceListItemDto
         {
-            BasicId = resource.BasicId,
+            Id = resource.Id,
             ResourceCode = resource.ResourceCode,
             ResourceName = resource.ResourceName,
             ResourceType = resource.ResourceType,
@@ -53,8 +53,8 @@ public static class ResourceApplicationMapper
             IsGlobal = resource.IsGlobal,
             Status = resource.Status,
             Sort = resource.Sort,
-            CreatedTime = resource.CreatedTime,
-            ModifiedTime = resource.ModifiedTime
+            CreatedAt = resource.CreatedAt,
+            ModifiedAt = resource.ModifiedAt
         };
     }
 
@@ -69,7 +69,7 @@ public static class ResourceApplicationMapper
 
         return new ResourceDetailDto
         {
-            BasicId = resource.BasicId,
+            Id = resource.Id,
             ResourceCode = resource.ResourceCode,
             ResourceName = resource.ResourceName,
             ResourceType = resource.ResourceType,
@@ -81,10 +81,10 @@ public static class ResourceApplicationMapper
             Status = resource.Status,
             Sort = resource.Sort,
             Remark = resource.Remark,
-            CreatedTime = resource.CreatedTime,
+            CreatedAt = resource.CreatedAt,
             CreatedId = resource.CreatedId,
             CreatedBy = resource.CreatedBy,
-            ModifiedTime = resource.ModifiedTime,
+            ModifiedAt = resource.ModifiedAt,
             ModifiedId = resource.ModifiedId,
             ModifiedBy = resource.ModifiedBy
         };
@@ -101,7 +101,7 @@ public static class ResourceApplicationMapper
 
         return new ResourceSelectItemDto
         {
-            BasicId = resource.BasicId,
+            Id = resource.Id,
             ResourceCode = resource.ResourceCode,
             ResourceName = resource.ResourceName,
             ResourceType = resource.ResourceType,
@@ -115,7 +115,7 @@ public static class ResourceApplicationMapper
     public static ResourceStatusCommand ToStatusCommand(ResourceStatusUpdateDto input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        return new ResourceStatusCommand(input.BasicId, input.Status, input.Remark);
+        return new ResourceStatusCommand(input.Id, input.Status, input.Remark);
     }
 
     /// <summary>
@@ -126,7 +126,7 @@ public static class ResourceApplicationMapper
         ArgumentNullException.ThrowIfNull(input);
 
         return new ResourceUpdateCommand(
-            input.BasicId,
+            input.Id,
             input.ResourceName,
             input.ResourceType,
             input.ResourcePath,

@@ -7,8 +7,6 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.ObjectStorage.Models;
-using XiHan.Framework.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -177,7 +175,7 @@ public sealed class FileTransferService
                     CacheControl = NormalizeText(input.CacheControl, 100),
                     Metadata = new Dictionary<string, string>
                     {
-                        ["file-id"] = file.BasicId.ToString(),
+                        ["file-id"] = file.Id.ToString(),
                         ["file-hash"] = fileHash,
                         ["hash-algorithm"] = Sha256AlgorithmName
                     }
@@ -187,13 +185,13 @@ public sealed class FileTransferService
 
         if (!uploadResult.Success)
         {
-            _ = await _fileDomainService.MarkUploadFailedAsync(new FileUploadFailedCommand(file.BasicId, uploadResult.ErrorMessage), cancellationToken);
+            _ = await _fileDomainService.MarkUploadFailedAsync(new FileUploadFailedCommand(file.Id, uploadResult.ErrorMessage), cancellationToken);
             throw new InvalidOperationException(uploadResult.ErrorMessage ?? "文件上传失败。");
         }
 
         var uploadCommandResult = await _fileDomainService.CompleteUploadAsync(
             new FileUploadCompleteCommand(
-                file.BasicId,
+                file.Id,
                 uploadResult.FileSize,
                 _fileStorageDomainService.ResolveStorageType(provider.ProviderName),
                 route.StorageConfigId,

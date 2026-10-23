@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using AiPageRegistry = XiHan.BasicApp.AI.Application.Pages.PageRegistry;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Seeders;

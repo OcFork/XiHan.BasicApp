@@ -5,9 +5,6 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.Framework.Core.DependencyInjection.ServiceLifetimes;
-using XiHan.Framework.Web.RealTime.Constants;
-using XiHan.Framework.Web.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -15,7 +12,7 @@ namespace XiHan.BasicApp.Saas.Application.Services;
 /// 当前用户通知投递服务
 /// </summary>
 public sealed class UserNotificationDispatchService
-    : IUserNotificationDispatchService, IScopedDependency
+    : IUserNotificationDispatchService
 {
     private readonly IUserInboxDomainService _userInboxDomainService;
 
@@ -42,8 +39,8 @@ public sealed class UserNotificationDispatchService
 
         return new UserInboxItemDto
         {
-            BasicId = userNotification.BasicId,
-            NotificationId = notification.BasicId,
+            Id = userNotification.Id,
+            NotificationId = notification.Id,
             Title = notification.Title,
             Content = notification.Content,
             NotificationType = notification.NotificationType,
@@ -105,7 +102,7 @@ public sealed class UserNotificationDispatchService
                 userId.ToString(),
                 SignalRConstants.ClientMethods.ReceiveNotification,
                 NotificationRealtimePayload.Create(
-                    item.BasicId,
+                    item.Id,
                     item.NotificationId,
                     item.NotificationType,
                     item.Title,

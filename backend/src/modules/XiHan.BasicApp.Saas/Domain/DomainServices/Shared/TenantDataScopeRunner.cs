@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -73,13 +74,14 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         ArgumentNullException.ThrowIfNull(action);
 
         IReadOnlyList<long> tenantIds;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             // 租户目录是平台数据，在平台作用域读
             tenantIds = [.. (await _tenantRepository.GetListAsync(
                     tenant => tenant.IsolationMode == TenantIsolationMode.Field || tenant.ConfigStatus == TenantConfigStatus.Configured,
                     cancellationToken))
-                .Select(tenant => tenant.BasicId)];
+                .Select(tenant => tenant.Id)];
 
             await action(null);
         }
@@ -93,6 +95,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         ArgumentNullException.ThrowIfNull(action);
 
         IReadOnlyList<long> tenantIds;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             tenantIds = await GetDatabaseTenantIdsAsync(cancellationToken);
@@ -108,6 +111,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         ArgumentNullException.ThrowIfNull(probe);
 
         IReadOnlyList<long> tenantIds;
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
             if (await probe())
@@ -121,6 +125,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         foreach (var tenantId in tenantIds)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (_currentTenant.Change(tenantId))
             {
                 if (await probe())
@@ -141,7 +146,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         return [.. (await _tenantRepository.GetListAsync(
                 tenant => tenant.IsolationMode == TenantIsolationMode.Database && tenant.ConfigStatus == TenantConfigStatus.Configured,
                 cancellationToken))
-            .Select(tenant => tenant.BasicId)];
+            .Select(tenant => tenant.Id)];
     }
 
     private async Task RunInTenantsAsync(IReadOnlyList<long> tenantIds, Func<long?, Task> action, CancellationToken cancellationToken)
@@ -149,6 +154,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         foreach (var tenantId in tenantIds)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using (_currentTenant.Change(tenantId))
             {
                 await action(tenantId);

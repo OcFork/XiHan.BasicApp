@@ -10,9 +10,6 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Application.Attributes;
-using XiHan.Framework.Authorization.AspNetCore;
-using XiHan.Framework.Data.SqlSugar.Clients;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.Domain.Shared.Paging.Models;
 
@@ -21,8 +18,6 @@ namespace XiHan.BasicApp.Saas.Application.QueryServices;
 /// <summary>
 /// 权限变更日志查询应用服务
 /// </summary>
-[Authorize]
-[DynamicApi(Group = "BasicApp.Saas", GroupName = "系统SaaS服务", Tag = "权限变更日志")]
 public sealed class PermissionChangeLogQueryService
     : SaasApplicationService, IPermissionChangeLogQueryService
 {
@@ -44,8 +39,6 @@ public sealed class PermissionChangeLogQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限变更日志分页列表</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionChangeLog.Read)]
-    [HttpPost]
     public async Task<PageResultDtoBase<PermissionChangeLogListItemDto>> GetPermissionChangeLogPageAsync(PermissionChangeLogPageQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -79,7 +72,6 @@ public sealed class PermissionChangeLogQueryService
     /// <param name="id">权限变更日志主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>权限变更日志详情</returns>
-    [PermissionAuthorize(SaasPermissionCodes.PermissionChangeLog.Read)]
     public async Task<PermissionChangeLogDetailDto?> GetPermissionChangeLogDetailAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
@@ -90,7 +82,7 @@ public sealed class PermissionChangeLogQueryService
         cancellationToken.ThrowIfCancellationRequested();
 
         var permissionChangeLog = await DbClient.Queryable<SysPermissionChangeLog>()
-            .Where(x => x.BasicId == id)
+            .Where(x => x.Id == id)
             .SplitTable()
             .FirstAsync(cancellationToken);
         return permissionChangeLog is null ? null : PermissionChangeLogApplicationMapper.ToDetailDto(permissionChangeLog);

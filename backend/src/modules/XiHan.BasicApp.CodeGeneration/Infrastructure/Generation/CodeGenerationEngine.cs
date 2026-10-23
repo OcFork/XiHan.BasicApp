@@ -122,7 +122,7 @@ public sealed partial class CodeGenerationEngine(
             return GenerationResult.Fail($"代码生成表配置不存在：{request.TableId}");
         }
 
-        var columns = await _columnRepository.GetByTableIdAsync(table.BasicId, cancellationToken);
+        var columns = await _columnRepository.GetByTableIdAsync(table.Id, cancellationToken);
         var (context, contextError) = await BuildContextAsync(table, columns, cancellationToken);
         if (context is null)
         {
@@ -458,7 +458,7 @@ public sealed partial class CodeGenerationEngine(
             return (null, $"表 {table.TableName} 配置的主表（Id={masterTableId}）不存在，请重新选择主表。");
         }
 
-        var masterColumns = await _columnRepository.GetByTableIdAsync(masterTable.BasicId, cancellationToken);
+        var masterColumns = await _columnRepository.GetByTableIdAsync(masterTable.Id, cancellationToken);
         return (BuildRelatedTableRef(masterTable, masterColumns, foreignKey), null);
     }
 
@@ -467,7 +467,7 @@ public sealed partial class CodeGenerationEngine(
     /// </summary>
     private async Task<IReadOnlyList<RelatedTableRef>> ResolveDetailTablesAsync(SysCodeGenTable table, CancellationToken cancellationToken)
     {
-        var detailTables = await _tableRepository.GetByMasterTableIdAsync(table.BasicId, cancellationToken);
+        var detailTables = await _tableRepository.GetByMasterTableIdAsync(table.Id, cancellationToken);
         if (detailTables.Count == 0)
         {
             return [];
@@ -478,7 +478,7 @@ public sealed partial class CodeGenerationEngine(
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var detailColumns = await _columnRepository.GetByTableIdAsync(detail.BasicId, cancellationToken);
+            var detailColumns = await _columnRepository.GetByTableIdAsync(detail.Id, cancellationToken);
             var foreignKey = detailColumns
                 .Where(column => string.Equals(column.ColumnName, detail.MasterForeignKey, StringComparison.OrdinalIgnoreCase))
                 .Select(column => MapColumn(detail, column))
@@ -504,7 +504,7 @@ public sealed partial class CodeGenerationEngine(
     /// </summary>
     private RelatedTableRef BuildRelatedTableRef(SysCodeGenTable table, IReadOnlyList<SysCodeGenTableColumn> columns, ColumnSchema foreignKey) => new()
     {
-        TableId = table.BasicId,
+        TableId = table.Id,
         TableName = table.TableName,
         TableComment = table.TableComment,
         ClassName = table.ClassName,
@@ -792,7 +792,7 @@ public sealed partial class CodeGenerationEngine(
                 return $"{where} 选了关联选择器但没选关联的表，请在列配置里选择。";
             }
 
-            var target = column.RelationTableId == table.BasicId
+            var target = column.RelationTableId == table.Id
                 ? table
                 : await _tableRepository.GetByIdAsync(column.RelationTableId.Value, cancellationToken);
             if (target is null)
@@ -800,9 +800,9 @@ public sealed partial class CodeGenerationEngine(
                 return $"{where} 关联的表配置（{column.RelationTableId}）不存在，请在列配置里重新选择。";
             }
 
-            var targetColumns = target.BasicId == table.BasicId
+            var targetColumns = target.Id == table.Id
                 ? columnSchemas
-                : [.. (await _columnRepository.GetByTableIdAsync(target.BasicId, cancellationToken)).Select(targetColumn => MapColumn(target, targetColumn))];
+                : [.. (await _columnRepository.GetByTableIdAsync(target.Id, cancellationToken)).Select(targetColumn => MapColumn(target, targetColumn))];
 
             var isTree = column.DictSelectorType == DictSelectorType.TreeSelector;
             string? parentProperty = null;
@@ -849,7 +849,7 @@ public sealed partial class CodeGenerationEngine(
             });
             column.Relation = new RelationTarget
             {
-                TableId = target.BasicId,
+                TableId = target.Id,
                 TableName = target.TableName,
                 TableComment = target.TableComment,
                 ClassName = target.ClassName,

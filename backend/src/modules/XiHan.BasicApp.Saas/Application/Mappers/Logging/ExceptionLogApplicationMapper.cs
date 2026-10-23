@@ -22,7 +22,7 @@ public static class ExceptionLogApplicationMapper
 
         return new ExceptionLogListItemDto
         {
-            BasicId = exceptionLog.BasicId,
+            Id = exceptionLog.Id,
             UserId = exceptionLog.UserId,
             UserName = exceptionLog.UserName,
             SessionId = exceptionLog.SessionId,
@@ -63,7 +63,7 @@ public static class ExceptionLogApplicationMapper
             RequestHeaders = exceptionLog.RequestHeaders,
             ExtendData = exceptionLog.ExtendData,
             Remark = exceptionLog.Remark,
-            CreatedTime = exceptionLog.CreatedTime
+            CreatedAt = exceptionLog.CreatedAt
         };
     }
 
@@ -79,7 +79,7 @@ public static class ExceptionLogApplicationMapper
         var item = ToListItemDto(exceptionLog);
         return new ExceptionLogDetailDto
         {
-            BasicId = item.BasicId,
+            Id = item.Id,
             UserId = item.UserId,
             UserName = item.UserName,
             SessionId = item.SessionId,
@@ -120,7 +120,7 @@ public static class ExceptionLogApplicationMapper
             RequestHeaders = item.RequestHeaders,
             ExtendData = item.ExtendData,
             Remark = item.Remark,
-            CreatedTime = item.CreatedTime,
+            CreatedAt = item.CreatedAt,
             CreatedId = exceptionLog.CreatedId,
             CreatedBy = exceptionLog.CreatedBy
         };

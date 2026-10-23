@@ -4,7 +4,6 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.Framework.Domain.Entities.Abstracts;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
 
 namespace XiHan.BasicApp.Workflow.Domain.Entities;
 
@@ -23,7 +22,7 @@ namespace XiHan.BasicApp.Workflow.Domain.Entities;
 [SugarIndex("IX_{table}_PaIn", nameof(ParentInstanceId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_CoId", nameof(CorrelationId), OrderByType.Asc)]
 [SugarIndex("IX_{table}_TeId_StId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(StarterId), OrderByType.Asc, nameof(CreationTime), OrderByType.Desc)]
-public partial class SysWorkflowInstance : BasicAppEntity, IStrictMultiTenantEntity
+public partial class SysWorkflowInstance : BasicAppEntity, IMultiTenant
 {
     /// <summary>
     /// 构造函数

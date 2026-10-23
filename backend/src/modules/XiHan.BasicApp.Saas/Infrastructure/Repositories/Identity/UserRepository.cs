@@ -5,11 +5,9 @@ using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Data.SqlSugar.Clients;
-using XiHan.Framework.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Saas.Security;
 using XiHan.Framework.Domain.Shared.Paging.Dtos;
 using XiHan.Framework.MultiTenancy.Abstractions;
-using XiHan.Framework.Uow;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -58,6 +56,7 @@ public sealed class UserRepository(
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
         cancellationToken.ThrowIfCancellationRequested();
 
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = currentTenant.Change(null);
 
         return await CreateNoTenantQueryable()
@@ -79,6 +78,7 @@ public sealed class UserRepository(
         ArgumentException.ThrowIfNullOrWhiteSpace(phone);
         cancellationToken.ThrowIfCancellationRequested();
 
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = currentTenant.Change(null);
 
         return await CreateNoTenantQueryable()
@@ -101,7 +101,7 @@ public sealed class UserRepository(
             .Where(user => user.UserName == userName);
         if (excludeUserId.HasValue)
         {
-            query = query.Where(user => user.BasicId != excludeUserId.Value);
+            query = query.Where(user => user.Id != excludeUserId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);
@@ -121,12 +121,13 @@ public sealed class UserRepository(
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
         cancellationToken.ThrowIfCancellationRequested();
 
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = currentTenant.Change(null);
 
         var query = CreateNoTenantQueryable().Where(user => user.Email == email);
         if (excludeUserId.HasValue)
         {
-            query = query.Where(user => user.BasicId != excludeUserId.Value);
+            query = query.Where(user => user.Id != excludeUserId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);
@@ -148,6 +149,7 @@ public sealed class UserRepository(
         ArgumentException.ThrowIfNullOrWhiteSpace(userName);
         cancellationToken.ThrowIfCancellationRequested();
 
+        // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = currentTenant.Change(null);
 
         var query = CreateNoTenantQueryable()
@@ -155,7 +157,7 @@ public sealed class UserRepository(
             .Where(user => user.UserName == userName);
         if (excludeUserId.HasValue)
         {
-            query = query.Where(user => user.BasicId != excludeUserId.Value);
+            query = query.Where(user => user.Id != excludeUserId.Value);
         }
 
         return await query.AnyAsync(cancellationToken);
@@ -173,7 +175,7 @@ public sealed class UserRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         return await CreateNoTenantQueryable()
-            .Where(user => user.BasicId == userId)
+            .Where(user => user.Id == userId)
             .FirstAsync(cancellationToken);
     }
 
@@ -200,7 +202,7 @@ public sealed class UserRepository(
         // 而成员关系行属于**目标租户**，带租户过滤会解析不出他们的名字。
         var ids = userIds.Distinct().ToList();
         return await CreateNoTenantQueryable()
-            .Where(user => ids.Contains(user.BasicId))
+            .Where(user => ids.Contains(user.Id))
             .ToListAsync(cancellationToken);
     }
 
@@ -225,7 +227,7 @@ public sealed class UserRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         return await QueryMemberAccounts(tenantId)
-            .Where(user => user.BasicId == userId)
+            .Where(user => user.Id == userId)
             .FirstAsync(cancellationToken);
     }
 
@@ -238,7 +240,7 @@ public sealed class UserRepository(
 
         return await QueryMemberAccounts(tenantId)
             .Where(user => user.Status == EnableStatus.Enabled)
-            .Select(user => user.BasicId)
+            .Select(user => user.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -249,7 +251,7 @@ public sealed class UserRepository(
     {
         return CreateNoTenantQueryable()
             .Where(user => SqlFunc.Subqueryable<SysTenantUser>()
-                .Where(member => member.UserId == user.BasicId
+                .Where(member => member.UserId == user.Id
                                  && member.TenantId == tenantId
                                  && member.InviteStatus == TenantMemberInviteStatus.Accepted
                                  && member.IsDeleted == false)
@@ -265,7 +267,7 @@ public sealed class UserRepository(
 
         return await CreateNoTenantQueryable()
             .Where(user => user.Status == EnableStatus.Enabled)
-            .Select(user => user.BasicId)
+            .Select(user => user.Id)
             .ToListAsync(cancellationToken);
     }
 }

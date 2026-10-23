@@ -5,7 +5,6 @@
 
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Workflow.Domain.Entities;
-using XiHan.Framework.Workflow.Abstractions.Runtime;
 
 namespace XiHan.BasicApp.Workflow.Application.Dtos;
 
@@ -36,7 +35,7 @@ public sealed class WorkflowApprovalRecordItemDto : BasicAppDto
     public WorkflowTaskRecordAction Action { get; set; }
     public string? Outcome { get; set; }
     public string? Comment { get; set; }
-    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>业务名称（非审批业务流程为空）</summary>
     public string? BusinessName { get; set; }

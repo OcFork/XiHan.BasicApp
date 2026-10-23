@@ -71,7 +71,7 @@ public sealed class VersionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var version = await GetVersionOrThrowAsync(command.BasicId, cancellationToken);
+        var version = await GetVersionOrThrowAsync(command.Id, cancellationToken);
         version.IsUpgrading = false;
         if (!string.IsNullOrWhiteSpace(command.AppVersion))
         {
@@ -96,7 +96,7 @@ public sealed class VersionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var version = await GetVersionOrThrowAsync(command.BasicId, cancellationToken);
+        var version = await GetVersionOrThrowAsync(command.Id, cancellationToken);
         version.IsUpgrading = true;
         version.UpgradeNode = Optional(command.UpgradeNode, 128, nameof(command.UpgradeNode), "升级节点不能超过 128 个字符。");
         version.UpgradeStartTime = command.UpgradeStartTime ?? DateTimeOffset.UtcNow;
@@ -112,9 +112,9 @@ public sealed class VersionDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        EnsureId(command.BasicId, "系统版本主键必须大于 0。");
+        EnsureId(command.Id, "系统版本主键必须大于 0。");
         ValidateVersionCommand(command.AppVersion, command.DbVersion, command.MinSupportVersion, command.UpgradeNode);
-        var version = await GetVersionOrThrowAsync(command.BasicId, cancellationToken);
+        var version = await GetVersionOrThrowAsync(command.Id, cancellationToken);
         version.AppVersion = Required(command.AppVersion, 64, nameof(command.AppVersion), "应用版本不能超过 64 个字符。");
         version.DbVersion = Required(command.DbVersion, 64, nameof(command.DbVersion), "数据库版本不能超过 64 个字符。");
         version.MinSupportVersion = Optional(command.MinSupportVersion, 64, nameof(command.MinSupportVersion), "最小支持版本不能超过 64 个字符。");

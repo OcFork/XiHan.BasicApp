@@ -4,13 +4,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.Framework.Domain.Entities.Abstracts;
-using XiHan.Framework.EventBus.Abstractions.Local;
-using XiHan.Framework.Uow;
-using XiHan.Framework.Web.Core.Clients;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 
@@ -32,7 +32,8 @@ public sealed class AccessPolicyLoginGuard : IAccessPolicyLoginGuard
     private readonly AccessPolicyAuthenticatedEvaluator _evaluator;
     private readonly IAccessPolicyHitRecorder _hits;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILocalEventBus _localEventBus;
+    private readonly IMessagePublisher _localEventBus;
+    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly IClientInfoProvider _clientInfoProvider;
     private readonly ITraceIdProvider _traceIdProvider;
@@ -48,7 +49,7 @@ public sealed class AccessPolicyLoginGuard : IAccessPolicyLoginGuard
         AccessPolicyAuthenticatedEvaluator evaluator,
         IAccessPolicyHitRecorder hits,
         IHttpContextAccessor httpContextAccessor,
-        ILocalEventBus localEventBus,
+        IMessagePublisher localEventBus,
         IUnitOfWorkManager unitOfWorkManager,
         IClientInfoProvider clientInfoProvider,
         ITraceIdProvider traceIdProvider,
@@ -129,7 +130,8 @@ public sealed class AccessPolicyLoginGuard : IAccessPolicyLoginGuard
         }
 
         var client = _clientInfoProvider.GetCurrent();
-        await _localEventBus.PublishAsync(new AuthLoginFailedDomainEvent(
+        // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
+        await _localEventBus.PublishAsync("auth-login-failed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "auth-login-failed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(new AuthLoginFailedDomainEvent(
             tenantId,
             userId,
             userName,
@@ -138,7 +140,7 @@ public sealed class AccessPolicyLoginGuard : IAccessPolicyLoginGuard
             now,
             _traceIdProvider.GetCurrentTraceId(),
             client.IpAddress,
-            client.UserAgent));
+            client.UserAgent)) }, cancellationToken);
         if (_unitOfWorkManager.Current is { } unitOfWork)
         {
             await unitOfWork.CompleteAsync(CancellationToken.None);
