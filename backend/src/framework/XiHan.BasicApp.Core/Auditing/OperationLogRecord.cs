@@ -27,7 +27,8 @@ public class OperationLogRecord
     /// 租户标识（记录产生时所属的租户；null 表示宿主/平台）
     /// </summary>
     /// <remarks>写入器按它落戳并切入该租户写入，不依赖写入时的环境上下文——排队异步写入时环境里已没有请求的租户。</remarks>
-    public long? TenantId { get; set; }
+    // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
+    public string? TenantId { get; set; }
 
     /// <summary>
     /// 用户名

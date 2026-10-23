@@ -13,7 +13,6 @@ using XiHan.BasicApp.Printing.Infrastructure.Seeders;
 using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Extensions;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
-using XiHan.BasicApp.Web.Core.RealTime.Extensions;
 
 namespace XiHan.BasicApp.Printing.Extensions;
 

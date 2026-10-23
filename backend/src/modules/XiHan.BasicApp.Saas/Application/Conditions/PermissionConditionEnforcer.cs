@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Authorization.Conditions;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;

@@ -9,8 +9,6 @@ using XiHan.BasicApp.CodeGeneration.Infrastructure.Inference;
 using XiHan.BasicApp.CodeGeneration.Infrastructure.Seeders;
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.Saas.Extensions;
-using XiHan.BasicApp.Core.Application;
-using XiHan.BasicApp.Web.Core.RealTime.Extensions;
 
 namespace XiHan.BasicApp.CodeGeneration.Extensions;
 

@@ -68,6 +68,9 @@ public sealed class BasicAppCoreFeature : IFeature
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<ICurrentTenant, CurrentTenant>();
 
+        // 4.x 容器注册（xihan migrate v4 生成）
+        services.AddCoreV4Services();
+
         // 应用信息（升级编排按实例标识区分节点）
         services.TryAddSingleton<IApplicationInfoAccessor, HostApplicationInfoAccessor>();
 

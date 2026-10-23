@@ -19,7 +19,6 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 using XiHan.BasicApp.Core.Authorization.Conditions;
 using XiHan.BasicApp.Core.Data;

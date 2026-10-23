@@ -17,7 +17,6 @@ using XiHan.BasicApp.Chat.Application.Services;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.AI.Application.AppServices;
 

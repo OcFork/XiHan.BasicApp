@@ -19,7 +19,6 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Chat.Domain.Permissions;
 
 namespace XiHan.BasicApp.Chat.Application.QueryServices;

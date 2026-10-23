@@ -4,6 +4,7 @@
 using SqlSugar;
 using XiHan.BasicApp.AI.Domain.Enums;
 using XiHan.BasicApp.Core.Entities;
+using XiHan.Framework.Domain;
 
 namespace XiHan.BasicApp.AI.Domain.Entities;
 

@@ -15,6 +15,11 @@ namespace XiHan.BasicApp.Core.Data;
 public interface ISqlSugarClientResolver
 {
     /// <summary>
+    /// 当前作用域的租户标识（平台或无租户上下文时为空）
+    /// </summary>
+    string? CurrentTenantId { get; }
+
+    /// <summary>
     /// 当前调用的客户端
     /// </summary>
     ISqlSugarClient GetCurrentClient();

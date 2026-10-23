@@ -11,7 +11,6 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.Services;

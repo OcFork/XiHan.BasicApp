@@ -38,7 +38,7 @@ using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.Framework.Localization.Abstractions;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.CodeGeneration.Operations;
 
@@ -49,13 +49,12 @@ namespace XiHan.BasicApp.CodeGeneration.Operations;
 [JsonSerializable(typeof(CodeGenConnectionTestResultDto))]
 [JsonSerializable(typeof(CodeGenDataSourceCreateDto))]
 [JsonSerializable(typeof(CodeGenDataSourceDetailDto))]
-[JsonSerializable(typeof(CodeGenDataSourceDetailDto?))]
 [JsonSerializable(typeof(CodeGenDataSourcePageQueryDto))]
 [JsonSerializable(typeof(CodeGenDataSourceStatusUpdateDto))]
 [JsonSerializable(typeof(CodeGenDataSourceUpdateDto))]
 [JsonSerializable(typeof(CodeGenDbTableQueryDto))]
 [JsonSerializable(typeof(CodeGenGenerateRequestDto))]
-[JsonSerializable(typeof(CodeGenHistoryDetailDto?))]
+[JsonSerializable(typeof(CodeGenHistoryDetailDto))]
 [JsonSerializable(typeof(CodeGenHistoryPageQueryDto))]
 [JsonSerializable(typeof(CodeGenImportTableDto))]
 [JsonSerializable(typeof(CodeGenImportTablesDto))]
@@ -67,13 +66,11 @@ namespace XiHan.BasicApp.CodeGeneration.Operations;
 [JsonSerializable(typeof(CodeGenTableColumnListItemDto))]
 [JsonSerializable(typeof(CodeGenTableColumnUpdateDto))]
 [JsonSerializable(typeof(CodeGenTableDetailDto))]
-[JsonSerializable(typeof(CodeGenTableDetailDto?))]
 [JsonSerializable(typeof(CodeGenTablePageQueryDto))]
 [JsonSerializable(typeof(CodeGenTableStatusUpdateDto))]
 [JsonSerializable(typeof(CodeGenTableUpdateDto))]
 [JsonSerializable(typeof(CodeGenTemplateCreateDto))]
 [JsonSerializable(typeof(CodeGenTemplateDetailDto))]
-[JsonSerializable(typeof(CodeGenTemplateDetailDto?))]
 [JsonSerializable(typeof(CodeGenTemplatePageQueryDto))]
 [JsonSerializable(typeof(CodeGenTemplateStatusUpdateDto))]
 [JsonSerializable(typeof(CodeGenTemplateUpdateDto))]

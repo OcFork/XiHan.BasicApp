@@ -40,7 +40,7 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.AI.Operations;
 
@@ -51,20 +51,17 @@ namespace XiHan.BasicApp.AI.Operations;
 [JsonSerializable(typeof(AiAssistantActionDto))]
 [JsonSerializable(typeof(AiAssistantCreateDto))]
 [JsonSerializable(typeof(AiAssistantDetailDto))]
-[JsonSerializable(typeof(AiAssistantDetailDto?))]
 [JsonSerializable(typeof(AiAssistantPageQueryDto))]
 [JsonSerializable(typeof(AiAssistantStatusUpdateDto))]
 [JsonSerializable(typeof(AiAssistantUpdateDto))]
 [JsonSerializable(typeof(AiPromptCreateDto))]
 [JsonSerializable(typeof(AiPromptDetailDto))]
-[JsonSerializable(typeof(AiPromptDetailDto?))]
 [JsonSerializable(typeof(AiPromptPageQueryDto))]
 [JsonSerializable(typeof(AiPromptStatusUpdateDto))]
 [JsonSerializable(typeof(AiPromptUpdateDto))]
 [JsonSerializable(typeof(AiProviderActionDto))]
 [JsonSerializable(typeof(AiProviderCreateDto))]
 [JsonSerializable(typeof(AiProviderDetailDto))]
-[JsonSerializable(typeof(AiProviderDetailDto?))]
 [JsonSerializable(typeof(AiProviderPageQueryDto))]
 [JsonSerializable(typeof(AiProviderStatusUpdateDto))]
 [JsonSerializable(typeof(AiProviderTestConnectionResultDto))]
@@ -80,7 +77,6 @@ namespace XiHan.BasicApp.AI.Operations;
 [JsonSerializable(typeof(IReadOnlyList<AiAssistantOptionDto>))]
 [JsonSerializable(typeof(KnowledgeActionDto))]
 [JsonSerializable(typeof(KnowledgeDetailDto))]
-[JsonSerializable(typeof(KnowledgeDetailDto?))]
 [JsonSerializable(typeof(KnowledgeIngestDto))]
 [JsonSerializable(typeof(KnowledgePageQueryDto))]
 [JsonSerializable(typeof(KnowledgeQueryDto))]

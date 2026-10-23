@@ -28,7 +28,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Printing.Operations;
 
@@ -45,7 +45,6 @@ namespace XiHan.BasicApp.Printing.Operations;
 [JsonSerializable(typeof(PrintTemplateCreateDto))]
 [JsonSerializable(typeof(PrintTemplateDeleteDto))]
 [JsonSerializable(typeof(PrintTemplateDetailDto))]
-[JsonSerializable(typeof(PrintTemplateDetailDto?))]
 [JsonSerializable(typeof(PrintTemplatePageQueryDto))]
 [JsonSerializable(typeof(PrintTemplateStatusUpdateDto))]
 [JsonSerializable(typeof(PrintTemplateUpdateDto))]

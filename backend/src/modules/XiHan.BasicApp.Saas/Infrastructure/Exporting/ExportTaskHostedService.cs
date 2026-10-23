@@ -9,7 +9,6 @@ using XiHan.BasicApp.Saas.Application.Exporting;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Exporting;
 

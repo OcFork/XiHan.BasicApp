@@ -7,7 +7,6 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using BotSmsProviderType = XiHan.Framework.Bot.Sms.Enums.SmsProviderType;
 using SaasSmsProviderType = XiHan.BasicApp.Saas.Domain.Entities.SmsProviderType;
-using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

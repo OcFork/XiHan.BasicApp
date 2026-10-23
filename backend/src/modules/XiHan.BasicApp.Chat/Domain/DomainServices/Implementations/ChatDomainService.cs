@@ -6,7 +6,6 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Chat.Domain.DomainServices;
 

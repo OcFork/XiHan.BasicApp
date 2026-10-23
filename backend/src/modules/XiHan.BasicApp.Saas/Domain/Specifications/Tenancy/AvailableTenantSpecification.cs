@@ -3,7 +3,7 @@
 
 using System.Linq.Expressions;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Domain.Specifications;
+using XiHan.BasicApp.Core.Specifications;
 
 namespace XiHan.BasicApp.Saas.Domain.Specifications;
 

@@ -30,7 +30,6 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Core.Repositories;
 using XiHan.Framework.Localization.Abstractions;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Authorization.Permissions;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Exceptions;

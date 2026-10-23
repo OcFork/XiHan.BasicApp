@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Tenancy;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Upgrade.Abstractions;

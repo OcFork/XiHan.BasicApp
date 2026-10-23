@@ -29,7 +29,7 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Chat.Operations;
 

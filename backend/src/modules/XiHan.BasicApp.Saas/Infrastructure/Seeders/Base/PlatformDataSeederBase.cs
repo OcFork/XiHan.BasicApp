@@ -4,9 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Data;
-using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

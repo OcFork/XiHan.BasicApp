@@ -5,7 +5,6 @@ using XiHan.BasicApp.Printing.Application.Dtos;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Application;
-using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.Contracts;
 

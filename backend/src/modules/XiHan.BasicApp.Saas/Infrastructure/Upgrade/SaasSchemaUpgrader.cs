@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Upgrade.Abstractions;
 using XiHan.BasicApp.Core.Upgrade.Enums;
 using XiHan.BasicApp.Core.Upgrade.Options;

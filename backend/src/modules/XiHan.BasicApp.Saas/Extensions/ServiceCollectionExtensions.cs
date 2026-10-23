@@ -39,7 +39,6 @@ using XiHan.BasicApp.Core.Authorization.Permissions;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Upgrade.Abstractions;
-using XiHan.BasicApp.Web.Core.RealTime.Extensions;
 using XiHan.BasicApp.Web.Core.Session;
 
 namespace XiHan.BasicApp.Saas.Extensions;

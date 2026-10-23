@@ -3,7 +3,6 @@
 
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Core.Application;
-using XiHan.BasicApp.Core.Paging.Dtos;
 
 namespace XiHan.BasicApp.Saas.Application.Contracts;
 

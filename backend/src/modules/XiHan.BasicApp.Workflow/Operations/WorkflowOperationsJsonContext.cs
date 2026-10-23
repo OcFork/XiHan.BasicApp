@@ -36,7 +36,7 @@ using XiHan.BasicApp.Workflow.Operations.WorkflowTodoQuery;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Workflow.Operations;
 
@@ -65,12 +65,11 @@ namespace XiHan.BasicApp.Workflow.Operations;
 [JsonSerializable(typeof(WorkflowApprovalWithdrawDto))]
 [JsonSerializable(typeof(WorkflowDefinitionCreateDto))]
 [JsonSerializable(typeof(WorkflowDefinitionDetailDto))]
-[JsonSerializable(typeof(WorkflowDefinitionDetailDto?))]
 [JsonSerializable(typeof(WorkflowDefinitionIdDto))]
 [JsonSerializable(typeof(WorkflowDefinitionNewVersionDto))]
 [JsonSerializable(typeof(WorkflowDefinitionPageQueryDto))]
 [JsonSerializable(typeof(WorkflowDefinitionUpdateDraftDto))]
-[JsonSerializable(typeof(WorkflowInstanceDetailDto?))]
+[JsonSerializable(typeof(WorkflowInstanceDetailDto))]
 [JsonSerializable(typeof(WorkflowInstanceIdDto))]
 [JsonSerializable(typeof(WorkflowInstanceListItemDto))]
 [JsonSerializable(typeof(WorkflowInstanceOperationDto))]

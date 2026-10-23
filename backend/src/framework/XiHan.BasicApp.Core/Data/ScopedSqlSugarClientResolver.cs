@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Core.Data;
 
@@ -9,8 +10,12 @@ namespace XiHan.BasicApp.Core.Data;
 /// 单库解析器：所有入口都返回 5.0 持久化特性在当前作用域里注册的那个客户端
 /// </summary>
 /// <param name="client">作用域内的 SqlSugar 客户端</param>
-public sealed class ScopedSqlSugarClientResolver(ISqlSugarClient client) : ISqlSugarClientResolver
+/// <param name="currentTenant">当前租户</param>
+public sealed class ScopedSqlSugarClientResolver(ISqlSugarClient client, ICurrentTenant currentTenant) : ISqlSugarClientResolver
 {
+    /// <inheritdoc />
+    public string? CurrentTenantId => currentTenant.Id;
+
     /// <inheritdoc />
     public ISqlSugarClient GetCurrentClient() => client;
 

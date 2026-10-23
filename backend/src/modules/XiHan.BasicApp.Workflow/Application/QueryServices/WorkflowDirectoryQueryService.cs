@@ -15,7 +15,6 @@ using XiHan.BasicApp.Workflow.Application.Dtos;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 

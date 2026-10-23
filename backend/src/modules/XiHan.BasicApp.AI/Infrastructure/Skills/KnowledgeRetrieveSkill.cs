@@ -4,7 +4,6 @@
 using System.ComponentModel;
 using Microsoft.Extensions.AI;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Skills;
 

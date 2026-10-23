@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.BasicApp.Core.Authorization.Conditions;
 using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;

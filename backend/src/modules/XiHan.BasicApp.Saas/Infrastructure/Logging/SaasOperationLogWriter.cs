@@ -7,7 +7,6 @@ using SqlSugar;
 using System.Security.Claims;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Auditing;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Web.Core.Clients;

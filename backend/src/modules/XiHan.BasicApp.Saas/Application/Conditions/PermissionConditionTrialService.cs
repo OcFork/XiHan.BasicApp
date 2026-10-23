@@ -9,7 +9,6 @@ using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 using XiHan.BasicApp.Core.Authorization.Conditions;
 

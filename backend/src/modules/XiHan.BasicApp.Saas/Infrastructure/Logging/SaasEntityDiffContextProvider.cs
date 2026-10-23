@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Http;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Auditing;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;

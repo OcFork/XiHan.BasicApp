@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;

@@ -11,7 +11,7 @@ using XiHan.BasicApp.CodeGeneration.Operations;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Operations;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.CodeGeneration.Operations.DynamicRuntime;

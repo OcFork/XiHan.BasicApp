@@ -2,6 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Domain;
+using XiHan.BasicApp.Core.Events;
+using System.Text.Json;
 
 namespace XiHan.BasicApp.Core.Data;
 
@@ -9,7 +13,8 @@ namespace XiHan.BasicApp.Core.Data;
 /// 架在作用域 SqlSugar 客户端上的工作单元管理器：最外层按需开事务、完成时提交并执行回调，内层只是加入
 /// </summary>
 /// <param name="client">作用域内的 SqlSugar 客户端</param>
-public sealed class SqlSugarUnitOfWorkManager(ISqlSugarClient client) : IUnitOfWorkManager
+/// <param name="publisher">消息发布器：领域事件经它发出</param>
+public sealed class SqlSugarUnitOfWorkManager(ISqlSugarClient client, IMessagePublisher publisher) : IUnitOfWorkManager
 {
     /// <summary>
     /// 当前调用链上的工作单元
@@ -39,6 +44,51 @@ public sealed class SqlSugarUnitOfWorkManager(ISqlSugarClient client) : IUnitOfW
         var unitOfWork = new SqlSugarUnitOfWork(this, outer, options, ownsTransaction);
         _current.Value = unitOfWork;
         return unitOfWork;
+    }
+
+    /// <inheritdoc />
+    public async Task PublishDomainEventsAsync(IHasDomainEvents aggregate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(aggregate);
+        var events = aggregate.DomainEvents.ToArray();
+        aggregate.ClearDomainEvents();
+        if (events.Length == 0)
+        {
+            return;
+        }
+
+        // 有显式工作单元就等它完成（提交）后再发；没有时当前就在 5.0 管道的工作单元里，直接发（发件箱特性启用时随事务提交）
+        if (_current.Value is { IsCompleted: false } unitOfWork)
+        {
+            unitOfWork.OnCompleted(() => PublishAsync(events, CancellationToken.None));
+            return;
+        }
+
+        await PublishAsync(events, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// 每个事件一条消息：主题按事件类型推出，数据为事件的 JSON
+    /// </summary>
+    private async Task PublishAsync(IReadOnlyList<IDomainEvent> events, CancellationToken cancellationToken)
+    {
+        foreach (var group in events.GroupBy(static domainEvent => DomainEventTopics.For(domainEvent.GetType())))
+        {
+            var envelopes = group.Select(domainEvent => new MessageEnvelope
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Source = "/basicapp",
+                Type = group.Key,
+                Time = domainEvent.OccurredAt,
+                Data = JsonSerializer.SerializeToUtf8Bytes(domainEvent, domainEvent.GetType()),
+            }).ToList();
+            var results = await publisher.PublishManyAsync(group.Key, envelopes, cancellationToken).ConfigureAwait(false);
+            var failure = results.FirstOrDefault(static result => result.IsFailure);
+            if (failure is { IsFailure: true })
+            {
+                throw new InvalidOperationException($"Publishing domain event '{group.Key}' failed: {failure.Error}.");
+            }
+        }
     }
 
     /// <summary>

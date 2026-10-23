@@ -19,7 +19,7 @@ using XiHan.BasicApp.Chat.Domain.Permissions;
 using XiHan.BasicApp.Chat.Domain.Repositories;
 using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Operations;
-using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.AI.Operations.ChatAssistant;
