@@ -15,11 +15,12 @@ using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Permissions;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.QueryServices;
 
@@ -128,7 +129,7 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     /// <param name="scope">解析作用域。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>命中的模板及实际作用域。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板不存在、未启用或未向当前租户开放。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">模板不存在、未启用或未向当前租户开放。</exception>
     public async Task<ResolvedPrintTemplateDto> GetResolvedPrintTemplateByCodeAsync(
         string templateCode,
         PrintTemplateScope scope = PrintTemplateScope.Auto,

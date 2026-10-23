@@ -1,6 +1,8 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using XiHan.BasicApp.Core.Exceptions;
+
 namespace XiHan.BasicApp.Saas.Application.Services;
 
 /// <summary>
@@ -14,6 +16,6 @@ public interface ILoginThrottleService
     /// <param name="account">登录账号（用户名或邮箱）</param>
     /// <param name="ipAddress">客户端 IP 地址</param>
     /// <param name="cancellationToken">取消令牌</param>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">超出窗口允许的尝试次数</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">超出窗口允许的尝试次数</exception>
     Task EnsureLoginAllowedAsync(string account, string? ipAddress, CancellationToken cancellationToken = default);
 }

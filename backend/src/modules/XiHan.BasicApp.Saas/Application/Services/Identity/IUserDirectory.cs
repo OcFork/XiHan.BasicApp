@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Dtos;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

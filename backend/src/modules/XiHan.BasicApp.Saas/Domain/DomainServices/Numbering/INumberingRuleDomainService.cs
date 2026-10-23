@@ -1,6 +1,8 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using XiHan.BasicApp.Core.Exceptions;
+
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
 /// <summary>
@@ -20,7 +22,7 @@ public interface INumberingRuleDomainService
     /// <returns>包含已持久化规则实体的命令结果。</returns>
     /// <remarks>租户私有规则的“允许租户使用”标志会被强制归一为 <see langword="false"/>，避免产生跨租户开放的错误语义。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="command"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则参数或唯一性校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则参数或唯一性校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleCommandResult> CreateAsync(NumberingRuleCreateCommand command, CancellationToken cancellationToken = default);
 
@@ -32,7 +34,7 @@ public interface INumberingRuleDomainService
     /// <returns>包含更新后规则实体的命令结果。</returns>
     /// <remarks>首次发号后会冻结所有影响编号唯一性的格式字段；未发号但已预留流水的规则也不能缩小到无法容纳当前值的位数。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="command"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则不存在、越权或违反格式冻结策略。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则不存在、越权或违反格式冻结策略。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleCommandResult> UpdateAsync(NumberingRuleUpdateCommand command, CancellationToken cancellationToken = default);
 
@@ -43,7 +45,7 @@ public interface INumberingRuleDomainService
     /// <param name="cancellationToken">用于取消规则查询和持久化操作的取消令牌。</param>
     /// <returns>包含状态变更后规则实体的命令结果。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="command"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则不存在或状态无效。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则不存在或状态无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleCommandResult> UpdateStatusAsync(NumberingRuleStatusChangeCommand command, CancellationToken cancellationToken = default);
 
@@ -58,7 +60,7 @@ public interface INumberingRuleDomainService
     /// 方法允许前移形成空洞，但会使用永久分配记录阻止回退到当前周期可能重复的范围。
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="command"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">可能导致重复编号或确认信息无效。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">可能导致重复编号或确认信息无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleCommandResult> ResetAsync(NumberingRuleResetCommand command, CancellationToken cancellationToken = default);
 
@@ -68,7 +70,7 @@ public interface INumberingRuleDomainService
     /// <param name="id">规则主键，必须为正数且属于当前租户作用域。</param>
     /// <param name="cancellationToken">用于取消规则查询和删除操作的取消令牌。</param>
     /// <remarks>已经发号的规则必须保留以维持永久审计链，只能停用，不能删除。</remarks>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则不存在或已经发号。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则不存在或已经发号。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task DeleteAsync(long id, CancellationToken cancellationToken = default);
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.CodeGeneration.Application.Dtos;
+using XiHan.BasicApp.Core.Application;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.Contracts;
 

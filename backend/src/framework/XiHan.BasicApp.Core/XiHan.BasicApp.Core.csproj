@@ -19,6 +19,11 @@
         （框架源码与本仓库并列检出时自动走源码，否则走 NuGet 包）。两组须保持同一份清单。
         全仓库的框架引用只集中在本工程与 XiHan.BasicApp.Web.Core，其余工程一律经这两者传递。
     -->
+    <!-- 承接的授权检查上下文与声明扩展用到 HttpContext / ClaimsPrincipal -->
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
         <PackageReference Include="XiHan.Framework.Primitives" Version="$(XiHanFrameworkVersion)" />
         <PackageReference Include="XiHan.Framework.Kernel" Version="$(XiHanFrameworkVersion)" />
@@ -35,6 +40,8 @@
         <PackageReference Include="XiHan.Framework.Configuration.Abstractions" Version="$(XiHanFrameworkVersion)" />
         <PackageReference Include="XiHan.Framework.Auditing.Abstractions" Version="$(XiHanFrameworkVersion)" />
         <PackageReference Include="XiHan.Framework.Observability.OpenTelemetry" Version="$(XiHanFrameworkVersion)" />
+        <!-- 过渡：4.x 的工具库（反射、硬件信息、加密、随机码、表达式），不依赖 4.x 基础设施；5.0 不再包装，后续按需搬进应用 -->
+        <PackageReference Include="XiHan.Framework.Utils" Version="$(XiHanLegacyUtilsVersion)" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
@@ -53,6 +60,7 @@
         <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Configuration.Abstractions\XiHan.Framework.Configuration.Abstractions.csproj" />
         <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Auditing.Abstractions\XiHan.Framework.Auditing.Abstractions.csproj" />
         <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Observability.OpenTelemetry\XiHan.Framework.Observability.OpenTelemetry.csproj" />
+        <ProjectReference Include="$(XiHanLegacySrc)XiHan.Framework.Utils\XiHan.Framework.Utils.csproj" />
     </ItemGroup>
 
 </Project>

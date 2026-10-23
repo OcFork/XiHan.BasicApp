@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Workflow.Application.Business;
 

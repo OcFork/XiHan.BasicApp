@@ -6,7 +6,7 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Operations;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Repositories;
 using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Operations;
 using XiHan.Framework.Localization.Abstractions;

@@ -1,6 +1,8 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using XiHan.BasicApp.Core.Exceptions;
+
 namespace XiHan.BasicApp.Saas.Application.Services;
 
 /// <summary>
@@ -18,7 +20,7 @@ public interface IWorkflowBusinessService
     /// <param name="request">发起请求</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>发起结果</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.BusinessException">
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.BusinessException">
     /// 业务未登记、同一单据已有进行中的审批、流程未发布或发起即故障（如首个节点解析不到审批人）时抛出
     /// </exception>
     Task<WorkflowBusinessStartResult> StartAsync(WorkflowBusinessStartRequest request, CancellationToken cancellationToken = default);

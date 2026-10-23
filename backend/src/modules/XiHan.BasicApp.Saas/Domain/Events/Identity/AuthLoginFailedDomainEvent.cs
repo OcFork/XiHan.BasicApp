@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Domain.Events;
+using XiHan.BasicApp.Core.Events;
 
 namespace XiHan.BasicApp.Saas.Domain.Events;
 

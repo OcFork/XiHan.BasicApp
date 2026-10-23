@@ -13,7 +13,9 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Web.Core.RealTime.Constants;
+using XiHan.BasicApp.Web.Core.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

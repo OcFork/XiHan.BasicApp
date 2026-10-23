@@ -34,9 +34,9 @@ using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
 

@@ -4,7 +4,7 @@
 using System.Reflection;
 using SqlSugar;
 using XiHan.BasicApp.CodeGeneration.Domain.Generation;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Generation;
 

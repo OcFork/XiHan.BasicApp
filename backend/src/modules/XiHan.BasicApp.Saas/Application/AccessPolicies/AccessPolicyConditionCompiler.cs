@@ -6,7 +6,8 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using ConditionOperator = XiHan.Framework.Authorization.Conditions.ConditionOperator;
+using ConditionOperator = XiHan.BasicApp.Core.Authorization.Conditions.ConditionOperator;
+using XiHan.BasicApp.Core.Authorization.Conditions;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 

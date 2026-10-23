@@ -7,10 +7,12 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Core.Auditing;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 

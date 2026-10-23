@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Infrastructure.Messaging;
 using XiHan.BasicApp.Saas.Infrastructure.Tasks;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using PrintingPageRegistry = XiHan.BasicApp.Printing.Application.Pages.PageRegistry;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Printing.Infrastructure.Seeders;
 

@@ -169,13 +169,16 @@ using XiHan.BasicApp.Saas.Operations.UserSetting;
 using XiHan.BasicApp.Saas.Operations.UserSettingQuery;
 using XiHan.BasicApp.Saas.Operations.UserStatisticsQuery;
 using XiHan.BasicApp.Saas.Operations.VersionQuery;
-using XiHan.Framework.Domain.Entities.Abstracts;
-using XiHan.Framework.Domain.Repositories;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Repositories;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.Framework.Utils.Diagnostics.HardwareInfos;
+using XiHan.Framework.Utils.Reflections;
+using XiHan.Framework.Utils.Runtime;
 
 namespace XiHan.BasicApp.Saas.Operations;
 

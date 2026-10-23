@@ -5,6 +5,8 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Hubs;
+using XiHan.BasicApp.Web.Core.RealTime.Constants;
+using XiHan.BasicApp.Web.Core.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

@@ -10,7 +10,8 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Exporting;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

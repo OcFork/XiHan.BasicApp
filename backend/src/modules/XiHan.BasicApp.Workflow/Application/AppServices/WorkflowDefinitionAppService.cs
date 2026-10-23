@@ -9,6 +9,7 @@ using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Workflow.Application.AppServices;
 

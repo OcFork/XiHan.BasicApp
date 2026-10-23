@@ -10,8 +10,10 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Numbering;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -496,7 +498,6 @@ public sealed class NumberGenerator : INumberGenerator
 
         // 回退查询只需在平台上下文读取规则定位信息；真正分配会重新切换平台上下文后再开启事务。
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var platformScope = _currentTenant.Change(null);
         var fallback = await _ruleRepository.FindByCodeInScopeAsync(0, ruleCode, true, cancellationToken);
         if (fallback is null || !fallback.AllowTenantUse)
         {

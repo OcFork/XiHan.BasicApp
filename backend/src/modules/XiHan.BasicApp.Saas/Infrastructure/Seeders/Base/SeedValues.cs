@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

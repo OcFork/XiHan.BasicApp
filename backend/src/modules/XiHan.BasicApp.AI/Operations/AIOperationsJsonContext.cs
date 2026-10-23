@@ -37,9 +37,9 @@ using XiHan.BasicApp.Chat.Domain.Repositories;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.AI.Operations;

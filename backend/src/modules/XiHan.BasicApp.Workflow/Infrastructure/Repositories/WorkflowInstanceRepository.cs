@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Workflow.Infrastructure.Repositories;
 

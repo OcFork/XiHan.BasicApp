@@ -3,7 +3,9 @@
 
 using System.Reflection;
 using XiHan.BasicApp.Saas.Domain.Conditions;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Authorization.Conditions;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

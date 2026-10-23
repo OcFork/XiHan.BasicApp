@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

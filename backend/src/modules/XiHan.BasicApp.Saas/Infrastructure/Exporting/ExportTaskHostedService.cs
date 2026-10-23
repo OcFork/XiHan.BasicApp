@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 using XiHan.BasicApp.Saas.Application.Exporting;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Exporting;
@@ -159,7 +159,6 @@ public sealed class ExportTaskHostedService : XiHanBackgroundServiceBase<ExportT
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IExportTaskRepository>();
             var runner = scope.ServiceProvider.GetRequiredService<ITenantDataScopeRunner>();
 

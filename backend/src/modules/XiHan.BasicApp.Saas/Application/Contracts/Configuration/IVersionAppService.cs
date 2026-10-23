@@ -4,6 +4,7 @@
 #pragma warning disable CS1591
 
 using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Core.Application;
 
 namespace XiHan.BasicApp.Saas.Application.Contracts;
 

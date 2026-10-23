@@ -7,7 +7,7 @@ using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Chat.Application.Mappers;
 using XiHan.BasicApp.Chat.Application.Services;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 
 using XiHan.BasicApp.Chat.Domain.Permissions;
 

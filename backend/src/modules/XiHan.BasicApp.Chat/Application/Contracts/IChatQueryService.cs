@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Core.Application;
 
 namespace XiHan.BasicApp.Chat.Application.Contracts;
 

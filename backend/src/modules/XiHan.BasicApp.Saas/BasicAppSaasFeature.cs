@@ -17,6 +17,7 @@ using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Primitives;
 using XiHan.Framework.Primitives.Manifests;
+using XiHan.BasicApp.Web.Core.RealTime.Constants;
 
 namespace XiHan.BasicApp.Saas;
 

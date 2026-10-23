@@ -8,6 +8,7 @@ using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

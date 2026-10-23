@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Chat.Domain.Repositories;
+using XiHan.BasicApp.Web.Core.RealTime.Hubs;
+using XiHan.BasicApp.Web.Core.RealTime.Services;
 
 namespace XiHan.BasicApp.Chat.Hubs;
 

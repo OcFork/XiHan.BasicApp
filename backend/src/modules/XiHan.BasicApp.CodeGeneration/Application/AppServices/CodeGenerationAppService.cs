@@ -13,8 +13,9 @@ using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Localization.Abstractions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 

@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Auditing;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 

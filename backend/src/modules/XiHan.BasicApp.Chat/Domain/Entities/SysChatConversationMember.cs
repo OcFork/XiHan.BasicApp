@@ -3,7 +3,6 @@
 
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Domain.Entities.Abstracts;
 
 namespace XiHan.BasicApp.Chat.Domain.Entities;
 

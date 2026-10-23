@@ -5,8 +5,9 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Upgrade.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.MultiTenancy;
 

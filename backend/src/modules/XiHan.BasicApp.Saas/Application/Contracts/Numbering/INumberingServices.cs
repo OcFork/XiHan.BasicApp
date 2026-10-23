@@ -3,7 +3,9 @@
 
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Application;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.Contracts;
 
@@ -22,7 +24,7 @@ public interface INumberingRuleAppService : IApplicationService
     /// 租户上下文只能创建租户私有规则；平台上下文只能创建全局规则，并且需要全局编号管理权限。
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、格式配置或规则编码唯一性校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域、权限、格式配置或规则编码唯一性校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleDetailDto> CreateNumberingRuleAsync(NumberingRuleCreateDto input, CancellationToken cancellationToken = default);
 
@@ -36,7 +38,7 @@ public interface INumberingRuleAppService : IApplicationService
     /// 规则首次发号后，影响编号唯一性的格式字段会被冻结；本方法仍允许修改名称、备注、排序、状态外配置及全局开放状态。
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则不存在、无权操作、格式无效或修改了已冻结字段。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则不存在、无权操作、格式无效或修改了已冻结字段。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleDetailDto> UpdateNumberingRuleAsync(NumberingRuleUpdateDto input, CancellationToken cancellationToken = default);
 
@@ -47,7 +49,7 @@ public interface INumberingRuleAppService : IApplicationService
     /// <param name="cancellationToken">用于取消权限校验、规则加载和持久化操作的取消令牌。</param>
     /// <returns>状态变更后的规则详情。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域无效、规则不存在、无权操作或状态值无效。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域无效、规则不存在、无权操作或状态值无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleDetailDto> UpdateNumberingRuleStatusAsync(NumberingRuleStatusUpdateDto input, CancellationToken cancellationToken = default);
 
@@ -61,7 +63,7 @@ public interface INumberingRuleAppService : IApplicationService
     /// 允许向前跳号形成空洞，但禁止回退到当前周期已经分配过的流水范围；流水边界以字符串传输以避免前端精度损失。
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">下一流水值、重置原因、全局确认编码或防重复区间校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">下一流水值、重置原因、全局确认编码或防重复区间校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleDetailDto> ResetNumberingRuleAsync(NumberingRuleResetDto input, CancellationToken cancellationToken = default);
 
@@ -72,7 +74,7 @@ public interface INumberingRuleAppService : IApplicationService
     /// <param name="scope">规则作用域；平台上下文中的 <see cref="NumberingScope.Auto"/> 按全局规则处理。</param>
     /// <param name="cancellationToken">用于取消权限校验、规则加载和删除操作的取消令牌。</param>
     /// <remarks>已经产生分配记录的规则必须停用并保留，不能通过本方法破坏发号审计链。</remarks>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域无效、规则不存在、无权操作、已经发号或删除失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域无效、规则不存在、无权操作、已经发号或删除失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task DeleteNumberingRuleAsync(long id, NumberingScope scope = NumberingScope.Auto, CancellationToken cancellationToken = default);
 }
@@ -90,7 +92,7 @@ public interface INumberingRuleQueryService : IApplicationService
     /// <returns>经过作用域隔离和字段安全处理的规则分页结果。</returns>
     /// <remarks>租户请求的全局作用域只返回已启用且允许租户使用的规则；调用方过滤条件不能覆盖内部租户条件。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域无效或平台上下文请求了未指定租户的私有规则。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域无效或平台上下文请求了未指定租户的私有规则。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<PageResultDtoBase<NumberingRuleListItemDto>> GetNumberingRulePageAsync(NumberingRulePageQueryDto input, CancellationToken cancellationToken = default);
 
@@ -112,7 +114,7 @@ public interface INumberingRuleQueryService : IApplicationService
     /// <param name="scope">规则作用域；租户使用 <see cref="NumberingScope.Global"/> 时会切换到平台库。</param>
     /// <param name="cancellationToken">用于取消规则查询的取消令牌。</param>
     /// <returns>规则详情；当前作用域中不存在对应规则时返回 <see langword="null"/>。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">主键或作用域无效，或者租户尝试读取未开放的全局规则。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">主键或作用域无效，或者租户尝试读取未开放的全局规则。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingRuleDetailDto?> GetNumberingRuleDetailAsync(long id, NumberingScope scope = NumberingScope.Auto, CancellationToken cancellationToken = default);
 
@@ -124,7 +126,7 @@ public interface INumberingRuleQueryService : IApplicationService
     /// <returns>发号记录分页；每项使用格式快照重建首尾编号。</returns>
     /// <remarks>租户查看共享全局规则时只能看到由本租户请求产生的记录，不能读取其他租户的幂等键和业务标识。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则主键、作用域、规则存在性或全局开放状态校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则主键、作用域、规则存在性或全局开放状态校验失败。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<PageResultDtoBase<NumberingAllocationListItemDto>> GetNumberingAllocationPageAsync(NumberingAllocationPageQueryDto input, CancellationToken cancellationToken = default);
 
@@ -135,7 +137,7 @@ public interface INumberingRuleQueryService : IApplicationService
     /// <param name="cancellationToken">在执行纯计算前检查的取消令牌。</param>
     /// <returns>示例编号、规则时区本地时间和对应周期键。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">格式组合、时区、流水位数或示例流水值无效。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">格式组合、时区、流水位数或示例流水值无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingPreviewResultDto> PreviewNumberingFormatAsync(NumberingPreviewDto input, CancellationToken cancellationToken = default);
 
@@ -147,7 +149,7 @@ public interface INumberingRuleQueryService : IApplicationService
     /// <returns>连续编号列表、流水区间、规则时区本地时间和对应周期键。</returns>
     /// <remarks>该接口与单个预览共享格式校验路径，且不会创建工作单元或永久分配记录。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">数量、格式组合、时区、流水位数、起始流水或区间容量无效。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">数量、格式组合、时区、流水位数、起始流水或区间容量无效。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberingBatchPreviewResultDto> PreviewNumberingBatchAsync(
         NumberingBatchPreviewDto input,
@@ -167,7 +169,7 @@ public interface INumberingAppService : IApplicationService
     /// <returns>实际规则、流水区间、完整编号以及是否为幂等重放的结果。</returns>
     /// <remarks>相同租户、实际规则和幂等键的相同请求返回首次分配结果，不会再次消耗流水。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求、作用域、规则状态、幂等性、容量或并发重试校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">请求、作用域、规则状态、幂等性、容量或并发重试校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberGenerationResultDto> GenerateNumberAsync(NumberGenerateDto input, CancellationToken cancellationToken = default);
 
@@ -179,7 +181,7 @@ public interface INumberingAppService : IApplicationService
     /// <returns>连续流水区间、完整编号列表以及是否为幂等重放的结果。</returns>
     /// <remarks>整批请求共享一个幂等记录，成功时一次推进完整区间，失败时事务不会推进流水。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求、批量上限、作用域、规则状态、幂等性、容量或并发重试校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">请求、批量上限、作用域、规则状态、幂等性、容量或并发重试校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberGenerationResultDto> GenerateNumberBatchAsync(NumberBatchGenerateDto input, CancellationToken cancellationToken = default);
 }

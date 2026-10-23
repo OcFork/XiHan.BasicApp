@@ -6,7 +6,9 @@ using XiHan.BasicApp.Printing.Application.Contracts;
 using XiHan.BasicApp.Printing.Application.Dtos;
 using XiHan.BasicApp.Printing.Domain.DataSources;
 using XiHan.BasicApp.Printing.Domain.Permissions;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.QueryServices;
 

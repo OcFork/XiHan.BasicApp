@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using AiPageRegistry = XiHan.BasicApp.AI.Application.Pages.PageRegistry;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.AI.Infrastructure.Seeders;
 

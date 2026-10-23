@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -40,7 +41,7 @@ public sealed class NumberingAppService : SaasApplicationService, INumberingAppS
     /// <returns>包含实际规则、完整编号、流水区间和幂等重放标记的 API 结果。</returns>
     /// <remarks>调用方必须拥有 <c>saas:numbering:generate</c> 权限；所有成功或失败日志由生成器按原请求租户记录。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求、规则、幂等、容量或并发校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">请求、规则、幂等、容量或并发校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<NumberGenerationResultDto> GenerateNumberAsync(NumberGenerateDto input, CancellationToken cancellationToken = default)
     {
@@ -60,7 +61,7 @@ public sealed class NumberingAppService : SaasApplicationService, INumberingAppS
     /// <returns>包含连续编号列表、流水区间和幂等重放标记的 API 结果。</returns>
     /// <remarks>整批请求共享一条永久分配记录，失败时不会部分推进流水。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求、批量数量、规则、幂等、容量或并发校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">请求、批量数量、规则、幂等、容量或并发校验失败。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<NumberGenerationResultDto> GenerateNumberBatchAsync(NumberBatchGenerateDto input, CancellationToken cancellationToken = default)
     {

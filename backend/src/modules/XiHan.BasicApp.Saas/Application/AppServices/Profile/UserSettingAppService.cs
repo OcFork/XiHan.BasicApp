@@ -10,8 +10,10 @@ using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.BasicApp.Saas.Security;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Repositories;
+using XiHan.BasicApp.Web.Core.RealTime.Constants;
+using XiHan.BasicApp.Web.Core.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

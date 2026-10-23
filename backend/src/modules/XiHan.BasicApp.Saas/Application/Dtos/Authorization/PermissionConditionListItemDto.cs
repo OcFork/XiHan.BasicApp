@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.BasicApp.Core.Authorization.Conditions;
 
 namespace XiHan.BasicApp.Saas.Application.Dtos;
 

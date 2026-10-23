@@ -4,8 +4,8 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Application.Services;

@@ -5,7 +5,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Identity;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Repositories;
+using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 

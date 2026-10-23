@@ -11,8 +11,9 @@ using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

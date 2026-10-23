@@ -9,7 +9,7 @@ using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Application.QueryServices;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
 using XiHan.BasicApp.Workflow.Operations;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Operations;
 using XiHan.Framework.Primitives;

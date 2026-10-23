@@ -5,6 +5,7 @@ using SqlSugar;
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Repositories;
 

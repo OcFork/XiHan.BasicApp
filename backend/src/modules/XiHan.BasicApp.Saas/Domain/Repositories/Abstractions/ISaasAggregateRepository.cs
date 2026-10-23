@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.Framework.Domain.Aggregates.Abstracts;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Repositories;
 
 namespace XiHan.BasicApp.Saas.Domain.Repositories;
 

@@ -5,6 +5,7 @@ using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
 
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Chat.Infrastructure.Repositories;
 

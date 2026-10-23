@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
+using XiHan.Framework.Utils.Diagnostics.HardwareInfos;
+using XiHan.Framework.Utils.Runtime;
+
 namespace XiHan.BasicApp.Saas.Application.Dtos.Monitoring;
 
 /// <summary>

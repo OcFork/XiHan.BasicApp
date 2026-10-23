@@ -1,6 +1,11 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using XiHan.BasicApp.Core.Application;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Caching.Abstractions;
 using XiHan.Framework.Domain;
 using XiHan.Framework.Kernel;
@@ -54,9 +59,19 @@ public sealed class BasicAppCoreFeature : IFeature
     public void Configure(FeatureContext context)
     {
         var services = context.Services;
-        var config = context.Configuration;
 
-        // OIDC 签名密钥提供器与 id_token 签发服务（由 XiHan:Authentication:Oidc:IsEnabled 门控）
-        _ = services.AddXiHanOidc(config);
+        // 架在 5.0 作用域 SqlSugar 客户端上的适配：4.x 的客户端解析器与显式工作单元管理器
+        services.AddScoped<ISqlSugarClientResolver, ScopedSqlSugarClientResolver>();
+        services.AddScoped<IUnitOfWorkManager, SqlSugarUnitOfWorkManager>();
+
+        // 当前用户 / 租户：读 IInvocationAccessor.Current 的安全上下文（xihan migrate v4 生成）
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<ICurrentTenant, CurrentTenant>();
+
+        // 应用信息（升级编排按实例标识区分节点）
+        services.TryAddSingleton<IApplicationInfoAccessor, HostApplicationInfoAccessor>();
+
+        // xihan-migrate(P5-04): 4.x 的 OIDC 签发（AddXiHanOidc：签名密钥提供器与 id_token 签发服务，XiHan:Authentication:Oidc:IsEnabled 门控）
+        // 不在 5.0 里（5.0 只消费 OIDC），由 BasicApp 自行承接后在此注册。
     }
 }

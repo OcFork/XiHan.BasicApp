@@ -11,7 +11,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Identity;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

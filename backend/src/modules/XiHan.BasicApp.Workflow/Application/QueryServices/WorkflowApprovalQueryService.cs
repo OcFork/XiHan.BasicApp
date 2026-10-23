@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Text.Json;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Workflow.Application.Business;
 using XiHan.BasicApp.Workflow.Application.Contracts;
 using XiHan.BasicApp.Workflow.Application.Dtos;
@@ -17,9 +17,11 @@ using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
 using XiHan.BasicApp.Workflow.Infrastructure.Stores;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 

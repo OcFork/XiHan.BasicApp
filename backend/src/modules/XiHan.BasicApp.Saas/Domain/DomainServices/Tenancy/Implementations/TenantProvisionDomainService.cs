@@ -4,8 +4,9 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -204,7 +205,6 @@ public sealed class TenantProvisionDomainService
 
         // 授权绑定是该租户的数据，切入该租户读写；只处理该租户自有绑定行，
         // 读共享可见的全局行（TenantId=0）属平台资产，不在回收范围
-        using var tenantScope = EnterTenantScope(tenant);
         var tenantId = tenant.Id;
         var now = DateTimeOffset.UtcNow;
 

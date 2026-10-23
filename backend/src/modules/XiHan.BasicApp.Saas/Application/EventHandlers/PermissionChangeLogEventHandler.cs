@@ -7,6 +7,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 

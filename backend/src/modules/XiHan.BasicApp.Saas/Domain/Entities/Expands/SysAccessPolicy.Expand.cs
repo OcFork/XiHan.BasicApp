@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.BasicApp.Core.Paging.Validators;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 

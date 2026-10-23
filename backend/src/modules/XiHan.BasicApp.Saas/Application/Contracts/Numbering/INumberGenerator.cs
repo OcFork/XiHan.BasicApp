@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Application.Contracts;
 
@@ -124,7 +125,7 @@ public interface INumberGenerator
     /// 成功分配在同一事务内推进规则流水并插入永久分配记录，两者要么一起可见要么一起消失。
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="request"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">规则不可用、幂等冲突、流水耗尽或节点时钟偏差导致周期回退。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">规则不可用、幂等冲突、流水耗尽或节点时钟偏差导致周期回退。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberGenerationResult> GenerateAsync(NumberGenerateRequest request, CancellationToken cancellationToken = default);
 
@@ -139,7 +140,7 @@ public interface INumberGenerator
     /// 但调用方事务在发号成功后失败仍可能形成允许存在的业务空洞。
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="request"/> 为 <see langword="null"/>。</exception>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">请求无效、规则不可用、幂等冲突、流水耗尽或节点时钟偏差导致周期回退。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">请求无效、规则不可用、幂等冲突、流水耗尽或节点时钟偏差导致周期回退。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<NumberGenerationResult> GenerateBatchAsync(NumberBatchGenerateRequest request, CancellationToken cancellationToken = default);
 }

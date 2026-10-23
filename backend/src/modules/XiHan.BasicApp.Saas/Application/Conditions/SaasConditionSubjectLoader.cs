@@ -5,7 +5,7 @@ using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
@@ -62,7 +62,6 @@ public sealed class SaasConditionSubjectLoader
     /// </summary>
     public async Task<SaasConditionOrganization> GetOrganizationAsync(long userId, long tenantId, CancellationToken cancellationToken = default)
     {
-        using var _ = ChangeTenant(tenantId);
         var assignments = await _userDepartmentRepository.GetValidByUserIdAsync(userId, cancellationToken);
         if (assignments.Count == 0)
         {

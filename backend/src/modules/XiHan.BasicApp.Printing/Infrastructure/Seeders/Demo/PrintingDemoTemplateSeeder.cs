@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Printing.Infrastructure.Seeders;
 

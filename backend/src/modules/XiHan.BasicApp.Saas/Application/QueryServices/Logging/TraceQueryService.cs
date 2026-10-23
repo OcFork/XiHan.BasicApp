@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

@@ -31,9 +31,16 @@ using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Security;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using XiHan.BasicApp.Saas.Infrastructure.Tasks;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
 using XiHan.Framework.Messaging.Abstractions;
 using StackExchange.Redis;
+using XiHan.BasicApp.Core.Auditing;
+using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Upgrade.Abstractions;
+using XiHan.BasicApp.Web.Core.RealTime.Extensions;
+using XiHan.BasicApp.Web.Core.Session;
 
 namespace XiHan.BasicApp.Saas.Extensions;
 

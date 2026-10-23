@@ -8,8 +8,9 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Domain.DomainServices;
 
@@ -69,7 +70,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
     /// <param name="command">创建命令。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>创建结果。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板参数无效或编码已存在。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">模板参数无效或编码已存在。</exception>
     public async Task<PrintTemplateCommandResult> CreateAsync(
         PrintTemplateCreateCommand command,
         CancellationToken cancellationToken = default)
@@ -128,7 +129,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
     /// <param name="command">更新命令。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>更新结果。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板不存在、参数无效或行版本冲突。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">模板不存在、参数无效或行版本冲突。</exception>
     public async Task<PrintTemplateCommandResult> UpdateAsync(
         PrintTemplateUpdateCommand command,
         CancellationToken cancellationToken = default)
@@ -171,7 +172,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
     /// <param name="command">状态命令。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>更新结果。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板不存在、状态无效或行版本冲突。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">模板不存在、状态无效或行版本冲突。</exception>
     public async Task<PrintTemplateCommandResult> UpdateStatusAsync(
         PrintTemplateStatusChangeCommand command,
         CancellationToken cancellationToken = default)
@@ -204,7 +205,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
     /// </summary>
     /// <param name="command">删除命令。</param>
     /// <param name="cancellationToken">取消令牌。</param>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板不存在、仍在启用或行版本冲突。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">模板不存在、仍在启用或行版本冲突。</exception>
     public async Task DeleteAsync(
         PrintTemplateDeleteCommand command,
         CancellationToken cancellationToken = default)

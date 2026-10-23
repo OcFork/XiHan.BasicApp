@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using XiHan.BasicApp.Saas.Application.Dtos.Monitoring;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.Framework.Utils.Diagnostics.HardwareInfos;
+using XiHan.Framework.Utils.Reflections;
+using XiHan.Framework.Utils.Runtime;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices.Monitoring;
 

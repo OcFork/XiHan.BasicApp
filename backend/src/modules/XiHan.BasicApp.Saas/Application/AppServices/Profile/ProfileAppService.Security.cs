@@ -5,7 +5,8 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Repositories;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

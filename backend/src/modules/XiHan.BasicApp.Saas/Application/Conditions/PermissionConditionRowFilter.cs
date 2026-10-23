@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using XiHan.BasicApp.Core.Authorization.Permissions;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

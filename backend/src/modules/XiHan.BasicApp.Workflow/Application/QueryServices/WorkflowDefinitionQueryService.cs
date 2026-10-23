@@ -12,9 +12,9 @@ using XiHan.BasicApp.Workflow.Application.Mappers;
 using XiHan.BasicApp.Workflow.Domain.Entities;
 using XiHan.BasicApp.Workflow.Domain.Permissions;
 using XiHan.BasicApp.Workflow.Domain.Repositories;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 
 namespace XiHan.BasicApp.Workflow.Application.QueryServices;
 

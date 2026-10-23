@@ -5,9 +5,10 @@ using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -79,7 +80,6 @@ public sealed class UserRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var platformScope = currentTenant.Change(null);
 
         return await CreateNoTenantQueryable()
             .Where(user => user.Phone == phone)
@@ -122,7 +122,6 @@ public sealed class UserRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var platformScope = currentTenant.Change(null);
 
         var query = CreateNoTenantQueryable().Where(user => user.Email == email);
         if (excludeUserId.HasValue)
@@ -150,7 +149,6 @@ public sealed class UserRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var platformScope = currentTenant.Change(null);
 
         var query = CreateNoTenantQueryable()
             .Where(user => user.TenantId == tenantId || user.TenantId == PlatformTenantId)

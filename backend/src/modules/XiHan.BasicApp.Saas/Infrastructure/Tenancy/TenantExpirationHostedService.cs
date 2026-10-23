@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tenancy;
 

@@ -4,7 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using XiHan.BasicApp.Chat.Domain.Permissions;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;

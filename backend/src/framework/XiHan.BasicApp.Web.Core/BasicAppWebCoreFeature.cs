@@ -10,6 +10,7 @@ using XiHan.Framework.Primitives;
 using XiHan.Framework.Primitives.Manifests;
 using XiHan.Framework.Protocols.Http;
 using XiHan.Framework.Protocols.Mcp;
+using XiHan.BasicApp.Core.Upgrade.Abstractions;
 
 namespace XiHan.BasicApp.Web.Core;
 

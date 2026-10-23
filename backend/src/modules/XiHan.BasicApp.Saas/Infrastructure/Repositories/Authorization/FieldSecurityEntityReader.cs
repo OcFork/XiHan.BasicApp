@@ -4,7 +4,8 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

@@ -2,7 +2,7 @@
 
 using System.Security.Claims;
 
-namespace XiHan.BasicApp.Saas.Security;
+namespace XiHan.BasicApp.Core.Security;
 
 /// <summary>
 /// 由 xihan migrate v4 生成；提交前请检查。

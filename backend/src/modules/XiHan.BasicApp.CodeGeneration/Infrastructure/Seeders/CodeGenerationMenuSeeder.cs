@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using CodeGenPageRegistry = XiHan.BasicApp.CodeGeneration.Application.Pages.PageRegistry;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Seeders;
 

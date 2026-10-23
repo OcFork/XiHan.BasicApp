@@ -33,9 +33,9 @@ using XiHan.BasicApp.Workflow.Operations.WorkflowInstance;
 using XiHan.BasicApp.Workflow.Operations.WorkflowInstanceQuery;
 using XiHan.BasicApp.Workflow.Operations.WorkflowTodo;
 using XiHan.BasicApp.Workflow.Operations.WorkflowTodoQuery;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.Workflow.Operations;

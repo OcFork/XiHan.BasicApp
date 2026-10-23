@@ -2,7 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.AI.Application.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Application;
 
 namespace XiHan.BasicApp.AI.Application.Contracts;
 

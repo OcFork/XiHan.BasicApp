@@ -3,6 +3,7 @@
 
 using SqlSugar;
 using System.ComponentModel.DataAnnotations;
+using XiHan.BasicApp.Core.Paging.Validators;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 

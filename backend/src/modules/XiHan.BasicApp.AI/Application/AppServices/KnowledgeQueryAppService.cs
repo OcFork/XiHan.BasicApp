@@ -9,7 +9,7 @@ using XiHan.BasicApp.AI.Application.Dtos;
 using XiHan.BasicApp.AI.Application.Mappers;
 using XiHan.BasicApp.AI.Domain.Permissions;
 using XiHan.BasicApp.AI.Infrastructure.Configuration;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
 namespace XiHan.BasicApp.AI.Application.AppServices;

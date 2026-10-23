@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Hubs;
+using XiHan.BasicApp.Web.Core.RealTime.Services;
 
 namespace XiHan.BasicApp.Chat.Application.Services;
 

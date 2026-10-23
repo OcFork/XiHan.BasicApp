@@ -9,7 +9,7 @@ using XiHan.BasicApp.Saas.Application.EventHandlers;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.OpenApi.AppServices;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Messaging.Abstractions;
 
 namespace XiHan.BasicApp.Saas;
@@ -157,8 +157,6 @@ public static class SaasV4Services
         services.AddScoped<IUserNotificationDispatchService, UserNotificationDispatchService>();
         services.AddScoped<IUserTaskProgressNotifier, UserTaskProgressNotifier>();
         services.AddScoped<IOpenApiAppService, OpenApiAppService>();
-        services.AddScoped<ICurrentTenant, CurrentTenant>();
-        services.AddScoped<ICurrentUser, CurrentUser>();
         return services;
     }
 }

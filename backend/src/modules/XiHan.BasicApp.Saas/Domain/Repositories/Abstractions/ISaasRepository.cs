@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
-using XiHan.Framework.Domain.Entities.Abstracts;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Repositories;
 
 namespace XiHan.BasicApp.Saas.Domain.Repositories;
 

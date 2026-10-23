@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Core.Authorization.Conditions;
 
 namespace XiHan.BasicApp.Saas.Application.Mappers;
 

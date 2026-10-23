@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

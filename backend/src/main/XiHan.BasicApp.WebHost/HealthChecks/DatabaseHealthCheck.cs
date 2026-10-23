@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.WebHost.HealthChecks;
 

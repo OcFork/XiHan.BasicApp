@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.MultiTenancy.Abstractions;
 
@@ -185,7 +185,6 @@ public sealed class MessageOutboxHostedService : XiHanBackgroundServiceBase<Mess
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
             var outbox = scope.ServiceProvider.GetRequiredService<DbMessageOutbox>();
             var runner = scope.ServiceProvider.GetRequiredService<ITenantDataScopeRunner>();
 

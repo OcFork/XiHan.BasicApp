@@ -1,7 +1,7 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Dtos;
 
 namespace XiHan.BasicApp.Core.Dtos;
 
@@ -9,15 +9,20 @@ namespace XiHan.BasicApp.Core.Dtos;
 /// BasicApp DTO 基类
 /// 命名规则：Dto（Data Transfer Object）
 /// </summary>
-public abstract class BasicAppDto : DtoBase<long>
+/// <remarks>5.0 不再提供 DTO 基类，标识属性随实体协议叫 <c>Id</c>。</remarks>
+public abstract class BasicAppDto
 {
+    /// <summary>
+    /// 标识
+    /// </summary>
+    public virtual long Id { get; set; }
 }
 
 /// <summary>
 /// BasicApp 创建 DTO 基类
 /// 命名规则：CDto（Create DTO）
 /// </summary>
-public abstract class BasicAppCDto : CreationDtoBase<long>
+public abstract class BasicAppCDto
 {
 }
 
@@ -25,8 +30,12 @@ public abstract class BasicAppCDto : CreationDtoBase<long>
 /// BasicApp 修改 DTO 基类
 /// 命名规则：UDto（Update DTO）
 /// </summary>
-public abstract class BasicAppUDto : UpdateDtoBase<long>
+public abstract class BasicAppUDto
 {
+    /// <summary>
+    /// 标识
+    /// </summary>
+    public virtual long Id { get; set; }
 }
 
 /// <summary>

@@ -6,8 +6,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.Framework.Domain.Shared.Paging.Dtos;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Models;
 
 namespace XiHan.BasicApp.Saas.Application.Exporting;
 

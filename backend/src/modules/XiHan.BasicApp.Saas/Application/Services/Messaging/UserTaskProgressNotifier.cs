@@ -3,6 +3,8 @@
 
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Hubs;
+using XiHan.BasicApp.Web.Core.RealTime.Constants;
+using XiHan.BasicApp.Web.Core.RealTime.Services;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

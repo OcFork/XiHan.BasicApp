@@ -7,6 +7,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

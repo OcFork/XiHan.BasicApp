@@ -12,6 +12,8 @@ using XiHan.BasicApp.AI.Infrastructure.Seeders;
 using XiHan.BasicApp.AI.Infrastructure.Skills;
 using XiHan.BasicApp.AI.Domain.Entities;
 using XiHan.BasicApp.Saas.Extensions;
+using XiHan.BasicApp.Core.Application;
+using XiHan.BasicApp.Web.Core.RealTime.Extensions;
 
 namespace XiHan.BasicApp.AI.Extensions;
 

@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
+using XiHan.BasicApp.Core.Data;
+
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 
 /// <summary>

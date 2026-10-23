@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.Framework.Domain.Aggregates.Abstracts;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

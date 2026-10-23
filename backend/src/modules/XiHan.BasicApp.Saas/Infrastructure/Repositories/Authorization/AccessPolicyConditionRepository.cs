@@ -3,6 +3,8 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Core.Authorization.Conditions;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

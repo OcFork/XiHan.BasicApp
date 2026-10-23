@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Core.Application;
+using XiHan.BasicApp.Core.Paging.Dtos;
 
 namespace XiHan.BasicApp.Saas.Application.Contracts;
 
@@ -39,7 +41,7 @@ public interface IMessageTemplateQueryService : IApplicationService
     /// <summary>
     /// 获取消息模板分页列表
     /// </summary>
-    Task<XiHan.Framework.Domain.Shared.Paging.Dtos.PageResultDtoBase<MessageTemplateListItemDto>> GetMessageTemplatePageAsync(MessageTemplatePageQueryDto input, CancellationToken cancellationToken = default);
+    Task<XiHan.BasicApp.Core.Paging.Dtos.PageResultDtoBase<MessageTemplateListItemDto>> GetMessageTemplatePageAsync(MessageTemplatePageQueryDto input, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 获取消息模板详情

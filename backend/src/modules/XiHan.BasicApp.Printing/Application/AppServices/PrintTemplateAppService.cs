@@ -12,9 +12,11 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Permissions;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.AppServices;
 
@@ -66,7 +68,7 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="input">创建参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>创建后的模板详情。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、JSON 或唯一性校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域、权限、JSON 或唯一性校验失败。</exception>
     public async Task<PrintTemplateDetailDto> CreatePrintTemplateAsync(
         PrintTemplateCreateDto input,
         CancellationToken cancellationToken = default)
@@ -99,7 +101,7 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="input">更新参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>更新后的模板详情。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、JSON 或并发校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域、权限、JSON 或并发校验失败。</exception>
     public async Task<PrintTemplateDetailDto> UpdatePrintTemplateAsync(
         PrintTemplateUpdateDto input,
         CancellationToken cancellationToken = default)
@@ -131,7 +133,7 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// <param name="input">状态变更参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>变更后的模板详情。</returns>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">作用域、权限、状态或并发校验失败。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">作用域、权限、状态或并发校验失败。</exception>
     public async Task<PrintTemplateDetailDto> UpdatePrintTemplateStatusAsync(
         PrintTemplateStatusUpdateDto input,
         CancellationToken cancellationToken = default)
@@ -162,7 +164,7 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
     /// </summary>
     /// <param name="input">删除参数。</param>
     /// <param name="cancellationToken">取消令牌。</param>
-    /// <exception cref="XiHan.Framework.Core.Exceptions.UserFriendlyException">模板仍启用、无权操作或并发冲突。</exception>
+    /// <exception cref="XiHan.BasicApp.Core.Exceptions.UserFriendlyException">模板仍启用、无权操作或并发冲突。</exception>
     public async Task DeletePrintTemplateAsync(
         PrintTemplateDeleteDto input,
         CancellationToken cancellationToken = default)

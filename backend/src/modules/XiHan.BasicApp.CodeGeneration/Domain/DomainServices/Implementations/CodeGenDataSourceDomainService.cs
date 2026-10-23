@@ -7,6 +7,7 @@ using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.Framework.Utils.Security.Cryptography;
 
 namespace XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 

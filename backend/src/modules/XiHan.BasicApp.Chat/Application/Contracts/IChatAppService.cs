@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Chat.Application.Dtos;
+using XiHan.BasicApp.Core.Application;
 
 namespace XiHan.BasicApp.Chat.Application.Contracts;
 

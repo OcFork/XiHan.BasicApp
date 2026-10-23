@@ -6,6 +6,7 @@ using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Seeders;
 

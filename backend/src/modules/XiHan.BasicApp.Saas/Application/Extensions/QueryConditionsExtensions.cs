@@ -4,8 +4,8 @@
 using SqlSugar;
 using System.Linq.Expressions;
 using System.Reflection;
-using XiHan.Framework.Domain.Shared.Paging.Enums;
-using XiHan.Framework.Domain.Shared.Paging.Models;
+using XiHan.BasicApp.Core.Paging.Enums;
+using XiHan.BasicApp.Core.Paging.Models;
 
 namespace XiHan.BasicApp.Saas.Application.Extensions;
 

@@ -6,6 +6,7 @@ using XiHan.BasicApp.Chat.Infrastructure.Tasks;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
+using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Chat.Infrastructure.Seeders;
 

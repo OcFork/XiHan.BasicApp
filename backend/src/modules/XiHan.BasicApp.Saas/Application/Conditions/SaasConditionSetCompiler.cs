@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Saas.Application.QueryServices;
+using XiHan.BasicApp.Core.Authorization.Conditions;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 

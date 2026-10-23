@@ -8,9 +8,11 @@ using System.Text.Json;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.Framework.Domain.Entities.Abstracts;
+using XiHan.BasicApp.Core.Entities;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 

@@ -5,6 +5,7 @@ using System.Globalization;
 using XiHan.BasicApp.Printing.Application.Dtos;
 using XiHan.BasicApp.Printing.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Domain.Entities;
+using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Printing.Application.Mappers;
 

@@ -11,6 +11,8 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
+using XiHan.BasicApp.Core.Authorization.Conditions;
+using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 

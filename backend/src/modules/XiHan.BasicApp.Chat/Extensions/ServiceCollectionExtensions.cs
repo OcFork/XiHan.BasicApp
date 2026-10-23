@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Chat.Application.EventHandlers;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Infrastructure.Seeders;
+using XiHan.BasicApp.Web.Core.RealTime.Extensions;
 
 namespace XiHan.BasicApp.Chat.Extensions;
 

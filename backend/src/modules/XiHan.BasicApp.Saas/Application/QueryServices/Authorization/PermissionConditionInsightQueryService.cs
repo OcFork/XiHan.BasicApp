@@ -8,6 +8,7 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
+using XiHan.BasicApp.Core.Authorization.Conditions;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

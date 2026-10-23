@@ -15,10 +15,11 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Security;
-using XiHan.Framework.Domain.Repositories;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Repositories;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

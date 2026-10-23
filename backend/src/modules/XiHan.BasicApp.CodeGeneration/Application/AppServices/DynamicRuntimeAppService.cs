@@ -8,8 +8,10 @@ using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Permissions;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.BasicApp.Saas.Security;
+using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.MultiTenancy.Abstractions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Paging.Builders;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 
