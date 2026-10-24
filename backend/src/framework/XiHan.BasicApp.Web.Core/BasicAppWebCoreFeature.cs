@@ -2,15 +2,17 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using XiHan.BasicApp.Core.Upgrade.Abstractions;
 using XiHan.BasicApp.Core;
+using XiHan.BasicApp.Web.Core.Authentication.Extensions.DependencyInjection;
+using XiHan.BasicApp.Web.Core.Authentication.Oidc;
 using XiHan.BasicApp.Web.Core.Upgrade;
-using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Hosting;
-using XiHan.Framework.Primitives;
+using XiHan.Framework.Kernel;
 using XiHan.Framework.Primitives.Manifests;
+using XiHan.Framework.Primitives;
 using XiHan.Framework.Protocols.Http;
 using XiHan.Framework.Protocols.Mcp;
-using XiHan.BasicApp.Core.Upgrade.Abstractions;
 
 namespace XiHan.BasicApp.Web.Core;
 
@@ -47,5 +49,9 @@ public sealed class BasicAppWebCoreFeature : IFeature
         services.TryAddSingleton<MaintenanceModeState>();
         services.Replace(ServiceDescriptor.Singleton<IUpgradeMaintenanceModeManager, BasicAppUpgradeMaintenanceModeManager>());
         services.AddTransient<IStartupFilter, MaintenanceModeStartupFilter>();
+
+        // 承接的 4.x 认证（JWT 签发、OTP、一次性验证码、第三方登录）与 OIDC 签发（XiHan:Authentication:Oidc:IsEnabled 门控）
+        services.AddXiHanAuthentication(context.Configuration);
+        services.AddXiHanOidc(context.Configuration);
     }
 }

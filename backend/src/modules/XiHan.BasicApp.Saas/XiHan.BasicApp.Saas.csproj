@@ -29,6 +29,14 @@
       <PackageReference Include="StackExchange.Redis" Version="3.4.5" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
+      <PackageReference Include="XiHan.Framework.Caching.Redis" Version="$(XiHanFrameworkVersion)" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
+      <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Caching.Redis\XiHan.Framework.Caching.Redis.csproj" />
+    </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\framework\XiHan.BasicApp.Web.Core\XiHan.BasicApp.Web.Core.csproj" />
     </ItemGroup>

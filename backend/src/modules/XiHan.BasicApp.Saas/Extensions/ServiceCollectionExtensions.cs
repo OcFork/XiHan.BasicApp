@@ -59,6 +59,8 @@ using XiHan.BasicApp.Web.Core.Authentication.Users;
 using XiHan.BasicApp.Web.Core.Security.OpenApi;
 using XiHan.BasicApp.Web.Core.Session;
 using XiHan.Framework.Messaging.Abstractions;
+using XiHan.BasicApp.Core.Caching;
+using XiHan.BasicApp.Saas.Infrastructure.Caching;
 
 namespace XiHan.BasicApp.Saas.Extensions;
 
@@ -168,6 +170,8 @@ public static class ServiceCollectionExtensions
     /// <returns>服务集合</returns>
     public static IServiceCollection AddSaasApplicationServices(this IServiceCollection services)
     {
+        // 按缓存名前缀批量失效：架在 5.0 Redis 缓存存储的键布局上（未启用 Redis 时调用会抛 NotSupported）
+        services.TryAddSingleton<ICacheKeyPatternRemover, RedisCacheKeyPatternRemover>();
         services.AddScoped<IAuthContextQueryService, AuthContextQueryService>();
         services.AddScoped<IAuthorizationSnapshotQueryService, AuthorizationSnapshotQueryService>();
         // 请求期鉴权改用授权快照（替换框架内存版 DefaultPermissionChecker），使授权变更无需重新登录即生效
