@@ -24,7 +24,7 @@ public sealed class GetUserPermissionConditionsOperation(IPermissionConditionQue
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<PermissionConditionListItemDto>>> HandleAsync(GetUserPermissionConditionsRequest request, InvocationContext context)
-        => await service.GetUserPermissionConditionsAsync(request.UserPermissionId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetUserPermissionConditionsAsync(request.UserPermissionId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -44,7 +45,7 @@ public sealed class SaasMessageTemplateSeeder(
         var codes = definitions.Select(definition => definition.TemplateCode).ToArray();
         var existing = await client.Queryable<SysMessageTemplate>()
             .IncludingDeleted()
-            .Where(template => template.TenantId == 0 && codes.Contains(template.TemplateCode))
+            .Where(template => template.TenantId == TenantIds.Platform && codes.Contains(template.TemplateCode))
             .ToListAsync();
         var map = existing.ToDictionary(template => (template.Channel, template.TemplateCode));
 
@@ -59,7 +60,7 @@ public sealed class SaasMessageTemplateSeeder(
 
             var template = new SysMessageTemplate
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 TemplateCode = definition.TemplateCode,
                 Channel = definition.Channel,
                 TemplateName = definition.TemplateName,

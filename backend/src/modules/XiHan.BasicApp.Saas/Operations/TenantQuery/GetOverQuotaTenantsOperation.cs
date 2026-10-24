@@ -33,7 +33,7 @@ public sealed class GetOverQuotaTenantsOperation(ITenantQueryService service) : 
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<TenantOverQuotaDto>>> HandleAsync(GetOverQuotaTenantsRequest request, InvocationContext context)
-        => await service.GetOverQuotaTenantsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetOverQuotaTenantsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

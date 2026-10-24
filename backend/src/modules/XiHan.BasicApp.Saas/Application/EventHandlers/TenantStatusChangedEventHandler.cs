@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -81,7 +82,7 @@ public sealed class TenantStatusChangedEventHandler : IMessageHandler
         // 事件处理器跑在事件所属作用域（租户注册表是平台数据，即平台作用域），租户范围显式落进 WHERE，跨租户查找
         var activeSessions = await db.Queryable<SysUserSession>()
             .ClearTenantFilter()
-            .Where(s => (s.TenantId == tenantId || s.ImpersonatorTenantId == tenantId)
+            .Where(s => (s.TenantId == TenantIds.Of(tenantId) || s.ImpersonatorTenantId == tenantId)
                 && s.Status == SessionStatus.Active && !s.IsDeleted)
             .ToListAsync();
 

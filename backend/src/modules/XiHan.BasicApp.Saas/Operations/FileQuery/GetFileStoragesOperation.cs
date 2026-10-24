@@ -30,7 +30,7 @@ public sealed class GetFileStoragesOperation(IFileQueryService service) : IOpera
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<FileStorageListItemDto>>> HandleAsync(GetFileStoragesRequest request, InvocationContext context)
-        => await service.GetFileStoragesAsync(request.FileId, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetFileStoragesAsync(request.FileId, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

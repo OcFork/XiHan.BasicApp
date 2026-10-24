@@ -27,7 +27,7 @@ public interface ITenantUserRepository : ISaasRepository<SysTenantUser>
     /// <param name="userId">用户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>成员关系，不存在返回 null</returns>
-    Task<SysTenantUser?> GetMembershipAsync(long tenantId, long userId, CancellationToken cancellationToken = default);
+    Task<SysTenantUser?> GetMembershipAsync(string tenantId, long userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 账号在所有租户的成员关系（任意状态，跨租户读取）
@@ -49,7 +49,7 @@ public interface ITenantUserRepository : ISaasRepository<SysTenantUser>
     /// <param name="keyword">关键字</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>命中成员的用户主键</returns>
-    Task<IReadOnlyList<long>> SearchMemberUserIdsAsync(long tenantId, string keyword, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<long>> SearchMemberUserIdsAsync(string tenantId, string keyword, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 统计指定租户已占用的席位数

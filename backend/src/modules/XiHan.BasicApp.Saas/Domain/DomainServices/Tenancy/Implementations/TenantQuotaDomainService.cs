@@ -5,6 +5,7 @@ using System.Globalization;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -63,14 +64,14 @@ public sealed class TenantQuotaDomainService
         }
 
         // 先解析上限：不限时直接放行，省掉一次用量统计——这是高频路径，不做无谓查询
-        var (userLimit, _) = await ResolveEffectiveLimitsAsync(tenantId.Value, cancellationToken);
+        var (userLimit, _) = await ResolveEffectiveLimitsAsync((TenantIds.ToKey(tenantId) ?? 0), cancellationToken);
         if (userLimit is not { } limit)
         {
             return;
         }
 
         var used = (await _tenantUserRepository.CountActiveMembersByTenantIdsAsync(
-            [tenantId.Value], DateTimeOffset.UtcNow, cancellationToken)).GetValueOrDefault(tenantId.Value);
+            [(TenantIds.ToKey(tenantId) ?? 0)], DateTimeOffset.UtcNow, cancellationToken)).GetValueOrDefault((TenantIds.ToKey(tenantId) ?? 0));
         if (used + increment > limit)
         {
             throw new InvalidOperationException(
@@ -95,7 +96,7 @@ public sealed class TenantQuotaDomainService
         }
 
         // 同席位校验：先看上限，不限则不统计用量。存储校验不查席位数，两个维度互不牵连
-        var (_, storageLimit) = await ResolveEffectiveLimitsAsync(tenantId.Value, cancellationToken);
+        var (_, storageLimit) = await ResolveEffectiveLimitsAsync((TenantIds.ToKey(tenantId) ?? 0), cancellationToken);
         if (storageLimit is not { } limitMegabytes)
         {
             return;
@@ -188,7 +189,7 @@ public sealed class TenantQuotaDomainService
             && tenant.ConfigStatus == TenantConfigStatus.Configured))
         {
             // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-            using (_currentTenant.Change(tenant.Id))
+            using (_currentTenant.Change(TenantIds.Of(tenant.Id)))
             {
                 usage[tenant.Id] = await _fileRepository.SumUsedStorageAsync(cancellationToken);
             }
@@ -204,9 +205,9 @@ public sealed class TenantQuotaDomainService
     /// 平台运维态无租户上下文、不归属任何租户，自然不受租户配额约束；
     /// 平台管理员切入租户后 Id 已是该租户，走正常校验。
     /// </remarks>
-    private long? ResolveConstrainedTenantId()
+    private string? ResolveConstrainedTenantId()
     {
-        return _currentTenant.IsPlatformOperation() ? null : _currentTenant.Id!.Value;
+        return _currentTenant.IsPlatformOperation() ? null : TenantIds.Normalize(_currentTenant.Id);
     }
 
     /// <summary>

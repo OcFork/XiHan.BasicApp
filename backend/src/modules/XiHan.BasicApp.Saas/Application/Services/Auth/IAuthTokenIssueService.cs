@@ -37,6 +37,6 @@ public interface IAuthTokenIssueService
 public sealed record AuthTokenIdentity(
     long? UserId,
     string? UserName,
-    long? TenantId,
+    string? TenantId,
     string? SessionId = null,
     long? ImpersonatorUserId = null);

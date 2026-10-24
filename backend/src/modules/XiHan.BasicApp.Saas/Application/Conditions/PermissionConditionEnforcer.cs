@@ -9,6 +9,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Web.Core.Constants;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 
@@ -100,7 +101,7 @@ public sealed class PermissionConditionEnforcer
             return true;
         }
 
-        var tenantId = _currentTenant.Id ?? 0;
+        var tenantId = TenantIds.Normalize(_currentTenant.Id);
         if (outcome == PermissionConditionOutcome.Pending && registration is not null && IsMvcAction(httpContext) && PendingPermissionConditions.CanDefer(httpContext))
         {
             PendingPermissionConditions.Add(httpContext, new PendingPermissionCondition(code, userId, tenantId, snapshot.Conditions, requestSource, mode));
@@ -114,7 +115,7 @@ public sealed class PermissionConditionEnforcer
     /// <summary>
     /// 拒绝记录
     /// </summary>
-    public static PermissionConditionHit CreateHit(long userId, long tenantId, string permissionCode, PermissionConditionMode mode, HttpContext httpContext)
+    public static PermissionConditionHit CreateHit(long userId, string tenantId, string permissionCode, PermissionConditionMode mode, HttpContext httpContext)
     {
         return new PermissionConditionHit(
             userId,
@@ -151,7 +152,7 @@ public sealed class PermissionConditionEnforcer
 public sealed record PendingPermissionCondition(
     string PermissionCode,
     long UserId,
-    long TenantId,
+    string TenantId,
     AuthorizationConditions Conditions,
     IConditionAttributeSource RequestSource,
     PermissionConditionMode Mode);

@@ -107,7 +107,7 @@ public sealed class AccessPolicyHitRecorder : IAccessPolicyHitRecorder
     }
 
     private readonly record struct HitKey(
-        long TenantId,
+        string TenantId,
         AccessPolicyHitSource Source,
         long? PolicyId,
         string PolicyCode,

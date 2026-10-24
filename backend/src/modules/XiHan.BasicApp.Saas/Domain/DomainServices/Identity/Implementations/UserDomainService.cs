@@ -9,6 +9,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Web.Core.Authentication.Users;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -1481,7 +1482,7 @@ public sealed class UserDomainService
     /// </summary>
     private static UserSessionRevokedDomainEvent BuildUserSessionsRevokedEvent(
         SysUser user,
-        long sessionTenantKey,
+        string sessionTenantKey,
         long? operatorUserId,
         string reason)
     {
@@ -1854,7 +1855,7 @@ public sealed class UserDomainService
             return user;
         }
 
-        if (_currentTenant.Id is > 0 && await _tenantUserRepository.GetMembershipAsync(_currentTenant.Id.Value, id, cancellationToken) is not null)
+        if (!TenantIds.IsPlatform(_currentTenant.Id) && await _tenantUserRepository.GetMembershipAsync(_currentTenant.Id, id, cancellationToken) is not null)
         {
             throw new InvalidOperationException("外部成员的账号由其注册地租户维护，这里只能管理其在本租户的成员关系。");
         }

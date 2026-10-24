@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Tasks;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -159,7 +160,7 @@ public sealed class TaskSchedulerSyncService
                 UseExponentialBackoff = true
             },
             IsEnabled = task.Status == EnableStatus.Enabled,
-            TenantId = task.TenantId,
+            TenantId = TenantIds.ToKey(task.TenantId),
             DefaultParameters = new Dictionary<string, object?>
             {
                 ["taskId"] = task.Id,

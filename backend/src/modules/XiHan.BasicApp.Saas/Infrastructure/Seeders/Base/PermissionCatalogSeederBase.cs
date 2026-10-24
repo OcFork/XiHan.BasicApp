@@ -7,7 +7,7 @@ using XiHan.BasicApp.Core.Data;
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
 /// <summary>
-/// 权限目录种子基类：按声明写入一个模块的资源与权限（平台数据，TenantId = 0）
+/// 权限目录种子基类：按声明写入一个模块的资源与权限（平台数据，TenantId = TenantIds.Platform）
 /// </summary>
 /// <remarks>
 /// 写入口径见 <see cref="PermissionCatalogWriterBase"/>。平台模块一个模块一个种子，在自己的号段里执行。

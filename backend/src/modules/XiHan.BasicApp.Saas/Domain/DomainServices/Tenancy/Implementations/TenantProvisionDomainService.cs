@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -98,7 +99,7 @@ public sealed class TenantProvisionDomainService
 
         // 用户名在目标租户内唯一，租户范围显式传入（连带平台账号一起比对，避免与平台账号重名）
         var normalizedUserName = adminUserName.Trim();
-        if (await _userRepository.ExistsUserNameInTenantAsync(tenant.Id, normalizedUserName, cancellationToken: cancellationToken))
+        if (await _userRepository.ExistsUserNameInTenantAsync(TenantIds.Of(tenant.Id), normalizedUserName, cancellationToken: cancellationToken))
         {
             throw new UserFriendlyException("管理员用户名已被使用。");
         }
@@ -209,7 +210,7 @@ public sealed class TenantProvisionDomainService
         var now = DateTimeOffset.UtcNow;
 
         var staleRolePermissions = (await _rolePermissionRepository.GetListAsync(
-                item => item.TenantId == tenantId && item.Status == ValidityStatus.Valid,
+                item => item.TenantId == TenantIds.Of(tenantId) && item.Status == ValidityStatus.Valid,
                 cancellationToken))
             .Where(item => !allowedIds.Contains(item.PermissionId))
             .ToList();
@@ -226,7 +227,7 @@ public sealed class TenantProvisionDomainService
         }
 
         var staleUserPermissions = (await _userPermissionRepository.GetListAsync(
-                item => item.TenantId == tenantId && item.Status == ValidityStatus.Valid,
+                item => item.TenantId == TenantIds.Of(tenantId) && item.Status == ValidityStatus.Valid,
                 cancellationToken))
             .Where(item => !allowedIds.Contains(item.PermissionId))
             .ToList();
@@ -284,11 +285,11 @@ public sealed class TenantProvisionDomainService
     /// 任何隔离模式都是先建租户、再初始化管理员；库隔离租户在两步之间初始化独立库——开通过程中写成员、授权时
     /// 会连带写日志等租户库数据，库得先在。租户可开通（见 <see cref="EnsureProvisionable"/>）且还没有所有者时才能初始化。
     /// </remarks>
-    public async Task<SysTenant> GetTenantAwaitingAdminAsync(long tenantId, CancellationToken cancellationToken = default)
+    public async Task<SysTenant> GetTenantAwaitingAdminAsync(string tenantId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (tenantId <= 0)
+        if (TenantIds.IsPlatform(tenantId))
         {
             throw new ArgumentOutOfRangeException(nameof(tenantId), "租户主键必须大于 0。");
         }
@@ -297,7 +298,7 @@ public sealed class TenantProvisionDomainService
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
-            tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken)
+            tenant = await _tenantRepository.GetByTenantIdAsync(tenantId, cancellationToken)
                 ?? throw new UserFriendlyException("租户不存在。");
         }
 
@@ -319,7 +320,7 @@ public sealed class TenantProvisionDomainService
     /// </summary>
     private IDisposable EnterTenantScope(SysTenant tenant)
     {
-        return _currentTenant.Change(tenant.Id, tenant.TenantName);
+        return _currentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
     }
 
     /// <summary>

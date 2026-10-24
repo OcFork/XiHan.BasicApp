@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -31,7 +32,7 @@ public sealed class NumberingAllocationRepository(ISqlSugarClientResolver client
     /// <exception cref="ArgumentException"><paramref name="idempotencyKey"/> 为空或仅包含空白字符。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<SysNumberingAllocation?> FindByIdempotencyKeyAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long ruleId,
         long requestTenantId,
         string idempotencyKey,
@@ -61,7 +62,7 @@ public sealed class NumberingAllocationRepository(ISqlSugarClientResolver client
     /// <exception cref="ArgumentException"><paramref name="periodKey"/> 为空或仅包含空白字符。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<long> GetMaximumEndValueAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long ruleId,
         string periodKey,
         CancellationToken cancellationToken = default)

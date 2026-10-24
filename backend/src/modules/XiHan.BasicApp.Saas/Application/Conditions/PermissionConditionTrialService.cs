@@ -11,6 +11,7 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 using XiHan.BasicApp.Core.Authorization.Conditions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 
@@ -93,7 +94,7 @@ public sealed class PermissionConditionTrialService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(input.UserId);
         ArgumentException.ThrowIfNullOrWhiteSpace(input.PermissionCode);
 
-        var tenantId = _currentTenant.Id is > 0 ? _currentTenant.Id.Value : input.TenantId ?? 0;
+        var tenantId = !TenantIds.IsPlatform(_currentTenant.Id) ? _currentTenant.Id : TenantIds.Normalize(input.TenantId);
         using var _ = ChangeTenant(tenantId);
         var user = await _userRepository.GetByIdIgnoreTenantAsync(input.UserId, cancellationToken)
             ?? throw new InvalidOperationException("用户不存在。");
@@ -149,7 +150,7 @@ public sealed class PermissionConditionTrialService
             throw new InvalidOperationException("角色权限与用户直授必须且只能给一个。");
         }
 
-        var tenantId = _currentTenant.Id ?? 0;
+        var tenantId = TenantIds.Normalize(_currentTenant.Id);
         var environment = ResolveEnvironment(input);
         long permissionId;
         List<long> userIds;
@@ -192,7 +193,7 @@ public sealed class PermissionConditionTrialService
     }
 
     private async Task<(PermissionConditionTrialVerdict Verdict, AuthorizationSnapshot Snapshot, PermissionConditionExplanation? Explanation)> EvaluateAsync(
-        long tenantId,
+        string tenantId,
         long userId,
         string? userName,
         string code,
@@ -368,15 +369,15 @@ public sealed class PermissionConditionTrialService
         return httpContext;
     }
 
-    private IDisposable? ChangeTenant(long tenantId)
+    private IDisposable? ChangeTenant(string tenantId)
     {
-        if (_currentTenant.Id is > 0)
+        if (!TenantIds.IsPlatform(_currentTenant.Id))
         {
             return null;
         }
 
-        var target = tenantId > 0 ? tenantId : (long?)null;
-        return _currentTenant.Change(target, target?.ToString());
+        var target = !TenantIds.IsPlatform(tenantId) ? tenantId : (string?)null;
+        return _currentTenant.Change(target, target);
     }
 
     private sealed record TrialEnvironment(DateTimeOffset Now, IPAddress? Ip, string? UserAgent);

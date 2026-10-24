@@ -7,6 +7,7 @@ using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -47,7 +48,7 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
     /// <summary>
     /// 获取指定租户成员关系
     /// </summary>
-    public async Task<SysTenantUser?> GetMembershipAsync(long tenantId, long userId, CancellationToken cancellationToken = default)
+    public async Task<SysTenantUser?> GetMembershipAsync(string tenantId, long userId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -73,7 +74,7 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
     /// <summary>
     /// 按关键字检索租户成员，返回命中成员的用户主键
     /// </summary>
-    public async Task<IReadOnlyList<long>> SearchMemberUserIdsAsync(long tenantId, string keyword, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<long>> SearchMemberUserIdsAsync(string tenantId, string keyword, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(keyword);
         cancellationToken.ThrowIfCancellationRequested();
@@ -118,7 +119,7 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
             return new Dictionary<long, long>();
         }
 
-        var ids = tenantIds.Distinct().ToList();
+        var ids = tenantIds.Distinct().Select(TenantIds.Of).ToList();
 
         // 清租户过滤后按 TenantId 精确匹配：一次统计多个租户，不依赖当前上下文。
         // 生效期口径与 GetActiveByUserIdAsync 的鉴权口径保持一致。
@@ -133,7 +134,7 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
             .Select(user => new TenantUsageRow { TenantId = user.TenantId, Value = SqlFunc.AggregateCount(user.UserId) })
             .ToListAsync(cancellationToken);
 
-        return rows.ToDictionary(row => row.TenantId, row => row.Value);
+        return rows.ToDictionary(row => TenantIds.ToKey(row.TenantId) ?? 0, row => row.Value);
     }
 
     /// <summary>
@@ -149,14 +150,14 @@ public sealed class TenantUserRepository(ISqlSugarClientResolver clientResolver)
             return new HashSet<long>();
         }
 
-        var ids = tenantIds.Distinct().ToList();
+        var ids = tenantIds.Distinct().Select(TenantIds.Of).ToList();
         var owners = await CreateNoTenantQueryable()
             .Where(member => ids.Contains(member.TenantId) && member.MemberType == TenantMemberType.Owner)
             .Select(member => member.TenantId)
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        return owners.ToHashSet();
+        return owners.Select(owner => TenantIds.ToKey(owner) ?? 0).ToHashSet();
     }
 
     /// <summary>

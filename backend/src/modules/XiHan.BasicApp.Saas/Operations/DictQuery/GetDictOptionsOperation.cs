@@ -34,7 +34,7 @@ public sealed class GetDictOptionsOperation(IDictQueryService service) : IOperat
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<DictOptionDto>>> HandleAsync(GetDictOptionsRequest request, InvocationContext context)
-        => await service.GetDictOptionsAsync(request.DictCode, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetDictOptionsAsync(request.DictCode, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

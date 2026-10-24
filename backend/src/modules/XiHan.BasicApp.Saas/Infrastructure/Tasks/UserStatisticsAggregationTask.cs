@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 
@@ -136,7 +137,7 @@ public sealed class UserStatisticsAggregationTask
 
         // 会话：活跃区间与查询窗口有交集的（含跨窗口起点在线的活跃会话）。会话在平台库（严格隔离），按实体取连接，只取本作用域的行
         var sessions = await _clientResolver.GetClientForEntity<SysUserSession>().Queryable<SysUserSession>()
-            .Where(session => session.TenantId == scopeTenantId && session.LastActivityTime >= windowStart && session.UserId > 0)
+            .Where(session => session.TenantId == TenantIds.Of(scopeTenantId) && session.LastActivityTime >= windowStart && session.UserId > 0)
             .ToListAsync();
 
         // 读取今日全部快照一次，upsert 时按键匹配
@@ -199,9 +200,9 @@ public sealed class UserStatisticsAggregationTask
         DateTimeOffset start,
         DateTimeOffset now)
     {
-        var map = new Dictionary<(long TenantId, long UserId), SnapshotData>();
+        var map = new Dictionary<(string TenantId, long UserId), SnapshotData>();
 
-        SnapshotData Get(long tenantId, long userId)
+        SnapshotData Get(string tenantId, long userId)
         {
             if (!map.TryGetValue((tenantId, userId), out var data))
             {

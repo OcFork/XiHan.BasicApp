@@ -6,6 +6,7 @@ using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Authentication.OAuth;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
 
@@ -38,7 +39,7 @@ public sealed class SaasExternalLoginStore : IExternalLoginStore
     /// <param name="tenantId">租户ID</param>
     /// <param name="cancellationToken"></param>
     /// <returns>内部用户ID，未绑定返回 null</returns>
-    public async Task<long?> FindUserIdAsync(string provider, string providerKey, long? tenantId = null, CancellationToken cancellationToken = default)
+    public async Task<long?> FindUserIdAsync(string provider, string providerKey, string? tenantId = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -47,7 +48,7 @@ public sealed class SaasExternalLoginStore : IExternalLoginStore
             return null;
         }
 
-        var effectiveTenantId = tenantId ?? _currentTenant.Id ?? 0;
+        var effectiveTenantId = tenantId ?? TenantIds.Normalize(_currentTenant.Id);
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(effectiveTenantId);
         var db = _clientResolver.GetClientForEntity<SysExternalLogin>();
@@ -70,13 +71,13 @@ public sealed class SaasExternalLoginStore : IExternalLoginStore
     /// <param name="info">第三方登录信息</param>
     /// <param name="tenantId">租户ID</param>
     /// <param name="cancellationToken"></param>
-    public async Task CreateAsync(long userId, ExternalLoginInfo info, long? tenantId = null, CancellationToken cancellationToken = default)
+    public async Task CreateAsync(long userId, ExternalLoginInfo info, string? tenantId = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         ArgumentNullException.ThrowIfNull(info);
 
-        var effectiveTenantId = tenantId ?? _currentTenant.Id ?? 0;
+        var effectiveTenantId = tenantId ?? TenantIds.Normalize(_currentTenant.Id);
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(effectiveTenantId);
         var db = _clientResolver.GetClientForEntity<SysExternalLogin>();

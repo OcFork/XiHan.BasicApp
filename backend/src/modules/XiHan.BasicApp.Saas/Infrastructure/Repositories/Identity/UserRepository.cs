@@ -9,6 +9,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -24,7 +25,7 @@ public sealed class UserRepository(
     /// <summary>
     /// 平台租户标识（账号注册表里平台账号的归属值）
     /// </summary>
-    private const long PlatformTenantId = 0;
+    private const string PlatformTenantId = TenantIds.Platform;
 
     /// <summary>
     /// 根据当前租户和用户名获取用户
@@ -96,9 +97,9 @@ public sealed class UserRepository(
         cancellationToken.ThrowIfCancellationRequested();
 
         // 账号严格隔离，与平台账号比对要显式跨租户
-        var scopeTenantId = currentTenant.Id ?? PlatformTenantId;
+        var scopeTenantId = TenantIds.Normalize(currentTenant.Id);
         var query = CreateNoTenantQueryable()
-            .Where(user => user.TenantId == scopeTenantId || user.TenantId == PlatformTenantId)
+            .Where(user => user.TenantId == scopeTenantId || user.TenantId == TenantIds.Platform)
             .Where(user => user.UserName == userName);
         if (excludeUserId.HasValue)
         {
@@ -145,7 +146,7 @@ public sealed class UserRepository(
     /// <param name="userName">用户名（调用方已 Trim）</param>
     /// <param name="excludeUserId">排除的用户主键（更新自身时传入）</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public async Task<bool> ExistsUserNameInTenantAsync(long tenantId, string userName, long? excludeUserId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsUserNameInTenantAsync(string tenantId, string userName, long? excludeUserId = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userName);
         cancellationToken.ThrowIfCancellationRequested();
@@ -210,7 +211,7 @@ public sealed class UserRepository(
     /// <summary>
     /// 租户成员的账号分页：本租户已接受的成员（含注册在别处的外部成员），账号跨租户读取
     /// </summary>
-    public async Task<PageResultDtoBase<SysUser>> GetMemberAccountsPagedAsync(long tenantId, PageRequestDtoBase request, CancellationToken cancellationToken = default)
+    public async Task<PageResultDtoBase<SysUser>> GetMemberAccountsPagedAsync(string tenantId, PageRequestDtoBase request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
@@ -223,7 +224,7 @@ public sealed class UserRepository(
     /// <summary>
     /// 租户成员的账号：不是该租户已接受的成员时返回 null
     /// </summary>
-    public async Task<SysUser?> GetMemberAccountAsync(long tenantId, long userId, CancellationToken cancellationToken = default)
+    public async Task<SysUser?> GetMemberAccountAsync(string tenantId, long userId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -235,7 +236,7 @@ public sealed class UserRepository(
     /// <summary>
     /// 租户成员中启用账号的主键
     /// </summary>
-    public async Task<IReadOnlyList<long>> GetEnabledMemberAccountIdsAsync(long tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<long>> GetEnabledMemberAccountIdsAsync(string tenantId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -248,7 +249,7 @@ public sealed class UserRepository(
     /// <summary>
     /// 某个租户已接受成员的账号：账号可能注册在别的租户，按成员关系跨租户取
     /// </summary>
-    private ISugarQueryable<SysUser> QueryMemberAccounts(long tenantId)
+    private ISugarQueryable<SysUser> QueryMemberAccounts(string tenantId)
     {
         return CreateNoTenantQueryable()
             .Where(user => SqlFunc.Subqueryable<SysTenantUser>()

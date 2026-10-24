@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -30,7 +31,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
     /// <exception cref="ArgumentException"><paramref name="ruleCode"/> 为空或仅包含空白字符。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<SysNumberingRule?> FindByCodeInScopeAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         string ruleCode,
         bool enabledOnly,
         CancellationToken cancellationToken = default)
@@ -57,7 +58,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
     /// <param name="cancellationToken">用于取消 SqlSugar 查询的取消令牌。</param>
     /// <returns>作用域和主键均匹配的规则；主键无效或不存在时返回 <see langword="null"/>。</returns>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    public async Task<SysNumberingRule?> FindByIdInScopeAsync(long ownerTenantId, long id, CancellationToken cancellationToken = default)
+    public async Task<SysNumberingRule?> FindByIdInScopeAsync(string ownerTenantId, long id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
         {
@@ -88,7 +89,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
     /// <exception cref="InvalidOperationException">当前连接上没有活动事务。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<bool> TryRollOverPeriodAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long ruleId,
         string periodKey,
         long periodOrdinal,
@@ -109,7 +110,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
                 ConcurrencyStamp = rule.ConcurrencyStamp + 1
             },
             rule => rule.Id == ruleId
-                && rule.TenantId == ownerTenantId
+                && TenantIds.AreSame(rule.TenantId, ownerTenantId)
                 && !rule.IsDeleted
                 && rule.Status == EnableStatus.Enabled
                 && rule.CurrentPeriodOrdinal < periodOrdinal,
@@ -136,7 +137,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
     /// <exception cref="InvalidOperationException">当前连接上没有活动事务。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<bool> TryAdvanceSequenceAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long ruleId,
         string periodKey,
         int count,
@@ -162,7 +163,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
                 ConcurrencyStamp = rule.ConcurrencyStamp + 1
             },
             rule => rule.Id == ruleId
-                && rule.TenantId == ownerTenantId
+                && TenantIds.AreSame(rule.TenantId, ownerTenantId)
                 && !rule.IsDeleted
                 && rule.Status == EnableStatus.Enabled
                 && rule.CurrentPeriod == periodKey
@@ -184,7 +185,7 @@ public sealed class NumberingRuleRepository(ISqlSugarClientResolver clientResolv
     /// <exception cref="InvalidOperationException">当前连接上没有活动事务。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     public async Task<NumberingSequenceState?> ReadCurrentValueAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long ruleId,
         CancellationToken cancellationToken = default)
     {

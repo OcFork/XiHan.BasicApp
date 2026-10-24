@@ -7,6 +7,7 @@ using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -65,7 +66,7 @@ public sealed class SuperAdminProtector : ISuperAdminProtector
     {
         // 写路径低频，直接查不缓存
         var roles = await _roleRepository.GetListAsync(
-            role => role.TenantId == 0 && role.RoleCode == SaasRoleCodes.SuperAdmin,
+            role => role.TenantId == TenantIds.Platform && role.RoleCode == SaasRoleCodes.SuperAdmin,
             cancellationToken);
 
         return roles.Select(role => role.Id).Distinct().ToList();

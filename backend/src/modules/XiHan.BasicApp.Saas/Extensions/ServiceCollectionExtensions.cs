@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using XiHan.BasicApp.Core.Auditing.Writers;
 using XiHan.BasicApp.Core.Auditing;
+using XiHan.BasicApp.Core.Authorization.Conditions;
 using XiHan.BasicApp.Core.Authorization.Permissions;
 using XiHan.BasicApp.Core.Bot.DingTalk.Abstractions;
 using XiHan.BasicApp.Core.Bot.Email.Abstractions;

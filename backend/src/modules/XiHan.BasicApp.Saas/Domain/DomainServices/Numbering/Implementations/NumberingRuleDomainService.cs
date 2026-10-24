@@ -8,6 +8,7 @@ using XiHan.BasicApp.Saas.Domain.Numbering;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -115,7 +116,7 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
             CurrentPeriodOrdinal = SysNumberingRule.NoPeriodBaseline,
             HasAllocated = false,
             // 租户私有规则不存在跨租户开放语义，强制落为 false，避免配置含义漂移。
-            AllowTenantUse = ownerTenantId == 0 && command.AllowTenantUse,
+            AllowTenantUse = ownerTenantId == TenantIds.Platform && command.AllowTenantUse,
             Status = command.Status,
             Sort = command.Sort,
             Remark = NormalizeOptional(command.Remark)
@@ -315,10 +316,10 @@ public sealed class NumberingRuleDomainService : INumberingRuleDomainService
     /// <summary>
     /// 取得当前上下文对应的规则所属租户。
     /// </summary>
-    /// <returns>当前租户 ID；平台或单体上下文返回 0。</returns>
-    private long ResolveOwnerTenantId()
+    /// <returns>当前租户 ID；平台或单体上下文返回 "0"。</returns>
+    private string ResolveOwnerTenantId()
     {
-        return _currentTenant.Id is > 0 ? _currentTenant.Id.Value : 0L;
+        return TenantIds.Normalize(_currentTenant.Id);
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -252,7 +253,7 @@ public sealed class ProfileQueryService
     /// <summary>
     /// 获取当前用户个人资料
     /// </summary>
-    public async Task<UserProfileDto> GetProfileAsync(long userId, long? tenantId, CancellationToken cancellationToken = default)
+    public async Task<UserProfileDto> GetProfileAsync(long userId, string? tenantId, CancellationToken cancellationToken = default)
     {
         var context = await GetSecurityContextAsync(userId, cancellationToken);
         return ToProfileDto(context.User, context.Security, tenantId);
@@ -340,7 +341,7 @@ public sealed class ProfileQueryService
                security.LastUserNameChangeTime.Value.AddDays(UserNameChangeIntervalDays) <= now;
     }
 
-    private static UserProfileDto ToProfileDto(SysUser user, SysUserSecurity security, long? tenantId)
+    private static UserProfileDto ToProfileDto(SysUser user, SysUserSecurity security, string? tenantId)
     {
         return new UserProfileDto
         {
@@ -355,7 +356,7 @@ public sealed class ProfileQueryService
             Birthday = user.Birthday,
             Country = user.Country,
             Remark = user.Remark,
-            TenantId = tenantId,
+            TenantId = TenantIds.Normalize(tenantId),
             LastLoginTime = user.LastLoginTime,
             LastLoginIp = user.LastLoginIp,
             IsSystemAccount = user.IsSystemAccount,

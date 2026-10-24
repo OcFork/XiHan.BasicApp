@@ -22,7 +22,7 @@ public sealed class GetRoleAncestorsOperation(IRoleHierarchyQueryService service
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<RoleInheritanceItemDto>>> HandleAsync(GetRoleAncestorsRequest request, InvocationContext context)
-        => await service.GetRoleAncestorsAsync(request.RoleId, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetRoleAncestorsAsync(request.RoleId, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

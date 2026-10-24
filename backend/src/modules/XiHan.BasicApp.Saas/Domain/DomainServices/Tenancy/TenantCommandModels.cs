@@ -78,7 +78,7 @@ public sealed record TenantMemberAddCommand(
 /// 支持人员入驻命令（平台把平台账号以支持成员身份加入指定租户）
 /// </summary>
 public sealed record TenantSupportMemberAddCommand(
-    long TenantId,
+    string TenantId,
     long UserId,
     DateTimeOffset? EffectiveTime,
     DateTimeOffset? ExpirationTime,
@@ -90,7 +90,7 @@ public sealed record TenantSupportMemberAddCommand(
 /// </summary>
 /// <param name="TenantId">租户主键</param>
 /// <param name="MemberId">接任所有者的成员关系主键</param>
-public sealed record TenantOwnerTransferCommand(long TenantId, long MemberId);
+public sealed record TenantOwnerTransferCommand(string TenantId, long MemberId);
 
 /// <summary>
 /// 租户成员更新命令

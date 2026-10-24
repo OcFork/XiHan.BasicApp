@@ -30,7 +30,7 @@ public interface ILoginSessionDomainService
     Task<LoginSessionIssueResult> IssuePasswordLoginAsync(
         SysUser user,
         SysUserSecurity? security,
-        long? tenantId,
+        string? tenantId,
         string sessionBusinessId,
         string accessTokenJti,
         JwtTokenResult tokenResult,
@@ -107,7 +107,7 @@ public interface ILoginSessionDomainService
         SysUserSession originSession,
         long impersonatorUserId,
         string? impersonatorUserName,
-        long? impersonatorTenantId,
+        string? impersonatorTenantId,
         string sessionBusinessId,
         string accessTokenJti,
         JwtTokenResult tokenResult,

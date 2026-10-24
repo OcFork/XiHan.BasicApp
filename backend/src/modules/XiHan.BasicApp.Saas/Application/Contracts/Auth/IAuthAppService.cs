@@ -170,4 +170,10 @@ public interface IAuthAppService : IApplicationService
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>票据令牌</returns>
     Task<string> CreateOAuthBindTicketAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 获取图形验证码挑战
+    /// </summary>
+    /// <param name="cancellationToken">取消令牌</param>
+    Task<CaptchaChallengeDto> GetCaptchaAsync(CancellationToken cancellationToken = default);
 }

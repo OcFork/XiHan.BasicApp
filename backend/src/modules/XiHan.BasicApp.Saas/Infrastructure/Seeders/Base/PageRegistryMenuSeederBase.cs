@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Application.Pages;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -35,7 +36,7 @@ public sealed record MenuSeedDefinition(
 /// 页面登记表驱动的菜单种子基类
 /// </summary>
 /// <remarks>
-/// 各模块登记自己的 <see cref="PageDescriptor"/>/<see cref="ButtonDescriptor"/>，由本类统一按 MenuCode 落库（平台菜单，TenantId = 0）：
+/// 各模块登记自己的 <see cref="PageDescriptor"/>/<see cref="ButtonDescriptor"/>，由本类统一按 MenuCode 落库（平台菜单，TenantId = TenantIds.Platform）：
 /// 已有的菜单对齐结构（父级、绑定的权限、名称、路由、组件、图标等），缺的按声明插入，不删除任何行；
 /// 排序、启停、显隐、徽标归运营（菜单管理页就是调这些的），只在插入时写。
 /// 菜单绑定的权限与父菜单必须已经存在（权限目录与父模块的菜单先于本种子执行），缺了直接报错，不能跳过留下残缺的菜单树。
@@ -82,7 +83,7 @@ public abstract class PageRegistryMenuSeederBase : PlatformDataSeederBase
             .ToArray();
 
         var permissions = await client.Queryable<SysPermission>()
-            .Where(permission => permission.TenantId == 0 && permissionCodes.Contains(permission.PermissionCode))
+            .Where(permission => permission.TenantId == TenantIds.Platform && permissionCodes.Contains(permission.PermissionCode))
             .ToListAsync();
         var permissionMap = permissions
             .GroupBy(permission => permission.PermissionCode, StringComparer.OrdinalIgnoreCase)
@@ -98,7 +99,7 @@ public abstract class PageRegistryMenuSeederBase : PlatformDataSeederBase
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var existingMenus = await client.Queryable<SysMenu>()
-            .Where(menu => menu.TenantId == 0 && menuCodes.Contains(menu.MenuCode))
+            .Where(menu => menu.TenantId == TenantIds.Platform && menuCodes.Contains(menu.MenuCode))
             .ToListAsync();
         var menuMap = existingMenus.ToDictionary(menu => menu.MenuCode, StringComparer.OrdinalIgnoreCase);
 
@@ -180,8 +181,8 @@ public abstract class PageRegistryMenuSeederBase : PlatformDataSeederBase
     {
         var menu = new SysMenu
         {
-            // IsGlobal 为派生属性（= TenantId == 0）：平台菜单仅需置 TenantId = 0
-            TenantId = 0,
+            // IsGlobal 为派生属性（= TenantId == 0）：平台菜单仅需置 TenantId = TenantIds.Platform
+            TenantId = TenantIds.Platform,
             IsVisible = true,
             BadgeDot = false,
             Status = EnableStatus.Enabled,
@@ -194,7 +195,7 @@ public abstract class PageRegistryMenuSeederBase : PlatformDataSeederBase
     private static bool ApplyDefinition(SysMenu menu, MenuSeedDefinition definition, long? parentId, long? permissionId)
     {
         var changed = false;
-        changed |= SeedValues.SetIfChanged(menu.TenantId, 0, value => menu.TenantId = value);
+        changed |= SeedValues.SetIfChanged(menu.TenantId, TenantIds.Platform, value => menu.TenantId = value);
         changed |= SeedValues.SetIfChanged(menu.ParentId, parentId, value => menu.ParentId = value);
         changed |= SeedValues.SetIfChanged(menu.PermissionId, permissionId, value => menu.PermissionId = value);
         changed |= SeedValues.SetIfChanged(menu.MenuName, definition.MenuName, value => menu.MenuName = value);

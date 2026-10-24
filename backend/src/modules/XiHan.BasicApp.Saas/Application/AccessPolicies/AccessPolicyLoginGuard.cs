@@ -13,6 +13,7 @@ using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 
@@ -91,7 +92,7 @@ public sealed class AccessPolicyLoginGuard : IAccessPolicyLoginGuard
     }
 
     /// <inheritdoc />
-    public async Task EnsureLoginAllowedAsync(long userId, string? userName, long? tenantId, CancellationToken cancellationToken = default)
+    public async Task EnsureLoginAllowedAsync(long userId, string? userName, string? tenantId, CancellationToken cancellationToken = default)
     {
         if (!_options.CurrentValue.Enabled)
         {
@@ -106,7 +107,7 @@ public sealed class AccessPolicyLoginGuard : IAccessPolicyLoginGuard
             decision = await _evaluator.EvaluateAsync(
                 new SaasConditionContext
                 {
-                    TenantId = tenantId ?? 0,
+                    TenantId = TenantIds.Normalize(tenantId),
                     Now = now,
                     UserId = userId,
                     UserName = userName,

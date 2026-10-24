@@ -19,7 +19,7 @@ namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 /// <param name="Time">命中时间</param>
 /// <param name="Request">请求信息</param>
 public sealed record AccessPolicyHitEntry(
-    long TenantId,
+    string TenantId,
     AccessPolicyHitSource Source,
     long? PolicyId,
     string PolicyCode,

@@ -226,7 +226,7 @@ public static class XiHanClaimsIdentityExtensions
     public static IReadOnlyList<Claim> BuildImpersonatorClaims(
         long impersonatorUserId,
         string? impersonatorUserName = null,
-        long? impersonatorTenantId = null,
+        string? impersonatorTenantId = null,
         string? impersonatorTenantName = null)
     {
         if (impersonatorUserId <= 0)
@@ -244,9 +244,9 @@ public static class XiHanClaimsIdentityExtensions
             claims.Add(new Claim(XiHanClaimTypes.ImpersonatorUserName, impersonatorUserName));
         }
 
-        if (impersonatorTenantId.HasValue)
+        if (!XiHan.BasicApp.Core.Tenancy.TenantIds.IsPlatform(impersonatorTenantId))
         {
-            claims.Add(new Claim(XiHanClaimTypes.ImpersonatorTenantId, impersonatorTenantId.Value.ToString()));
+            claims.Add(new Claim(XiHanClaimTypes.ImpersonatorTenantId, impersonatorTenantId!.Trim()));
         }
 
         if (!impersonatorTenantName.IsNullOrWhiteSpace())

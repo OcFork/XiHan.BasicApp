@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Application.Conditions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 
@@ -42,7 +43,7 @@ public sealed class AccessPolicyAuthenticatedEvaluator
     {
         ArgumentNullException.ThrowIfNull(context);
         var snapshot = await _snapshots.GetAsync(cancellationToken);
-        var tenantPolicies = context.UserId is > 0 && context.TenantId > 0 ? snapshot.GetTenant(context.TenantId) : [];
+        var tenantPolicies = context.UserId is > 0 && !TenantIds.IsPlatform(context.TenantId) ? snapshot.GetTenant(context.TenantId) : [];
         if (snapshot.PlatformAfterAuthentication.Count == 0 && tenantPolicies.Count == 0)
         {
             return null;

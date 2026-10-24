@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Caching;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -159,18 +160,18 @@ public sealed class AuthorizationSnapshotQueryService
     {
         // 平台上下文（0 号租户）不门控
         var tenantId = _currentTenant.Id;
-        if (tenantId is not > 0)
+        if (TenantIds.IsPlatform(tenantId))
         {
             return snapshot;
         }
 
         var gate = await _editionGateCache.GetOrAddAsync(
-            SaasCacheKeys.EditionGate(tenantId.Value),
-            () => LoadEditionGateAsync(tenantId.Value, cancellationToken),
+            SaasCacheKeys.EditionGate(tenantId),
+            () => LoadEditionGateAsync(tenantId, cancellationToken),
             CreateCacheOptions,
             hideErrors: true,
             token: cancellationToken)
-            ?? await LoadEditionGateAsync(tenantId.Value, cancellationToken);
+            ?? await LoadEditionGateAsync(tenantId, cancellationToken);
 
         var allowedIds = gate.PermissionIds.ToHashSet();
 
@@ -198,9 +199,9 @@ public sealed class AuthorizationSnapshotQueryService
     /// <summary>
     /// 从库里读取租户的套餐白名单（未绑定版本即空白名单）
     /// </summary>
-    private async Task<SaasEditionGateCacheItem> LoadEditionGateAsync(long tenantId, CancellationToken cancellationToken)
+    private async Task<SaasEditionGateCacheItem> LoadEditionGateAsync(string tenantId, CancellationToken cancellationToken)
     {
-        var tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken);
+        var tenant = await _tenantRepository.GetByTenantIdAsync(tenantId, cancellationToken);
         if (tenant?.EditionId is not > 0)
         {
             return new SaasEditionGateCacheItem { EditionId = null, CachedAt = DateTimeOffset.UtcNow };
@@ -225,8 +226,8 @@ public sealed class AuthorizationSnapshotQueryService
     {
         // 授权绑定（用户角色 / 直授 / 委托）只在所属上下文生效：严格按当前作用域取（平台就是 0 号租户）。
         // 平台的绑定（含超管）不带进任何租户，租户的绑定也不带进平台。
-        var bindingScopeTenantId = _currentTenant.Id ?? 0;
-        var isPlatformContext = bindingScopeTenantId == 0;
+        var bindingScopeTenantId = TenantIds.Normalize(_currentTenant.Id);
+        var isPlatformContext = TenantIds.IsPlatform(bindingScopeTenantId);
 
         // 作用侧：权限目录里在当前上下文生效与不生效的两部分
         var catalog = await _permissionRepository.GetListAsync(permission => permission.Status == EnableStatus.Enabled, cancellationToken);
@@ -363,7 +364,7 @@ public sealed class AuthorizationSnapshotQueryService
     private async Task<(HashSet<long> PermissionIds, RoleChainSet Chains)> ResolveDelegationsAsync(long userId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         // 委托绑定同样只在所属上下文生效，见 BuildSnapshotAsync 中绑定行过滤说明
-        var bindingScopeTenantId = _currentTenant.Id ?? 0;
+        var bindingScopeTenantId = TenantIds.Normalize(_currentTenant.Id);
         var delegations = (await _permissionDelegationRepository.GetActiveByDelegateeIdAsync(userId, now, cancellationToken))
             .Where(item => item.TenantId == bindingScopeTenantId)
             .ToList();

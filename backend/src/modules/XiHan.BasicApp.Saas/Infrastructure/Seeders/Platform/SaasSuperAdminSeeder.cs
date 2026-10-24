@@ -7,6 +7,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -14,7 +15,7 @@ namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 /// SaaS 超级管理员：平台的 super_admin 系统角色与 superadmin 账号
 /// </summary>
 /// <remarks>
-/// 超管是平台账号（TenantId = 0），登录落平台，超管身份只在平台成立；它不加入任何租户。
+/// 超管是平台账号（TenantId = TenantIds.Platform），登录落平台，超管身份只在平台成立；它不加入任何租户。
 /// 角色是系统角色，定义由这里维护、每次对齐；它的「全部权限」由授权快照整体给出，不写授权行。
 /// 账号只在首次创建时写资料与初始密码，之后改过的资料与密码不再覆盖；初始密码由种子写入，标记为需要本人改密
 /// （参数「密码设置」开启强制改密后，首次登录即要求修改）。
@@ -61,10 +62,10 @@ public sealed class SaasSuperAdminSeeder(
     private async Task<SysRole> EnsureRoleAsync()
     {
         var role = await DbClient.Queryable<SysRole>()
-            .FirstAsync(item => item.TenantId == 0 && item.RoleCode == SaasRoleCodes.SuperAdmin);
+            .FirstAsync(item => item.TenantId == TenantIds.Platform && item.RoleCode == SaasRoleCodes.SuperAdmin);
         if (role is null)
         {
-            role = new SysRole { TenantId = 0, RoleCode = SaasRoleCodes.SuperAdmin };
+            role = new SysRole { TenantId = TenantIds.Platform, RoleCode = SaasRoleCodes.SuperAdmin };
             _ = ApplyRole(role);
             return await DbClient.Insertable(role).ExecuteReturnEntityAsync();
         }
@@ -80,12 +81,12 @@ public sealed class SaasSuperAdminSeeder(
     private async Task<SysUser> EnsureUserAsync()
     {
         var user = await DbClient.Queryable<SysUser>()
-            .FirstAsync(item => item.TenantId == 0 && item.UserName == UserName);
+            .FirstAsync(item => item.TenantId == TenantIds.Platform && item.UserName == UserName);
         if (user is null)
         {
             user = new SysUser
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 UserName = UserName,
                 RealName = "超级管理员",
                 NickName = "超级管理员",
@@ -115,7 +116,7 @@ public sealed class SaasSuperAdminSeeder(
         var now = DateTimeOffset.UtcNow;
         _ = await DbClient.Insertable(new SysUserSecurity
         {
-            TenantId = 0,
+            TenantId = TenantIds.Platform,
             UserId = userId,
             Password = passwordHasher.HashPassword(InitialPassword),
             PasswordChangeRequired = true,
@@ -132,12 +133,12 @@ public sealed class SaasSuperAdminSeeder(
     private async Task EnsureUserRoleAsync(long userId, long roleId)
     {
         var binding = await DbClient.Queryable<SysUserRole>()
-            .FirstAsync(item => item.TenantId == 0 && item.UserId == userId && item.RoleId == roleId);
+            .FirstAsync(item => item.TenantId == TenantIds.Platform && item.UserId == userId && item.RoleId == roleId);
         if (binding is null)
         {
             _ = await DbClient.Insertable(new SysUserRole
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 UserId = userId,
                 RoleId = roleId,
                 Status = ValidityStatus.Valid,

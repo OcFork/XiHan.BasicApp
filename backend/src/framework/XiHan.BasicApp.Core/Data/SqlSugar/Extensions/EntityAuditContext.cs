@@ -1,7 +1,6 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System.Globalization;
 using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
@@ -24,8 +23,6 @@ public readonly record struct EntityAuditContext(long? UserId, string? UserName,
             return new EntityAuditContext(null, null, tenantId);
         }
 
-        // 5.0 的主体标识是字符串；审计列仍是 long，解析不出数字的主体只记用户名
-        var userId = long.TryParse(currentUser.UserId, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed) ? parsed : (long?)null;
-        return new EntityAuditContext(userId, currentUser.UserName, tenantId);
+        return new EntityAuditContext(currentUser.UserId, currentUser.UserName, tenantId);
     }
 }

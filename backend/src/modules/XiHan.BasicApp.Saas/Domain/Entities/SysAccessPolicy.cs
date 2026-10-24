@@ -14,7 +14,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item><c>TenantId = 0</c> 是平台级策略，对全部请求生效；其余是租户级策略，只作用于该租户已登录的请求与登录。两层严格隔离，租户看不到平台的策略。</item>
+/// <item><c>TenantId = TenantIds.Platform</c> 是平台级策略，对全部请求生效；其余是租户级策略，只作用于该租户已登录的请求与登录。两层严格隔离，租户看不到平台的策略。</item>
 /// <item>条件在 <see cref="SysAccessPolicyCondition"/>：组内且、组间或，不允许空条件集。</item>
 /// <item>策略生效 = <see cref="Status"/> 启用，且当前时间在 <see cref="EffectiveTime"/>～<see cref="ExpirationTime"/> 内。</item>
 /// <item>同一层里放行压过拒绝；平台的拒绝租户放行不了。<see cref="Priority"/> 小的先评估，只决定报告哪一条。</item>

@@ -11,12 +11,12 @@ using XiHan.BasicApp.Core.Security;
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
 /// <summary>
-/// 平台种子基类：整个播种过程在平台上下文（TenantId = 0）内执行，只播平台库
+/// 平台种子基类：整个播种过程在平台上下文（TenantId = TenantIds.Platform）内执行，只播平台库
 /// </summary>
 /// <remarks>
-/// 操作、资源、权限、菜单、套餐、参数这类记录属于平台，按 <c>BasicAppEntity</c> 的约定必须落在 TenantId = 0。
+/// 操作、资源、权限、菜单、套餐、参数这类记录属于平台，按 <c>BasicAppEntity</c> 的约定必须落在 TenantId = TenantIds.Platform。
 /// 它们的 TenantId 由写入拦截器按当时的租户上下文注入，而应用启动播种时上下文未必是平台，因此在这里显式切换。
-/// 不切换的后果是静默的：行照常写入却落在了别的租户下，按 TenantId = 0 查找的一方（如菜单解析权限）都查不到。
+/// 不切换的后果是静默的：行照常写入却落在了别的租户下，按 TenantId = TenantIds.Platform 查找的一方（如菜单解析权限）都查不到。
 /// 要写业务租户数据的种子（演示数据）在自己的代码里逐个切入目标租户。
 /// </remarks>
 [DataSeeding(Target = DbInitializationTarget.Platform)]

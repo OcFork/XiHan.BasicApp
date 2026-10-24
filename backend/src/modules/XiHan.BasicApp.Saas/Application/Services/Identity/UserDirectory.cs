@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -20,7 +21,7 @@ public sealed class UserDirectory(ICurrentTenant currentTenant, IUserRepository 
     public Task<PageResultDtoBase<SysUser>> GetPagedAsync(PageRequestDtoBase request, CancellationToken cancellationToken = default)
     {
         var scope = CurrentScope;
-        return scope == 0
+        return scope == TenantIds.Platform
             ? userRepository.GetPagedAsync(request, cancellationToken)
             : userRepository.GetMemberAccountsPagedAsync(scope, request, cancellationToken);
     }
@@ -31,7 +32,7 @@ public sealed class UserDirectory(ICurrentTenant currentTenant, IUserRepository 
     public Task<SysUser?> FindAsync(long userId, CancellationToken cancellationToken = default)
     {
         var scope = CurrentScope;
-        return scope == 0
+        return scope == TenantIds.Platform
             ? userRepository.GetByIdAsync(userId, cancellationToken)
             : userRepository.GetMemberAccountAsync(scope, userId, cancellationToken);
     }
@@ -42,7 +43,7 @@ public sealed class UserDirectory(ICurrentTenant currentTenant, IUserRepository 
     public async Task<IReadOnlyList<long>> GetEnabledIdsAsync(CancellationToken cancellationToken = default)
     {
         var scope = CurrentScope;
-        if (scope != 0)
+        if (scope != TenantIds.Platform)
         {
             return await userRepository.GetEnabledMemberAccountIdsAsync(scope, cancellationToken);
         }
@@ -57,11 +58,11 @@ public sealed class UserDirectory(ICurrentTenant currentTenant, IUserRepository 
     public bool IsHomeAccount(SysUser user)
     {
         ArgumentNullException.ThrowIfNull(user);
-        return user.TenantId == CurrentScope;
+        return TenantIds.AreSame(user.TenantId, CurrentScope);
     }
 
     /// <summary>
-    /// 当前上下文（平台为 0）
+    /// 当前上下文（平台为 "0"）
     /// </summary>
-    private long CurrentScope => currentTenant.Id ?? 0;
+    private string CurrentScope => TenantIds.Normalize(currentTenant.Id);
 }

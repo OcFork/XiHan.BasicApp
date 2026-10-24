@@ -14,7 +14,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// </summary>
 /// <remarks>
 /// 职责边界：
-/// - 平台级实体（TenantId = 0），由平台运营管理
+/// - 平台级实体（TenantId = TenantIds.Platform），由平台运营管理
 /// - 本实体描述"版本能做什么"和"版本卖多少"；"某租户订阅哪个版本"由 SysTenant.EditionId 承载
 ///
 /// 关联：

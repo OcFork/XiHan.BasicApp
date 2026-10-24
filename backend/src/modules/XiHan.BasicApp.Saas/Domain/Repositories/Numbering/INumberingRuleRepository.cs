@@ -24,7 +24,7 @@ public interface INumberingRuleRepository : ISaasRepository<SysNumberingRule>
     /// <returns>精确作用域内匹配的规则；不存在时返回 <see langword="null"/>。</returns>
     /// <exception cref="ArgumentException"><paramref name="ruleCode"/> 为 <see langword="null"/>、空字符串或仅包含空白字符。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    Task<SysNumberingRule?> FindByCodeInScopeAsync(long ownerTenantId, string ruleCode, bool enabledOnly, CancellationToken cancellationToken = default);
+    Task<SysNumberingRule?> FindByCodeInScopeAsync(string ownerTenantId, string ruleCode, bool enabledOnly, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 在明确的规则所属租户中按主键查找规则。
@@ -34,7 +34,7 @@ public interface INumberingRuleRepository : ISaasRepository<SysNumberingRule>
     /// <param name="cancellationToken">用于取消数据库查询的取消令牌。</param>
     /// <returns>精确作用域内匹配的规则；主键无效或规则不存在时返回 <see langword="null"/>。</returns>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    Task<SysNumberingRule?> FindByIdInScopeAsync(long ownerTenantId, long id, CancellationToken cancellationToken = default);
+    Task<SysNumberingRule?> FindByIdInScopeAsync(string ownerTenantId, long id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 把规则的流水基线单调推进到新周期。
@@ -52,7 +52,7 @@ public interface INumberingRuleRepository : ISaasRepository<SysNumberingRule>
     /// <exception cref="ArgumentException"><paramref name="periodKey"/> 为空或仅包含空白字符。</exception>
     /// <exception cref="InvalidOperationException">当前连接上没有活动事务。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    Task<bool> TryRollOverPeriodAsync(long ownerTenantId, long ruleId, string periodKey, long periodOrdinal, CancellationToken cancellationToken = default);
+    Task<bool> TryRollOverPeriodAsync(string ownerTenantId, long ruleId, string periodKey, long periodOrdinal, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 在当前周期内原子推进流水，并占用一段连续区间。
@@ -73,7 +73,7 @@ public interface INumberingRuleRepository : ISaasRepository<SysNumberingRule>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> 不为正数，或 <paramref name="maximum"/> 为负数。</exception>
     /// <exception cref="InvalidOperationException">当前连接上没有活动事务。</exception>
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
-    Task<bool> TryAdvanceSequenceAsync(long ownerTenantId, long ruleId, string periodKey, int count, long maximum, CancellationToken cancellationToken = default);
+    Task<bool> TryAdvanceSequenceAsync(string ownerTenantId, long ruleId, string periodKey, int count, long maximum, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 读取规则当前的流水值与周期基线。
@@ -88,6 +88,6 @@ public interface INumberingRuleRepository : ISaasRepository<SysNumberingRule>
     /// </remarks>
     /// <exception cref="InvalidOperationException">当前连接上没有活动事务。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    Task<NumberingSequenceState?> ReadCurrentValueAsync(long ownerTenantId, long ruleId, CancellationToken cancellationToken = default);
+    Task<NumberingSequenceState?> ReadCurrentValueAsync(string ownerTenantId, long ruleId, CancellationToken cancellationToken = default);
 
 }

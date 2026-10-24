@@ -59,10 +59,10 @@ public static class AuthorizationConditionResolver
         ArgumentNullException.ThrowIfNull(sources);
 
         var conditionsByRolePermission = sources.Conditions
-            .Where(condition => condition.RolePermissionId is > 0)
+            .Where(condition => condition.RolePermissionId > 0)
             .ToLookup(condition => condition.RolePermissionId!.Value);
         var conditionsByUserPermission = sources.Conditions
-            .Where(condition => condition.UserPermissionId is > 0)
+            .Where(condition => condition.UserPermissionId > 0)
             .ToLookup(condition => condition.UserPermissionId!.Value);
         var sets = new Dictionary<string, (long PermissionId, AuthorizationConditionSet Set)>(StringComparer.Ordinal);
 

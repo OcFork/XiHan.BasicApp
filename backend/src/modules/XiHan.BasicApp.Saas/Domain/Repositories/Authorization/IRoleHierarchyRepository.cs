@@ -22,5 +22,5 @@ public interface IRoleHierarchyRepository : ISaasRepository<SysRoleHierarchy>
     /// 跨租户获取有角色直接继承了给定角色的租户（不含平台）
     /// </summary>
     /// <remarks>平台调整全局角色的继承后，据此找出继承链随之变化、要复核职责分离的租户。</remarks>
-    Task<IReadOnlyList<long>> GetTenantIdsInheritingAsync(IReadOnlyCollection<long> parentRoleIds, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>> GetTenantIdsInheritingAsync(IReadOnlyCollection<long> parentRoleIds, CancellationToken cancellationToken = default);
 }

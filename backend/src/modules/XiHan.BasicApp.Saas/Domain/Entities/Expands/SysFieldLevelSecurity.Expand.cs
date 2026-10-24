@@ -3,6 +3,7 @@
 
 using SqlSugar;
 using System.ComponentModel.DataAnnotations;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -15,7 +16,7 @@ public partial class SysFieldLevelSecurity : IValidatableObject
     /// 是否平台规则（派生属性：TenantId == 0 即对所有租户生效，只能在平台维护；不落库）
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public bool IsGlobal => TenantId == 0;
+    public bool IsGlobal => TenantIds.IsPlatform(TenantId);
 
     /// <summary>
     /// 部分脱敏参数上限：保留位数超过它就谈不上脱敏

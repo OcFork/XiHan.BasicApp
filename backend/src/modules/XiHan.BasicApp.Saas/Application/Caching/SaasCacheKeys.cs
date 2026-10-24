@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Caching;
 
@@ -19,9 +20,9 @@ public static class SaasCacheKeys
     /// <param name="tenantId">租户标识。</param>
     /// <param name="configKey">配置键。</param>
     /// <returns>业务缓存键。</returns>
-    public static string ConfigValue(long? tenantId, string configKey)
+    public static string ConfigValue(string? tenantId, string configKey)
     {
-        var tenantSegment = tenantId.HasValue && tenantId.Value > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId!.Trim() : "platform";
         return $"tenant:{tenantSegment}:key:{SaasConfigKeys.Normalize(configKey)}";
     }
 
@@ -53,9 +54,9 @@ public static class SaasCacheKeys
     /// <param name="tenantId">当前租户上下文（null/0 表示平台态）。</param>
     /// <param name="userId">用户标识。</param>
     /// <returns>业务缓存键。</returns>
-    public static string AuthorizationSnapshot(long? tenantId, long userId)
+    public static string AuthorizationSnapshot(string? tenantId, long userId)
     {
-        var tenantSegment = tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId.ToString() : "platform";
         return $"user:{userId}:tenant:{tenantSegment}";
     }
 
@@ -123,7 +124,7 @@ public static class SaasCacheKeys
     /// <param name="permissionType">权限类型枚举值。</param>
     /// <param name="limit">数量上限。</param>
     /// <returns>业务缓存键。</returns>
-    public static string PermissionSelect(long? tenantId, string? moduleCode, int? permissionType, int limit)
+    public static string PermissionSelect(string? tenantId, string? moduleCode, int? permissionType, int limit)
     {
         var source = $"{(string.IsNullOrWhiteSpace(moduleCode) ? "all" : moduleCode.Trim())}|{(permissionType?.ToString() ?? "all")}|{limit}";
         return $"tenant:{TenantSegment(tenantId)}:permission-select:{Hash(source)}";
@@ -137,7 +138,7 @@ public static class SaasCacheKeys
     /// <param name="isGlobal">是否全局。</param>
     /// <param name="limit">数量上限。</param>
     /// <returns>业务缓存键。</returns>
-    public static string RoleSelect(long? tenantId, int? roleType, bool? isGlobal, int limit)
+    public static string RoleSelect(string? tenantId, int? roleType, bool? isGlobal, int limit)
     {
         var source = $"{(roleType?.ToString() ?? "all")}|{(isGlobal?.ToString() ?? "all")}|{limit}";
         return $"tenant:{TenantSegment(tenantId)}:role-select:{Hash(source)}";
@@ -182,7 +183,7 @@ public static class SaasCacheKeys
     /// </summary>
     /// <param name="tenantId">当前租户上下文（null/0 为平台）。</param>
     /// <returns>业务缓存键。</returns>
-    public static string PermissionCatalog(long? tenantId)
+    public static string PermissionCatalog(string? tenantId)
     {
         return $"tenant:{TenantSegment(tenantId)}:permission-catalog";
     }
@@ -192,9 +193,9 @@ public static class SaasCacheKeys
     /// </summary>
     /// <param name="tenantId">当前租户上下文（null/0 为平台态）。</param>
     /// <returns>业务缓存键。</returns>
-    public static string DepartmentSelect(long? tenantId)
+    public static string DepartmentSelect(string? tenantId)
     {
-        var tenantSegment = tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId.ToString() : "platform";
         return $"tenant:{tenantSegment}:dept-select";
     }
 
@@ -203,9 +204,9 @@ public static class SaasCacheKeys
     /// </summary>
     /// <param name="tenantId">当前租户上下文（null/0 为平台态）。</param>
     /// <returns>业务缓存键。</returns>
-    public static string PositionSelect(long? tenantId)
+    public static string PositionSelect(string? tenantId)
     {
-        var tenantSegment = tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId.ToString() : "platform";
         return $"tenant:{tenantSegment}:position-select";
     }
 
@@ -216,9 +217,9 @@ public static class SaasCacheKeys
     /// <param name="onlyEnabled">是否仅含启用部门。</param>
     /// <param name="limit">数量上限。</param>
     /// <returns>业务缓存键。</returns>
-    public static string DepartmentTree(long? tenantId, bool onlyEnabled, int limit)
+    public static string DepartmentTree(string? tenantId, bool onlyEnabled, int limit)
     {
-        var tenantSegment = tenantId.HasValue && tenantId.Value > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId!.Trim() : "platform";
         return $"tenant:{tenantSegment}:dept-tree:{Hash($"{onlyEnabled}|{limit}")}";
     }
 
@@ -229,9 +230,9 @@ public static class SaasCacheKeys
     /// <param name="channel">消息渠道枚举值。</param>
     /// <param name="templateCode">模板编码（调用方已规范化）。</param>
     /// <returns>业务缓存键。</returns>
-    public static string MessageTemplate(long? tenantId, int channel, string templateCode)
+    public static string MessageTemplate(string? tenantId, int channel, string templateCode)
     {
-        var tenantSegment = tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId.ToString() : "platform";
         return $"tenant:{tenantSegment}:channel:{channel}:code:{templateCode}";
     }
 
@@ -248,7 +249,7 @@ public static class SaasCacheKeys
     /// </summary>
     /// <param name="tenantId">租户标识。</param>
     /// <returns>业务缓存键。</returns>
-    public static string EditionGate(long tenantId)
+    public static string EditionGate(string tenantId)
     {
         return $"tenant:{tenantId}";
     }
@@ -264,9 +265,9 @@ public static class SaasCacheKeys
     /// <summary>
     /// 字典项树缓存键（按 租户 × 字典 × 过滤条件 隔离）。
     /// </summary>
-    public static string DictItemTree(long? tenantId, long dictId, bool onlyEnabled, int limit)
+    public static string DictItemTree(string? tenantId, long dictId, bool onlyEnabled, int limit)
     {
-        var tenantSegment = tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId.ToString() : "platform";
         return $"tenant:{tenantSegment}:dict:{dictId}:{Hash($"{onlyEnabled}|{limit}")}";
     }
 
@@ -313,9 +314,9 @@ public static class SaasCacheKeys
     /// <summary>
     /// 租户段：业务租户取其标识，平台（null/0，即 0 号租户）记为 platform
     /// </summary>
-    private static string TenantSegment(long? tenantId)
+    private static string TenantSegment(string? tenantId)
     {
-        return tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        return !TenantIds.IsPlatform(tenantId) ? tenantId!.Trim() : "platform";
     }
 
     /// <summary>

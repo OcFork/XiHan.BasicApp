@@ -19,7 +19,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 写入：
 /// - TenantId + OperationCode 租户内唯一（UX_TeId_OpCo）
 /// - OperationCode 规范：小写英文（create/read/update/delete/approve/export）
-/// - TenantId = 0（即派生属性 IsGlobal=true）时作为平台动作模板（CRUD/Approve/Export 等通用操作）
+/// - TenantId = TenantIds.Platform（即派生属性 IsGlobal=true）时作为平台动作模板（CRUD/Approve/Export 等通用操作）
 /// - IsDangerous=true 的操作前端应弹二次确认；IsRequireAudit=true 的操作必须写 SysDiffLog
 ///
 /// 查询：

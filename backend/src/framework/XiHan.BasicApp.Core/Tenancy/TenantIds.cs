@@ -1,6 +1,8 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Globalization;
+
 namespace XiHan.BasicApp.Core.Tenancy;
 
 /// <summary>
@@ -31,4 +33,23 @@ public static class TenantIds
     /// <param name="left">租户标识</param>
     /// <param name="right">租户标识</param>
     public static bool AreSame(string? left, string? right) => string.Equals(Normalize(left), Normalize(right), StringComparison.Ordinal);
+
+    /// <summary>
+    /// 租户实体主键 → 租户标识
+    /// </summary>
+    /// <param name="tenantKey">租户实体主键</param>
+    public static string Of(long tenantKey) => tenantKey.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// 可空的租户实体主键 → 租户标识（空保持为空）
+    /// </summary>
+    /// <param name="tenantKey">租户实体主键</param>
+    public static string? Of(long? tenantKey) => tenantKey is { } key ? Of(key) : null;
+
+    /// <summary>
+    /// 租户标识 → 租户实体主键；平台或不是数字时为空
+    /// </summary>
+    /// <param name="tenantId">租户标识</param>
+    public static long? ToKey(string? tenantId)
+        => !IsPlatform(tenantId) && long.TryParse(tenantId!.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var key) ? key : null;
 }

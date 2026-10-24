@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -157,7 +158,7 @@ public sealed class StorageConfigDomainService
 
         // 平台默认存储被未自配的租户用着，那些文件记录落在各租户自己的数据里（字段隔离的在平台库、库隔离的在各自的库里），
         // 删除前逐库看所有租户
-        var referenced = config.TenantId == 0
+        var referenced = TenantIds.IsPlatform(config.TenantId)
             ? await _scopeRunner.AnyPerDatabaseAsync(
                 () => _fileStorageRepository.AnyIgnoreTenantAsync(storage => storage.StorageConfigId == id, cancellationToken),
                 cancellationToken)

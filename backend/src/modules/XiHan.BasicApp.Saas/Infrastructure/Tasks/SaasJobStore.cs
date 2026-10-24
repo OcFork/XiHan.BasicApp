@@ -10,6 +10,7 @@ using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Abstractions;
 using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Models;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 
@@ -150,7 +151,7 @@ public sealed class SaasJobStore : IJobStore
             ExtendData = history.ParametersJson,
             Remark = history.Remarks,
             CreatedAt = history.StartedAt,
-            TenantId = history.TenantId ?? 0
+            TenantId = TenantIds.Of(history.TenantId) ?? TenantIds.Platform
         };
 
         // 通过 TaskCode 回填 TaskId
@@ -199,7 +200,7 @@ public sealed class SaasJobStore : IJobStore
             ScheduledAt = task.NextRunTime ?? task.CreatedAt,
             StartedAt = task.LastRunTime,
             TriggerType = MapToJobTriggerType(task.TriggerType),
-            TenantId = task.TenantId,
+            TenantId = TenantIds.ToKey(task.TenantId),
             ErrorMessage = task.Remark,
             RetryCount = task.RetryCount
         };
@@ -262,7 +263,7 @@ public sealed class SaasJobStore : IJobStore
             ScheduledAt = task.NextRunTime ?? task.CreatedAt,
             StartedAt = task.LastRunTime,
             TriggerType = MapToJobTriggerType(task.TriggerType),
-            TenantId = task.TenantId,
+            TenantId = TenantIds.ToKey(task.TenantId),
             ErrorMessage = task.Remark,
             RetryCount = task.RetryCount
         }).ToList();
@@ -313,7 +314,7 @@ public sealed class SaasJobStore : IJobStore
         // 注意：谓词不能写成 (cond ? 列条件 : true) 的三元式——SqlSugar 会把布尔常量分支
         // 翻译成 boolean = integer 比较，PostgreSQL 直接报 42883（任务执行曾因此全量失败）。
         var tasks = tenantId.HasValue
-            ? await repository.GetListAsync(task => task.TaskCode == taskCode && task.TenantId == tenantId.Value)
+            ? await repository.GetListAsync(task => task.TaskCode == taskCode && task.TenantId == TenantIds.Of(tenantId.Value))
             : await repository.GetListAsync(task => task.TaskCode == taskCode);
 
         return tasks.FirstOrDefault();
@@ -379,7 +380,7 @@ public sealed class SaasJobStore : IJobStore
         StartedAt = log.StartTime,
         CompletedAt = log.EndTime,
         DurationMilliseconds = log.ExecutionTime,
-        TenantId = log.TenantId,
+        TenantId = TenantIds.ToKey(log.TenantId),
         TriggerType = Enum.TryParse<JobTriggerType>(log.TriggerMode, out var triggerType) ? triggerType : JobTriggerType.Manual,
         IsSuccess = log.TaskStatus == RunTaskStatus.Success,
         ErrorMessage = log.ExceptionMessage,

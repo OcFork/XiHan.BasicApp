@@ -22,6 +22,7 @@ using XiHan.BasicApp.Core.Paging.Models;
 using ConditionOperator = XiHan.BasicApp.Saas.Domain.Entities.ConditionOperator;
 using XiHan.BasicApp.Core.Authorization.Conditions;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -184,7 +185,7 @@ public sealed class AccessPolicyQueryService
     /// </summary>
     public async Task<List<LoginBanDto>> GetLoginBansAsync(CancellationToken cancellationToken = default)
     {
-        if (_currentTenant.Id is > 0)
+        if (!TenantIds.IsPlatform(_currentTenant.Id))
         {
             return [];
         }

@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -16,7 +17,7 @@ public partial class SysAccessPolicy : IValidatableObject
     /// 是否平台级策略
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public bool IsPlatform => TenantId == 0;
+    public bool IsPlatform => TenantIds.IsPlatform(TenantId);
 
     /// <summary>
     /// 在给定时刻是否生效：启用且在生效期内

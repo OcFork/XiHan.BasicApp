@@ -17,7 +17,7 @@ namespace XiHan.BasicApp.Saas.Application.Services;
 /// </remarks>
 public sealed record AuthAccessTokenIssueCommand(
     SysUser User,
-    long? TenantId,
+    string? TenantId,
     string SessionBusinessId,
     string AccessTokenJti,
     IReadOnlyCollection<string> Roles,
@@ -25,7 +25,7 @@ public sealed record AuthAccessTokenIssueCommand(
     string? DeviceId,
     long? ImpersonatorUserId = null,
     string? ImpersonatorUserName = null,
-    long? ImpersonatorTenantId = null,
+    string? ImpersonatorTenantId = null,
     string? ImpersonatorTenantName = null,
     string? ClientId = null);
 

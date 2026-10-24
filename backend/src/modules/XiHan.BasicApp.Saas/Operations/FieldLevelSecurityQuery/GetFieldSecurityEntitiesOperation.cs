@@ -30,7 +30,7 @@ public sealed class GetFieldSecurityEntitiesOperation(IFieldLevelSecurityQuerySe
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<FieldSecurityEntityDto>>> HandleAsync(GetFieldSecurityEntitiesRequest request, InvocationContext context)
-        => await service.GetFieldSecurityEntitiesAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetFieldSecurityEntitiesAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

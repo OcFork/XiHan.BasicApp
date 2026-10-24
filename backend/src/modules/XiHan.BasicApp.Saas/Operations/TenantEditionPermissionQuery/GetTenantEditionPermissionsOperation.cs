@@ -24,7 +24,7 @@ public sealed class GetTenantEditionPermissionsOperation(ITenantEditionPermissio
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<TenantEditionPermissionListItemDto>>> HandleAsync(GetTenantEditionPermissionsRequest request, InvocationContext context)
-        => await service.GetTenantEditionPermissionsAsync(request.EditionId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetTenantEditionPermissionsAsync(request.EditionId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

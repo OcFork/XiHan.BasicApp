@@ -63,7 +63,7 @@ public interface IUserRepository : ISaasAggregateRepository<SysUser>
     /// <param name="userName">用户名（调用方已 Trim）</param>
     /// <param name="excludeUserId">排除的用户主键（更新自身时传入）</param>
     /// <param name="cancellationToken">取消令牌</param>
-    Task<bool> ExistsUserNameInTenantAsync(long tenantId, string userName, long? excludeUserId = null, CancellationToken cancellationToken = default);
+    Task<bool> ExistsUserNameInTenantAsync(string tenantId, string userName, long? excludeUserId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 忽略租户过滤，按主键获取用户（平台运维 / 跨租户切换场景使用，需上层做权限校验）
@@ -103,7 +103,7 @@ public interface IUserRepository : ISaasAggregateRepository<SysUser>
     /// <param name="request">分页请求</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>成员账号分页</returns>
-    Task<PageResultDtoBase<SysUser>> GetMemberAccountsPagedAsync(long tenantId, PageRequestDtoBase request, CancellationToken cancellationToken = default);
+    Task<PageResultDtoBase<SysUser>> GetMemberAccountsPagedAsync(string tenantId, PageRequestDtoBase request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 租户成员的账号：不是该租户已接受的成员时返回 null
@@ -112,7 +112,7 @@ public interface IUserRepository : ISaasAggregateRepository<SysUser>
     /// <param name="userId">用户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>成员账号</returns>
-    Task<SysUser?> GetMemberAccountAsync(long tenantId, long userId, CancellationToken cancellationToken = default);
+    Task<SysUser?> GetMemberAccountAsync(string tenantId, long userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 租户成员中启用账号的主键
@@ -120,5 +120,5 @@ public interface IUserRepository : ISaasAggregateRepository<SysUser>
     /// <param name="tenantId">租户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>启用账号主键</returns>
-    Task<IReadOnlyList<long>> GetEnabledMemberAccountIdsAsync(long tenantId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<long>> GetEnabledMemberAccountIdsAsync(string tenantId, CancellationToken cancellationToken = default);
 }

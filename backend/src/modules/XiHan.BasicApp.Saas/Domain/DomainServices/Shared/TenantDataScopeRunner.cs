@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -125,7 +126,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         {
             cancellationToken.ThrowIfCancellationRequested();
             // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-            using (_currentTenant.Change(tenantId))
+            using (_currentTenant.Change(TenantIds.Of(tenantId)))
             {
                 if (await probe())
                 {
@@ -154,7 +155,7 @@ public sealed class TenantDataScopeRunner : ITenantDataScopeRunner
         {
             cancellationToken.ThrowIfCancellationRequested();
             // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-            using (_currentTenant.Change(tenantId))
+            using (_currentTenant.Change(TenantIds.Of(tenantId)))
             {
                 await action(tenantId);
             }

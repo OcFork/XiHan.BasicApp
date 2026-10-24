@@ -33,7 +33,7 @@ public sealed class GetMyAvailableTenantsOperation(ITenantQueryService service) 
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<TenantSwitcherDto>>> HandleAsync(GetMyAvailableTenantsRequest request, InvocationContext context)
-        => await service.GetMyAvailableTenantsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetMyAvailableTenantsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

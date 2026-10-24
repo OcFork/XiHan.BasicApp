@@ -34,5 +34,5 @@ public sealed class GetDictItemTreeOperation(IDictQueryService service) : IOpera
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<DictItemTreeNodeDto>>> HandleAsync(DictItemTreeQueryDto request, InvocationContext context)
-        => await service.GetDictItemTreeAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetDictItemTreeAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

@@ -20,7 +20,7 @@ public class DefaultExternalLoginStore : IExternalLoginStore
     /// <param name="tenantId">租户标识</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>内部用户标识，未绑定返回 null</returns>
-    public Task<long?> FindUserIdAsync(string provider, string providerKey, long? tenantId = null, CancellationToken cancellationToken = default)
+    public Task<long?> FindUserIdAsync(string provider, string providerKey, string? tenantId = null, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(provider, providerKey, tenantId);
         return Task.FromResult(_store.TryGetValue(key, out var userId) ? (long?)userId : null);
@@ -33,7 +33,7 @@ public class DefaultExternalLoginStore : IExternalLoginStore
     /// <param name="info">第三方登录信息</param>
     /// <param name="tenantId">租户标识</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public Task CreateAsync(long userId, ExternalLoginInfo info, long? tenantId = null, CancellationToken cancellationToken = default)
+    public Task CreateAsync(long userId, ExternalLoginInfo info, string? tenantId = null, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(info.Provider, info.ProviderKey, tenantId);
         _store[key] = userId;
@@ -60,8 +60,8 @@ public class DefaultExternalLoginStore : IExternalLoginStore
         return Task.CompletedTask;
     }
 
-    private static string BuildKey(string provider, string providerKey, long? tenantId)
+    private static string BuildKey(string provider, string providerKey, string? tenantId)
     {
-        return $"{provider}:{providerKey}:{tenantId ?? 0}";
+        return $"{provider}:{providerKey}:{XiHan.BasicApp.Core.Tenancy.TenantIds.Normalize(tenantId)}";
     }
 }

@@ -8,6 +8,7 @@ using XiHan.BasicApp.Saas.Domain.Identity;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Web.Core.Authentication.Jwt;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -62,7 +63,7 @@ public sealed class LoginSessionDomainService
     public async Task<LoginSessionIssueResult> IssuePasswordLoginAsync(
         SysUser user,
         SysUserSecurity? security,
-        long? tenantId,
+        string? tenantId,
         string sessionBusinessId,
         string accessTokenJti,
         JwtTokenResult tokenResult,
@@ -148,9 +149,9 @@ public sealed class LoginSessionDomainService
             _ = await _userRepository.UpdateAsync(user, cancellationToken);
         }
 
-        if (tenantId is > 0)
+        if (!TenantIds.IsPlatform(tenantId))
         {
-            await TouchMembershipAsync(tenantId.Value, user.Id, now, cancellationToken);
+            await TouchMembershipAsync(tenantId!, user.Id, now, cancellationToken);
         }
 
         return new LoginSessionIssueResult(session, supersededSessionBusinessIds);
@@ -231,7 +232,7 @@ public sealed class LoginSessionDomainService
         _ = await _oauthTokenRepository.AddAsync(CreateOAuthToken(session, accessTokenJti, tokenResult), cancellationToken);
 
         // 进入租户：成员关系的最近进入时间决定下次登录落点（会话行的租户戳由写入时的上下文决定）
-        if (session.TenantId > 0)
+        if (!TenantIds.IsPlatform(session.TenantId))
         {
             await TouchMembershipAsync(session.TenantId, session.UserId, now, cancellationToken);
         }
@@ -298,7 +299,7 @@ public sealed class LoginSessionDomainService
     /// <summary>
     /// 回写成员关系的最近进入时间
     /// </summary>
-    private async Task TouchMembershipAsync(long tenantId, long userId, DateTimeOffset now, CancellationToken cancellationToken)
+    private async Task TouchMembershipAsync(string tenantId, long userId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var membership = await _tenantUserRepository.GetMembershipAsync(tenantId, userId, cancellationToken);
         if (membership is null)
@@ -337,7 +338,7 @@ public sealed class LoginSessionDomainService
         SysUserSession originSession,
         long impersonatorUserId,
         string? impersonatorUserName,
-        long? impersonatorTenantId,
+        string? impersonatorTenantId,
         string sessionBusinessId,
         string accessTokenJti,
         JwtTokenResult tokenResult,
@@ -378,7 +379,7 @@ public sealed class LoginSessionDomainService
             ExpirationTime = expiresAt,
             ImpersonatorUserId = impersonatorUserId,
             ImpersonatorUserName = NormalizeNullable(impersonatorUserName, 50),
-            ImpersonatorTenantId = impersonatorTenantId,
+            ImpersonatorTenantId = TenantIds.ToKey(impersonatorTenantId),
             ImpersonatorSessionId = originSession.UserSessionId,
             ImpersonationStartTime = now,
             ImpersonationReason = NormalizeNullable(reason, 200)

@@ -35,5 +35,5 @@ public sealed class GetAvailableGlobalPermissionsOperation(IPermissionQueryServi
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<PermissionSelectItemDto>>> HandleAsync(PermissionSelectQueryDto request, InvocationContext context)
-        => await service.GetAvailableGlobalPermissionsAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetAvailableGlobalPermissionsAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

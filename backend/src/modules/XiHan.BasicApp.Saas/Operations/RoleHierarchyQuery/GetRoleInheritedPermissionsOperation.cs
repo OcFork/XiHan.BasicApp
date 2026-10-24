@@ -22,7 +22,7 @@ public sealed class GetRoleInheritedPermissionsOperation(IRoleHierarchyQueryServ
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<RoleInheritedPermissionDto>>> HandleAsync(GetRoleInheritedPermissionsRequest request, InvocationContext context)
-        => await service.GetRoleInheritedPermissionsAsync(request.RoleId, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetRoleInheritedPermissionsAsync(request.RoleId, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

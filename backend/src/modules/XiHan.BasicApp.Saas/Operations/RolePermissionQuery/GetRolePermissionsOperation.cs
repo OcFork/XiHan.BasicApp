@@ -25,7 +25,7 @@ public sealed class GetRolePermissionsOperation(IRolePermissionQueryService serv
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<RolePermissionListItemDto>>> HandleAsync(GetRolePermissionsRequest request, InvocationContext context)
-        => await service.GetRolePermissionsAsync(request.RoleId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetRolePermissionsAsync(request.RoleId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

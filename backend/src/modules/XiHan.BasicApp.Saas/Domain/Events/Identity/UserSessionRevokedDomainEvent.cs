@@ -12,7 +12,7 @@ public sealed class UserSessionRevokedDomainEvent : SaasDomainEventBase
     /// 构造函数
     /// </summary>
     public UserSessionRevokedDomainEvent(
-        long tenantId,
+        string tenantId,
         long userId,
         long? sessionId,
         string? userSessionId,

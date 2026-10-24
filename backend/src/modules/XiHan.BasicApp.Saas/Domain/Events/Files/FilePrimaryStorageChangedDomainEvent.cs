@@ -7,7 +7,7 @@ namespace XiHan.BasicApp.Saas.Domain.Events;
 /// 文件主存储切换事件
 /// </summary>
 public sealed class FilePrimaryStorageChangedDomainEvent(
-    long tenantId,
+    string tenantId,
     long fileId,
     long storageId,
     long? previousStorageId,

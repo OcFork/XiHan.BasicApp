@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Core.Events;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Events;
 
@@ -16,7 +17,7 @@ public abstract class SaasDomainEventBase : DomainEventBase
     /// <param name="tenantId">租户ID</param>
     /// <param name="operatorUserId">操作人ID</param>
     /// <param name="reason">原因</param>
-    protected SaasDomainEventBase(long tenantId, long? operatorUserId, string? reason)
+    protected SaasDomainEventBase(string tenantId, long? operatorUserId, string? reason)
     {
         TenantId = tenantId;
         OperatorUserId = operatorUserId;

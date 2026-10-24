@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Saas.Application.QueryServices;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -19,7 +20,7 @@ public static class LoginLandingPolicy
     /// <param name="accessible">可进入的租户（不能为空）</param>
     /// <param name="homeTenantId">账号的归属租户</param>
     /// <returns>落点租户</returns>
-    public static AccessibleTenant Choose(IReadOnlyList<AccessibleTenant> accessible, long homeTenantId)
+    public static AccessibleTenant Choose(IReadOnlyList<AccessibleTenant> accessible, string homeTenantId)
     {
         ArgumentNullException.ThrowIfNull(accessible);
         if (accessible.Count == 0)
@@ -30,7 +31,7 @@ public static class LoginLandingPolicy
         return accessible
                    .Where(item => item.Membership.LastActiveTime.HasValue)
                    .MaxBy(item => item.Membership.LastActiveTime)
-               ?? accessible.FirstOrDefault(item => item.Tenant.Id == homeTenantId)
+               ?? accessible.FirstOrDefault(item => TenantIds.AreSame(TenantIds.Of(item.Tenant.Id), homeTenantId))
                ?? accessible[0];
     }
 }

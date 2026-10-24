@@ -42,8 +42,7 @@ public class DefaultEntityAuditContextProvider : IEntityAuditContextProvider
         // 用户信息
         if (_currentUser.IsAuthenticated)
         {
-            // 5.0 的主体标识是字符串，审计记录仍记数字用户 Id
-            record.UserId = long.TryParse(_currentUser.UserId, out var userId) ? userId : null;
+            record.UserId = _currentUser.UserId;
             record.UserName = _currentUser.UserName ?? _currentUser.Name;
         }
 

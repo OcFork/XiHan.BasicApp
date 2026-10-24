@@ -14,7 +14,7 @@ public sealed class TenantMembershipChangedDomainEvent : SaasDomainEventBase
     /// 构造函数
     /// </summary>
     public TenantMembershipChangedDomainEvent(
-        long tenantId,
+        string tenantId,
         long userId,
         TenantMemberInviteStatus inviteStatus,
         long? operatorUserId = null,

@@ -35,7 +35,7 @@ public sealed class GetPermissionCatalogOperation(IPermissionQueryService servic
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<PermissionListItemDto>>> HandleAsync(GetPermissionCatalogRequest request, InvocationContext context)
-        => await service.GetPermissionCatalogAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetPermissionCatalogAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -234,7 +235,7 @@ public sealed class RoleHierarchyDomainService
     {
         var graph = await GetGraphAsync(cancellationToken);
         var affectedRoleIds = graph.DescendantsOf(roleId).Keys.Append(roleId).ToList();
-        var scopeTenantId = _currentTenant.Id ?? 0;
+        var scopeTenantId = TenantIds.Normalize(_currentTenant.Id);
         var now = DateTimeOffset.UtcNow;
 
         // 授权绑定只在所属上下文生效，与授权快照同一口径

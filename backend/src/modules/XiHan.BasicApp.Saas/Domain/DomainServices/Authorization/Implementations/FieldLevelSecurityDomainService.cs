@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -387,7 +388,7 @@ public sealed class FieldLevelSecurityDomainService
 
         var policy = await _fieldLevelSecurityRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("字段级安全规则不存在。");
-        if (policy.TenantId != (_currentTenant.Id ?? 0))
+        if (policy.TenantId != (TenantIds.Normalize(_currentTenant.Id)))
         {
             throw new InvalidOperationException("平台规则对所有租户生效，只能在平台维护。");
         }

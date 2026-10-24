@@ -7,6 +7,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Web.Core.Authentication.Users;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
 
@@ -399,7 +400,7 @@ public sealed class SaasUserStore : IUserStore
         var db = _clientResolver.GetClientForEntity<SysUser>();
         var tenantId = _currentTenant.Id;
 
-        if (tenantId is null or 0)
+        if (TenantIds.IsPlatform(tenantId))
         {
             return login.Contains('@')
                 ? await db.Queryable<SysUser>()
@@ -407,12 +408,12 @@ public sealed class SaasUserStore : IUserStore
                     .Where(u => u.Email == login && !u.IsDeleted)
                     .FirstAsync(cancellationToken)
                 : await db.Queryable<SysUser>()
-                    .Where(u => u.UserName == login && u.TenantId == 0 && !u.IsDeleted)
+                    .Where(u => u.UserName == login && u.TenantId == TenantIds.Platform && !u.IsDeleted)
                     .FirstAsync(cancellationToken);
         }
 
         return await db.Queryable<SysUser>()
-            .Where(u => u.UserName == login && u.TenantId == tenantId.Value && !u.IsDeleted)
+            .Where(u => u.UserName == login && u.TenantId == tenantId && !u.IsDeleted)
             .FirstAsync(cancellationToken);
     }
 

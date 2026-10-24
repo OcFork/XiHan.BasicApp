@@ -15,7 +15,7 @@ public interface IAccessPolicyLoginGuard
     /// <param name="userName">用户名</param>
     /// <param name="tenantId">目标租户；平台为空</param>
     /// <param name="cancellationToken">取消令牌</param>
-    Task EnsureLoginAllowedAsync(long userId, string? userName, long? tenantId, CancellationToken cancellationToken = default);
+    Task EnsureLoginAllowedAsync(long userId, string? userName, string? tenantId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 一次登录失败（凭据、登录验证码或两步验证码不对）按客户端 IP 计入自动封禁；IP 为空不计，计数出错只记日志

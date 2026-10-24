@@ -29,7 +29,7 @@ public sealed class AuthorizationChangedDomainEvent : SaasDomainEventBase
     /// <param name="reason">变更原因</param>
     /// <param name="relatedRoleId">关联角色ID（角色新增 / 解除上级时为上级角色）</param>
     public AuthorizationChangedDomainEvent(
-        long tenantId,
+        string tenantId,
         PermissionChangeType changeType,
         long? targetUserId,
         long? targetRoleId,

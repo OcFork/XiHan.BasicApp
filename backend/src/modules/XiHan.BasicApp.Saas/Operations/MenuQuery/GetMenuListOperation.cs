@@ -30,5 +30,5 @@ public sealed class GetMenuListOperation(IMenuQueryService service) : IOperation
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<MenuListItemDto>>> HandleAsync(MenuListQueryDto request, InvocationContext context)
-        => await service.GetMenuListAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetMenuListAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

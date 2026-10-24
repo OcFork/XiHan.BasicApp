@@ -3,6 +3,7 @@
 
 using SqlSugar;
 using System.ComponentModel.DataAnnotations;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -15,7 +16,7 @@ public partial class SysPermission : IValidatableObject
     /// 是否平台级全局权限（派生属性：TenantId == 0 即所有租户共享，作为平台模板；不落库，消除与 TenantId 漂移的风险）
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public bool IsGlobal => TenantId == 0;
+    public bool IsGlobal => TenantIds.IsPlatform(TenantId);
 
     /// <summary>
     /// 关联的资源（多权限可关联同一资源，ManyToOne）

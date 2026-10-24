@@ -21,7 +21,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// 写入：
 /// - TenantId + PermissionCode 租户内唯一（UX_TeId_PeCo），建议格式 "{resource}:{operation}"
 /// - TenantId + ResourceId + OperationId 租户内唯一（UX_TeId_ReId_OpId），防止重复授权
-/// - TenantId = 0（即派生属性 IsGlobal=true）作为平台模板供订阅版本引用（SysTenantEditionPermission）
+/// - TenantId = TenantIds.Platform（即派生属性 IsGlobal=true）作为平台模板供订阅版本引用（SysTenantEditionPermission）
 /// - IsRequireAudit=true 时，该权限的操作应强制写 SysDiffLog
 ///
 /// 查询：

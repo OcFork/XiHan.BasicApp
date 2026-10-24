@@ -14,7 +14,7 @@ public sealed class TenantStatusChangedDomainEvent : SaasDomainEventBase
     /// 构造函数
     /// </summary>
     public TenantStatusChangedDomainEvent(
-        long tenantId,
+        string tenantId,
         long affectedTenantId,
         TenantStatus oldStatus,
         TenantStatus newStatus,

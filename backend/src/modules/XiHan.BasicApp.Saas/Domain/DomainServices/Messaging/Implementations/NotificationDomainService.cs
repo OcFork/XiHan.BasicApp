@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -403,7 +404,7 @@ public sealed class NotificationDomainService
                     }
 
                     // 租户的全员是本租户已接受的成员（含注册在别处的外部成员），不是注册在本租户的账号
-                    return [.. (await _userRepository.GetEnabledMemberAccountIdsAsync(_currentTenant.Id!.Value, cancellationToken)).Distinct()];
+                    return [.. (await _userRepository.GetEnabledMemberAccountIdsAsync(_currentTenant.Id, cancellationToken)).Distinct()];
                 }
 
             case NotificationTargetType.Role:

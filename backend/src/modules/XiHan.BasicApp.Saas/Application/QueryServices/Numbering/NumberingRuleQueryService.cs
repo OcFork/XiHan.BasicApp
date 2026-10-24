@@ -21,6 +21,7 @@ using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -105,7 +106,7 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
         ArgumentNullException.ThrowIfNull(input);
         // 先把模糊的 Auto 作用域解析为明确数据库和所属租户，后续查询不再自行猜测作用域。
         var scope = ResolveQueryScope(input.Scope);
-        return await QueryRulePageAsync(input, scope, availableGlobalOnly: scope.IsGlobal && scope.RequestTenantId > 0, cancellationToken);
+        return await QueryRulePageAsync(input, scope, availableGlobalOnly: scope.IsGlobal && !TenantIds.IsPlatform(scope.RequestTenantId), cancellationToken);
     }
 
     /// <summary>
@@ -122,7 +123,7 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
-        var scope = new NumberingQueryScope(0, true, _currentTenant.Id ?? 0);
+        var scope = new NumberingQueryScope(TenantIds.Platform, true, TenantIds.Normalize(_currentTenant.Id));
         return await QueryRulePageAsync(input, scope, availableGlobalOnly: true, cancellationToken);
     }
 
@@ -154,7 +155,7 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
                 return null;
             }
 
-            if (queryScope.IsGlobal && queryScope.RequestTenantId > 0
+            if (queryScope.IsGlobal && !TenantIds.IsPlatform(queryScope.RequestTenantId)
                 && (rule.Status != EnableStatus.Enabled || !rule.AllowTenantUse))
             {
                 // 租户读取全局详情也必须执行开放状态校验，不能仅依赖列表页过滤保障安全边界。
@@ -383,17 +384,17 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     {
         var rule = await _ruleRepository.FindByIdInScopeAsync(scope.OwnerTenantId, input.RuleId, cancellationToken)
             ?? throw new UserFriendlyException("业务编号规则不存在。");
-        if (scope.IsGlobal && scope.RequestTenantId > 0 && !rule.AllowTenantUse)
+        if (scope.IsGlobal && !TenantIds.IsPlatform(scope.RequestTenantId) && !rule.AllowTenantUse)
         {
             throw new UserFriendlyException("该全局编号规则未向当前租户开放。");
         }
 
         request.Conditions.AddFilter((SysNumberingAllocation allocation) => allocation.TenantId, scope.OwnerTenantId);
         request.Conditions.AddFilter((SysNumberingAllocation allocation) => allocation.RuleId, input.RuleId);
-        if (scope.IsGlobal && scope.RequestTenantId > 0)
+        if (scope.IsGlobal && !TenantIds.IsPlatform(scope.RequestTenantId))
         {
             // 全局序列由多个租户共享，但租户只能查看自己产生的审计记录。
-            request.Conditions.AddFilter((SysNumberingAllocation allocation) => allocation.RequestTenantId, scope.RequestTenantId);
+            request.Conditions.AddFilter((SysNumberingAllocation allocation) => allocation.RequestTenantId, TenantIds.ToKey(scope.RequestTenantId) ?? 0);
         }
 
         if (request.Conditions.Sorts.Count == 0)
@@ -484,8 +485,8 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
             throw new UserFriendlyException("编号作用域无效。");
         }
 
-        var requestTenantId = _currentTenant.Id ?? 0;
-        if (requestTenantId == 0)
+        var requestTenantId = TenantIds.Normalize(_currentTenant.Id);
+        if (TenantIds.IsPlatform(requestTenantId))
         {
             // 没有当前租户既覆盖平台管理，也覆盖普通单体部署；两者都把 Auto 解释为全局规则。
             if (scope == NumberingScope.Tenant)
@@ -493,11 +494,11 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
                 throw new UserFriendlyException("平台或单体上下文不能查询未指定租户的私有规则。");
             }
 
-            return new NumberingQueryScope(0, true, 0);
+            return new NumberingQueryScope(TenantIds.Platform, true, TenantIds.Platform);
         }
 
         return scope == NumberingScope.Global
-            ? new NumberingQueryScope(0, true, requestTenantId)
+            ? new NumberingQueryScope(TenantIds.Platform, true, requestTenantId)
             : new NumberingQueryScope(requestTenantId, false, requestTenantId);
     }
 
@@ -528,7 +529,7 @@ public sealed class NumberingRuleQueryService : SaasApplicationService, INumberi
     /// <param name="OwnerTenantId">规则实体的所属租户；0 表示平台全局规则。</param>
     /// <param name="IsGlobal">是否需要读取平台全局规则库。</param>
     /// <param name="RequestTenantId">发起查询的原租户；平台或单体上下文为 0。</param>
-    private sealed record NumberingQueryScope(long OwnerTenantId, bool IsGlobal, long RequestTenantId);
+    private sealed record NumberingQueryScope(string OwnerTenantId, bool IsGlobal, string RequestTenantId);
 
     /// <summary>
     /// 单个与批量格式预览共享的纯计算上下文。

@@ -33,7 +33,7 @@ public sealed class GetEnabledTenantEditionsOperation(ITenantEditionQueryService
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<TenantEditionListItemDto>>> HandleAsync(GetEnabledTenantEditionsRequest request, InvocationContext context)
-        => await service.GetEnabledTenantEditionsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetEnabledTenantEditionsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

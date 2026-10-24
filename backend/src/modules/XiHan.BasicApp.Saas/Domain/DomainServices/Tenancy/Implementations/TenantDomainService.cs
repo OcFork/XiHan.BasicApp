@@ -9,6 +9,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.Framework.Localization.Abstractions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -177,17 +178,17 @@ public sealed class TenantDomainService
         EnsureId(command.UserId, "用户主键必须大于 0。");
         ValidateEffectivePeriod(command.EffectiveTime, command.ExpirationTime);
 
-        var tenant = await GetTenantOrThrowAsync(command.TenantId, cancellationToken);
+        var tenant = await GetTenantOrThrowAsync(TenantIds.ToKey(command.TenantId) ?? 0, cancellationToken);
         var user = await _userRepository.GetByIdIgnoreTenantAsync(command.UserId, cancellationToken)
             ?? throw new UserFriendlyException("用户不存在。");
-        if (user.TenantId != 0)
+        if (!TenantIds.IsPlatform(user.TenantId))
         {
             throw new InvalidOperationException("只有平台账号才能作为支持人员入驻租户。");
         }
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
-        var existing = await _tenantUserRepository.GetMembershipAsync(tenant.Id, command.UserId, cancellationToken);
+        using var tenantScope = _currentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
+        var existing = await _tenantUserRepository.GetMembershipAsync(TenantIds.Of(tenant.Id), command.UserId, cancellationToken);
         if (existing is not null)
         {
             throw new UserFriendlyException("该账号已经是该租户的成员。");
@@ -196,7 +197,7 @@ public sealed class TenantDomainService
         var now = DateTimeOffset.UtcNow;
         var member = new SysTenantUser
         {
-            TenantId = tenant.Id,
+            TenantId = TenantIds.Of(tenant.Id),
             UserId = command.UserId,
             MemberType = TenantMemberType.PlatformAdmin,
             InviteStatus = TenantMemberInviteStatus.Accepted,
@@ -223,7 +224,7 @@ public sealed class TenantDomainService
         var tenant = await GetTenantOrThrowAsync(tenantId, cancellationToken);
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
+        using var tenantScope = _currentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
         var member = await GetTenantMemberOrThrowAsync(memberId, cancellationToken);
         if (member.MemberType != TenantMemberType.PlatformAdmin)
         {
@@ -252,10 +253,10 @@ public sealed class TenantDomainService
 
         RequirePlatformContext("所有权转移只能在平台执行。");
         EnsureId(command.MemberId, "租户成员主键必须大于 0。");
-        var tenant = await GetTenantOrThrowAsync(command.TenantId, cancellationToken);
+        var tenant = await GetTenantOrThrowAsync(TenantIds.ToKey(command.TenantId) ?? 0, cancellationToken);
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
+        using var tenantScope = _currentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
         var now = DateTimeOffset.UtcNow;
 
         var owners = await _tenantUserRepository.GetListAsync(member => member.MemberType == TenantMemberType.Owner, cancellationToken);
@@ -283,7 +284,7 @@ public sealed class TenantDomainService
         }
 
         var ownerRole = (await _roleRepository.GetListAsync(
-                role => role.TenantId == tenant.Id && role.RoleCode == SaasRoleCodes.TenantOwner && role.RoleType == RoleType.System,
+                role => role.TenantId == TenantIds.Of(tenant.Id) && role.RoleCode == SaasRoleCodes.TenantOwner && role.RoleType == RoleType.System,
                 cancellationToken))
             .SingleOrDefault()
             ?? throw new InvalidOperationException("租户缺少所有者角色，数据不一致。");
@@ -744,12 +745,12 @@ public sealed class TenantDomainService
     /// <summary>
     /// 成员关系是租户自有数据，只在所属租户内维护；平台只做支持人员入驻与离场、所有权转移
     /// </summary>
-    /// <returns>当前租户主键</returns>
-    private long RequireTenantContext()
+    /// <returns>当前租户标识</returns>
+    private string RequireTenantContext()
     {
         return _currentTenant.IsPlatformOperation()
             ? throw new InvalidOperationException("租户成员只能在所属租户内维护，平台只负责支持人员的入驻与离场、所有权转移。")
-            : _currentTenant.Id!.Value;
+            : TenantIds.Normalize(_currentTenant.Id);
     }
 
     /// <summary>

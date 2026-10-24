@@ -24,7 +24,7 @@ public sealed class GetUserDepartmentsOperation(IUserDepartmentQueryService serv
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<UserDepartmentListItemDto>>> HandleAsync(GetUserDepartmentsRequest request, InvocationContext context)
-        => await service.GetUserDepartmentsAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetUserDepartmentsAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

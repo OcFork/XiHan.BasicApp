@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -49,12 +50,12 @@ public sealed class SaasDemoAccessPolicySeeder(
             return;
         }
 
-        using var tenantScope = CurrentTenant.Change(tenant.Id, tenant.TenantName);
+        using var tenantScope = CurrentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
         var client = DbClientFor<SysAccessPolicy>();
         var codes = DemoPolicies.Select(item => item.Code).ToList();
         var existing = (await client.Queryable<SysAccessPolicy>()
                 .IncludingDeleted()
-                .Where(policy => policy.TenantId == tenant.Id && codes.Contains(policy.PolicyCode))
+                .Where(policy => policy.TenantId == TenantIds.Of(tenant.Id) && codes.Contains(policy.PolicyCode))
                 .Select(policy => policy.PolicyCode)
                 .ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -65,7 +66,7 @@ public sealed class SaasDemoAccessPolicySeeder(
                 ?? throw new InvalidOperationException($"{Name}：找不到模板 {templateCode}。");
             var policy = await client.Insertable(new SysAccessPolicy
             {
-                TenantId = tenant.Id,
+                TenantId = TenantIds.Of(tenant.Id),
                 PolicyCode = code,
                 PolicyName = template.Name,
                 Description = template.Description,
@@ -77,7 +78,7 @@ public sealed class SaasDemoAccessPolicySeeder(
             }).ExecuteReturnEntityAsync();
             _ = await client.Insertable(template.Conditions.Select(condition => new SysAccessPolicyCondition
             {
-                TenantId = tenant.Id,
+                TenantId = TenantIds.Of(tenant.Id),
                 PolicyId = policy.Id,
                 ConditionGroup = condition.ConditionGroup,
                 AttributeName = condition.AttributeName,

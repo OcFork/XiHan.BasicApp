@@ -7,7 +7,7 @@ namespace XiHan.BasicApp.Saas.Domain.Events;
 /// 文件删除事件
 /// </summary>
 public sealed class FileDeletedDomainEvent(
-    long tenantId,
+    string tenantId,
     long fileId,
     string fileName,
     bool physicalDeleted,

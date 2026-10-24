@@ -19,7 +19,7 @@ public sealed class GetTimeZoneOptionsOperation(TimeZoneMetadataAppService servi
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<TimeZoneOptionDto>>> HandleAsync(GetTimeZoneOptionsRequest request, InvocationContext context)
-        => await service.GetTimeZoneOptionsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetTimeZoneOptionsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

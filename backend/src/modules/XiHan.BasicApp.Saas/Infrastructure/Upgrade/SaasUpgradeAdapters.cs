@@ -162,7 +162,7 @@ public sealed class SaasUpgradeTenantProvider : IUpgradeTenantProvider
             .ToList();
 
         // 平台库自身以 null 租户参与升级，排在各租户库之前
-        return [new BasicTenantInfo(null, "平台库"), .. tenants.Select(tenant => new BasicTenantInfo(tenant.Id, tenant.TenantName))];
+        return [new BasicTenantInfo(null, "平台库"), .. tenants.Select(tenant => new BasicTenantInfo(TenantIds.Of(tenant.Id), tenant.TenantName))];
     }
 }
 

@@ -26,7 +26,7 @@ public interface INumberingAllocationRepository : ISaasRepository<SysNumberingAl
     /// <exception cref="ArgumentException"><paramref name="idempotencyKey"/> 为 <see langword="null"/>、空字符串或仅包含空白字符。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
     Task<SysNumberingAllocation?> FindByIdempotencyKeyAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long ruleId,
         long requestTenantId,
         string idempotencyKey,
@@ -43,5 +43,5 @@ public interface INumberingAllocationRepository : ISaasRepository<SysNumberingAl
     /// <remarks>安全重置使用该值判断回退是否可能与历史编号重复，不能用规则当前值替代。</remarks>
     /// <exception cref="ArgumentException"><paramref name="periodKey"/> 为 <see langword="null"/>、空字符串或仅包含空白字符。</exception>
     /// <exception cref="OperationCanceledException">查询被 <paramref name="cancellationToken"/> 取消。</exception>
-    Task<long> GetMaximumEndValueAsync(long ownerTenantId, long ruleId, string periodKey, CancellationToken cancellationToken = default);
+    Task<long> GetMaximumEndValueAsync(string ownerTenantId, long ruleId, string periodKey, CancellationToken cancellationToken = default);
 }

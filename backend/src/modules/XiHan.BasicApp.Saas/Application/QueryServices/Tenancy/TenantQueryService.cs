@@ -18,6 +18,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -193,7 +194,7 @@ public sealed class TenantQueryService
 
             alerts.Add(new TenantOverQuotaDto
             {
-                TenantId = tenant.Id,
+                TenantId = TenantIds.Of(tenant.Id),
                 TenantCode = tenant.TenantCode,
                 TenantName = tenant.TenantName,
                 SeatExceeded = seatExceeded,
@@ -226,7 +227,7 @@ public sealed class TenantQueryService
             throw new InvalidOperationException("订阅属于租户，平台没有订阅。");
         }
 
-        var tenantId = _currentTenant.Id!.Value;
+        var tenantId = TenantIds.ToKey(_currentTenant.Id) ?? throw new InvalidOperationException("当前租户不存在。");
         var tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken)
             ?? throw new InvalidOperationException("当前租户不存在。");
         var edition = tenant.EditionId is { } editionId
@@ -238,7 +239,7 @@ public sealed class TenantQueryService
 
         return new TenantSubscriptionDto
         {
-            TenantId = tenant.Id,
+            TenantId = TenantIds.Of(tenant.Id),
             TenantCode = tenant.TenantCode,
             TenantName = tenant.TenantName,
             TenantStatus = tenant.TenantStatus,

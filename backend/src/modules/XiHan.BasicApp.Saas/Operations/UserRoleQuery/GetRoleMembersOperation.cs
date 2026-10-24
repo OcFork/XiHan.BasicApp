@@ -24,7 +24,7 @@ public sealed class GetRoleMembersOperation(IUserRoleQueryService service) : IOp
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<RoleMemberDto>>> HandleAsync(GetRoleMembersRequest request, InvocationContext context)
-        => await service.GetRoleMembersAsync(request.RoleId, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetRoleMembersAsync(request.RoleId, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

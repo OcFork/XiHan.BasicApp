@@ -18,7 +18,7 @@ namespace XiHan.BasicApp.Saas.Application.Conditions;
 /// <param name="UserAgent">User-Agent</param>
 public sealed record PermissionConditionHit(
     long UserId,
-    long TenantId,
+    string TenantId,
     string PermissionCode,
     PermissionConditionMode Mode,
     string? Path,

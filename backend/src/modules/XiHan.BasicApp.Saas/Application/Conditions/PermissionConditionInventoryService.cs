@@ -9,6 +9,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Authorization.Conditions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 
@@ -76,17 +77,17 @@ public sealed class PermissionConditionInventoryService
     /// </summary>
     public async Task<PermissionConditionInventoryDto> BuildAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var isPlatform = _currentTenant.Id is not > 0;
+        var isPlatform = TenantIds.IsPlatform(_currentTenant.Id);
         var conditions = await _conditionRepository.GetForInventoryAsync(isPlatform, cancellationToken);
-        var tenantIds = conditions.Select(condition => condition.TenantId).Where(id => id > 0).Distinct().ToList();
+        var tenantIds = conditions.Select(condition => condition.TenantId).Where(id => !TenantIds.IsPlatform(id)).Distinct().ToList();
         var tenantCodes = tenantIds.Count == 0
-            ? new Dictionary<long, string>()
-            : (await _tenantRepository.GetByIdsAsync(tenantIds, cancellationToken)).ToDictionary(tenant => tenant.Id, tenant => tenant.TenantCode);
+            ? new Dictionary<string, string>()
+            : (await _tenantRepository.GetByIdsAsync(tenantIds.Select(id => TenantIds.ToKey(id) ?? 0).Where(id => id > 0).ToList(), cancellationToken)).ToDictionary(tenant => TenantIds.Of(tenant.Id), tenant => tenant.TenantCode);
 
         var items = new List<PermissionConditionInventoryItemDto>(conditions.Count);
         foreach (var tenantGroup in conditions.GroupBy(condition => condition.TenantId))
         {
-            var target = tenantGroup.Key > 0 ? tenantGroup.Key : (long?)null;
+            var target = !TenantIds.IsPlatform(tenantGroup.Key) ? tenantGroup.Key : (string?)null;
             // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
             using var _ = isPlatform ? _currentTenant.Change(target, target?.ToString()) : null;
             var bindings = await LoadBindingsAsync([.. tenantGroup], cancellationToken);
@@ -259,8 +260,8 @@ public sealed class PermissionConditionInventoryService
 
     private async Task<Bindings> LoadBindingsAsync(IReadOnlyList<SysPermissionCondition> conditions, CancellationToken cancellationToken)
     {
-        var rolePermissionIds = conditions.Where(condition => condition.RolePermissionId is > 0).Select(condition => condition.RolePermissionId!.Value).Distinct().ToList();
-        var userPermissionIds = conditions.Where(condition => condition.UserPermissionId is > 0).Select(condition => condition.UserPermissionId!.Value).Distinct().ToList();
+        var rolePermissionIds = conditions.Where(condition => condition.RolePermissionId > 0).Select(condition => condition.RolePermissionId!.Value).Distinct().ToList();
+        var userPermissionIds = conditions.Where(condition => condition.UserPermissionId > 0).Select(condition => condition.UserPermissionId!.Value).Distinct().ToList();
         var rolePermissions = rolePermissionIds.Count == 0 ? [] : await _rolePermissionRepository.GetByIdsAsync(rolePermissionIds, cancellationToken);
         var userPermissions = userPermissionIds.Count == 0 ? [] : await _userPermissionRepository.GetByIdsAsync(userPermissionIds, cancellationToken);
         var roleIds = rolePermissions.Select(row => row.RoleId).Distinct().ToList();

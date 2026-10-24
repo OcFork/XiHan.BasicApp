@@ -5,6 +5,7 @@ using SqlSugar;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -52,7 +53,7 @@ public sealed class FileRepository(ISqlSugarClientResolver clientResolver)
             return new Dictionary<long, long>();
         }
 
-        var ids = tenantIds.Distinct().ToList();
+        var ids = tenantIds.Distinct().Select(TenantIds.Of).ToList();
 
         // 跨租户分组：清租户过滤后按 TenantId 精确匹配。软删过滤器保持生效，回收站文件不占配额。
         var rows = await CreateNoTenantQueryable()
@@ -62,6 +63,6 @@ public sealed class FileRepository(ISqlSugarClientResolver clientResolver)
             .Select(file => new TenantUsageRow { TenantId = file.TenantId, Value = SqlFunc.AggregateSum(file.FileSize) })
             .ToListAsync(cancellationToken);
 
-        return rows.ToDictionary(row => row.TenantId, row => row.Value);
+        return rows.ToDictionary(row => TenantIds.ToKey(row.TenantId) ?? 0, row => row.Value);
     }
 }

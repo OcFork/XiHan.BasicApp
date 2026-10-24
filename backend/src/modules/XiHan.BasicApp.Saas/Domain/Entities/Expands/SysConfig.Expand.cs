@@ -3,6 +3,7 @@
 
 using SqlSugar;
 using System.ComponentModel.DataAnnotations;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -15,7 +16,7 @@ public partial class SysConfig : IValidatableObject
     /// 是否平台级全局配置（派生属性：TenantId == 0 即对所有租户生效；不落库，消除与 TenantId 漂移的风险）
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public bool IsGlobal => TenantId == 0;
+    public bool IsGlobal => TenantIds.IsPlatform(TenantId);
 
     /// <summary>
     /// 租户信息

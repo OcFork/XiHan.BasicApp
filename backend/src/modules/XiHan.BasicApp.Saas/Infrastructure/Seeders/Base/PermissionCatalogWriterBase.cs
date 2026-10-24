@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -23,7 +24,7 @@ public sealed record PermissionCatalogDeclaration(
     IReadOnlyList<PermissionSeed> Permissions);
 
 /// <summary>
-/// 权限目录写入基类：按声明写入资源与权限（平台数据，TenantId = 0）
+/// 权限目录写入基类：按声明写入资源与权限（平台数据，TenantId = TenantIds.Platform）
 /// </summary>
 /// <remarks>
 /// 目录由代码定义：已有的资源与权限对齐名称、说明、作用侧、审计、排序等元数据，缺的按声明插入。
@@ -122,7 +123,7 @@ public abstract class PermissionCatalogWriterBase(
         }
 
         var existing = (await DbClient.Queryable<SysResource>()
-                .Where(resource => resource.TenantId == 0 && codes.Contains(resource.ResourceCode))
+                .Where(resource => resource.TenantId == TenantIds.Platform && codes.Contains(resource.ResourceCode))
                 .ToListAsync())
             .ToDictionary(resource => resource.ResourceCode, StringComparer.Ordinal);
 
@@ -157,7 +158,7 @@ public abstract class PermissionCatalogWriterBase(
         }
 
         return (await DbClient.Queryable<SysResource>()
-                .Where(resource => resource.TenantId == 0 && codes.Contains(resource.ResourceCode))
+                .Where(resource => resource.TenantId == TenantIds.Platform && codes.Contains(resource.ResourceCode))
                 .ToListAsync())
             .ToDictionary(resource => resource.ResourceCode, resource => resource.Id, StringComparer.Ordinal);
     }
@@ -175,7 +176,7 @@ public abstract class PermissionCatalogWriterBase(
         }
 
         var operationIds = (await DbClient.Queryable<SysOperation>()
-                .Where(operation => operation.TenantId == 0 && codes.Contains(operation.OperationCode))
+                .Where(operation => operation.TenantId == TenantIds.Platform && codes.Contains(operation.OperationCode))
                 .ToListAsync())
             .ToDictionary(operation => operation.OperationCode, operation => operation.Id, StringComparer.Ordinal);
 
@@ -194,7 +195,7 @@ public abstract class PermissionCatalogWriterBase(
     {
         var codes = permissions.Select(static permission => permission.Code).ToList();
         var existing = (await DbClient.Queryable<SysPermission>()
-                .Where(permission => permission.TenantId == 0 && codes.Contains(permission.PermissionCode))
+                .Where(permission => permission.TenantId == TenantIds.Platform && codes.Contains(permission.PermissionCode))
                 .ToListAsync())
             .ToDictionary(permission => permission.PermissionCode, StringComparer.Ordinal);
 

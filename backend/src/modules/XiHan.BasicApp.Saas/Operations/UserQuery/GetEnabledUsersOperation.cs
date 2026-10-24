@@ -31,5 +31,5 @@ public sealed class GetEnabledUsersOperation(IUserQueryService service) : IOpera
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<UserSelectItemDto>>> HandleAsync(UserSelectQueryDto request, InvocationContext context)
-        => await service.GetEnabledUsersAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetEnabledUsersAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

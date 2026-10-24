@@ -12,6 +12,7 @@ using XiHan.BasicApp.Core.Tasks.BackgroundServices;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 
@@ -102,7 +103,7 @@ public sealed class AccessPolicyHitHostedService : XiHanBackgroundServiceBase<Ac
             {
                 // 切入命中所属的层再取连接，库隔离租户的命中进它自己的库
                 // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-                using var tenantScope = currentTenant.Change(group.Key == 0 ? null : group.Key);
+                using var tenantScope = currentTenant.Change(TenantIds.IsPlatform(group.Key) ? null : group.Key);
                 var entities = group.Select(ToEntity).ToList();
                 _ = await resolver.GetCurrentClient().Insertable(entities).SplitTable().ExecuteCommandAsync();
             }

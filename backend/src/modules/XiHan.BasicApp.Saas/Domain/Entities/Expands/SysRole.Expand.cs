@@ -5,6 +5,7 @@ using SqlSugar;
 using System.ComponentModel.DataAnnotations;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -17,7 +18,7 @@ public partial class SysRole : IValidatableObject
     /// 是否平台级全局角色（派生属性：TenantId == 0 即为平台全局，作为所有租户的模板；不落库，消除与 TenantId 漂移的风险）
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public bool IsGlobal => TenantId == 0;
+    public bool IsGlobal => TenantIds.IsPlatform(TenantId);
 
     /// <summary>
     /// 用户角色关联列表

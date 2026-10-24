@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Specifications;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -36,16 +37,16 @@ public sealed class AuthContextQueryService
     /// <summary>
     /// 获取登录租户上下文（租户不可用时抛出带原因的异常，用于显式切换租户等需要明确报错的场景）
     /// </summary>
-    public async Task<LoginTenantContext?> GetLoginTenantOrThrowAsync(long? tenantId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    public async Task<LoginTenantContext?> GetLoginTenantOrThrowAsync(string? tenantId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        if (!tenantId.HasValue || tenantId.Value <= 0)
+        if (TenantIds.IsPlatform(tenantId))
         {
             return null;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var tenant = await _tenantRepository.GetByIdAsync(tenantId.Value, cancellationToken)
+        var tenant = await _tenantRepository.GetByTenantIdAsync(tenantId, cancellationToken)
             ?? throw new InvalidOperationException("租户不存在。");
         if (tenant.TenantStatus != TenantStatus.Normal)
         {
@@ -101,13 +102,13 @@ public sealed class AuthContextQueryService
         }
 
         var isAvailable = new AvailableTenantSpecification(now);
-        var tenants = (await _tenantRepository.GetByIdsAsync(memberships.Select(membership => membership.TenantId).Distinct(), cancellationToken))
+        var tenants = (await _tenantRepository.GetByIdsAsync(memberships.Select(membership => TenantIds.ToKey(membership.TenantId) ?? 0).Where(id => id > 0).Distinct(), cancellationToken))
             .Where(isAvailable.IsSatisfiedBy)
             .ToDictionary(tenant => tenant.Id);
 
         return [.. memberships
-            .Where(membership => tenants.ContainsKey(membership.TenantId))
-            .Select(membership => new AccessibleTenant(membership, tenants[membership.TenantId]))
+            .Where(membership => tenants.ContainsKey(TenantIds.ToKey(membership.TenantId) ?? 0))
+            .Select(membership => new AccessibleTenant(membership, tenants[TenantIds.ToKey(membership.TenantId) ?? 0]))
             .OrderByDescending(item => item.Membership.LastActiveTime.HasValue)
             .ThenByDescending(item => item.Membership.LastActiveTime)
             .ThenBy(item => item.Tenant.Sort)
@@ -119,7 +120,7 @@ public sealed class AuthContextQueryService
     /// </summary>
     public async Task<UserInfoDto> GetCurrentUserInfoAsync(
         long userId,
-        long? tenantId,
+        string? tenantId,
         IEnumerable<string> roles,
         CancellationToken cancellationToken = default)
     {
@@ -135,8 +136,8 @@ public sealed class AuthContextQueryService
             ?? throw new InvalidOperationException("当前用户不存在。");
 
         var roleList = roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var tenantName = tenantId is > 0
-            ? (await _tenantRepository.GetByIdAsync(tenantId.Value, cancellationToken))?.TenantName
+        var tenantName = !TenantIds.IsPlatform(tenantId)
+            ? (await _tenantRepository.GetByTenantIdAsync(tenantId, cancellationToken))?.TenantName
             : null;
 
         return new UserInfoDto
@@ -147,11 +148,11 @@ public sealed class AuthContextQueryService
             Avatar = user.Avatar,
             Email = user.Email,
             Phone = user.Phone,
-            TenantId = tenantId,
+            TenantId = TenantIds.Normalize(tenantId),
             TenantName = tenantName,
-            IsPlatform = !tenantId.HasValue,
+            IsPlatform = tenantId is null,
             // 平台是 0 号租户，只对平台账号开放
-            CanAccessPlatform = user.TenantId == 0,
+            CanAccessPlatform = TenantIds.IsPlatform(user.TenantId),
             Roles = roleList
         };
     }

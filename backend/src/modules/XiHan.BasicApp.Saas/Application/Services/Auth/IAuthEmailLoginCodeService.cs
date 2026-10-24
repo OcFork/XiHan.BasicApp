@@ -23,7 +23,7 @@ public interface IAuthEmailLoginCodeService
     /// <param name="email">邮箱地址</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>生成的验证码</returns>
-    Task<string> IssueCodeAsync(long? tenantId, string email, CancellationToken cancellationToken = default);
+    Task<string> IssueCodeAsync(string? tenantId, string email, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 校验并消费指定租户 + 邮箱的登录验证码（一次性，消费即销毁）
@@ -33,5 +33,5 @@ public interface IAuthEmailLoginCodeService
     /// <param name="code">待校验验证码</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>校验是否通过</returns>
-    Task<bool> TryConsumeAsync(long? tenantId, string email, string? code, CancellationToken cancellationToken = default);
+    Task<bool> TryConsumeAsync(string? tenantId, string email, string? code, CancellationToken cancellationToken = default);
 }

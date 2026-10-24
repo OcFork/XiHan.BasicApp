@@ -35,5 +35,5 @@ public interface IPrintTemplateRepository : ISaasRepository<SysPrintTemplate>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <returns>匹配模板；不存在时返回 <see langword="null"/>。</returns>
     /// <exception cref="OperationCanceledException">查询被取消。</exception>
-    Task<SysPrintTemplate?> FindByIdInScopeAsync(long ownerTenantId, long id, CancellationToken cancellationToken = default);
+    Task<SysPrintTemplate?> FindByIdInScopeAsync(string ownerTenantId, long id, CancellationToken cancellationToken = default);
 }

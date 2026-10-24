@@ -25,7 +25,7 @@ public sealed class GetUserPermissionsOperation(IUserPermissionQueryService serv
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<UserPermissionListItemDto>>> HandleAsync(GetUserPermissionsRequest request, InvocationContext context)
-        => await service.GetUserPermissionsAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetUserPermissionsAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

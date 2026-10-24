@@ -32,5 +32,5 @@ public sealed class GetAvailableGlobalResourcesOperation(IResourceQueryService s
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<ResourceSelectItemDto>>> HandleAsync(ResourceSelectQueryDto request, InvocationContext context)
-        => await service.GetAvailableGlobalResourcesAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetAvailableGlobalResourcesAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

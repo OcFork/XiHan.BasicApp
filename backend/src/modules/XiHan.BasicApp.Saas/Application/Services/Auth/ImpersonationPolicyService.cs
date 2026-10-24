@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Authorization.Permissions;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -86,10 +87,10 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
     /// <returns>准入方案</returns>
     public async Task<ImpersonationPlan> AuthorizeStartAsync(
         long operatorUserId,
-        long? operatorTenantId,
+        string? operatorTenantId,
         bool operatorIsImpersonating,
         long targetUserId,
-        long? requestedTenantId,
+        string? requestedTenantId,
         DateTimeOffset now,
         CancellationToken cancellationToken = default)
     {
@@ -146,18 +147,18 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
         }
 
         string? targetTenantName = null;
-        if (targetTenantId.HasValue)
+        if (!TenantIds.IsPlatform(targetTenantId))
         {
             var tenant = await _authContextQueryService.GetLoginTenantOrThrowAsync(targetTenantId, now, cancellationToken)
                 ?? throw new UserFriendlyException("目标租户不存在或不可用。");
             targetTenantName = tenant.TenantName;
 
-            var targetMembership = await _tenantUserRepository.GetMembershipAsync(targetTenantId.Value, target.Id, cancellationToken);
+            var targetMembership = await _tenantUserRepository.GetMembershipAsync(targetTenantId!, target.Id, cancellationToken);
             EnsureMembershipUsable(targetMembership, now, "目标用户不是该租户的有效成员。");
 
             if (!operatorIsSuperAdmin)
             {
-                var operatorMembership = await _tenantUserRepository.GetMembershipAsync(targetTenantId.Value, operatorUserId, cancellationToken);
+                var operatorMembership = await _tenantUserRepository.GetMembershipAsync(targetTenantId!, operatorUserId, cancellationToken);
                 EnsureMembershipUsable(operatorMembership, now, "当前账号不是该租户的有效成员。");
 
                 if (!ImpersonationDefaults.AdministrativeMemberTypes.Contains(operatorMembership!.MemberType))
@@ -313,26 +314,26 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
     /// <summary>
     /// 解析模仿会话所处租户：显式指定优先，其次沿用发起人当前上下文，最后回落到目标用户自己的登录落点。
     /// </summary>
-    private async Task<long?> ResolveTargetTenantIdAsync(
-        long? operatorTenantId,
+    private async Task<string?> ResolveTargetTenantIdAsync(
+        string? operatorTenantId,
         SysUser target,
-        long? requestedTenantId,
+        string? requestedTenantId,
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        if (requestedTenantId is > 0)
+        if (!TenantIds.IsPlatform(requestedTenantId))
         {
             return requestedTenantId;
         }
 
-        if (operatorTenantId is > 0)
+        if (!TenantIds.IsPlatform(operatorTenantId))
         {
             return operatorTenantId;
         }
 
         // 平台运维态发起：按目标用户自己登录时的落点解析，使模仿态与其真实登录体验一致。
         // 解析不出唯一落点时 fail-closed，不能兜底成平台态——那会跳过整条成员有效性校验
-        if (target.TenantId == 0)
+        if (TenantIds.IsPlatform(target.TenantId))
         {
             return null;
         }

@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -68,7 +69,7 @@ public sealed record SettingSeed(
 }
 
 /// <summary>
-/// 参数配置种子基类：按声明写入平台的参数配置（TenantId = 0）
+/// 参数配置种子基类：按声明写入平台的参数配置（TenantId = TenantIds.Platform）
 /// </summary>
 /// <remarks>
 /// 配置值与启停归运营：已有的配置只对齐名称、分组、类型、说明、默认值、排序这些由代码定义的元数据，
@@ -98,7 +99,7 @@ public abstract class SettingSeederBase(
         var protector = ServiceProvider.GetRequiredService<IConfigValueSecretProtector>();
         var keys = Settings.Select(static setting => setting.Key).ToList();
         var existing = (await DbClient.Queryable<SysConfig>()
-                .Where(config => config.TenantId == 0 && keys.Contains(config.ConfigKey))
+                .Where(config => config.TenantId == TenantIds.Platform && keys.Contains(config.ConfigKey))
                 .ToListAsync())
             .ToDictionary(config => config.ConfigKey, StringComparer.OrdinalIgnoreCase);
 

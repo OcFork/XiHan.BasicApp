@@ -9,6 +9,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.Framework.Localization.Abstractions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -133,7 +134,7 @@ public sealed class DictDomainService
         }
 
         // 全局字典的字典项可能落在租户里（历史数据），删除前看所有租户
-        var hasItems = dict.TenantId == 0
+        var hasItems = TenantIds.IsPlatform(dict.TenantId)
             ? await _dictItemRepository.AnyIgnoreTenantAsync(item => item.DictId == dict.Id, cancellationToken)
             : await _dictItemRepository.AnyAsync(item => item.DictId == dict.Id, cancellationToken);
         if (hasItems)
@@ -416,9 +417,9 @@ public sealed class DictDomainService
         return dict;
     }
 
-    private void EnsureMaintainableInContext(long rowTenantId)
+    private void EnsureMaintainableInContext(string rowTenantId)
     {
-        if (rowTenantId != (_currentTenant.Id ?? 0))
+        if (!TenantIds.AreSame(rowTenantId, _currentTenant.Id))
         {
             throw new InvalidOperationException("全局字典只能在平台维护；租户需要自己的选项请新建字典。");
         }

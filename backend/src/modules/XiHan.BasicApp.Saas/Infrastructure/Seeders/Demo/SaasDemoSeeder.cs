@@ -8,6 +8,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -46,13 +47,13 @@ public sealed class SaasDemoSeeder(
     {
         var now = DateTimeOffset.UtcNow;
         var catalog = await DbClientFor<SysPermission>().Queryable<SysPermission>()
-            .Where(permission => permission.TenantId == 0)
+            .Where(permission => permission.TenantId == TenantIds.Platform)
             .ToListAsync();
         var globalRoleIds = await EnsureGlobalRolesAsync(catalog);
         var platformAccounts = await EnsurePlatformAccountsAsync(globalRoleIds, now);
 
         var editionIds = (await DbClientFor<SysTenantEdition>().Queryable<SysTenantEdition>()
-                .Where(edition => edition.TenantId == 0)
+                .Where(edition => edition.TenantId == TenantIds.Platform)
                 .ToListAsync())
             .ToDictionary(edition => edition.EditionCode, edition => edition.Id, StringComparer.Ordinal);
         var tenantCodes = SaasDemoScenario.Tenants.Select(static tenant => tenant.Code).ToList();
@@ -92,7 +93,7 @@ public sealed class SaasDemoSeeder(
         var codes = SaasDemoScenario.GlobalRoles.Select(static role => role.Code).ToList();
         var roleIds = (await DbClientFor<SysRole>().Queryable<SysRole>()
                 .IncludingDeleted()
-                .Where(role => role.TenantId == 0 && codes.Contains(role.RoleCode))
+                .Where(role => role.TenantId == TenantIds.Platform && codes.Contains(role.RoleCode))
                 .ToListAsync())
             .ToDictionary(role => role.RoleCode, role => role.Id, StringComparer.Ordinal);
 
@@ -110,7 +111,7 @@ public sealed class SaasDemoSeeder(
         var userNames = SaasDemoScenario.PlatformAccounts.Select(static account => account.UserName).ToList();
         var existing = (await DbClientFor<SysUser>().Queryable<SysUser>()
                 .IncludingDeleted()
-                .Where(user => user.TenantId == 0 && userNames.Contains(user.UserName))
+                .Where(user => user.TenantId == TenantIds.Platform && userNames.Contains(user.UserName))
                 .Select(user => user.UserName)
                 .ToListAsync())
             .ToHashSet(StringComparer.Ordinal);
@@ -146,7 +147,7 @@ public sealed class SaasDemoSeeder(
 
         var tenant = await DbClientFor<SysTenant>().Insertable(new SysTenant
         {
-            TenantId = 0,
+            TenantId = TenantIds.Platform,
             TenantCode = demo.Code,
             TenantName = demo.Name,
             EditionId = editionId,
@@ -160,7 +161,7 @@ public sealed class SaasDemoSeeder(
         }).ExecuteReturnEntityAsync();
 
         var context = new TenantSeedContext(demo, tenant);
-        using var tenantScope = CurrentTenant.Change(tenant.Id, tenant.TenantName);
+        using var tenantScope = CurrentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
 
         await InsertDepartmentsAsync(context);
         await InsertPositionsAsync(context);
@@ -193,7 +194,7 @@ public sealed class SaasDemoSeeder(
                     : throw new InvalidOperationException($"{Name}：部门 {demo.Code} 的父部门 {demo.Parent} 须排在它前面。");
             var department = await DbClientFor<SysDepartment>().Insertable(new SysDepartment
             {
-                TenantId = tenantId,
+                TenantId = TenantIds.Of(tenantId),
                 ParentId = parentId,
                 DepartmentCode = demo.Code,
                 DepartmentName = demo.Name,
@@ -214,7 +215,7 @@ public sealed class SaasDemoSeeder(
         var closure = SysDepartmentHierarchy.BuildClosure(departments);
         foreach (var row in closure)
         {
-            row.TenantId = tenantId;
+            row.TenantId = TenantIds.Of(tenantId);
         }
 
         await BulkInsertAsync([.. closure]);
@@ -227,7 +228,7 @@ public sealed class SaasDemoSeeder(
         {
             var position = await DbClientFor<SysPosition>().Insertable(new SysPosition
             {
-                TenantId = tenantId,
+                TenantId = TenantIds.Of(tenantId),
                 PositionCode = demo.Code,
                 PositionName = demo.Name,
                 Status = demo.Status,
@@ -244,7 +245,7 @@ public sealed class SaasDemoSeeder(
         if ((context.Demo.Members ?? []).Any(static member => member.Type == TenantMemberType.Owner))
         {
             var ownerRole = SysRole.CreateTenantOwnerRole();
-            ownerRole.TenantId = tenantId;
+            ownerRole.TenantId = TenantIds.Of(tenantId);
             ownerRole = await DbClientFor<SysRole>().Insertable(ownerRole).ExecuteReturnEntityAsync();
             context.RoleIds[SaasRoleCodes.TenantOwner] = ownerRole.Id;
         }
@@ -266,7 +267,7 @@ public sealed class SaasDemoSeeder(
             {
                 _ = await DbClientFor<SysRoleDataScope>().Insertable(new SysRoleDataScope
                 {
-                    TenantId = tenantId,
+                    TenantId = TenantIds.Of(tenantId),
                     RoleId = context.RoleIds[demo.Code],
                     DepartmentId = context.DepartmentIds[departmentCode],
                     IncludeChildren = true,
@@ -284,7 +285,7 @@ public sealed class SaasDemoSeeder(
     {
         var role = await DbClientFor<SysRole>().Insertable(new SysRole
         {
-            TenantId = tenantId,
+            TenantId = TenantIds.Of(tenantId),
             RoleCode = demo.Code,
             RoleName = demo.Name,
             RoleDescription = demo.Scenario,
@@ -299,7 +300,7 @@ public sealed class SaasDemoSeeder(
         var permissionIds = ResolveGrant(demo, catalog, tenantRole);
         await BulkInsertAsync([.. permissionIds.Select(permissionId => new SysRolePermission
         {
-            TenantId = tenantId,
+            TenantId = TenantIds.Of(tenantId),
             RoleId = role.Id,
             PermissionId = permissionId,
             PermissionAction = PermissionAction.Grant,
@@ -345,7 +346,7 @@ public sealed class SaasDemoSeeder(
     {
         await BulkInsertAsync(
         [
-            new SysRoleHierarchy { TenantId = tenantId, AncestorId = ancestorId, DescendantId = descendantId }
+            new SysRoleHierarchy { TenantId = TenantIds.Of(tenantId), AncestorId = ancestorId, DescendantId = descendantId }
         ]);
     }
 
@@ -356,7 +357,7 @@ public sealed class SaasDemoSeeder(
     {
         var user = await DbClientFor<SysUser>().Insertable(new SysUser
         {
-            TenantId = tenantId,
+            TenantId = TenantIds.Of(tenantId),
             UserName = account.UserName,
             RealName = account.RealName,
             NickName = account.RealName,
@@ -369,7 +370,7 @@ public sealed class SaasDemoSeeder(
 
         _ = await DbClientFor<SysUserSecurity>().Insertable(new SysUserSecurity
         {
-            TenantId = tenantId,
+            TenantId = TenantIds.Of(tenantId),
             UserId = user.Id,
             Password = passwordHasher.HashPassword(SaasDemoScenario.Password),
             PasswordChangeRequired = true,
@@ -407,7 +408,7 @@ public sealed class SaasDemoSeeder(
         var permissionIds = catalog.ToDictionary(permission => permission.PermissionCode, StringComparer.Ordinal);
 
         var tenantId = context.Tenant.Id;
-        using var tenantScope = CurrentTenant.Change(tenantId, context.Tenant.TenantName);
+        using var tenantScope = CurrentTenant.Change(TenantIds.Of(tenantId), context.Tenant.TenantName);
         long? ownerId = members.FirstOrDefault(static member => member.Type == TenantMemberType.Owner) is { } owner ? userIds[owner.Email] : null;
         foreach (var member in members)
         {
@@ -417,7 +418,7 @@ public sealed class SaasDemoSeeder(
             var isOwner = member.Type == TenantMemberType.Owner;
             _ = await DbClientFor<SysTenantUser>().Insertable(new SysTenantUser
             {
-                TenantId = tenantId,
+                TenantId = TenantIds.Of(tenantId),
                 UserId = userId,
                 MemberType = member.Type,
                 InviteStatus = member.InviteStatus,
@@ -449,7 +450,7 @@ public sealed class SaasDemoSeeder(
             {
                 _ = await DbClientFor<SysUserDepartment>().Insertable(new SysUserDepartment
                 {
-                    TenantId = tenantId,
+                    TenantId = TenantIds.Of(tenantId),
                     UserId = userId,
                     DepartmentId = context.DepartmentIds[member.Department],
                     PositionId = member.Position is null ? null : context.PositionIds[member.Position],
@@ -488,7 +489,7 @@ public sealed class SaasDemoSeeder(
 
                 _ = await DbClientFor<SysUserPermission>().Insertable(new SysUserPermission
                 {
-                    TenantId = tenantId,
+                    TenantId = TenantIds.Of(tenantId),
                     UserId = userId,
                     PermissionId = permission.Id,
                     PermissionAction = grant.Action,
@@ -504,7 +505,7 @@ public sealed class SaasDemoSeeder(
     {
         _ = await DbClientFor<SysUserRole>().Insertable(new SysUserRole
         {
-            TenantId = tenantId,
+            TenantId = TenantIds.Of(tenantId),
             UserId = userId,
             RoleId = roleId,
             EffectiveTime = binding.EffectiveInDays is { } effective ? now.AddDays(effective) : null,

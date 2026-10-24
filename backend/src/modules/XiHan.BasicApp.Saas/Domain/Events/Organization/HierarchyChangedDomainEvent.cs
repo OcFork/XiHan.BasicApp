@@ -12,7 +12,7 @@ public sealed class HierarchyChangedDomainEvent : SaasDomainEventBase
     /// 构造函数
     /// </summary>
     public HierarchyChangedDomainEvent(
-        long tenantId,
+        string tenantId,
         string hierarchyType,
         long nodeId,
         long? parentId,

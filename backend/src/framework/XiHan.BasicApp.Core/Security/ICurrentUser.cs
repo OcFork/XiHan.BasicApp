@@ -17,7 +17,12 @@ public interface ICurrentUser
     /// <summary>
     /// 由 xihan migrate v4 生成；提交前请检查。
     /// </summary>
-    string? UserId { get; }
+    long? UserId { get; }
+
+    /// <summary>
+    /// 5.0 主体标识原文（本应用里是用户 Id 的字符串形式）；未登录为空
+    /// </summary>
+    string? Subject { get; }
 
     /// <summary>
     /// 由 xihan migrate v4 生成；提交前请检查。

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -78,7 +79,7 @@ public sealed class SaasDemoDictSeeder(
         var codes = Dicts.Select(static dict => dict.Code).ToList();
         var existing = (await DbClientFor<SysDict>().Queryable<SysDict>()
                 .IncludingDeleted()
-                .Where(dict => dict.TenantId == 0 && codes.Contains(dict.DictCode))
+                .Where(dict => dict.TenantId == TenantIds.Platform && codes.Contains(dict.DictCode))
                 .Select(dict => dict.DictCode)
                 .ToListAsync())
             .ToHashSet(StringComparer.Ordinal);
@@ -93,7 +94,7 @@ public sealed class SaasDemoDictSeeder(
 
             var dict = await DbClientFor<SysDict>().Insertable(new SysDict
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 DictCode = demo.Code,
                 DictName = demo.Name,
                 DictType = "business",
@@ -109,7 +110,7 @@ public sealed class SaasDemoDictSeeder(
             {
                 var saved = await DbClientFor<SysDictItem>().Insertable(new SysDictItem
                 {
-                    TenantId = 0,
+                    TenantId = TenantIds.Platform,
                     DictId = dict.Id,
                     ParentId = item.Parent is null ? null : itemIds[item.Parent],
                     ItemCode = item.Code,

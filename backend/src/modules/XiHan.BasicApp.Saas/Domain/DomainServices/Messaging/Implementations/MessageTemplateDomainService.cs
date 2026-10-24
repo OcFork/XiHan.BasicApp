@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -42,7 +43,7 @@ public sealed class MessageTemplateDomainService
 
         var templateCode = NormalizeCode(command.TemplateCode);
         // 同租户同渠道内编码唯一（全局过滤合并 当前租户+全局，租户可建同编码覆盖全局，故只查当前上下文租户维度）
-        var scopeTenantId = _currentTenant.Id ?? 0;
+        var scopeTenantId = TenantIds.Normalize(_currentTenant.Id);
         if (await _messageTemplateRepository.AnyAsync(
                 template => template.TenantId == scopeTenantId
                     && template.Channel == command.Channel

@@ -64,5 +64,5 @@ public interface ITenantProvisionDomainService
     /// <param name="tenantId">租户主键</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>租户实体</returns>
-    Task<SysTenant> GetTenantAwaitingAdminAsync(long tenantId, CancellationToken cancellationToken = default);
+    Task<SysTenant> GetTenantAwaitingAdminAsync(string tenantId, CancellationToken cancellationToken = default);
 }

@@ -9,6 +9,7 @@ using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -56,7 +57,7 @@ public class SaasAccessLogWriter : IAccessLogWriter
         using var tenantScope = _currentTenant.Change(record.TenantId);
         var entity = new SysAccessLog
         {
-            TenantId = record.TenantId ?? 0,
+            TenantId = TenantIds.Normalize(record.TenantId),
             UserId = record.UserId,
             UserName = SaasLogMappingHelper.TrimOrNull(record.UserName, 50),
             UserSessionId = SaasLogMappingHelper.TrimOrNull(record.SessionId, 100),

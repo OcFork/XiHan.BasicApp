@@ -24,7 +24,11 @@ public sealed class CurrentUser(IInvocationAccessor accessor) : ICurrentUser
     public bool IsAuthenticated => Principal.IsAuthenticated;
 
     /// <inheritdoc />
-    public string? UserId => Principal.IsAuthenticated ? Principal.Id : null;
+    public string? Subject => Principal.IsAuthenticated ? Principal.Id : null;
+
+    /// <inheritdoc />
+    // 本应用的用户主键是 long，主体标识就是它的字符串形式；解析不出数字视为未登录用户
+    public long? UserId => long.TryParse(Subject, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var userId) ? userId : null;
 
     /// <inheritdoc />
     public string? UserName => Find(ClaimTypes.Name);

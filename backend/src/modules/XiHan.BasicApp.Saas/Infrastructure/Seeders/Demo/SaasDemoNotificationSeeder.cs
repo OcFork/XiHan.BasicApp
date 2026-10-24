@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -123,7 +124,7 @@ public sealed class SaasDemoNotificationSeeder(
     {
         var added = 0;
         var senderId = await DbClientFor<SysUser>().Queryable<SysUser>()
-            .Where(user => user.TenantId == 0 && user.UserName == SaasSuperAdminSeeder.UserName)
+            .Where(user => user.TenantId == TenantIds.Platform && user.UserName == SaasSuperAdminSeeder.UserName)
             .Select(user => user.Id)
             .FirstAsync();
         if (senderId == 0)
@@ -150,13 +151,13 @@ public sealed class SaasDemoNotificationSeeder(
         var tenant = await DbClientFor<SysTenant>().Queryable<SysTenant>().FirstAsync(item => item.TenantCode == "demo-enterprise");
         if (tenant is not null)
         {
-            using var tenantScope = CurrentTenant.Change(tenant.Id, tenant.TenantName);
+            using var tenantScope = CurrentTenant.Change(TenantIds.Of(tenant.Id), tenant.TenantName);
             var department = await DbClientFor<SysDepartment>().Queryable<SysDepartment>()
-                .FirstAsync(item => item.TenantId == tenant.Id && item.DepartmentCode == "rd");
+                .FirstAsync(item => item.TenantId == TenantIds.Of(tenant.Id) && item.DepartmentCode == "rd");
             var role = await DbClientFor<SysRole>().Queryable<SysRole>()
-                .FirstAsync(item => item.TenantId == tenant.Id && item.RoleCode == "employee");
+                .FirstAsync(item => item.TenantId == TenantIds.Of(tenant.Id) && item.RoleCode == "employee");
             var owner = await DbClientFor<SysUser>().Queryable<SysUser>()
-                .FirstAsync(item => item.TenantId == tenant.Id && item.UserName == "owner");
+                .FirstAsync(item => item.TenantId == TenantIds.Of(tenant.Id) && item.UserName == "owner");
             if (department is not null)
             {
                 added += await InsertIfMissingAsync(tenant.Id, new SysNotification
@@ -204,12 +205,12 @@ public sealed class SaasDemoNotificationSeeder(
         var title = notification.Title;
         if (await DbClientFor<SysNotification>().Queryable<SysNotification>()
                 .IncludingDeleted()
-                .AnyAsync(item => item.TenantId == tenantId && item.Title == title))
+                .AnyAsync(item => item.TenantId == TenantIds.Of(tenantId) && item.Title == title))
         {
             return 0;
         }
 
-        notification.TenantId = tenantId;
+        notification.TenantId = TenantIds.Of(tenantId);
         notification.IsPublished = false;
         notification.SendTime = DateTimeOffset.UtcNow;
         _ = await DbClientFor<SysNotification>().Insertable(notification).ExecuteCommandAsync();

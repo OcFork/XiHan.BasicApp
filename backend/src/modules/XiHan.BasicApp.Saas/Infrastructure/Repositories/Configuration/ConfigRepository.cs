@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -30,7 +31,7 @@ public sealed class ConfigRepository(ISqlSugarClientResolver clientResolver)
     /// <summary>
     /// 根据配置键获取当前租户有效配置，租户级配置优先，全局配置兜底。
     /// </summary>
-    public async Task<SysConfig?> GetEffectiveByKeyAsync(string configKey, long? tenantId, CancellationToken cancellationToken = default)
+    public async Task<SysConfig?> GetEffectiveByKeyAsync(string configKey, string? tenantId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(configKey);
         cancellationToken.ThrowIfCancellationRequested();
@@ -45,9 +46,9 @@ public sealed class ConfigRepository(ISqlSugarClientResolver clientResolver)
         }
 
         // 当前作用域的配置优先，平台（0 号租户）的全局配置兜底；不存在「任取一条」的口径
-        var scopeTenantId = tenantId ?? 0;
+        var scopeTenantId = TenantIds.Normalize(tenantId);
         return configs.FirstOrDefault(config => config.TenantId == scopeTenantId)
-            ?? configs.FirstOrDefault(static config => config.TenantId == 0);
+            ?? configs.FirstOrDefault(static config => config.TenantId == TenantIds.Platform);
     }
 
     /// <summary>

@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Mappers;
 
@@ -122,7 +123,7 @@ public static class DictApplicationMapper
             DictType = dict.DictType,
             DictDescription = dict.DictDescription,
             IsBuiltIn = dict.IsBuiltIn,
-            IsGlobal = dict.TenantId == 0,
+            IsGlobal = TenantIds.IsPlatform(dict.TenantId),
             Status = dict.Status,
             Sort = dict.Sort,
             CreatedAt = dict.CreatedAt,

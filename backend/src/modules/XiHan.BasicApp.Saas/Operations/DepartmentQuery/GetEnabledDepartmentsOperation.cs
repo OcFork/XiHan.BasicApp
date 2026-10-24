@@ -33,7 +33,7 @@ public sealed class GetEnabledDepartmentsOperation(IDepartmentQueryService servi
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<DepartmentListItemDto>>> HandleAsync(GetEnabledDepartmentsRequest request, InvocationContext context)
-        => await service.GetEnabledDepartmentsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetEnabledDepartmentsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

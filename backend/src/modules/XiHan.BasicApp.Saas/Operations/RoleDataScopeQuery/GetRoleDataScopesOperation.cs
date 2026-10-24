@@ -24,7 +24,7 @@ public sealed class GetRoleDataScopesOperation(IRoleDataScopeQueryService servic
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<RoleDataScopeListItemDto>>> HandleAsync(GetRoleDataScopesRequest request, InvocationContext context)
-        => await service.GetRoleDataScopesAsync(request.RoleId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetRoleDataScopesAsync(request.RoleId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

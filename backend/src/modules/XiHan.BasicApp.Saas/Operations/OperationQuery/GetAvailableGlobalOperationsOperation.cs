@@ -32,5 +32,5 @@ public sealed class GetAvailableGlobalOperationsOperation(IOperationQueryService
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<OperationSelectItemDto>>> HandleAsync(OperationSelectQueryDto request, InvocationContext context)
-        => await service.GetAvailableGlobalOperationsAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetAvailableGlobalOperationsAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

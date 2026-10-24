@@ -24,7 +24,7 @@ public sealed class GetUserRolesOperation(IUserRoleQueryService service) : IOper
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<UserRoleListItemDto>>> HandleAsync(GetUserRolesRequest request, InvocationContext context)
-        => await service.GetUserRolesAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetUserRolesAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

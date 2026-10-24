@@ -18,7 +18,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 ///
 /// 写入：
 /// - TenantId + ConfigKey 租户内唯一（UX_TeId_CoKe）
-/// - TenantId = 0（即派生属性 IsGlobal=true）作为平台级默认配置，租户级同键覆盖全局
+/// - TenantId = TenantIds.Platform（即派生属性 IsGlobal=true）作为平台级默认配置，租户级同键覆盖全局
 /// - 敏感值（密钥/密码类）必须在应用层加密后落库
 /// - 修改后应发布配置变更事件，通知相关服务刷新缓存
 ///

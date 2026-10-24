@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -242,7 +243,7 @@ public sealed class SaasEditionSeeder(
         var codes = Editions.Select(static edition => edition.Code).ToList();
         var existingCodes = (await DbClient.Queryable<SysTenantEdition>()
                 .IncludingDeleted()
-                .Where(edition => edition.TenantId == 0 && codes.Contains(edition.EditionCode))
+                .Where(edition => edition.TenantId == TenantIds.Platform && codes.Contains(edition.EditionCode))
                 .Select(edition => edition.EditionCode)
                 .ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -254,7 +255,7 @@ public sealed class SaasEditionSeeder(
         }
 
         var tenantEffective = (await DbClient.Queryable<SysPermission>()
-                .Where(permission => permission.TenantId == 0)
+                .Where(permission => permission.TenantId == TenantIds.Platform)
                 .ToListAsync())
             .Where(permission => permission.Side.IsTenantEffective())
             .ToDictionary(permission => permission.PermissionCode, permission => permission.Id, StringComparer.Ordinal);
@@ -263,7 +264,7 @@ public sealed class SaasEditionSeeder(
         {
             var edition = await DbClient.Insertable(new SysTenantEdition
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 EditionCode = seed.Code,
                 EditionName = seed.Name,
                 Description = seed.Description,
@@ -281,7 +282,7 @@ public sealed class SaasEditionSeeder(
             var permissionIds = ResolveWhitelist(seed, tenantEffective);
             await BulkInsertAsync([.. permissionIds.Select(permissionId => new SysTenantEditionPermission
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 EditionId = edition.Id,
                 PermissionId = permissionId,
                 Status = ValidityStatus.Valid,

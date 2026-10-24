@@ -34,5 +34,5 @@ public sealed class GetEnabledRolesOperation(IRoleQueryService service) : IOpera
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<RoleSelectItemDto>>> HandleAsync(RoleSelectQueryDto request, InvocationContext context)
-        => await service.GetEnabledRolesAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetEnabledRolesAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

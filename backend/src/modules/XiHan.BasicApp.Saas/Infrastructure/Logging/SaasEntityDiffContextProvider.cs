@@ -7,6 +7,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Constants;
 using XiHan.BasicApp.Web.Core.Contexts;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -56,7 +57,7 @@ public class SaasEntityDiffContextProvider : IEntityAuditContextProvider
         var requestId = ResolveRequestId(requestContext, httpContext);
         // 差异日志记在数据变更发生的作用域：写入可能显式切到别的作用域（如租户请求里维护平台全局规则），
         // 取环境作用域而非请求所属租户，与本条变更、以及日志行自身的落库作用域一致
-        var tenantId = _currentTenant.Id ?? 0;
+        var tenantId = TenantIds.Normalize(_currentTenant.Id);
 
         return new EntityDiffLogRecord
         {

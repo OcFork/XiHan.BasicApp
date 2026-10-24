@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -54,7 +55,7 @@ public sealed class ConfigDomainService
         var configKey = Required(command.ConfigKey, 100, nameof(command.ConfigKey), "配置键不能超过 100 个字符。");
         EnsureCodeHasNoWhitespace(configKey, "配置键不能包含空白字符。");
         // 只在本上下文内判重：租户可以建与全局同键的配置来覆盖它，读取时租户优先
-        var scope = _currentTenant.Id ?? 0;
+        var scope = TenantIds.Normalize(_currentTenant.Id);
         if (await _configRepository.AnyAsync(config => config.ConfigKey == configKey && config.TenantId == scope, cancellationToken))
         {
             throw new InvalidOperationException("配置键已存在。");
@@ -188,14 +189,14 @@ public sealed class ConfigDomainService
     /// <summary>
     /// 登录失败自动封禁只认平台那一条，各项数值要在允许的范围内
     /// </summary>
-    private static void ValidateLoginAutoBan(string configKey, long tenantId, string? value)
+    private static void ValidateLoginAutoBan(string configKey, string tenantId, string? value)
     {
         if (!string.Equals(configKey, SaasConfigKeys.Security.LoginAutoBan, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        if (tenantId != 0)
+        if (!TenantIds.IsPlatform(tenantId))
         {
             throw new InvalidOperationException("登录失败自动封禁只在平台生效，租户不能单独配置。");
         }
@@ -293,7 +294,7 @@ public sealed class ConfigDomainService
         EnsureId(id, "系统配置主键必须大于 0。");
         var config = await _configRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("系统配置不存在。");
-        if (config.TenantId != (_currentTenant.Id ?? 0))
+        if (config.TenantId != (TenantIds.Normalize(_currentTenant.Id)))
         {
             throw new InvalidOperationException("全局配置只能在平台维护；租户可以新建同键配置覆盖它。");
         }

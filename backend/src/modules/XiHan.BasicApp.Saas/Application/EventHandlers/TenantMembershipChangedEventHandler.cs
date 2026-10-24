@@ -9,6 +9,7 @@ using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 
@@ -70,7 +71,7 @@ public sealed class TenantMembershipChangedEventHandler : IMessageHandler
     /// <summary>
     /// 移除用户在指定租户下的所有角色绑定
     /// </summary>
-    private async Task RemoveUserRoleBindingsAsync(long tenantId, long userId, TenantMemberInviteStatus status, string? reason)
+    private async Task RemoveUserRoleBindingsAsync(string tenantId, long userId, TenantMemberInviteStatus status, string? reason)
     {
         try
         {

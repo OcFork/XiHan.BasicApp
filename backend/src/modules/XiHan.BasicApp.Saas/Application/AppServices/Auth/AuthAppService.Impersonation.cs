@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.Configurations;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -196,7 +197,7 @@ public sealed partial class AuthAppService
             LoginResult.ImpersonationEnded,
             $"管理员 {impersonationSession.ImpersonatorUserName ?? impersonatorUserId.ToString()}({impersonatorUserId}) 结束了对本账号的模仿");
 
-        using var originScope = _currentTenant.Change(originTenantId, originTenantName);
+        using var originScope = _currentTenant.Change(TenantIds.Of(originTenantId), originTenantName);
 
         var operatorSnapshot = await _authorizationSnapshotQueryService.BuildAsync(operatorUser.Id, now, cancellationToken);
         IReadOnlyCollection<string> operatorTokenPermissions = operatorSnapshot.Permissions.Contains("*") ? ["*"] : [];
@@ -206,7 +207,7 @@ public sealed partial class AuthAppService
         var tokenIssue = _authTokenIssueService.IssueAccessToken(
             new AuthAccessTokenIssueCommand(
                 operatorUser,
-                originTenantId,
+                TenantIds.Of(originTenantId),
                 originSession.UserSessionId,
                 accessTokenJti,
                 operatorSnapshot.Roles,
@@ -231,7 +232,7 @@ public sealed partial class AuthAppService
     private async Task<ImpersonationPlan> AuthorizeImpersonationOrAuditAsync(
         long operatorUserId,
         string? operatorUserName,
-        long? operatorTenantId,
+        string? operatorTenantId,
         StartImpersonationRequestDto input,
         DateTimeOffset now,
         CancellationToken cancellationToken)

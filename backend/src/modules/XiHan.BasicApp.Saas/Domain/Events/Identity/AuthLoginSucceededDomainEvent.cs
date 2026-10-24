@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Core.Events;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Events;
 
@@ -14,7 +15,7 @@ public sealed class AuthLoginSucceededDomainEvent : DomainEventBase
     /// 构造函数
     /// </summary>
     public AuthLoginSucceededDomainEvent(
-        long? tenantId,
+        string? tenantId,
         long userId,
         string? userName,
         long sessionRecordId,
@@ -29,7 +30,7 @@ public sealed class AuthLoginSucceededDomainEvent : DomainEventBase
         string? deviceName,
         string? deviceId)
     {
-        TenantId = tenantId;
+        TenantId = TenantIds.Normalize(tenantId);
         UserId = userId;
         UserName = userName;
         SessionRecordId = sessionRecordId;

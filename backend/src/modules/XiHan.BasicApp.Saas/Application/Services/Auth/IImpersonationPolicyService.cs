@@ -15,7 +15,7 @@ namespace XiHan.BasicApp.Saas.Application.Services;
 /// <param name="OperatorIsSuperAdmin">发起人是否为超级管理员</param>
 public sealed record ImpersonationPlan(
     SysUser Target,
-    long? TargetTenantId,
+    string? TargetTenantId,
     string? TargetTenantName,
     bool IsCrossTenant,
     bool OperatorIsSuperAdmin);
@@ -38,10 +38,10 @@ public interface IImpersonationPolicyService
     /// <returns>准入方案</returns>
     Task<ImpersonationPlan> AuthorizeStartAsync(
         long operatorUserId,
-        long? operatorTenantId,
+        string? operatorTenantId,
         bool operatorIsImpersonating,
         long targetUserId,
-        long? requestedTenantId,
+        string? requestedTenantId,
         DateTimeOffset now,
         CancellationToken cancellationToken = default);
 

@@ -9,6 +9,7 @@ using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Core.Auditing;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -52,7 +53,7 @@ public class SaasEntityDiffLogWriter : IEntityDiffLogWriter
 
         var entity = new SysDiffLog
         {
-            TenantId = record.TenantId ?? 0,
+            TenantId = TenantIds.Normalize(record.TenantId),
             UserId = record.UserId,
             UserName = SaasLogMappingHelper.TrimOrNull(record.UserName, 50),
             AuditType = SaasLogMappingHelper.TrimOrDefault(record.AuditType, 50, "EntityChange"),

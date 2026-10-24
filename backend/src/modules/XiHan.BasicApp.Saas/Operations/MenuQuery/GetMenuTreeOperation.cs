@@ -30,5 +30,5 @@ public sealed class GetMenuTreeOperation(IMenuQueryService service) : IOperation
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<MenuTreeNodeDto>>> HandleAsync(MenuTreeQueryDto request, InvocationContext context)
-        => await service.GetMenuTreeAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetMenuTreeAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

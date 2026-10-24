@@ -34,7 +34,7 @@ public sealed class GetEnabledPositionsOperation(IPositionQueryService service) 
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<PositionListItemDto>>> HandleAsync(GetEnabledPositionsRequest request, InvocationContext context)
-        => await service.GetEnabledPositionsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetEnabledPositionsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

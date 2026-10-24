@@ -13,6 +13,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.Specifications;
 using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Exporting;
 
@@ -79,7 +80,7 @@ public sealed class ExportExecutor : IExportExecutor
     {
         ArgumentNullException.ThrowIfNull(task);
 
-        var userId = task.CreatedId;
+        var userId = task.CreatedId ?? throw new InvalidOperationException("导出任务缺少发起人。");
         var tenantId = task.TenantId;
         var islandTaskId = $"export:{task.Id}";
 
@@ -95,7 +96,7 @@ public sealed class ExportExecutor : IExportExecutor
             using var principalScope = _principalAccessor.Change(BuildPrincipal(task, userId, tenantId, snapshot.Roles));
 
             // 租户停用 / 到期 / 未就绪时在线请求进不来，后台导出也不再继续
-            if (tenantId > 0 && !await IsTenantAvailableAsync(tenantId, now, cancellationToken))
+            if (!TenantIds.IsPlatform(tenantId) && !await IsTenantAvailableAsync(tenantId, now, cancellationToken))
             {
                 await FailAsync(task, userId, islandTaskId, "租户当前不可用，导出已取消", cancellationToken);
                 return;
@@ -232,7 +233,7 @@ public sealed class ExportExecutor : IExportExecutor
     /// <summary>
     /// 按发起时的身份重建主体：用户、租户、发起会话、角色、模仿者
     /// </summary>
-    private static ClaimsPrincipal BuildPrincipal(SysExportTask task, long userId, long tenantId, IEnumerable<string> roles)
+    private static ClaimsPrincipal BuildPrincipal(SysExportTask task, long userId, string tenantId, IEnumerable<string> roles)
     {
         var identity = new ClaimsIdentity("ExportTask");
         identity.AddClaim(new Claim(XiHanClaimTypes.UserId, userId.ToString()));
@@ -249,7 +250,7 @@ public sealed class ExportExecutor : IExportExecutor
 
         if (task.ImpersonatorUserId is { } impersonatorUserId)
         {
-            identity.AddClaims(XiHanClaimsIdentityExtensions.BuildImpersonatorClaims(impersonatorUserId, impersonatorTenantId: task.ImpersonatorTenantId));
+            identity.AddClaims(XiHanClaimsIdentityExtensions.BuildImpersonatorClaims(impersonatorUserId, impersonatorTenantId: TenantIds.Of(task.ImpersonatorTenantId)));
         }
 
         return new ClaimsPrincipal(identity);
@@ -258,13 +259,13 @@ public sealed class ExportExecutor : IExportExecutor
     /// <summary>
     /// 租户是否可用（租户注册表是平台数据，在平台读）
     /// </summary>
-    private async Task<bool> IsTenantAvailableAsync(long tenantId, DateTimeOffset now, CancellationToken cancellationToken)
+    private async Task<bool> IsTenantAvailableAsync(string tenantId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         SysTenant? tenant;
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(null))
         {
-            tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken);
+            tenant = await _tenantRepository.GetByTenantIdAsync(tenantId, cancellationToken);
         }
 
         return tenant is not null && new AvailableTenantSpecification(now).IsSatisfiedBy(tenant);

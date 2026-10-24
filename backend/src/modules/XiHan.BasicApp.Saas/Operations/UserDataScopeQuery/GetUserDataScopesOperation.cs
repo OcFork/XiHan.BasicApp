@@ -24,7 +24,7 @@ public sealed class GetUserDataScopesOperation(IUserDataScopeQueryService servic
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<UserDataScopeListItemDto>>> HandleAsync(GetUserDataScopesRequest request, InvocationContext context)
-        => await service.GetUserDataScopesAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetUserDataScopesAsync(request.UserId, request.OnlyValid, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

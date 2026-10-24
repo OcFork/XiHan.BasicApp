@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 
@@ -49,7 +50,7 @@ public sealed class SaasConditionSubjectLoader
     /// <summary>
     /// 租户里有效的角色编码（取授权快照）
     /// </summary>
-    public async Task<IReadOnlyList<string>> GetRoleCodesAsync(long userId, long tenantId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> GetRoleCodesAsync(long userId, string tenantId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         using var _ = ChangeTenant(tenantId);
         var snapshot = await _authorizationSnapshotQueryService.BuildAsync(userId, now, cancellationToken);
@@ -59,7 +60,7 @@ public sealed class SaasConditionSubjectLoader
     /// <summary>
     /// 租户里有效任职的部门与岗位：停用或已删的部门、岗位不算
     /// </summary>
-    public async Task<SaasConditionOrganization> GetOrganizationAsync(long userId, long tenantId, CancellationToken cancellationToken = default)
+    public async Task<SaasConditionOrganization> GetOrganizationAsync(long userId, string tenantId, CancellationToken cancellationToken = default)
     {
         using var _ = ChangeTenant(tenantId);
         var assignments = await _userDepartmentRepository.GetValidByUserIdAsync(userId, cancellationToken);
@@ -71,7 +72,7 @@ public sealed class SaasConditionSubjectLoader
         var departments = (await _departmentRepository.GetByIdsAsync(assignments.Select(item => item.DepartmentId).Distinct(), cancellationToken))
             .Where(department => department.Status == EnableStatus.Enabled && !string.IsNullOrWhiteSpace(department.DepartmentCode))
             .ToDictionary(department => department.Id, department => department.DepartmentCode);
-        var positionIds = assignments.Where(item => item.PositionId is > 0).Select(item => item.PositionId!.Value).Distinct().ToList();
+        var positionIds = assignments.Where(item => item.PositionId > 0).Select(item => item.PositionId!.Value).Distinct().ToList();
         var positions = positionIds.Count == 0
             ? []
             : (await _positionRepository.GetByIdsAsync(positionIds, cancellationToken))
@@ -85,7 +86,7 @@ public sealed class SaasConditionSubjectLoader
             [.. effective.Select(item => departments[item.DepartmentId]).Distinct(StringComparer.OrdinalIgnoreCase)],
             main is null ? null : departments[main.DepartmentId],
             [.. effective
-                .Where(item => item.PositionId is > 0 && positions.ContainsKey(item.PositionId.Value))
+                .Where(item => item.PositionId > 0 && positions.ContainsKey(item.PositionId.Value))
                 .Select(item => positions[item.PositionId!.Value])
                 .Distinct(StringComparer.OrdinalIgnoreCase)]);
     }
@@ -93,9 +94,9 @@ public sealed class SaasConditionSubjectLoader
     /// <summary>
     /// 租户成员类型；平台或不是成员时为空
     /// </summary>
-    public async Task<TenantMemberType?> GetMemberTypeAsync(long userId, long tenantId, CancellationToken cancellationToken = default)
+    public async Task<TenantMemberType?> GetMemberTypeAsync(long userId, string tenantId, CancellationToken cancellationToken = default)
     {
-        if (tenantId <= 0)
+        if (TenantIds.IsPlatform(tenantId))
         {
             return null;
         }
@@ -107,21 +108,21 @@ public sealed class SaasConditionSubjectLoader
     /// <summary>
     /// 租户编码；平台为空
     /// </summary>
-    public async Task<string?> GetTenantCodeAsync(long tenantId, CancellationToken cancellationToken = default)
+    public async Task<string?> GetTenantCodeAsync(string tenantId, CancellationToken cancellationToken = default)
     {
-        if (tenantId <= 0)
+        if (TenantIds.IsPlatform(tenantId))
         {
             return null;
         }
 
-        var tenant = await _tenantRepository.GetByIdAsync(tenantId, cancellationToken);
+        var tenant = await _tenantRepository.GetByTenantIdAsync(tenantId, cancellationToken);
         return tenant?.TenantCode;
     }
 
-    private IDisposable ChangeTenant(long tenantId)
+    private IDisposable ChangeTenant(string tenantId)
     {
-        var target = tenantId > 0 ? tenantId : (long?)null;
-        return _currentTenant.Change(target, target?.ToString());
+        var target = !TenantIds.IsPlatform(tenantId) ? tenantId : (string?)null;
+        return _currentTenant.Change(target, target);
     }
 }
 

@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Core.Application;
+using XiHan.BasicApp.Core.Tenancy;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
@@ -138,7 +139,7 @@ public sealed class AccessPolicyMiddleware
             {
                 var source = context.RequestServices.GetRequiredService<ISaasConditionAttributeSourceFactory>().Create(new SaasConditionContext
                 {
-                    TenantId = 0,
+                    TenantId = TenantIds.Platform,
                     Now = now,
                     HttpContext = context,
                     RemoteIpAddress = ip
@@ -171,7 +172,7 @@ public sealed class AccessPolicyMiddleware
             }
 
             _hits.Record(new AccessPolicyHitEntry(
-                0,
+                TenantIds.Platform,
                 AccessPolicyHitSource.AccessPolicy,
                 null,
                 AccessPolicyRequests.AutoBanPolicyCode,

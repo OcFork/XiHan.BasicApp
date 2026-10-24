@@ -33,5 +33,5 @@ public sealed class GetDepartmentTreeOperation(IDepartmentQueryService service) 
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<DepartmentTreeNodeDto>>> HandleAsync(DepartmentTreeQueryDto request, InvocationContext context)
-        => await service.GetDepartmentTreeAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetDepartmentTreeAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

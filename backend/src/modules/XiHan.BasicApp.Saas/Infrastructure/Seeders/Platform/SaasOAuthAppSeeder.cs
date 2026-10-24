@@ -2,10 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Identity;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -46,7 +47,7 @@ public sealed class SaasOAuthAppSeeder(
 
         var webApp = new SysOAuthApp
         {
-            TenantId = 0,
+            TenantId = TenantIds.Platform,
             AppName = "BasicApp Web 前端",
             AppDescription = "平台自营 Web 前端（第一方公开客户端），密码登录签发 Token 的默认客户端",
             ClientId = SaasOAuthClientIds.Web,

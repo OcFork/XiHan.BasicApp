@@ -10,6 +10,7 @@ using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -66,7 +67,7 @@ public class SaasApiLogWriter : IApiLogWriter
         using var tenantScope = _currentTenant.Change(record.TenantId);
         var entity = new SysOpenApiLog
         {
-            TenantId = record.TenantId ?? 0,
+            TenantId = TenantIds.Normalize(record.TenantId),
             UserId = record.UserId,
             UserName = SaasLogMappingHelper.TrimOrNull(userName, 50),
             ApiName = SaasLogMappingHelper.TrimOrNull(record.ApiName, 200),

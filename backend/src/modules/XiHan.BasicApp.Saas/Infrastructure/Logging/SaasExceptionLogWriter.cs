@@ -12,6 +12,7 @@ using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;
 
@@ -59,7 +60,7 @@ public class SaasExceptionLogWriter : IExceptionLogWriter
         // 切入该租户再取连接，库隔离租户的日志进它自己的库
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var tenantScope = _currentTenant.Change(record.TenantId);
-        var tenantId = record.TenantId ?? 0;
+        var tenantId = TenantIds.Normalize(record.TenantId);
 
         var entity = new SysExceptionLog
         {

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -39,7 +40,7 @@ public sealed class SaasAccessPolicySeeder(
         var codes = AccessPolicyTemplates.All.Select(template => template.Code).ToList();
         var existing = (await DbClient.Queryable<SysAccessPolicy>()
                 .IncludingDeleted()
-                .Where(policy => policy.TenantId == 0 && codes.Contains(policy.PolicyCode))
+                .Where(policy => policy.TenantId == TenantIds.Platform && codes.Contains(policy.PolicyCode))
                 .Select(policy => policy.PolicyCode)
                 .ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -48,7 +49,7 @@ public sealed class SaasAccessPolicySeeder(
         {
             var policy = await DbClient.Insertable(new SysAccessPolicy
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 PolicyCode = template.Code,
                 PolicyName = template.Name,
                 Description = template.Description,
@@ -60,7 +61,7 @@ public sealed class SaasAccessPolicySeeder(
             }).ExecuteReturnEntityAsync();
             _ = await DbClient.Insertable(template.Conditions.Select(condition => new SysAccessPolicyCondition
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 PolicyId = policy.Id,
                 ConditionGroup = condition.ConditionGroup,
                 AttributeName = condition.AttributeName,

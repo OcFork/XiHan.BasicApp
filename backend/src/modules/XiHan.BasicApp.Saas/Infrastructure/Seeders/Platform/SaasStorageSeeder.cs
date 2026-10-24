@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -42,7 +43,7 @@ public sealed class SaasStorageSeeder(
     {
         if (await DbClient.Queryable<SysStorageConfig>()
                 .IncludingDeleted()
-                .AnyAsync(config => config.TenantId == 0 && config.ConfigCode == LocalDefaultCode))
+                .AnyAsync(config => config.TenantId == TenantIds.Platform && config.ConfigCode == LocalDefaultCode))
         {
             Logger.LogInformation("{Seeder}：已存在，不覆盖运营的修改", Name);
             return;
@@ -50,7 +51,7 @@ public sealed class SaasStorageSeeder(
 
         _ = await DbClient.Insertable(new SysStorageConfig
         {
-            TenantId = 0,
+            TenantId = TenantIds.Platform,
             ConfigCode = LocalDefaultCode,
             ConfigName = "本地存储",
             StorageType = StorageConfigType.Local,

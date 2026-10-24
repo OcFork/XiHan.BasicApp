@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -26,7 +27,7 @@ public sealed class RoleHierarchyRepository(ISqlSugarClientResolver clientResolv
     /// <summary>
     /// 跨租户获取有角色直接继承了给定角色的租户
     /// </summary>
-    public async Task<IReadOnlyList<long>> GetTenantIdsInheritingAsync(IReadOnlyCollection<long> parentRoleIds, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> GetTenantIdsInheritingAsync(IReadOnlyCollection<long> parentRoleIds, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(parentRoleIds);
 
@@ -39,7 +40,7 @@ public sealed class RoleHierarchyRepository(ISqlSugarClientResolver clientResolv
         cancellationToken.ThrowIfCancellationRequested();
 
         return await CreateNoTenantQueryable()
-            .Where(hierarchy => hierarchy.TenantId != 0 && parentIds.Contains(hierarchy.AncestorId))
+            .Where(hierarchy => hierarchy.TenantId != TenantIds.Platform && parentIds.Contains(hierarchy.AncestorId))
             .Select(hierarchy => hierarchy.TenantId)
             .Distinct()
             .ToListAsync(cancellationToken);

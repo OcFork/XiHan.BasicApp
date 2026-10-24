@@ -7,6 +7,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Upgrade.Abstractions;
 using XiHan.BasicApp.Core.Upgrade.Models;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Upgrade;
 
@@ -229,7 +230,7 @@ public sealed class SaasUpgradeVersionStore : IUpgradeVersionStore
         {
             Id = entity.Id,
             // 平台就是 0 号租户：与升级锁键同一口径
-            TenantId = _currentTenant.Id ?? 0,
+            TenantId = TenantIds.Normalize(_currentTenant.Id),
             AppVersion = entity.AppVersion,
             DbVersion = string.IsNullOrWhiteSpace(entity.DbVersion) ? "0.0.0" : entity.DbVersion,
             MinSupportVersion = entity.MinSupportVersion,

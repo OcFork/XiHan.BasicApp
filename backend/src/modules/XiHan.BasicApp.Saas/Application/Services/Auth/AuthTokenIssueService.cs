@@ -7,6 +7,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Authentication.Jwt;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -100,7 +101,7 @@ public sealed class AuthTokenIssueService
             long? impersonatorUserId = long.TryParse(impersonatorUserIdValue, out var parsedImpersonatorUserId) ? parsedImpersonatorUserId : null;
             return userId is null && string.IsNullOrWhiteSpace(userName)
                 ? null
-                : new AuthTokenIdentity(userId, userName, tenantId, sessionId, impersonatorUserId);
+                : new AuthTokenIdentity(userId, userName, TenantIds.Of(tenantId), sessionId, impersonatorUserId);
         }
         catch
         {
@@ -111,7 +112,7 @@ public sealed class AuthTokenIssueService
 
     private static List<Claim> BuildClaims(
         SysUser user,
-        long? tenantId,
+        string? tenantId,
         string sessionBusinessId,
         string accessTokenJti,
         IReadOnlyCollection<string> roles,
@@ -119,7 +120,7 @@ public sealed class AuthTokenIssueService
         string? deviceId,
         long? impersonatorUserId = null,
         string? impersonatorUserName = null,
-        long? impersonatorTenantId = null,
+        string? impersonatorTenantId = null,
         string? impersonatorTenantName = null)
     {
         ArgumentNullException.ThrowIfNull(user);
@@ -135,9 +136,9 @@ public sealed class AuthTokenIssueService
             new(XiHanClaimTypes.SessionId, sessionBusinessId)
         };
 
-        if (tenantId.HasValue)
+        if (!TenantIds.IsPlatform(tenantId))
         {
-            claims.Add(new Claim(XiHanClaimTypes.TenantId, tenantId.Value.ToString()));
+            claims.Add(new Claim(XiHanClaimTypes.TenantId, tenantId!.Trim()));
         }
 
         if (!string.IsNullOrWhiteSpace(user.Email))

@@ -39,7 +39,7 @@ public sealed class AuthEmailLoginCodeService : IAuthEmailLoginCodeService
     /// <param name="email">邮箱地址</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>生成的验证码</returns>
-    public async Task<string> IssueCodeAsync(long? tenantId, string email, CancellationToken cancellationToken = default)
+    public async Task<string> IssueCodeAsync(string? tenantId, string email, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
 
@@ -60,7 +60,7 @@ public sealed class AuthEmailLoginCodeService : IAuthEmailLoginCodeService
     /// <param name="code">待校验验证码</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>校验是否通过</returns>
-    public async Task<bool> TryConsumeAsync(long? tenantId, string email, string? code, CancellationToken cancellationToken = default)
+    public async Task<bool> TryConsumeAsync(string? tenantId, string email, string? code, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
         {
@@ -71,7 +71,7 @@ public sealed class AuthEmailLoginCodeService : IAuthEmailLoginCodeService
         return result.Succeeded;
     }
 
-    private static string BuildTarget(long? tenantId, string email)
+    private static string BuildTarget(string? tenantId, string email)
     {
         return $"{tenantId?.ToString() ?? "platform"}:{email.Trim().ToLowerInvariant()}";
     }

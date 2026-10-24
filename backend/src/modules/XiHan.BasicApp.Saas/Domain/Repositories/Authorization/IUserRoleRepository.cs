@@ -49,5 +49,5 @@ public interface IUserRoleRepository : ISaasRepository<SysUserRole>
     /// 跨租户获取此刻有成员持有指定角色的租户（不含平台）
     /// </summary>
     /// <remarks>全局角色在各租户里分配，平台调整它的继承后据此找出要复核的租户。</remarks>
-    Task<IReadOnlyList<long>> GetValidTenantIdsByRoleIdsIgnoreTenantAsync(IReadOnlyCollection<long> roleIds, DateTimeOffset now, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>> GetValidTenantIdsByRoleIdsIgnoreTenantAsync(IReadOnlyCollection<long> roleIds, DateTimeOffset now, CancellationToken cancellationToken = default);
 }

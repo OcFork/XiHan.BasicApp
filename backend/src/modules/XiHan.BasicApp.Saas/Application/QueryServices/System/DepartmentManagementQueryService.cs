@@ -126,7 +126,7 @@ public sealed class DepartmentManagementQueryService
         var userMap = users.ToDictionary(user => user.Id);
 
         var positionIds = userDepartments
-            .Where(item => item.PositionId is > 0)
+            .Where(item => item.PositionId > 0)
             .Select(item => item.PositionId!.Value)
             .Distinct()
             .ToArray();

@@ -20,7 +20,7 @@ namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 /// <param name="Conditions">编译后的条件集</param>
 public sealed record CompiledAccessPolicy(
     long PolicyId,
-    long TenantId,
+    string TenantId,
     string PolicyCode,
     string PolicyName,
     AccessPolicyAction Action,

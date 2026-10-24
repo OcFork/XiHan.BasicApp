@@ -4,6 +4,7 @@
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Mappers;
 
@@ -76,14 +77,14 @@ public static class TenantApplicationMapper
     /// <param name="tenant">租户</param>
     /// <param name="currentTenantId">当前租户主键</param>
     /// <returns>租户切换项 DTO</returns>
-    public static TenantSwitcherDto ToSwitcherDto(SysTenantUser membership, SysTenant tenant, long? currentTenantId)
+    public static TenantSwitcherDto ToSwitcherDto(SysTenantUser membership, SysTenant tenant, string? currentTenantId)
     {
         ArgumentNullException.ThrowIfNull(membership);
         ArgumentNullException.ThrowIfNull(tenant);
 
         return new TenantSwitcherDto
         {
-            TenantId = tenant.Id,
+            TenantId = TenantIds.Of(tenant.Id),
             TenantCode = tenant.TenantCode,
             TenantName = tenant.TenantName,
             TenantShortName = tenant.TenantShortName,
@@ -97,7 +98,7 @@ public static class TenantApplicationMapper
             InviteStatus = membership.InviteStatus,
             MembershipExpirationTime = membership.ExpirationTime,
             JoinedTime = membership.RespondedTime ?? membership.CreatedAt,
-            IsCurrent = currentTenantId == tenant.Id
+            IsCurrent = TenantIds.AreSame(currentTenantId, TenantIds.Of(tenant.Id))
         };
     }
 

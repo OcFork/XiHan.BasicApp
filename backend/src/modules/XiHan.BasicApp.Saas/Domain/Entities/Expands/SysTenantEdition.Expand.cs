@@ -3,6 +3,7 @@
 
 using SqlSugar;
 using System.ComponentModel.DataAnnotations;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -45,9 +46,9 @@ public partial class SysTenantEdition : IValidatableObject
     /// <returns>校验失败项集合，全部通过时为空集合</returns>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (TenantId != 0)
+        if (!TenantIds.IsPlatform(TenantId))
         {
-            yield return new ValidationResult("租户版本套餐是平台级实体，必须使用 TenantId = 0。", [nameof(TenantId)]);
+            yield return new ValidationResult("租户版本套餐是平台级实体，必须使用 TenantId = TenantIds.Platform。", [nameof(TenantId)]);
         }
 
         if (string.IsNullOrWhiteSpace(EditionCode))

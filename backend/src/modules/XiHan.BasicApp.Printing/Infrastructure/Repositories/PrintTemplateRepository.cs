@@ -55,7 +55,7 @@ public sealed class PrintTemplateRepository(ISqlSugarClientResolver clientResolv
     /// <returns>匹配模板；不存在时返回 <see langword="null"/>。</returns>
     /// <exception cref="OperationCanceledException">查询被取消。</exception>
     public async Task<SysPrintTemplate?> FindByIdInScopeAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         long id,
         CancellationToken cancellationToken = default)
     {

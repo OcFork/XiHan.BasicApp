@@ -16,7 +16,7 @@ public interface IExternalLoginStore
     /// <param name="tenantId">租户ID</param>
     /// <param name="cancellationToken"></param>
     /// <returns>内部用户ID，未绑定返回 null</returns>
-    Task<long?> FindUserIdAsync(string provider, string providerKey, long? tenantId = null, CancellationToken cancellationToken = default);
+    Task<long?> FindUserIdAsync(string provider, string providerKey, string? tenantId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 创建第三方登录绑定记录
@@ -25,7 +25,7 @@ public interface IExternalLoginStore
     /// <param name="info">第三方登录信息</param>
     /// <param name="tenantId">租户ID</param>
     /// <param name="cancellationToken"></param>
-    Task CreateAsync(long userId, ExternalLoginInfo info, long? tenantId = null, CancellationToken cancellationToken = default);
+    Task CreateAsync(long userId, ExternalLoginInfo info, string? tenantId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 删除第三方登录绑定记录

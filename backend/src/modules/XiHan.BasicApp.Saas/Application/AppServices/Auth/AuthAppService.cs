@@ -39,6 +39,7 @@ using XiHan.BasicApp.Web.Core.Clients;
 using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -51,7 +52,7 @@ public sealed partial class AuthAppService
     /// <summary>
     /// 默认租户标识：自助注册 / 找回密码在缺省范围时落到该租户（与基础身份种子约定一致）
     /// </summary>
-    private const long DefaultRegistrationTenantId = 1;
+    private const string DefaultRegistrationTenantId = "1";
 
     /// <summary>
     /// 解锁失败上限：超限直接吊销会话，防止锁屏页被暴力枚举
@@ -326,7 +327,7 @@ public sealed partial class AuthAppService
 
         // 自助注册统一落到默认租户，注册即成为普通成员（不分配角色，权限由管理员后续授权）
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var tenantScope = _currentTenant.Change(DefaultRegistrationTenantId, DefaultRegistrationTenantId.ToString());
+        using var tenantScope = _currentTenant.Change(DefaultRegistrationTenantId, DefaultRegistrationTenantId);
 
         var command = new UserCreateCommand(
             UserName: userName,
@@ -905,12 +906,12 @@ public sealed partial class AuthAppService
             ?? throw new InvalidOperationException("当前用户不存在。");
 
         // 归一目标租户：null 或 <=0 表示平台（0 号租户，令牌不带租户）
-        var targetTenantId = input.TenantId is > 0 ? input.TenantId : null;
+        var targetTenantId = !TenantIds.IsPlatform(input.TenantId) ? input.TenantId : null;
         string? targetTenantName = null;
         if (targetTenantId is null)
         {
             // 平台只对平台账号开放：租户账号在平台里没有任何身份
-            if (user.TenantId != 0)
+            if (!TenantIds.IsPlatform(user.TenantId))
             {
                 throw new InvalidOperationException("只有平台账号可以进入平台。");
             }
@@ -918,8 +919,8 @@ public sealed partial class AuthAppService
         else
         {
             var accessible = await _authContextQueryService.GetAccessibleTenantsAsync(userId, now, cancellationToken);
-            var target = accessible.FirstOrDefault(item => item.Tenant.Id == targetTenantId.Value)
-                ?? throw new InvalidOperationException(await DescribeInaccessibleTenantAsync(userId, targetTenantId.Value, now, cancellationToken));
+            var target = accessible.FirstOrDefault(item => TenantIds.AreSame(TenantIds.Of(item.Tenant.Id), targetTenantId))
+                ?? throw new InvalidOperationException(await DescribeInaccessibleTenantAsync(userId, targetTenantId, now, cancellationToken));
             targetTenantName = target.Tenant.TenantName;
         }
 
@@ -1203,7 +1204,7 @@ public sealed partial class AuthAppService
         }
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using (_currentTenant.Change(identity.TenantId, identity.TenantId?.ToString()))
+        using (_currentTenant.Change(identity.TenantId, identity.TenantId))
         {
             var session = await _userSessionRepository.GetByUserSessionIdAsync(identity.SessionId, cancellationToken);
             if (session is null || session.Status != SessionStatus.Active ||
@@ -1502,7 +1503,7 @@ public sealed partial class AuthAppService
 
         // 在默认注册租户范围内定位/创建绑定（与自助注册一致）
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using (_currentTenant.Change(DefaultRegistrationTenantId, DefaultRegistrationTenantId.ToString()))
+        using (_currentTenant.Change(DefaultRegistrationTenantId, DefaultRegistrationTenantId))
         {
             var boundUserId = await _externalLoginStore.FindUserIdAsync(info.Provider, info.ProviderKey, DefaultRegistrationTenantId, cancellationToken);
             if (boundUserId is { } existingId && existingId > 0)
@@ -1782,8 +1783,8 @@ public sealed partial class AuthAppService
     {
         var landing = await ResolveLoginLandingAsync(user, now, cancellationToken);
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var landingScope = _currentTenant.Change(landing?.TenantId, landing?.TenantName);
-        return await IssueLoginTokenAsync(user, security, landing?.TenantId, loginName, deviceId, now, initialLockReason, cancellationToken);
+        using var landingScope = _currentTenant.Change(TenantIds.Of(landing?.TenantId), landing?.TenantName);
+        return await IssueLoginTokenAsync(user, security, TenantIds.Of(landing?.TenantId), loginName, deviceId, now, initialLockReason, cancellationToken);
     }
 
     /// <summary>
@@ -1795,7 +1796,7 @@ public sealed partial class AuthAppService
     /// </remarks>
     private async Task<LoginTenantContext?> ResolveLoginLandingAsync(SysUser user, DateTimeOffset now, CancellationToken cancellationToken)
     {
-        if (user.TenantId == 0)
+        if (TenantIds.IsPlatform(user.TenantId))
         {
             return null;
         }
@@ -1816,7 +1817,7 @@ public sealed partial class AuthAppService
     /// <summary>
     /// 说明目标租户为何不可进入：不是有效成员，或租户本身不可进入（带具体原因）
     /// </summary>
-    private async Task<string> DescribeInaccessibleTenantAsync(long userId, long tenantId, DateTimeOffset now, CancellationToken cancellationToken)
+    private async Task<string> DescribeInaccessibleTenantAsync(long userId, string tenantId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var memberships = await _tenantUserRepository.GetActiveByUserIdAsync(userId, now, cancellationToken);
         if (!memberships.Any(membership => membership.TenantId == tenantId))
@@ -1832,7 +1833,7 @@ public sealed partial class AuthAppService
     /// <summary>
     /// 为指定邮箱生成登录验证码并在已配置 SMTP 时发送邮件，返回生成的验证码（供本地联调回显）
     /// </summary>
-    private async Task<string> IssueAndSendEmailLoginCodeAsync(string email, long? receiveUserId, long? tenantId, CancellationToken cancellationToken)
+    private async Task<string> IssueAndSendEmailLoginCodeAsync(string email, long? receiveUserId, string? tenantId, CancellationToken cancellationToken)
     {
         var code = await _emailLoginCodeService.IssueCodeAsync(tenantId, email, cancellationToken);
         var emailConfig = await GetConfiguredEmailOptionsAsync(cancellationToken);
@@ -1876,7 +1877,7 @@ public sealed partial class AuthAppService
     private async Task<LoginTokenDto> IssueLoginTokenAsync(
         SysUser user,
         SysUserSecurity? security,
-        long? effectiveTenantId,
+        string? effectiveTenantId,
         string userName,
         string? deviceId,
         DateTimeOffset now,
@@ -1958,7 +1959,7 @@ public sealed partial class AuthAppService
     /// <summary>
     /// 发布认证安全审计事件（令牌刷新/密码重置等），失败不影响主流程
     /// </summary>
-    private async Task PublishSecurityAuditAsync(long? tenantId, long? userId, string? userName, LoginResult auditResult, string message)
+    private async Task PublishSecurityAuditAsync(string? tenantId, long? userId, string? userName, LoginResult auditResult, string message)
     {
         var client = _clientInfoProvider.GetCurrent();
         // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
@@ -1981,7 +1982,7 @@ public sealed partial class AuthAppService
         SysUser user,
         List<string> availableMethods,
         string? requestedMethod,
-        long? tenantId,
+        string? tenantId,
         CancellationToken cancellationToken)
     {
         // 用户已明确选择某方式则采用其选择；否则仅在唯一方式时自动选中，多方式时交由前端展示选择
@@ -2022,7 +2023,7 @@ public sealed partial class AuthAppService
         List<string> availableMethods,
         string? requestedMethod,
         string code,
-        long? tenantId,
+        string? tenantId,
         DateTimeOffset now,
         string userName,
         CancellationToken cancellationToken)
@@ -2095,7 +2096,7 @@ public sealed partial class AuthAppService
     /// <summary>
     /// 向用户邮箱下发双因素登录验证码（复用邮箱登录验证码通道）
     /// </summary>
-    private Task SendEmailTwoFactorCodeAsync(SysUser user, long? tenantId, CancellationToken cancellationToken)
+    private Task SendEmailTwoFactorCodeAsync(SysUser user, string? tenantId, CancellationToken cancellationToken)
     {
         return IssueAndSendEmailLoginCodeAsync(RequireUserEmail(user), user.Id, tenantId, cancellationToken);
     }

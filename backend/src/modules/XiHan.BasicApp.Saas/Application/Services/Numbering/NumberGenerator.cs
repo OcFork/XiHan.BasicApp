@@ -13,6 +13,7 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -203,12 +204,12 @@ public sealed class NumberGenerator : INumberGenerator
         // 先归一所有外部字符串，确保指纹、查询条件和日志使用相同的规范值。
         var normalized = NormalizeRequest(ruleCode, scope, idempotencyKey, count, businessType, businessId);
         // 必须在任何平台上下文切换前捕获原请求租户；该值参与幂等唯一范围和永久审计。
-        var requestTenantId = _currentTenant.Id is > 0 ? _currentTenant.Id.Value : 0L;
+        var requestTenantId = !TenantIds.IsPlatform(_currentTenant.Id) ? _currentTenant.Id : TenantIds.Platform;
         var resolved = await ResolveRuleAsync(normalized.RuleCode, scope, requestTenantId, cancellationToken);
         // 指纹绑定实际规则主键，避免 Auto 在租户规则与同编码全局规则之间切换时错误重放旧结果。
         var fingerprint = BuildFingerprint(normalized, resolved.RuleId);
 
-        if (resolved.OwnerTenantId == 0)
+        if (resolved.OwnerTenantId == TenantIds.Platform)
         {
             // 平台作用域承担两件事：让仓储的租户写谓词不再追加当前租户条件，使条件更新能命中 TenantId=0 的全局行；
             // 并满足框架审计在写入分配记录时的租户归属校验。库隔离部署下它还决定连接选择，因此必须在开启事务之前切换。
@@ -246,7 +247,7 @@ public sealed class NumberGenerator : INumberGenerator
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     private async Task<NumberGenerationResult> AllocateInTransactionAsync(
         ResolvedNumberingRule resolved,
-        long requestTenantId,
+        string requestTenantId,
         NormalizedGenerationRequest request,
         string fingerprint,
         CancellationToken cancellationToken)
@@ -272,7 +273,7 @@ public sealed class NumberGenerator : INumberGenerator
     /// <exception cref="OperationCanceledException">操作被 <paramref name="cancellationToken"/> 取消。</exception>
     private async Task<NumberGenerationResult> AllocateOnceAsync(
         ResolvedNumberingRule resolved,
-        long requestTenantId,
+        string requestTenantId,
         NormalizedGenerationRequest request,
         string fingerprint,
         CancellationToken cancellationToken)
@@ -280,7 +281,7 @@ public sealed class NumberGenerator : INumberGenerator
         var existing = await _allocationRepository.FindByIdempotencyKeyAsync(
             resolved.OwnerTenantId,
             resolved.RuleId,
-            requestTenantId,
+            TenantIds.ToKey(requestTenantId) ?? 0,
             request.IdempotencyKey,
             cancellationToken);
         if (existing is not null)
@@ -306,7 +307,7 @@ public sealed class NumberGenerator : INumberGenerator
             throw new UserFriendlyException("业务编号规则已停用。");
         }
 
-        if (resolved.OwnerTenantId == 0 && requestTenantId > 0 && !rule.AllowTenantUse)
+        if (resolved.OwnerTenantId == TenantIds.Platform && !TenantIds.IsPlatform(requestTenantId) && !rule.AllowTenantUse)
         {
             throw new UserFriendlyException("该全局编号规则未向租户开放。");
         }
@@ -356,7 +357,7 @@ public sealed class NumberGenerator : INumberGenerator
         {
             RuleId = resolved.RuleId,
             RuleCode = rule.RuleCode,
-            RequestTenantId = requestTenantId,
+            RequestTenantId = TenantIds.ToKey(requestTenantId) ?? 0,
             IdempotencyKey = request.IdempotencyKey,
             RequestFingerprint = fingerprint,
             Count = request.Count,
@@ -397,7 +398,7 @@ public sealed class NumberGenerator : INumberGenerator
     private async Task<UserFriendlyException> DescribeAdvanceRejectionAsync(
         ResolvedNumberingRule resolved,
         string ruleCode,
-        long requestTenantId,
+        string requestTenantId,
         string periodKey,
         long periodOrdinal,
         int count,
@@ -464,10 +465,10 @@ public sealed class NumberGenerator : INumberGenerator
     private async Task<ResolvedNumberingRule> ResolveRuleAsync(
         string ruleCode,
         NumberingScope scope,
-        long requestTenantId,
+        string requestTenantId,
         CancellationToken cancellationToken)
     {
-        if (requestTenantId == 0)
+        if (requestTenantId == TenantIds.Platform)
         {
             // 平台管理和普通单体应用都没有当前租户，两者统一使用平台库中的全局规则。
             if (scope == NumberingScope.Tenant)
@@ -475,9 +476,9 @@ public sealed class NumberGenerator : INumberGenerator
                 throw new UserFriendlyException("平台或单体上下文不能使用 Tenant 作用域。");
             }
 
-            var globalRule = await _ruleRepository.FindByCodeInScopeAsync(0, ruleCode, true, cancellationToken)
+            var globalRule = await _ruleRepository.FindByCodeInScopeAsync(TenantIds.Platform, ruleCode, true, cancellationToken)
                 ?? throw new UserFriendlyException("未找到可用的全局编号规则。");
-            return new ResolvedNumberingRule(globalRule.Id, 0, NumberingScope.Global);
+            return new ResolvedNumberingRule(globalRule.Id, TenantIds.Platform, NumberingScope.Global);
         }
 
         if (scope is NumberingScope.Auto or NumberingScope.Tenant)
@@ -498,13 +499,13 @@ public sealed class NumberGenerator : INumberGenerator
         // 回退查询只需在平台上下文读取规则定位信息；真正分配会重新切换平台上下文后再开启事务。
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using var platformScope = _currentTenant.Change(null);
-        var fallback = await _ruleRepository.FindByCodeInScopeAsync(0, ruleCode, true, cancellationToken);
+        var fallback = await _ruleRepository.FindByCodeInScopeAsync(TenantIds.Platform, ruleCode, true, cancellationToken);
         if (fallback is null || !fallback.AllowTenantUse)
         {
             throw new UserFriendlyException("未找到向当前租户开放的全局编号规则。");
         }
 
-        return new ResolvedNumberingRule(fallback.Id, 0, NumberingScope.Global);
+        return new ResolvedNumberingRule(fallback.Id, TenantIds.Platform, NumberingScope.Global);
     }
 
     /// <summary>
@@ -652,7 +653,7 @@ public sealed class NumberGenerator : INumberGenerator
         _logger.LogWarning(
             exception,
             "业务编号分配失败：RuleCode={RuleCode}, Scope={Scope}, RequestTenantId={RequestTenantId}, OperatorId={OperatorId}, IdempotencyDigest={IdempotencyDigest}, Count={Count}, Result=Failed",
-            ruleCode?.Trim(), scope, _currentTenant.Id ?? 0, _currentUser.UserId, idempotencyDigest, count);
+            ruleCode?.Trim(), scope, TenantIds.Normalize(_currentTenant.Id), _currentUser.UserId, idempotencyDigest, count);
     }
 
     /// <summary>
@@ -661,7 +662,7 @@ public sealed class NumberGenerator : INumberGenerator
     /// <param name="RuleId">实际规则主键。</param>
     /// <param name="OwnerTenantId">规则所属租户；0 表示平台全局规则。</param>
     /// <param name="ResolvedScope">最终解析到的租户或全局作用域。</param>
-    private sealed record ResolvedNumberingRule(long RuleId, long OwnerTenantId, NumberingScope ResolvedScope);
+    private sealed record ResolvedNumberingRule(long RuleId, string OwnerTenantId, NumberingScope ResolvedScope);
 
     /// <summary>
     /// 已校验并归一的发号请求。

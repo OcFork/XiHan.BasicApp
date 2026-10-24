@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Core.Events;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Events;
 
@@ -19,7 +20,7 @@ public sealed class AuthSecurityAuditDomainEvent : DomainEventBase
     /// 构造函数
     /// </summary>
     public AuthSecurityAuditDomainEvent(
-        long? tenantId,
+        string? tenantId,
         long? userId,
         string? userName,
         LoginResult auditResult,
@@ -29,7 +30,7 @@ public sealed class AuthSecurityAuditDomainEvent : DomainEventBase
         string? ipAddress,
         string? userAgent)
     {
-        TenantId = tenantId;
+        TenantId = TenantIds.Normalize(tenantId);
         UserId = userId;
         UserName = userName;
         AuditResult = auditResult;

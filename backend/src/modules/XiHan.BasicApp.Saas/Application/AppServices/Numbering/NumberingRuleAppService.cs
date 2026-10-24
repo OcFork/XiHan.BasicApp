@@ -15,6 +15,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Core.Authorization.Permissions;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -319,7 +320,7 @@ public sealed class NumberingRuleAppService : SaasApplicationService, INumbering
         string? serialRange = null)
     {
         var userId = _currentUser.UserId;
-        var requestTenantId = _currentTenant.Id ?? 0;
+        var requestTenantId = TenantIds.Normalize(_currentTenant.Id);
         if (success)
         {
             // 使用结构化占位符而不是字符串拼接，便于按租户、操作人和规则建立审计查询。

@@ -15,6 +15,7 @@ using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -294,7 +295,7 @@ public sealed class MenuQueryService
             // IsGlobal 为派生属性（TenantId == 0），不落库，故按租户列过滤：全局=租户0，非全局=非租户0
             request.Conditions.AddFilter(
                 (SysMenu menu) => menu.TenantId,
-                0L,
+                TenantIds.Platform,
                 isGlobal.Value ? QueryOperator.Equal : QueryOperator.NotEqual);
         }
 

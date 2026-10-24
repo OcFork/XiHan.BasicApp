@@ -7,6 +7,7 @@ using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Authorization;
 
@@ -56,7 +57,7 @@ public sealed class AuthorizationChangeNotifier : IAuthorizationChangeNotifier
         cancellationToken.ThrowIfCancellationRequested();
 
         var domainEvent = new AuthorizationChangedDomainEvent(
-            _currentTenant.Id ?? 0,
+            TenantIds.Normalize(_currentTenant.Id),
             changeType,
             targetUserId,
             targetRoleId,
@@ -66,6 +67,6 @@ public sealed class AuthorizationChangeNotifier : IAuthorizationChangeNotifier
             relatedRoleId);
 
         // xihan-migrate(V4-08): 事件用基于反射的 System.Text.Json 序列化；把事件类型登记进 JsonSerializerContext 并传它的 JsonTypeInfo 才能 AOT。
-        return _localEventBus.PublishAsync("authorization-changed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "authorization-changed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(domainEvent) }, cancellationToken);
+        return _localEventBus.PublishAsync("authorization-changed", new MessageEnvelope { Id = Guid.NewGuid().ToString("N"), Source = "/saas", Type = "authorization-changed", Time = DateTimeOffset.UtcNow, Data = JsonSerializer.SerializeToUtf8Bytes(domainEvent) }, cancellationToken).AsTask();
     }
 }

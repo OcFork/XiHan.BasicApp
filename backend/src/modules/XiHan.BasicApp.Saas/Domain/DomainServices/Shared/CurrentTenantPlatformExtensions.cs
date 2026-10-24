@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -24,7 +25,7 @@ public static class CurrentTenantPlatformExtensions
     public static bool IsPlatformOperation(this ICurrentTenant currentTenant)
     {
         ArgumentNullException.ThrowIfNull(currentTenant);
-        return currentTenant.Id is null or 0;
+        return TenantIds.IsPlatform(currentTenant.Id);
     }
 
     /// <summary>

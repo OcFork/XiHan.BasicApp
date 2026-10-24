@@ -3,6 +3,7 @@
 
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Core.Events;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Domain.Events;
 
@@ -15,7 +16,7 @@ public sealed class AuthLoginFailedDomainEvent : DomainEventBase
     /// 构造函数
     /// </summary>
     public AuthLoginFailedDomainEvent(
-        long? tenantId,
+        string? tenantId,
         long? userId,
         string? userName,
         LoginResult loginResult,
@@ -26,7 +27,7 @@ public sealed class AuthLoginFailedDomainEvent : DomainEventBase
         string? userAgent,
         string? deviceId = null)
     {
-        TenantId = tenantId;
+        TenantId = TenantIds.Normalize(tenantId);
         UserId = userId;
         UserName = userName;
         LoginResult = loginResult;

@@ -83,7 +83,7 @@ public sealed record OAuthClientInfo(
 public sealed record OAuthCreateCodeCommand(
     OAuthAuthorizeRequest Request,
     long UserId,
-    long? UserTenantId);
+    string? UserTenantId);
 
 /// <summary>
 /// 创建授权码结果

@@ -6,6 +6,7 @@ using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Infrastructure.Caching;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 
@@ -44,7 +45,7 @@ public sealed class DbMessageOutbox
     /// <param name="entityId">邮件/短信行主键</param>
     /// <param name="tenantId">邮件/短信行所属租户（行上的 TenantId，平台为 0）</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public Task EnqueueAsync(string channel, long entityId, long tenantId, CancellationToken cancellationToken = default)
+    public Task EnqueueAsync(string channel, long entityId, string tenantId, CancellationToken cancellationToken = default)
     {
         if (entityId <= 0)
         {
@@ -118,7 +119,7 @@ public sealed class DbMessageOutbox
                 && (e.EmailStatus == EmailStatus.Pending || (e.EmailStatus == EmailStatus.Failed && e.RetryCount < e.MaxRetryCount)))
             .Select(e => e.Id)
             .ToListAsync(cancellationToken);
-        result.AddRange(emailIds.Select(id => new MessageOutboxMessage { Channel = SaasMessageChannelNames.Email, EntityId = id, TenantId = scopeTenantId, CreatedAt = now }));
+        result.AddRange(emailIds.Select(id => new MessageOutboxMessage { Channel = SaasMessageChannelNames.Email, EntityId = id, TenantId = TenantIds.Of(scopeTenantId), CreatedAt = now }));
 
         var smsIds = await client.Queryable<SysSms>()
             .Where(s => !s.IsDeleted
@@ -126,7 +127,7 @@ public sealed class DbMessageOutbox
                 && (s.SmsStatus == SmsStatus.Pending || (s.SmsStatus == SmsStatus.Failed && s.RetryCount < s.MaxRetryCount)))
             .Select(s => s.Id)
             .ToListAsync(cancellationToken);
-        result.AddRange(smsIds.Select(id => new MessageOutboxMessage { Channel = SaasMessageChannelNames.Sms, EntityId = id, TenantId = scopeTenantId, CreatedAt = now }));
+        result.AddRange(smsIds.Select(id => new MessageOutboxMessage { Channel = SaasMessageChannelNames.Sms, EntityId = id, TenantId = TenantIds.Of(scopeTenantId), CreatedAt = now }));
 
         return result;
     }

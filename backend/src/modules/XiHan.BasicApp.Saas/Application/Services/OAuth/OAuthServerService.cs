@@ -15,6 +15,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Web.Core.Authentication.Jwt;
 using XiHan.BasicApp.Web.Core.Authentication.Oidc;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -174,9 +175,9 @@ public sealed class OAuthServerService : IOAuthServerService
         };
 
         // 授权码落库于用户所属租户上下文：令牌端点据 code.TenantId 还原租户并签发令牌
-        var effectiveTenantId = command.UserTenantId is > 0 ? command.UserTenantId : null;
+        var effectiveTenantId = !TenantIds.IsPlatform(command.UserTenantId) ? command.UserTenantId : null;
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using (_currentTenant.Change(effectiveTenantId, effectiveTenantId?.ToString()))
+        using (_currentTenant.Change(effectiveTenantId, effectiveTenantId))
         {
             _ = await _oauthCodeRepository.AddAsync(entity, cancellationToken);
         }
@@ -482,7 +483,7 @@ public sealed class OAuthServerService : IOAuthServerService
     private async Task<OAuthTokenResponse> IssueUserTokenAsync(
         SysOAuthApp app,
         SysUser user,
-        long tenantId,
+        string tenantId,
         GrantType grantType,
         string? scopes,
         bool issueRefresh,
@@ -491,10 +492,10 @@ public sealed class OAuthServerService : IOAuthServerService
         string? nonce = null)
     {
         var now = DateTimeOffset.UtcNow;
-        var effectiveTenantId = tenantId > 0 ? tenantId : (long?)null;
+        var effectiveTenantId = !TenantIds.IsPlatform(tenantId) ? tenantId : (string?)null;
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
-        using var tenantScope = _currentTenant.Change(effectiveTenantId, effectiveTenantId?.ToString());
+        using var tenantScope = _currentTenant.Change(effectiveTenantId, effectiveTenantId);
 
         var snapshot = await _authorizationSnapshotQueryService.BuildAsync(user.Id, now, cancellationToken);
         // OAuth 令牌不建 Web 会话；session_id 仅为 claim 占位（鉴权期"会话查不到→放行"，见 SaasPermissionChecker）
@@ -612,7 +613,7 @@ public sealed class OAuthServerService : IOAuthServerService
             new(JwtRegisteredClaimNames.Jti, accessTokenJti),
             new("client_id", app.ClientId)
         };
-        if (app.TenantId > 0)
+        if (!TenantIds.IsPlatform(app.TenantId))
         {
             claims.Add(new Claim(XiHanClaimTypes.TenantId, app.TenantId.ToString()));
         }
@@ -624,7 +625,7 @@ public sealed class OAuthServerService : IOAuthServerService
 
         var jwt = _jwtTokenService.GenerateAccessToken(claims);
 
-        var effectiveTenantId = app.TenantId > 0 ? app.TenantId : (long?)null;
+        var effectiveTenantId = !TenantIds.IsPlatform(app.TenantId) ? app.TenantId : (string?)null;
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
         using (_currentTenant.Change(effectiveTenantId, effectiveTenantId?.ToString()))
         {

@@ -18,7 +18,7 @@ public interface IProfileQueryService
     /// <summary>
     /// 获取当前用户个人资料
     /// </summary>
-    Task<UserProfileDto> GetProfileAsync(long userId, long? tenantId, CancellationToken cancellationToken = default);
+    Task<UserProfileDto> GetProfileAsync(long userId, string? tenantId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 获取当前用户会话列表

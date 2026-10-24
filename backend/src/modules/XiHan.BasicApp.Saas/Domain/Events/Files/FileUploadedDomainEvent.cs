@@ -7,7 +7,7 @@ namespace XiHan.BasicApp.Saas.Domain.Events;
 /// 文件上传完成事件
 /// </summary>
 public sealed class FileUploadedDomainEvent(
-    long tenantId,
+    string tenantId,
     long fileId,
     long storageId,
     string fileName,

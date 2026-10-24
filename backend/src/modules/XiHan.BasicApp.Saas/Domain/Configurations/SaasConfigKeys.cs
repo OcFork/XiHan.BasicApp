@@ -130,7 +130,7 @@ public static class SaasConfigKeys
     public static class Security
     {
         /// <summary>
-        /// 登录失败自动封禁（JSON，<see cref="SaasLoginAutoBanSettings"/>）：同一 IP 一段时间内登录失败过多即暂时封禁；只认平台（TenantId = 0）这一条。
+        /// 登录失败自动封禁（JSON，<see cref="SaasLoginAutoBanSettings"/>）：同一 IP 一段时间内登录失败过多即暂时封禁；只认平台（TenantId = TenantIds.Platform）这一条。
         /// </summary>
         public const string LoginAutoBan = "saas.security.login-auto-ban";
     }

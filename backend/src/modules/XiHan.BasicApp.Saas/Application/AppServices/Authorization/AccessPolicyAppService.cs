@@ -12,6 +12,7 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -119,7 +120,7 @@ public sealed class AccessPolicyAppService
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
-        if (_currentTenant.Id is > 0)
+        if (!TenantIds.IsPlatform(_currentTenant.Id))
         {
             throw new InvalidOperationException("自动封禁只能在平台解除。");
         }

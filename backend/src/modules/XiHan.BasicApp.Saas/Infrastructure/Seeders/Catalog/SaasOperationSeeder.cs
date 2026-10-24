@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 
@@ -39,7 +40,7 @@ public sealed class SaasOperationSeeder(
     {
         var codes = OperationSeeds.All.Select(static operation => operation.Code).ToList();
         var existing = (await DbClient.Queryable<SysOperation>()
-                .Where(operation => operation.TenantId == 0 && codes.Contains(operation.OperationCode))
+                .Where(operation => operation.TenantId == TenantIds.Platform && codes.Contains(operation.OperationCode))
                 .ToListAsync())
             .ToDictionary(operation => operation.OperationCode, StringComparer.Ordinal);
 

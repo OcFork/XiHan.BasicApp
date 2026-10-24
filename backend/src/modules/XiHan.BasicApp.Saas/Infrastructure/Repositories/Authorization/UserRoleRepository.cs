@@ -5,6 +5,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 
@@ -124,7 +125,7 @@ public sealed class UserRoleRepository(ISqlSugarClientResolver clientResolver)
     /// <summary>
     /// 跨租户获取此刻有成员持有指定角色的租户
     /// </summary>
-    public async Task<IReadOnlyList<long>> GetValidTenantIdsByRoleIdsIgnoreTenantAsync(IReadOnlyCollection<long> roleIds, DateTimeOffset now, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> GetValidTenantIdsByRoleIdsIgnoreTenantAsync(IReadOnlyCollection<long> roleIds, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(roleIds);
         cancellationToken.ThrowIfCancellationRequested();
@@ -136,7 +137,7 @@ public sealed class UserRoleRepository(ISqlSugarClientResolver clientResolver)
         }
 
         return await CreateNoTenantQueryable()
-            .Where(userRole => userRole.TenantId != 0 && ids.Contains(userRole.RoleId))
+            .Where(userRole => userRole.TenantId != TenantIds.Platform && ids.Contains(userRole.RoleId))
             .Where(userRole => userRole.Status == ValidityStatus.Valid)
             .Where(userRole => userRole.EffectiveTime == null || userRole.EffectiveTime <= now)
             .Where(userRole => userRole.ExpirationTime == null || userRole.ExpirationTime > now)

@@ -481,7 +481,7 @@ public sealed class ProfileDomainService
 
     private static UserSessionRevokedDomainEvent BuildUserSessionsRevokedEvent(
         SysUser user,
-        long sessionTenantKey,
+        string sessionTenantKey,
         long? operatorUserId,
         string reason)
     {

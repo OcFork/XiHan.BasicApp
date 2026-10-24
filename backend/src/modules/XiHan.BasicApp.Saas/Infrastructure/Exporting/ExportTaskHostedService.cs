@@ -11,6 +11,7 @@ using XiHan.BasicApp.Saas.Application.Exporting;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Caching;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Exporting;
 
@@ -173,7 +174,7 @@ public sealed class ExportTaskHostedService : XiHanBackgroundServiceBase<ExportT
                 foreach (var id in ids)
                 {
                     await _queue.EnqueueAsync(
-                        new ExportTaskMessage { ExportTaskId = id, TenantId = scopeTenantId ?? 0, CreatedAt = DateTimeOffset.UtcNow },
+                        new ExportTaskMessage { ExportTaskId = id, TenantId = TenantIds.Normalize(TenantIds.Of(scopeTenantId)), CreatedAt = DateTimeOffset.UtcNow },
                         TimeSpan.Zero,
                         cancellationToken);
                 }

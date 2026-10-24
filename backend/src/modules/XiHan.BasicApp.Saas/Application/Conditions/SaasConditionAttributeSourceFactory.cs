@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Authorization.Conditions;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Conditions;
 
@@ -46,7 +47,7 @@ public sealed class SaasConditionAttributeSourceFactory : ISaasConditionAttribut
         var userId = _currentUser.UserId is > 0 ? _currentUser.UserId : null;
         return new SaasConditionContext
         {
-            TenantId = _currentTenant.Id ?? 0,
+            TenantId = TenantIds.Normalize(_currentTenant.Id),
             Now = now,
             UserId = userId,
             UserName = userId is null ? null : _currentUser.UserName,

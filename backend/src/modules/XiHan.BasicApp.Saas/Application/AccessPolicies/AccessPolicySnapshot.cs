@@ -1,3 +1,4 @@
+using XiHan.BasicApp.Core.Tenancy;
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
@@ -8,7 +9,7 @@ namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 /// </summary>
 public sealed class AccessPolicySnapshot
 {
-    private readonly IReadOnlyDictionary<long, IReadOnlyList<CompiledAccessPolicy>> _tenants;
+    private readonly IReadOnlyDictionary<string, IReadOnlyList<CompiledAccessPolicy>> _tenants;
 
     /// <summary>
     /// 构造函数
@@ -22,11 +23,11 @@ public sealed class AccessPolicySnapshot
             .OrderBy(policy => policy.Priority)
             .ThenBy(policy => policy.PolicyId)
             .ToList();
-        Platform = [.. ordered.Where(policy => policy.TenantId == 0)];
+        Platform = [.. ordered.Where(policy => policy.TenantId == TenantIds.Platform)];
         PlatformBeforeAuthentication = [.. Platform.Where(policy => policy.IsBeforeAuthentication)];
         PlatformAfterAuthentication = [.. Platform.Where(policy => !policy.IsBeforeAuthentication)];
         _tenants = ordered
-            .Where(policy => policy.TenantId > 0)
+            .Where(policy => policy.TenantId != TenantIds.Platform)
             .GroupBy(policy => policy.TenantId)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<CompiledAccessPolicy>)[.. group]);
         Version = version;
@@ -60,7 +61,7 @@ public sealed class AccessPolicySnapshot
     /// <summary>
     /// 某个租户的策略
     /// </summary>
-    public IReadOnlyList<CompiledAccessPolicy> GetTenant(long tenantId)
+    public IReadOnlyList<CompiledAccessPolicy> GetTenant(string tenantId)
     {
         return _tenants.TryGetValue(tenantId, out var policies) ? policies : [];
     }

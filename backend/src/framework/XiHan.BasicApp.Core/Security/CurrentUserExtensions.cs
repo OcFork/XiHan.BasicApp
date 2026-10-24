@@ -1,7 +1,6 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System.Globalization;
 using System.Diagnostics;
 using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Utils.Extensions;
@@ -48,7 +47,7 @@ public static class CurrentUserExtensions
     {
         Debug.Assert(currentUser.UserId is not null, "当前用户唯一标识不为空");
 
-        return long.TryParse(currentUser.UserId, NumberStyles.None, CultureInfo.InvariantCulture, out var userId) ? userId : throw new InvalidOperationException("The current user ID is not numeric.");
+        return currentUser.UserId!.Value;
     }
 
     /// <summary>

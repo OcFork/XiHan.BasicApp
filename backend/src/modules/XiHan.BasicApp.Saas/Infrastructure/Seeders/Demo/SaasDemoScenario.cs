@@ -254,7 +254,7 @@ public static class SaasDemoScenario
         "employee", "普通员工", "只看本人数据：工作台、消息、通知、聊天、发起流程", DataPermissionScope.SelfOnly, EmployeeGrant, 20);
 
     /// <summary>
-    /// 全局角色模板（TenantId = 0）：平台账号在平台持有；租户可以把它分配给自己的成员，但改不了
+    /// 全局角色模板（TenantId = TenantIds.Platform）：平台账号在平台持有；租户可以把它分配给自己的成员，但改不了
     /// </summary>
     public static IReadOnlyList<DemoRole> GlobalRoles { get; } =
     [
@@ -275,7 +275,7 @@ public static class SaasDemoScenario
     ];
 
     /// <summary>
-    /// 平台账号（TenantId = 0，用用户名登录）
+    /// 平台账号（TenantId = TenantIds.Platform，用用户名登录）
     /// </summary>
     public static IReadOnlyList<DemoAccount> PlatformAccounts { get; } =
     [

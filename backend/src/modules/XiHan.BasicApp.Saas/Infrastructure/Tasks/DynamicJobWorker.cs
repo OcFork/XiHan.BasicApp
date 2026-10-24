@@ -10,6 +10,7 @@ using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Models;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 
@@ -69,7 +70,7 @@ public sealed class DynamicJobWorker : IJobWorker
             // 翻译成 boolean = integer 比较，PostgreSQL 直接报 42883。
             long? tenantId = context.TenantId;
             var tasks = tenantId is > 0
-                ? await repository.GetListAsync(task => task.TaskCode == jobName && task.TenantId == tenantId.Value)
+                ? await repository.GetListAsync(task => task.TaskCode == jobName && task.TenantId == TenantIds.Of(tenantId.Value))
                 : await repository.GetListAsync(task => task.TaskCode == jobName);
 
             var sysTask = tasks.FirstOrDefault();

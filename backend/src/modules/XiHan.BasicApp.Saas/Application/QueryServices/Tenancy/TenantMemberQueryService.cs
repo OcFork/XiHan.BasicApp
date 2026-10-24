@@ -16,6 +16,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 
@@ -127,16 +128,16 @@ public sealed class TenantMemberQueryService
     /// </summary>
     /// <param name="requestedTenantId">请求指定的租户（仅平台可指定）</param>
     /// <returns>要查看的租户</returns>
-    private long ResolveMemberTenantId(long? requestedTenantId)
+    private string ResolveMemberTenantId(string? requestedTenantId)
     {
         if (_currentTenant.IsPlatformOperation())
         {
-            return requestedTenantId ?? 0;
+            return TenantIds.Normalize(requestedTenantId);
         }
 
-        var currentTenantId = _currentTenant.Id!.Value;
-        return requestedTenantId is null || requestedTenantId == currentTenantId
-            ? currentTenantId
+        var currentTenantId = _currentTenant.Id;
+        return requestedTenantId is null || TenantIds.AreSame(requestedTenantId, currentTenantId)
+            ? TenantIds.Normalize(currentTenantId)
             : throw new InvalidOperationException("只能查看本租户的成员。");
     }
 
