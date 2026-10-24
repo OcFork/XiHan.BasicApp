@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Chat.Domain.DomainServices;
 
@@ -1095,11 +1096,11 @@ public sealed class ChatDomainService : IChatDomainService
         var ids = userIds.Distinct().ToList();
         var tenantId = _currentTenant.Id;
 
-        if (tenantId is not { } scopeId || scopeId == 0)
+        if (tenantId is not { } scopeId || TenantIds.IsPlatform(scopeId))
         {
             // 平台作用域：只允许平台账号（注册地 = 0）；账号严格隔离，按主键跨租户取来比对注册地
             var users = await _userRepository.GetListByIdsIgnoreTenantAsync(ids, cancellationToken);
-            var outsider = users.FirstOrDefault(user => user.TenantId != 0);
+            var outsider = users.FirstOrDefault(user => user.TenantId != TenantIds.Platform);
             if (outsider is not null)
             {
                 throw new InvalidOperationException($"用户「{outsider.UserName}」属于租户，不能加入平台会话；请在该租户内发起聊天。");

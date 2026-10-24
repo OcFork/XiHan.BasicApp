@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Chat.Application.EventHandlers;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Infrastructure.Seeders;
+using XiHan.BasicApp.Core.Data.SqlSugar.Seeders;
 
 namespace XiHan.BasicApp.Chat.Extensions;
 
@@ -47,7 +48,6 @@ public static class ServiceCollectionExtensions
     {
         // 部门归属变更 → 部门群成员同步（入部门进群/移出踢群）
         services.AddTransient<ChatDepartmentMemberSyncEventHandler>();
-        services.Configure<XiHanLocalEventBusOptions>(options => options.Handlers.AddIfNotContains(typeof(ChatDepartmentMemberSyncEventHandler)));
         return services;
     }
 }

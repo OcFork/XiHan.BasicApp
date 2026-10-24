@@ -1,17 +1,19 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.Caching.Distributed;
 using System.Globalization;
+using Microsoft.Extensions.Caching.Distributed;
+using XiHan.BasicApp.Core.Caching;
+using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Printing.Application.Caching;
 using XiHan.BasicApp.Printing.Application.Contracts;
 using XiHan.BasicApp.Printing.Application.Dtos;
-using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.BasicApp.Core.Security;
-using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Saas.Domain.DomainServices;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Application.Services;
 
@@ -70,8 +72,8 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
             throw new UserFriendlyException("打印模板编码无效。");
         }
 
-        var requestTenantId = _currentTenant.Id ?? 0;
-        if (requestTenantId == 0 && scope == PrintTemplateScope.Tenant)
+        var requestTenantId = TenantIds.Normalize(_currentTenant.Id);
+        if (requestTenantId == TenantIds.Platform && scope == PrintTemplateScope.Tenant)
         {
             throw new UserFriendlyException("平台上下文不能解析未指定租户的私有打印模板。");
         }
@@ -106,7 +108,7 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
     /// 按明确语义读取数据库并构造正缓存或负缓存项。
     /// </summary>
     private async Task<PrintTemplateCacheItem> ResolveCacheItemAsync(
-        long requestTenantId,
+        string requestTenantId,
         string templateCode,
         PrintTemplateScope scope,
         CancellationToken cancellationToken)
@@ -114,7 +116,7 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
         SysPrintTemplate? template;
         PrintTemplateScope resolvedScope;
 
-        if (requestTenantId == 0)
+        if (requestTenantId == TenantIds.Platform)
         {
             // 平台上下文的 Auto 与 Global 含义一致，且不要求 AllowTenantUse。
             template = await FindGlobalAsync(templateCode, requireTenantOpen: false, cancellationToken);
@@ -176,7 +178,7 @@ public sealed class PrintTemplateResolver : IPrintTemplateResolver
     {
         async Task<SysPrintTemplate?> QueryAsync()
         {
-            var template = await _repository.FindByCodeInScopeAsync(0, templateCode, true, cancellationToken);
+            var template = await _repository.FindByCodeInScopeAsync(TenantIds.Platform, templateCode, true, cancellationToken);
             return template is not null && (!requireTenantOpen || template.AllowTenantUse) ? template : null;
         }
 

@@ -18,9 +18,6 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Printing.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Permissions;
 using XiHan.BasicApp.Printing.Domain.Repositories;
-using XiHan.BasicApp.Printing.Operations.PrintDataSourceQuery;
-using XiHan.BasicApp.Printing.Operations.PrintTemplate;
-using XiHan.BasicApp.Printing.Operations.PrintTemplateQuery;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
@@ -36,10 +33,10 @@ namespace XiHan.BasicApp.Printing.Operations;
 /// 由 xihan migrate v4 生成；提交前请检查。
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, NumberHandling = JsonNumberHandling.AllowReadingFromString)]
-[JsonSerializable(typeof(EmptyResponse))]
-[JsonSerializable(typeof(GetListRequest))]
-[JsonSerializable(typeof(GetPrintTemplateDetailRequest))]
-[JsonSerializable(typeof(GetResolvedPrintTemplateByCodeRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.EmptyResponse))]
+[JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.PrintDataSourceQuery.GetListRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.PrintTemplateQuery.GetPrintTemplateDetailRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.PrintTemplateQuery.GetResolvedPrintTemplateByCodeRequest))]
 [JsonSerializable(typeof(List<PrintDataSourceDto>))]
 [JsonSerializable(typeof(PageResultDtoBase<PrintTemplateListItemDto>))]
 [JsonSerializable(typeof(PrintTemplateCreateDto))]

@@ -29,7 +29,7 @@ public sealed class GetByTableOperation(ICodeGenHistoryQueryService service) : I
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<CodeGenHistoryListItemDto>>> HandleAsync(GetByTableRequest request, InvocationContext context)
-        => await service.GetByTableAsync(request.TableId, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetByTableAsync(request.TableId, context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

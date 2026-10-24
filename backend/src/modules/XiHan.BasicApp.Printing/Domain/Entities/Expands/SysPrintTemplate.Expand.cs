@@ -3,6 +3,7 @@
 
 using SqlSugar;
 using System.ComponentModel.DataAnnotations;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Domain.Entities;
 
@@ -15,7 +16,7 @@ public partial class SysPrintTemplate : IValidatableObject
     /// 是否为平台全局模板；该值由租户标识派生，不单独落库以避免状态漂移。
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public bool IsGlobal => TenantId == 0;
+    public bool IsGlobal => TenantIds.IsPlatform(TenantId);
 
     /// <summary>
     /// 校验实体自身的业务规则

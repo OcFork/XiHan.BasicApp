@@ -22,7 +22,7 @@ public interface IPrintTemplateRepository : ISaasRepository<SysPrintTemplate>
     /// <exception cref="ArgumentException"><paramref name="templateCode"/> 为空。</exception>
     /// <exception cref="OperationCanceledException">查询被取消。</exception>
     Task<SysPrintTemplate?> FindByCodeInScopeAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         string templateCode,
         bool enabledOnly,
         CancellationToken cancellationToken = default);

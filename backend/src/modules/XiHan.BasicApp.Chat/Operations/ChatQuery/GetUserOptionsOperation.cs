@@ -35,5 +35,5 @@ public sealed class GetUserOptionsOperation(IChatQueryService service) : IOperat
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<UserSelectItemDto>>> HandleAsync(UserSelectQueryDto request, InvocationContext context)
-        => await service.GetUserOptionsAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetUserOptionsAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

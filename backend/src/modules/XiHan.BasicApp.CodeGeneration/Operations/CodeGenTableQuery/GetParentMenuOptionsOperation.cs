@@ -30,7 +30,7 @@ public sealed class GetParentMenuOptionsOperation(ICodeGenTableQueryService serv
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<CodeGenParentMenuOptionDto>>> HandleAsync(GetParentMenuOptionsRequest request, InvocationContext context)
-        => await service.GetParentMenuOptionsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetParentMenuOptionsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

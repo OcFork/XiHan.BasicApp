@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.CodeGeneration.Application.AppServices;
+using XiHan.BasicApp.CodeGeneration.Application.Contracts;
 using XiHan.BasicApp.CodeGeneration.Application.QueryServices;
 
 namespace XiHan.BasicApp.CodeGeneration;

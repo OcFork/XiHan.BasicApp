@@ -1,3 +1,4 @@
+using XiHan.BasicApp.Core.Tenancy;
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
@@ -15,9 +16,9 @@ public static class PrintingCacheKeys
     /// <param name="scope">请求作用域枚举值。</param>
     /// <param name="templateCode">已经规范化的模板编码。</param>
     /// <returns>业务缓存键。</returns>
-    public static string PrintTemplate(long? tenantId, int scope, string templateCode)
+    public static string PrintTemplate(string? tenantId, int scope, string templateCode)
     {
-        var tenantSegment = tenantId is > 0 ? tenantId.Value.ToString() : "platform";
+        var tenantSegment = !TenantIds.IsPlatform(tenantId) ? tenantId!.Trim() : "platform";
         return $"tenant:{tenantSegment}:scope:{scope}:code:{templateCode}";
     }
 

@@ -12,6 +12,7 @@ using XiHan.BasicApp.CodeGeneration.Domain.Generation;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using MenuType = XiHan.BasicApp.Saas.Domain.Entities.MenuType;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Generation;
 
@@ -660,7 +661,7 @@ public sealed partial class CodeGenerationEngine(
         }
 
         var parent = await _menuRepository.GetByIdAsync(parentMenuId, cancellationToken);
-        if (parent is null || parent.TenantId != 0)
+        if (parent is null || !TenantIds.IsPlatform(parent.TenantId))
         {
             return $"表 {table.TableName} 配置的父菜单（{parentMenuId}）不存在或不是平台菜单：请在表配置里重新选择父菜单。";
         }

@@ -1,8 +1,10 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.BasicApp.Printing.Domain.Enums;
+using XiHan.BasicApp.Core.Caching;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
+using XiHan.BasicApp.Printing.Domain.Enums;
 
 namespace XiHan.BasicApp.Printing.Application.Caching;
 

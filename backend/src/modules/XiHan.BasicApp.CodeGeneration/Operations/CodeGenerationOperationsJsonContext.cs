@@ -18,17 +18,6 @@ using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.CodeGeneration.Domain.Generation;
 using XiHan.BasicApp.CodeGeneration.Domain.Permissions;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenDataSource;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenDataSourceQuery;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenHistoryQuery;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenTable;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableColumn;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableColumnQuery;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableQuery;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenTemplate;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGenTemplateQuery;
-using XiHan.BasicApp.CodeGeneration.Operations.CodeGeneration;
-using XiHan.BasicApp.CodeGeneration.Operations.DynamicRuntime;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
 using XiHan.BasicApp.Saas.Application.Services;
@@ -76,16 +65,23 @@ namespace XiHan.BasicApp.CodeGeneration.Operations;
 [JsonSerializable(typeof(CodeGenTemplateUpdateDto))]
 [JsonSerializable(typeof(CodeGenTemplateValidateDto))]
 [JsonSerializable(typeof(CodeGenTemplateValidateResultDto))]
-[JsonSerializable(typeof(DeleteRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenDataSource.DeleteRequest), TypeInfoPropertyName = "CodeGenDataSourceDeleteRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTable.DeleteRequest), TypeInfoPropertyName = "CodeGenTableDeleteRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTemplate.DeleteRequest), TypeInfoPropertyName = "CodeGenTemplateDeleteRequest")]
 [JsonSerializable(typeof(DynamicRuntimePageQueryDto))]
 [JsonSerializable(typeof(DynamicRuntimePageResultDto))]
 [JsonSerializable(typeof(DynamicRuntimeSchemaDto))]
-[JsonSerializable(typeof(EmptyResponse))]
-[JsonSerializable(typeof(GetByTableRequest))]
-[JsonSerializable(typeof(GetDetailRequest))]
-[JsonSerializable(typeof(GetOptionsRequest))]
-[JsonSerializable(typeof(GetParentMenuOptionsRequest))]
-[JsonSerializable(typeof(GetSchemaRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.EmptyResponse))]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenHistoryQuery.GetByTableRequest), TypeInfoPropertyName = "CodeGenHistoryQueryGetByTableRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableColumnQuery.GetByTableRequest), TypeInfoPropertyName = "CodeGenTableColumnQueryGetByTableRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenDataSourceQuery.GetDetailRequest), TypeInfoPropertyName = "CodeGenDataSourceQueryGetDetailRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenHistoryQuery.GetDetailRequest), TypeInfoPropertyName = "CodeGenHistoryQueryGetDetailRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableQuery.GetDetailRequest), TypeInfoPropertyName = "CodeGenTableQueryGetDetailRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTemplateQuery.GetDetailRequest), TypeInfoPropertyName = "CodeGenTemplateQueryGetDetailRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenDataSourceQuery.GetOptionsRequest), TypeInfoPropertyName = "CodeGenDataSourceQueryGetOptionsRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableQuery.GetOptionsRequest), TypeInfoPropertyName = "CodeGenTableQueryGetOptionsRequest")]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenTableQuery.GetParentMenuOptionsRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.DynamicRuntime.GetSchemaRequest))]
 [JsonSerializable(typeof(IReadOnlyList<CodeGenDataSourceListItemDto>))]
 [JsonSerializable(typeof(IReadOnlyList<CodeGenHistoryListItemDto>))]
 [JsonSerializable(typeof(IReadOnlyList<CodeGenParentMenuOptionDto>))]
@@ -96,6 +92,6 @@ namespace XiHan.BasicApp.CodeGeneration.Operations;
 [JsonSerializable(typeof(PageResultDtoBase<CodeGenHistoryListItemDto>))]
 [JsonSerializable(typeof(PageResultDtoBase<CodeGenTableListItemDto>))]
 [JsonSerializable(typeof(PageResultDtoBase<CodeGenTemplateListItemDto>))]
-[JsonSerializable(typeof(SyncSchemaRequest))]
-[JsonSerializable(typeof(TestConnectionRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGeneration.SyncSchemaRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.CodeGeneration.Operations.CodeGenDataSource.TestConnectionRequest))]
 internal sealed partial class CodeGenerationOperationsJsonContext : JsonSerializerContext;

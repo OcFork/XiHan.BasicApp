@@ -40,7 +40,7 @@ public sealed record PrintTemplateCreateCommand(
 /// <param name="Remark">备注。</param>
 public sealed record PrintTemplateUpdateCommand(
     long Id,
-    long ExpectedRowVersion,
+    string? ExpectedRowVersion,
     string? DataSourceCode,
     string TemplateName,
     string TemplateJson,
@@ -57,7 +57,7 @@ public sealed record PrintTemplateUpdateCommand(
 /// <param name="Remark">可选操作备注。</param>
 public sealed record PrintTemplateStatusChangeCommand(
     long Id,
-    long ExpectedRowVersion,
+    string? ExpectedRowVersion,
     EnableStatus Status,
     string? Remark);
 
@@ -66,7 +66,7 @@ public sealed record PrintTemplateStatusChangeCommand(
 /// </summary>
 /// <param name="Id">模板主键。</param>
 /// <param name="ExpectedRowVersion">客户端读取到的行版本。</param>
-public sealed record PrintTemplateDeleteCommand(long Id, long ExpectedRowVersion);
+public sealed record PrintTemplateDeleteCommand(long Id, string? ExpectedRowVersion);
 
 /// <summary>
 /// 打印模板命令执行结果。

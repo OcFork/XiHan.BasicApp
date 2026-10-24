@@ -35,7 +35,7 @@ public sealed class GetDepartmentTreeOperation(IChatQueryService service) : IOpe
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<DepartmentTreeNodeDto>>> HandleAsync(GetDepartmentTreeRequest request, InvocationContext context)
-        => await service.GetDepartmentTreeAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetDepartmentTreeAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

@@ -118,7 +118,6 @@ public static class ServiceCollectionExtensions
         where THandler : class
     {
         services.AddTransient<THandler>();
-        services.Configure<XiHanLocalEventBusOptions>(options => options.Handlers.AddIfNotContains(typeof(THandler)));
         return services;
     }
 

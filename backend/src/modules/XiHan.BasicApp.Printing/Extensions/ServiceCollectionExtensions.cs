@@ -2,15 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using XiHan.BasicApp.Core.Data.SqlSugar.Seeders;
 using XiHan.BasicApp.Printing.Application.Caching;
 using XiHan.BasicApp.Printing.Application.Contracts;
 using XiHan.BasicApp.Printing.Application.Services;
 using XiHan.BasicApp.Printing.Domain.DataSources;
 using XiHan.BasicApp.Printing.Domain.DomainServices;
-using XiHan.BasicApp.Printing.Infrastructure.Seeders;
 using XiHan.BasicApp.Printing.Domain.Entities;
+using XiHan.BasicApp.Printing.Infrastructure.Seeders;
 using XiHan.BasicApp.Saas.Extensions;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

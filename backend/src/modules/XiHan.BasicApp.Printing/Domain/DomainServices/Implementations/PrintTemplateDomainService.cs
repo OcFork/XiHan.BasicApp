@@ -10,6 +10,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Domain.DomainServices;
 
@@ -77,7 +78,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
         ArgumentNullException.ThrowIfNull(command);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var ownerTenantId = _currentTenant.Id ?? 0;
+        var ownerTenantId = TenantIds.Normalize(_currentTenant.Id);
         var templateCode = NormalizeCode(command.TemplateCode, "模板编码");
         var dataSourceCode = NormalizeOptionalCode(command.DataSourceCode, "数据源编码");
         EnsureDataSourceRegistered(dataSourceCode);
@@ -102,7 +103,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
             TemplateName = command.TemplateName.Trim(),
             TemplateJson = command.TemplateJson,
             // 租户私有模板不允许携带全局开放标记，避免后续误判可见边界。
-            AllowTenantUse = ownerTenantId == 0 && command.AllowTenantUse,
+            AllowTenantUse = ownerTenantId == TenantIds.Platform && command.AllowTenantUse,
             Status = command.Status,
             Sort = command.Sort,
             Remark = NormalizeNullable(command.Remark)
@@ -245,7 +246,7 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
             throw new UserFriendlyException("打印模板主键必须大于 0。");
         }
 
-        var ownerTenantId = _currentTenant.Id ?? 0;
+        var ownerTenantId = TenantIds.Normalize(_currentTenant.Id);
         return await _repository.FindByIdInScopeAsync(ownerTenantId, id, cancellationToken)
             ?? throw new UserFriendlyException("打印模板不存在或不属于当前作用域。");
     }
@@ -253,9 +254,9 @@ public sealed class PrintTemplateDomainService : IPrintTemplateDomainService
     /// <summary>
     /// 比较客户端版本与当前实体版本；数据库更新仍会执行第二道乐观锁检查以覆盖读取后的竞态窗口。
     /// </summary>
-    private static void EnsureExpectedVersion(SysPrintTemplate template, long expectedRowVersion)
+    private static void EnsureExpectedVersion(SysPrintTemplate template, string? expectedConcurrencyStamp)
     {
-        if (expectedRowVersion < 0 || template.ConcurrencyStamp != expectedRowVersion)
+        if (string.IsNullOrWhiteSpace(expectedConcurrencyStamp) || !string.Equals(template.ConcurrencyStamp, expectedConcurrencyStamp, StringComparison.Ordinal))
         {
             throw new UserFriendlyException("打印模板已被其他用户修改，请刷新后重试。");
         }

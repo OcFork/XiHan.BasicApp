@@ -6,11 +6,12 @@ using XiHan.BasicApp.Printing.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Infrastructure.Seeders;
 
 /// <summary>
-/// 打印演示模板种子：六张平台全局模板（TenantId = 0，对租户开放），演示开关打开时才写
+/// 打印演示模板种子：六张平台全局模板（TenantId = TenantIds.Platform，对租户开放），演示开关打开时才写
 /// </summary>
 /// <remarks>
 /// 按模板编码先查后写（含已删除的行），已有的不改、删掉的不补回；模板内容见 <see cref="PrintingDemoCatalog"/>。
@@ -39,7 +40,7 @@ public sealed class PrintingDemoTemplateSeeder(
         var codes = PrintingDemoCatalog.Templates.Select(static template => template.Code).ToList();
         var existing = (await DbClientFor<SysPrintTemplate>().Queryable<SysPrintTemplate>()
                 .IncludingDeleted()
-                .Where(template => template.TenantId == 0 && codes.Contains(template.TemplateCode))
+                .Where(template => template.TenantId == TenantIds.Platform && codes.Contains(template.TemplateCode))
                 .Select(template => template.TemplateCode)
                 .ToListAsync())
             .ToHashSet(StringComparer.Ordinal);
@@ -54,7 +55,7 @@ public sealed class PrintingDemoTemplateSeeder(
 
             _ = await DbClientFor<SysPrintTemplate>().Insertable(new SysPrintTemplate
             {
-                TenantId = 0,
+                TenantId = TenantIds.Platform,
                 TemplateCode = demo.Code,
                 TemplateName = demo.Name,
                 DataSourceCode = demo.DataSourceCode,

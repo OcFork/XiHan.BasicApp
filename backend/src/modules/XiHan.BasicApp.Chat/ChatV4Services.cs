@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Chat.Application.AppServices;
+using XiHan.BasicApp.Chat.Application.Contracts;
 using XiHan.BasicApp.Chat.Application.EventHandlers;
 using XiHan.BasicApp.Chat.Application.QueryServices;
 using XiHan.BasicApp.Chat.Application.Services;

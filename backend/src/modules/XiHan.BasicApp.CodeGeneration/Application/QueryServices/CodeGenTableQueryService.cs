@@ -16,6 +16,7 @@ using MenuType = XiHan.BasicApp.Saas.Domain.Entities.MenuType;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.QueryServices;
 
@@ -134,7 +135,7 @@ public sealed class CodeGenTableQueryService : CodeGenerationApplicationService,
         cancellationToken.ThrowIfCancellationRequested();
 
         var menus = await _menuRepository.GetListAsync(
-            menu => menu.TenantId == 0 && menu.MenuType != MenuType.Button,
+            menu => menu.TenantId == TenantIds.Platform && menu.MenuType != MenuType.Button,
             cancellationToken);
 
         return [.. menus

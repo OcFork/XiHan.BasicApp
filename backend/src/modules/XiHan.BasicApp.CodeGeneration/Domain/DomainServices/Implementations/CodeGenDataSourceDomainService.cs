@@ -1,11 +1,12 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using SqlSugar;
 using System.Diagnostics;
+using SqlSugar;
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
+using XiHan.BasicApp.Core.Data.SqlSugar.Connections;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.Framework.Utils.Security.Cryptography;
 

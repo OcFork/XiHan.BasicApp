@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Printing.Application.AppServices;
+using XiHan.BasicApp.Printing.Application.Contracts;
 using XiHan.BasicApp.Printing.Application.QueryServices;
 
 namespace XiHan.BasicApp.Printing;

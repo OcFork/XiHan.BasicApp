@@ -15,9 +15,6 @@ using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Domain.Entities;
 using XiHan.BasicApp.Chat.Domain.Permissions;
 using XiHan.BasicApp.Chat.Domain.Repositories;
-using XiHan.BasicApp.Chat.Operations.Chat;
-using XiHan.BasicApp.Chat.Operations.ChatAuditQuery;
-using XiHan.BasicApp.Chat.Operations.ChatQuery;
 using XiHan.BasicApp.Core.Dtos;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Extensions;
@@ -61,12 +58,12 @@ namespace XiHan.BasicApp.Chat.Operations;
 [JsonSerializable(typeof(ChatReactionToggleResultDto))]
 [JsonSerializable(typeof(ChatSingleConversationOpenDto))]
 [JsonSerializable(typeof(ChatToggleStateDto))]
-[JsonSerializable(typeof(EmptyResponse))]
-[JsonSerializable(typeof(GetDepartmentTreeRequest))]
-[JsonSerializable(typeof(GetMembersRequest))]
-[JsonSerializable(typeof(GetMyConversationsRequest))]
-[JsonSerializable(typeof(GetPinnedMessagesRequest))]
-[JsonSerializable(typeof(GetReadPositionsRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.EmptyResponse))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.ChatQuery.GetDepartmentTreeRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.ChatQuery.GetMembersRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.ChatQuery.GetMyConversationsRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.ChatQuery.GetPinnedMessagesRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.ChatQuery.GetReadPositionsRequest))]
 [JsonSerializable(typeof(IReadOnlyList<DepartmentTreeNodeDto>))]
 [JsonSerializable(typeof(IReadOnlyList<UserSelectItemDto>))]
 [JsonSerializable(typeof(List<ChatConversationListItemDto>))]
@@ -74,6 +71,6 @@ namespace XiHan.BasicApp.Chat.Operations;
 [JsonSerializable(typeof(List<ChatMessageItemDto>))]
 [JsonSerializable(typeof(List<ChatReadPositionDto>))]
 [JsonSerializable(typeof(PageResultDtoBase<ChatAuditListItemDto>))]
-[JsonSerializable(typeof(RecallMessageRequest))]
+[JsonSerializable(typeof(XiHan.BasicApp.Chat.Operations.Chat.RecallMessageRequest))]
 [JsonSerializable(typeof(UserSelectQueryDto))]
 internal sealed partial class ChatOperationsJsonContext : JsonSerializerContext;

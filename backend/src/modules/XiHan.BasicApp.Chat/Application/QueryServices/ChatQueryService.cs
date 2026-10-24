@@ -20,6 +20,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.BasicApp.Chat.Domain.Permissions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Chat.Application.QueryServices;
 
@@ -286,7 +287,7 @@ public sealed class ChatQueryService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var scopeId = _currentTenant.Id ?? 0;
+        var scopeId = TenantIds.Normalize(_currentTenant.Id);
         var departments = await _departmentRepository.GetListAsync(
             department => department.TenantId == scopeId && department.Status == EnableStatus.Enabled,
             cancellationToken);

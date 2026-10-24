@@ -30,7 +30,7 @@ public sealed class GetOptionsOperation(ICodeGenTableQueryService service) : IOp
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<CodeGenTableListItemDto>>> HandleAsync(GetOptionsRequest request, InvocationContext context)
-        => await service.GetOptionsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetOptionsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

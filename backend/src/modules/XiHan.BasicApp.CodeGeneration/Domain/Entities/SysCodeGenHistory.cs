@@ -3,6 +3,8 @@
 
 using SqlSugar;
 using XiHan.BasicApp.CodeGeneration.Domain.Enums;
+using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
+using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.CodeGeneration.Domain.Entities;
 

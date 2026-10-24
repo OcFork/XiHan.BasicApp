@@ -133,19 +133,7 @@ public static class PrintTemplateApplicationMapper
     }
 
     /// <summary>
-    /// 安全解析客户端字符串行版本。
+    /// 规范化客户端带来的并发戳：空白视为未提供
     /// </summary>
-    /// <param name="value">十进制字符串。</param>
-    /// <returns>非负行版本。</returns>
-    /// <exception cref="UserFriendlyException">值为空、负数或不是十进制整数。</exception>
-    public static long ParseRowVersion(string value)
-    {
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var rowVersion)
-            || rowVersion < 0)
-        {
-            throw new UserFriendlyException("打印模板行版本无效，请刷新后重试。");
-        }
-
-        return rowVersion;
-    }
+    public static string? ParseRowVersion(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

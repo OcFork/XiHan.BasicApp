@@ -3,11 +3,12 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
+using XiHan.BasicApp.CodeGeneration.Domain.Entities;
 using XiHan.BasicApp.CodeGeneration.Domain.Generation;
 using XiHan.BasicApp.CodeGeneration.Infrastructure.Generation;
 using XiHan.BasicApp.CodeGeneration.Infrastructure.Inference;
 using XiHan.BasicApp.CodeGeneration.Infrastructure.Seeders;
-using XiHan.BasicApp.CodeGeneration.Domain.Entities;
+using XiHan.BasicApp.Core.Data.SqlSugar.Seeders;
 using XiHan.BasicApp.Saas.Extensions;
 
 namespace XiHan.BasicApp.CodeGeneration.Extensions;

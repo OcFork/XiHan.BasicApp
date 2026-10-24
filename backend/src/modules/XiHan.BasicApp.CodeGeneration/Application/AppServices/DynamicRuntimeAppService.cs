@@ -10,6 +10,7 @@ using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 
@@ -129,11 +130,11 @@ public sealed class DynamicRuntimeAppService : CodeGenerationApplicationService,
         IReadOnlyList<SysCodeGenTableColumn> columns,
         string tableName)
     {
-        var tenantId = _currentTenant.Id ?? 0;
+        var tenantId = TenantIds.Normalize(_currentTenant.Id);
         var tenantColumn = FindColumn(columns, "tenantid", "tenant_id");
         if (tenantColumn is null)
         {
-            return tenantId == 0
+            return tenantId == TenantIds.Platform
                 ? query
                 : throw new InvalidOperationException($"表 {tableName} 没有租户列，不归属任何租户，只能在平台访问。");
         }

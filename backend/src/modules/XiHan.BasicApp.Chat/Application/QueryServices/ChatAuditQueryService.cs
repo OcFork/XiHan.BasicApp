@@ -8,11 +8,11 @@ using XiHan.BasicApp.Chat.Application.Contracts;
 using XiHan.BasicApp.Chat.Application.Dtos;
 using XiHan.BasicApp.Chat.Domain.DomainServices;
 using XiHan.BasicApp.Chat.Domain.Entities;
+using XiHan.BasicApp.Chat.Domain.Permissions;
+using XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Models;
-
-using XiHan.BasicApp.Chat.Domain.Permissions;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Chat.Application.QueryServices;
 

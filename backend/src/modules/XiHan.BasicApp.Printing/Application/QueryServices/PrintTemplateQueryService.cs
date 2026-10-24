@@ -20,6 +20,7 @@ using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Application.QueryServices;
 
@@ -65,7 +66,7 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
         var scope = ResolveQueryScope(input.Scope);
-        return await QueryPageAsync(input, scope, availableGlobalOnly: scope.IsGlobal && scope.RequestTenantId > 0, cancellationToken);
+        return await QueryPageAsync(input, scope, availableGlobalOnly: scope.IsGlobal && !TenantIds.IsPlatform(scope.RequestTenantId), cancellationToken);
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     {
         ArgumentNullException.ThrowIfNull(input);
         cancellationToken.ThrowIfCancellationRequested();
-        var scope = new PrintTemplateQueryScope(0, true, _currentTenant.Id ?? 0);
+        var scope = new PrintTemplateQueryScope(TenantIds.Platform, true, TenantIds.Normalize(_currentTenant.Id));
         return await QueryPageAsync(input, scope, availableGlobalOnly: true, cancellationToken);
     }
 
@@ -112,7 +113,7 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
         }
 
         if (queryScope.IsGlobal
-            && queryScope.RequestTenantId > 0
+            && !TenantIds.IsPlatform(queryScope.RequestTenantId)
             && (template.Status != EnableStatus.Enabled || !template.AllowTenantUse))
         {
             throw new UserFriendlyException("该全局打印模板未向当前租户开放。");
@@ -237,19 +238,19 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
             throw new UserFriendlyException("打印模板作用域无效。");
         }
 
-        var requestTenantId = _currentTenant.Id ?? 0;
-        if (requestTenantId == 0)
+        var requestTenantId = TenantIds.Normalize(_currentTenant.Id);
+        if (requestTenantId == TenantIds.Platform)
         {
             if (scope == PrintTemplateScope.Tenant)
             {
                 throw new UserFriendlyException("平台上下文不能查询未指定租户的私有打印模板。");
             }
 
-            return new PrintTemplateQueryScope(0, true, 0);
+            return new PrintTemplateQueryScope(TenantIds.Platform, true, TenantIds.Platform);
         }
 
         return scope == PrintTemplateScope.Global
-            ? new PrintTemplateQueryScope(0, true, requestTenantId)
+            ? new PrintTemplateQueryScope(TenantIds.Platform, true, requestTenantId)
             : new PrintTemplateQueryScope(requestTenantId, false, requestTenantId);
     }
 
@@ -276,5 +277,5 @@ public sealed class PrintTemplateQueryService : PrintingApplicationService, IPri
     /// <param name="OwnerTenantId">实体所属租户，0 表示全局。</param>
     /// <param name="IsGlobal">是否读取平台数据库。</param>
     /// <param name="RequestTenantId">原始请求租户，0 表示平台。</param>
-    private sealed record PrintTemplateQueryScope(long OwnerTenantId, bool IsGlobal, long RequestTenantId);
+    private sealed record PrintTemplateQueryScope(string OwnerTenantId, bool IsGlobal, string RequestTenantId);
 }

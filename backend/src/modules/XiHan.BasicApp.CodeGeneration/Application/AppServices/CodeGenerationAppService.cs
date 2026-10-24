@@ -1,8 +1,10 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System.Text;
 using System.Text.Json;
+using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.CodeGeneration.Application.Contracts;
 using XiHan.BasicApp.CodeGeneration.Application.Dtos;
 using XiHan.BasicApp.CodeGeneration.Domain.Entities;
@@ -10,12 +12,11 @@ using XiHan.BasicApp.CodeGeneration.Domain.Enums;
 using XiHan.BasicApp.CodeGeneration.Domain.Generation;
 using XiHan.BasicApp.CodeGeneration.Domain.Permissions;
 using XiHan.BasicApp.CodeGeneration.Domain.Repositories;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.Localization.Abstractions;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Localization;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Saas.Domain.Enums;
+using XiHan.Framework.Localization.Abstractions;
 
 namespace XiHan.BasicApp.CodeGeneration.Application.AppServices;
 

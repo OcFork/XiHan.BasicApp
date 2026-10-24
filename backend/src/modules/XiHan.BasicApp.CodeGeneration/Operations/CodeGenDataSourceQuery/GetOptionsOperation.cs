@@ -29,7 +29,7 @@ public sealed class GetOptionsOperation(ICodeGenDataSourceQueryService service) 
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<CodeGenDataSourceListItemDto>>> HandleAsync(GetOptionsRequest request, InvocationContext context)
-        => await service.GetOptionsAsync(context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.GetOptionsAsync(context.CancellationToken).ConfigureAwait(false));
 }
 
 /// <summary>

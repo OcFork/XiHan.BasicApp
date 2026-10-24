@@ -29,5 +29,5 @@ public sealed class ListDatabaseTablesOperation(ICodeGenerationAppService servic
 {
     /// <inheritdoc />
     public async ValueTask<Result<IReadOnlyList<string>>> HandleAsync(CodeGenDbTableQueryDto request, InvocationContext context)
-        => await service.ListDatabaseTablesAsync(request, context.CancellationToken).ConfigureAwait(false);
+        => Result.Success(await service.ListDatabaseTablesAsync(request, context.CancellationToken).ConfigureAwait(false));
 }

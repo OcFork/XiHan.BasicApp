@@ -6,6 +6,7 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Printing.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Infrastructure.Repositories;
 
@@ -27,7 +28,7 @@ public sealed class PrintTemplateRepository(ISqlSugarClientResolver clientResolv
     /// <exception cref="ArgumentException"><paramref name="templateCode"/> 为空。</exception>
     /// <exception cref="OperationCanceledException">查询被取消。</exception>
     public async Task<SysPrintTemplate?> FindByCodeInScopeAsync(
-        long ownerTenantId,
+        string ownerTenantId,
         string templateCode,
         bool enabledOnly,
         CancellationToken cancellationToken = default)

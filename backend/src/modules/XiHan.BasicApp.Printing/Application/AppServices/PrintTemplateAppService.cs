@@ -16,6 +16,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Core.Authorization.Permissions;
 using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Printing.Application.AppServices;
 
@@ -228,7 +229,7 @@ public sealed class PrintTemplateAppService : PrintingApplicationService, IPrint
         bool success,
         Exception? exception)
     {
-        var tenantId = _currentTenant.Id ?? 0;
+        var tenantId = TenantIds.Normalize(_currentTenant.Id);
         var operatorId = _currentUser.UserId;
         if (success)
         {

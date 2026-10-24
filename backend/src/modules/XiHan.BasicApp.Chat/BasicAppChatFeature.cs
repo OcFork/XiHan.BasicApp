@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Builder;
 using XiHan.BasicApp.Chat.Extensions;
 using XiHan.BasicApp.Chat.Hubs;
 using XiHan.BasicApp.Saas;
-using XiHan.Framework.Kernel;
-using XiHan.Framework.Kernel.Hosting;
-using XiHan.Framework.Primitives;
-using XiHan.Framework.Primitives.Manifests;
 using XiHan.BasicApp.Web.Core.RealTime.Constants;
+using XiHan.BasicApp.Web.Core.RealTime.Extensions;
+using XiHan.Framework.Kernel.Hosting;
+using XiHan.Framework.Kernel;
+using XiHan.Framework.Primitives.Manifests;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Chat;
 
@@ -53,10 +54,8 @@ public sealed class BasicAppChatFeature : IHostedFeature
     /// <inheritdoc />
     public Task StartAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
-        // xihan-migrate(V4-01): GetApplicationBuilder() 在 StartAsync 里没有对应物；中间件与端点改到 Program.cs 的 app.UseXiHan() 之后注册。
-        var app = context.GetApplicationBuilder();
-
-        app.UseEndpoints(endpoints => endpoints.MapXiHanHub<BasicAppChatHub>(SignalRConstants.HubPaths.Chat));
+        // xihan-migrate(P5-04): 端点改到宿主 Program.cs 的 app.UseXiHan() 之后注册：
+        //   MapXiHanHub<BasicAppChatHub>(SignalRConstants.HubPaths.Chat))
 
         return Task.CompletedTask;
     }
