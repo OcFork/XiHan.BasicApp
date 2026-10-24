@@ -44,7 +44,12 @@ public sealed class CodeGenPermissionCatalogSeeder(
     /// <summary>
     /// 本模块的权限
     /// </summary>
-    public override IReadOnlyList<PermissionSeed> Permissions { get; } =
+    public override IReadOnlyList<PermissionSeed> Permissions => Seeds;
+
+    /// <summary>
+    /// 本模块的权限（静态清单；特性启动时据此登记进 5.0 权限注册表）
+    /// </summary>
+    public static IReadOnlyList<PermissionSeed> Seeds { get; } =
     [
         .. PermissionSeed.Of(CodeGen, PermissionSide.Platform, 3000,
             OperationSeeds.Read, OperationSeeds.Create, OperationSeeds.Update, OperationSeeds.Delete, OperationSeeds.Import, OperationSeeds.Execute),

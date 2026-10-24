@@ -11,6 +11,8 @@ using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Kernel;
 using XiHan.Framework.Primitives.Manifests;
 using XiHan.Framework.Primitives;
+using XiHan.BasicApp.Chat.Infrastructure.Seeders;
+using XiHan.BasicApp.Saas.Infrastructure.Security;
 
 namespace XiHan.BasicApp.Chat;
 
@@ -44,6 +46,10 @@ public sealed class BasicAppChatFeature : IHostedFeature
     public void Configure(FeatureContext context)
     {
         var services = context.Services;
+
+        // 登记本程序集全部 [Operation]（源生成器产出）与本模块权限目录
+        context.AddGeneratedOperations();
+        context.AddPermissionSeeds(ChatPermissionCatalogSeeder.Seeds);
 
         // 种子（权限 → 菜单 → 角色授权 → 任务 → 配置）+ 领域服务 + 事件处理器
         services.AddChatDataSeeders();

@@ -44,7 +44,12 @@ public sealed class ChatPermissionCatalogSeeder(
     /// <summary>
     /// 本模块的权限
     /// </summary>
-    public override IReadOnlyList<PermissionSeed> Permissions { get; } =
+    public override IReadOnlyList<PermissionSeed> Permissions => Seeds;
+
+    /// <summary>
+    /// 本模块的权限（静态清单；特性启动时据此登记进 5.0 权限注册表）
+    /// </summary>
+    public static IReadOnlyList<PermissionSeed> Seeds { get; } =
     [
         new(ChatPermissionCodes.Read, "聊天查看", "查看当前用户的聊天会话列表与消息历史", ChatPermissionCodes.Module, PermissionSide.Both, true, 3300, Chat, OperationSeeds.Read),
         new(ChatPermissionCodes.Send, "聊天发送", "在所属会话内发送消息与撤回自己的消息", ChatPermissionCodes.Module, PermissionSide.Both, true, 3301, Chat, OperationSeeds.Send),

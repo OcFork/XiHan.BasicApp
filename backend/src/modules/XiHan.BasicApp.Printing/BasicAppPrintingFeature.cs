@@ -9,6 +9,8 @@ using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Primitives;
 using XiHan.Framework.Primitives.Manifests;
+using XiHan.BasicApp.Printing.Infrastructure.Seeders;
+using XiHan.BasicApp.Saas.Infrastructure.Security;
 
 namespace XiHan.BasicApp.Printing;
 
@@ -42,6 +44,10 @@ public sealed class BasicAppPrintingFeature : IHostedFeature
     public void Configure(FeatureContext context)
     {
         var services = context.Services;
+
+        // 登记本程序集全部 [Operation]（源生成器产出）与本模块权限目录
+        context.AddGeneratedOperations();
+        context.AddPermissionSeeds(PrintingPermissionCatalogSeeder.Seeds);
 
         // 种子（权限 → 菜单 → 角色授权）+ 领域服务 + 解析器与缓存 + 数据源注册表（含内置示例）
         services.AddPrintingDataSeeders();

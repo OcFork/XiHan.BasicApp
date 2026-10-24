@@ -44,7 +44,12 @@ public sealed class PrintingPermissionCatalogSeeder(
     /// <summary>
     /// 本模块的权限
     /// </summary>
-    public override IReadOnlyList<PermissionSeed> Permissions { get; } =
+    public override IReadOnlyList<PermissionSeed> Permissions => Seeds;
+
+    /// <summary>
+    /// 本模块的权限（静态清单；特性启动时据此登记进 5.0 权限注册表）
+    /// </summary>
+    public static IReadOnlyList<PermissionSeed> Seeds { get; } =
     [
         new(PrintingPermissionCodes.Read, "打印模板查看", "查看当前作用域打印模板列表与详情", PrintingPermissionCodes.Module, PermissionSide.Both, false, 3400, PrintTemplate, OperationSeeds.Read),
         new(PrintingPermissionCodes.Create, "打印模板创建", "创建当前作用域打印模板", PrintingPermissionCodes.Module, PermissionSide.Both, true, 3401, PrintTemplate, OperationSeeds.Create),

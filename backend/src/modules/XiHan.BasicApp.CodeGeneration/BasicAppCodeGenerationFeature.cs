@@ -8,6 +8,8 @@ using XiHan.Framework.Kernel;
 using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Primitives;
 using XiHan.Framework.Primitives.Manifests;
+using XiHan.BasicApp.CodeGeneration.Infrastructure.Seeders;
+using XiHan.BasicApp.Saas.Infrastructure.Security;
 
 namespace XiHan.BasicApp.CodeGeneration;
 
@@ -36,6 +38,10 @@ public sealed class BasicAppCodeGenerationFeature : IFeature
     public void Configure(FeatureContext context)
     {
         var services = context.Services;
+
+        // 登记本程序集全部 [Operation]（源生成器产出）与本模块权限目录
+        context.AddGeneratedOperations();
+        context.AddPermissionSeeds(CodeGenPermissionCatalogSeeder.Seeds);
 
         // 注册代码生成模块种子数据
         services.AddCodeGenerationDataSeeders();
