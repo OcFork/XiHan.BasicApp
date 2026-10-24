@@ -52,6 +52,9 @@ public sealed class BasicAppChatFeature : IHostedFeature
         context.AddPermissionSeeds(ChatPermissionCatalogSeeder.Seeds);
 
         // 种子（权限 → 菜单 → 角色授权 → 任务 → 配置）+ 领域服务 + 事件处理器
+        // 应用服务（xihan migrate v4 生成）与按约定登记的仓储/应用服务
+        services.AddChatV4Services();
+        services.AddChatConventionalServices();
         services.AddChatDataSeeders();
         services.AddChatDomainServices();
         services.AddChatEventHandlers();

@@ -44,6 +44,9 @@ public sealed class BasicAppCodeGenerationFeature : IFeature
         context.AddPermissionSeeds(CodeGenPermissionCatalogSeeder.Seeds);
 
         // 注册代码生成模块种子数据
+        // 应用服务（xihan migrate v4 生成）与按约定登记的仓储/应用服务
+        services.AddCodeGenerationV4Services();
+        services.AddCodeGenerationConventionalServices();
         services.AddCodeGenerationDataSeeders();
 
         // 注册代码生成引擎（渲染器/类型映射/扫描/打包/编排）

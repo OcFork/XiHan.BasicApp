@@ -25,17 +25,16 @@ public sealed class DbMessageOutbox
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRedisDelayQueue<MessageOutboxMessage> _queue;
-    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
-    private readonly IUnitOfWorkManager _unitOfWorkManager;
+    private readonly ICurrentUnitOfWorkAccessor _unitOfWorkAccessor;
 
     /// <summary>
     /// 构造函数
     /// </summary>
-    public DbMessageOutbox(IServiceScopeFactory scopeFactory, IRedisDelayQueue<MessageOutboxMessage> queue, IUnitOfWorkManager unitOfWorkManager)
+    public DbMessageOutbox(IServiceScopeFactory scopeFactory, IRedisDelayQueue<MessageOutboxMessage> queue, ICurrentUnitOfWorkAccessor unitOfWorkAccessor)
     {
         _scopeFactory = scopeFactory;
         _queue = queue;
-        _unitOfWorkManager = unitOfWorkManager;
+        _unitOfWorkAccessor = unitOfWorkAccessor;
     }
 
     /// <summary>
@@ -55,7 +54,7 @@ public sealed class DbMessageOutbox
         var normalized = string.IsNullOrWhiteSpace(channel) ? SaasMessageChannelNames.Email : channel.Trim();
         var message = new MessageOutboxMessage { Channel = normalized, EntityId = entityId, TenantId = tenantId, CreatedAt = DateTimeOffset.UtcNow };
 
-        var uow = _unitOfWorkManager.Current;
+        var uow = _unitOfWorkAccessor.Current;
         if (uow is not null)
         {
             uow.OnCompleted(() => _queue.EnqueueAsync(message, TimeSpan.Zero));

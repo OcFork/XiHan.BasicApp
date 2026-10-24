@@ -20,10 +20,10 @@ using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Kernel;
 using XiHan.Framework.Primitives.Manifests;
 using XiHan.Framework.Primitives;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Infrastructure.Security;
-using XiHan.Framework.Security.Abstractions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using XiHan.BasicApp.Saas.Infrastructure.Caching;
 
 namespace XiHan.BasicApp.Saas;
 
@@ -53,14 +53,9 @@ public sealed class BasicAppSaasFeature : IHostedFeature
     {
         var services = context.Services;
 
-        // 登记本程序集全部 [Operation]（源生成器产出）与 SaaS 权限目录：操作契约上的 Permission 只有登记过才会生成策略
+        // 登记本程序集全部 [Operation]（源生成器产出）；SaaS 权限目录按权限码注册同名策略（permission:<code>），操作契约上的 Permission 据此判定
         context.AddGeneratedOperations();
         context.AddPermissionDefinitions(SaasPermissionDefinitions.All);
-
-        // 5.0 操作授权接到应用自己的权限检查器（授权快照 + 会话有效性 + 模仿态禁用 + 权限条件，均按请求作用域记忆化）：
-        // 策略目录默认是单例、只能抱着单例检查器，这里把目录与检查器都改成作用域，授权中间件本来就从调用作用域取目录
-        services.Replace(ServiceDescriptor.Scoped<IPermissionChecker, OperationPermissionChecker>());
-        services.Replace(ServiceDescriptor.Scoped<PolicyCatalog, PolicyCatalog>());
 
         // 注册 SaaS 模块种子数据（基础数据始终播种；演示数据只在 Saas:Seed:EnableDemoData 为 true 时写入）
         services.AddSaasDataSeeders();
@@ -71,6 +66,19 @@ public sealed class BasicAppSaasFeature : IHostedFeature
 
         // 注册 SaaS 应用层内部服务
         services.AddSaasApplicationServices();
+        // 4.x 容器注册（xihan migrate v4 生成：带依赖标记的服务与消息处理器）
+        services.AddSaasV4Services();
+        // 仓储与应用/查询服务：4.x 由框架基类上的依赖标记自动注册，5.0 按同一约定显式登记（生成文件）
+        services.AddSaasConventionalServices();
+        // 延迟队列（导出任务、消息发件箱）：启用 Redis 时多实例共享，否则进程内有界队列（与 4.x 回退一致）
+        if (context.Configuration.GetValue<bool>("XiHan:Caching:Redis:IsEnabled"))
+        {
+            services.TryAddSingleton(typeof(IRedisDelayQueue<>), typeof(RedisDelayQueue<>));
+        }
+        else
+        {
+            services.TryAddSingleton(typeof(IRedisDelayQueue<>), typeof(DefaultDelayQueue<>));
+        }
         services.AddSaasFieldSecurityEntities();
 
         // 注册条件求值的属性登记与属性来源（时区取 Saas:Conditions:TimeZone）

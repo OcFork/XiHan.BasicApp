@@ -50,6 +50,9 @@ public sealed class BasicAppPrintingFeature : IHostedFeature
         context.AddPermissionSeeds(PrintingPermissionCatalogSeeder.Seeds);
 
         // 种子（权限 → 菜单 → 角色授权）+ 领域服务 + 解析器与缓存 + 数据源注册表（含内置示例）
+        // 应用服务（xihan migrate v4 生成）与按约定登记的仓储/应用服务
+        services.AddPrintingV4Services();
+        services.AddPrintingConventionalServices();
         services.AddPrintingDataSeeders();
         services.AddPrintingDomainServices();
         services.AddPrintingApplicationServices();

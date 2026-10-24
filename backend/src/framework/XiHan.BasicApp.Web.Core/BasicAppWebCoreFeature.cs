@@ -13,6 +13,11 @@ using XiHan.Framework.Primitives.Manifests;
 using XiHan.Framework.Primitives;
 using XiHan.Framework.Protocols.Http;
 using XiHan.Framework.Protocols.Mcp;
+using XiHan.BasicApp.Web.Core.Contexts;
+using Microsoft.Extensions.Configuration;
+using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.BasicApp.Web.Core.RealTime.Extensions;
+using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.Web.Core;
 
@@ -44,6 +49,17 @@ public sealed class BasicAppWebCoreFeature : IFeature
     public void Configure(FeatureContext context)
     {
         var services = context.Services;
+
+        // 4.x 的 Web 模块负责注册 IHttpContextAccessor；5.0 宿主不注册它，而权限检查器、客户端信息、访问日志等移植代码都依赖它
+        services.AddHttpContextAccessor();
+        services.TryAddSingleton<IRequestContextAccessor, RequestContextAccessor>();
+        services.TryAddScoped<ITraceIdProvider, HttpTraceIdProvider>();
+        // 客户端信息与 IP 归属地（登录地址、访问策略的地区条件共用一份离线库；原 4.x Web.Core 模块）
+        services.Configure<XiHanClientInfoOptions>(context.Configuration.GetSection(XiHanClientInfoOptions.SectionName));
+        services.TryAddSingleton<IIpRegionResolver, Ip2RegionResolver>();
+        services.TryAddSingleton<IClientInfoProvider, HttpContextClientInfoProvider>();
+        // SignalR：连接管理器、用户标识提供器、按 Hub 的实时通知服务（原 4.x SignalR 模块）
+        services.AddXiHanSignalRWithJson(context.Configuration);
 
         // 维护模式：升级引擎置位、中间件据此拦截业务请求；中间件经启动过滤器挂到管线最前
         services.TryAddSingleton<MaintenanceModeState>();

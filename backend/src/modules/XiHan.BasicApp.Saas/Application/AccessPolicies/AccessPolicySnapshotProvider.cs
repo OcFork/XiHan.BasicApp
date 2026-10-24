@@ -23,8 +23,7 @@ public sealed class AccessPolicySnapshotProvider : IAccessPolicySnapshotProvider
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IDistributedCache _cache;
-    // xihan-migrate(V4-05): IUnitOfWorkManager 没有 5.0 对应物：每个操作默认一个工作单元，需要显式控制时注入作用域的 IUnitOfWork。
-    private readonly IUnitOfWorkManager _unitOfWorkManager;
+    private readonly ICurrentUnitOfWorkAccessor _unitOfWorkAccessor;
     private readonly IOptionsMonitor<AccessPolicyOptions> _options;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AccessPolicySnapshotProvider> _logger;
@@ -38,14 +37,14 @@ public sealed class AccessPolicySnapshotProvider : IAccessPolicySnapshotProvider
     public AccessPolicySnapshotProvider(
         IServiceScopeFactory scopeFactory,
         IDistributedCache cache,
-        IUnitOfWorkManager unitOfWorkManager,
+        ICurrentUnitOfWorkAccessor unitOfWorkAccessor,
         IOptionsMonitor<AccessPolicyOptions> options,
         TimeProvider timeProvider,
         ILogger<AccessPolicySnapshotProvider> logger)
     {
         _scopeFactory = scopeFactory;
         _cache = cache;
-        _unitOfWorkManager = unitOfWorkManager;
+        _unitOfWorkAccessor = unitOfWorkAccessor;
         _options = options;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -107,7 +106,7 @@ public sealed class AccessPolicySnapshotProvider : IAccessPolicySnapshotProvider
     /// <inheritdoc />
     public Task InvalidateAsync(CancellationToken cancellationToken = default)
     {
-        var unitOfWork = _unitOfWorkManager.Current;
+        var unitOfWork = _unitOfWorkAccessor.Current;
         if (unitOfWork is null)
         {
             return PublishVersionAsync();

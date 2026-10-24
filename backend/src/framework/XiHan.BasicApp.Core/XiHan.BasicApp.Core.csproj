@@ -27,6 +27,7 @@
     <!-- 承接 4.x Templating / Bot / ObjectStorage / Timing 的第三方依赖 -->
     <ItemGroup>
         <PackageReference Include="Scriban" Version="7.5.1" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.13" />
         <PackageReference Include="TimeZoneConverter" Version="8.0.0" />
         <PackageReference Include="MailKit" Version="4.18.1" />
         <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />

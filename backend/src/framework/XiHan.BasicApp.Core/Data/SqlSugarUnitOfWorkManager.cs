@@ -29,6 +29,11 @@ public sealed class SqlSugarUnitOfWorkManager(ISqlSugarClient client, IMessagePu
     /// <inheritdoc />
     public IUnitOfWork? Current => _current.Value;
 
+    /// <summary>
+    /// 执行流环境上的当前工作单元（供单例 <see cref="CurrentUnitOfWorkAccessor"/> 读取）
+    /// </summary>
+    internal static IUnitOfWork? Ambient => _current.Value;
+
     /// <inheritdoc />
     public IUnitOfWork Begin(XiHanUnitOfWorkOptions? options = null, bool requiresNew = false)
     {

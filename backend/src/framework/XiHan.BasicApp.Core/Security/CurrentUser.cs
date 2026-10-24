@@ -18,7 +18,8 @@ public sealed class CurrentUser(IInvocationAccessor accessor) : ICurrentUser
 
     private SecurityContext Security => accessor.Current.TryGetValue(out var context) ? context.GetSecurity() : SecurityContext.Anonymous;
 
-    private Principal Principal => Security.Principal;
+    // 后台任务以指定用户身份执行时（PrincipalAmbient.Override）读覆盖主体，否则读调用携带的主体
+    private Principal Principal => PrincipalAmbient.Current is { } ambient ? PrincipalConversion.FromClaimsPrincipal(ambient) : Security.Principal;
 
     /// <inheritdoc />
     public bool IsAuthenticated => Principal.IsAuthenticated;
@@ -55,7 +56,8 @@ public sealed class CurrentUser(IInvocationAccessor accessor) : ICurrentUser
     public string? TenantId => Security.Tenant?.Id ?? Find(TenantIdClaim);
 
     /// <inheritdoc />
-    public string[] Roles => [.. Principal.ClaimValues(ClaimTypes.Role).Distinct(StringComparer.Ordinal)];
+    // 4.x 用 JwtSecurityTokenHandler 签发：ClaimTypes.Role 出站写成短名 role，5.0 不做入站映射，两种名字都认
+    public string[] Roles => [.. Principal.ClaimValues(ClaimTypes.Role).Concat(Principal.ClaimValues("role")).Distinct(StringComparer.Ordinal)];
 
     /// <inheritdoc />
     public Claim? FindClaim(string claimType) => GetAllClaims().FirstOrDefault(claim => claim.Type == claimType);

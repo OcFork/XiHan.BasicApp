@@ -31,6 +31,7 @@ namespace XiHan.BasicApp.Core.Entities;
 /// - 纯创建型（Creation）关联/日志实体为硬删，无 IsDeleted，唯一索引保持原样
 /// </remarks>
 // xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// 乐观锁由 SqlSugar 的 ExecuteCommandWithOptLock 执行：字符串版本列每次更新写入 36 位 GUID（含连字符），列长按此定为 36。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
 public abstract class BasicAppEntity : IEntity<long>, IHasConcurrencyStamp, IMultiTenant, IEntityBase<long>, IMultiTenantEntity
 {
@@ -44,7 +45,7 @@ public abstract class BasicAppEntity : IEntity<long>, IHasConcurrencyStamp, IMul
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -85,7 +86,7 @@ public abstract class BasicAppEntityWithIdentity : IEntity<long>, IHasConcurrenc
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -110,7 +111,7 @@ public abstract class BasicAppCreationEntity : IEntity<long>, IHasConcurrencySta
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -147,7 +148,7 @@ public abstract class BasicAppModificationEntity : IEntity<long>, IHasConcurrenc
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -196,7 +197,7 @@ public abstract class BasicAppDeletionEntity : IEntity<long>, IHasConcurrencySta
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -261,7 +262,7 @@ public abstract class BasicAppFullAuditedEntity : IEntity<long>, IHasConcurrency
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -342,7 +343,7 @@ public abstract class BasicAppAggregateRoot : XiHan.BasicApp.Core.Aggregates.IAg
     public virtual bool IsTransient() => Id == 0;
 
     /// <inheritdoc />
-    [SugarColumn(ColumnName = "Row_Version", Length = 32, ColumnDescription = "版本控制标识，用于处理并发")]
+    [SugarColumn(ColumnName = "Row_Version", Length = 36, ColumnDescription = "版本控制标识，用于处理并发", IsEnableUpdateVersionValidation = true)]
     public virtual string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -389,6 +390,7 @@ public abstract class BasicAppAggregateRoot : XiHan.BasicApp.Core.Aggregates.IAg
     private readonly DomainEventBuffer _events = new();
 
     /// <inheritdoc />
+    [SugarColumn(IsIgnore = true)]
     public IReadOnlyList<IDomainEvent> DomainEvents => _events.Items;
 
     /// <summary>记录领域事件。</summary>
