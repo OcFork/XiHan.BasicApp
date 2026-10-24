@@ -80,13 +80,16 @@ public sealed class BasicAppCoreFeature : IHostedFeature
     {
         var services = context.Services;
 
-        // 架在 5.0 作用域 SqlSugar 客户端上的适配：4.x 的客户端解析器与显式工作单元管理器
-        services.AddScoped<ISqlSugarClientResolver, ScopedSqlSugarClientResolver>();
+        // 4.x 数据层（多连接 SqlSugarScope、租户与模块库路由、仓储、初始化器）与显式工作单元管理器；作用域 ISqlSugarClient 由解析器给出，5.0 持久化特性以它装配
+        services.AddBasicAppData(context.Configuration);
         services.AddScoped<IUnitOfWorkManager, SqlSugarUnitOfWorkManager>();
 
         // 当前用户 / 租户：读 IInvocationAccessor.Current 的安全上下文（xihan migrate v4 生成）
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<ICurrentTenant, CurrentTenant>();
+        services.TryAddSingleton<ICurrentTenantAccessor, CurrentTenantAccessor>();
+        // 调用携带的租户登记进执行流环境（SqlSugar 全局租户过滤器按查询即时读它），挂在租户解析之后
+        context.AddMiddleware<TenantAmbientMiddleware>(PipelineStage.Tenant);
 
         // 4.x 容器注册（xihan migrate v4 生成）
         services.AddCoreV4Services();

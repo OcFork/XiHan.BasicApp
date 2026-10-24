@@ -14,6 +14,7 @@ using XiHan.BasicApp.Web.Core.RealTime.Constants;
 using XiHan.BasicApp.Web.Core.RealTime.Extensions;
 using XiHan.BasicApp.Web.Core;
 using XiHan.BasicApp.WebHost;
+using XiHan.Framework.Caching.Redis;
 using XiHan.Framework.Hosting.AspNetCore;
 using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Persistence.SqlSugar;
@@ -29,16 +30,26 @@ if (!string.IsNullOrWhiteSpace(configuredUrls))
 }
 
 // 5.0 宿主：Full 画像 + SqlSugar 持久化 + 应用特性（Core → Web.Core → 模块 → 宿主）
-builder.AddXiHan(xihan => xihan
-    .UseFullProfile()
-    .UseFeature(new SqlSugarPersistenceFeature())
-    .UseFeature<BasicAppCoreFeature>()
-    .UseFeature<BasicAppWebCoreFeature>()
-    .UseFeature<BasicAppSaasFeature>()
-    .UseFeature<BasicAppCodeGenerationFeature>()
-    .UseFeature<BasicAppPrintingFeature>()
-    .UseFeature<BasicAppChatFeature>()
-    .UseFeature<BasicAppWebHostFeature>());
+// Redis 缓存 Provider：顶替画像里的内存缓存（Saas 的登录封禁、延迟队列、按前缀失效都依赖 Redis）
+var redisEnabled = builder.Configuration.GetValue<bool>("XiHan:Caching:Redis:IsEnabled");
+
+builder.AddXiHan(xihan =>
+{
+    xihan.UseFullProfile();
+    if (redisEnabled)
+    {
+        xihan.UseFeature<RedisCachingFeature>();
+    }
+
+    xihan.UseFeature(new SqlSugarPersistenceFeature())
+        .UseFeature<BasicAppCoreFeature>()
+        .UseFeature<BasicAppWebCoreFeature>()
+        .UseFeature<BasicAppSaasFeature>()
+        .UseFeature<BasicAppCodeGenerationFeature>()
+        .UseFeature<BasicAppPrintingFeature>()
+        .UseFeature<BasicAppChatFeature>()
+        .UseFeature<BasicAppWebHostFeature>();
+});
 
 var app = builder.Build();
 
