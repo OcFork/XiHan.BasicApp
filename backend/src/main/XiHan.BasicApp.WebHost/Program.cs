@@ -70,6 +70,10 @@ var app = builder.Build();
 
 app.UseXiHan();
 
+// ASP.NET Core 自身的认证与授权：只对带 [Authorize] / RequireAuthorization 的端点生效（SignalR Hub、OIDC UserInfo、第三方登录），5.0 操作端点由内核管道授权
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Telegram Webhook 回调（原 4.x 宿主模块里的中间件）
 app.UseTelegramBotWebhook();
 

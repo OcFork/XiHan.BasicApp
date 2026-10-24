@@ -67,6 +67,8 @@ public sealed class BasicAppWebCoreFeature : IFeature
         services.AddTransient<IStartupFilter, MaintenanceModeStartupFilter>();
 
         // 承接的 4.x 认证（JWT 签发、OTP、一次性验证码、第三方登录）与 OIDC 签发（XiHan:Authentication:Oidc:IsEnabled 门控）
+        // ASP.NET Core 自身的认证：Hub 的 [Authorize]、OIDC UserInfo、第三方登录回调仍走它；与 5.0 管道共用同一把 JWT 密钥，不设回退策略
+        services.AddXiHanAspNetAuthentication(context.Configuration);
         services.AddXiHanAuthentication(context.Configuration);
         services.AddXiHanOidc(context.Configuration);
     }
