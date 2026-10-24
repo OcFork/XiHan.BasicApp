@@ -19,10 +19,12 @@
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' != 'true' ">
       <PackageReference Include="XiHan.Framework.Profiles.Full" Version="$(XiHanFrameworkVersion)" />
       <PackageReference Include="XiHan.Framework.Caching.Redis" Version="$(XiHanFrameworkVersion)" />
+      <PackageReference Include="XiHan.Framework.Security.Jwt" Version="$(XiHanFrameworkVersion)" />
     </ItemGroup>
     <ItemGroup Condition=" '$(UseXiHanFrameworkSource)' == 'true' ">
       <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Profiles.Full\XiHan.Framework.Profiles.Full.csproj" />
       <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Caching.Redis\XiHan.Framework.Caching.Redis.csproj" />
+      <ProjectReference Include="$(XiHanFrameworkSrc)XiHan.Framework.Security.Jwt\XiHan.Framework.Security.Jwt.csproj" />
     </ItemGroup>
     <!-- P5-04 第一批：Saas、CodeGeneration、Printing、Chat；AI 与 Workflow 依赖 5.x 的 AI / Workflow 子系统，随 5.1 迁，暂不接入 -->
     <ItemGroup>

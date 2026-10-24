@@ -20,6 +20,7 @@ using XiHan.Framework.Kernel.Hosting;
 using XiHan.Framework.Persistence.SqlSugar;
 using XiHan.Framework.Profiles.Full;
 using XiHan.Framework.Protocols.Http;
+using XiHan.Framework.Security.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,12 +31,26 @@ if (!string.IsNullOrWhiteSpace(configuredUrls))
 }
 
 // 5.0 宿主：Full 画像 + SqlSugar 持久化 + 应用特性（Core → Web.Core → 模块 → 宿主）
+// 5.0 的 JWT 认证与多租户解析复用 4.x 的配置：签发（XiHan:Authentication:Jwt）与校验（XiHan:Security:Jwt）同一把密钥；
+// 租户来自令牌的 tenantid 声明，租户目录在应用自己的库里，不校验画像里的内存租户表
+var jwt = builder.Configuration.GetSection("XiHan:Authentication:Jwt");
+builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+{
+    ["XiHan:Security:Jwt:Secret"] = builder.Configuration["XiHan:Security:Jwt:Secret"] ?? jwt["SecretKey"],
+    ["XiHan:Security:Jwt:Issuer"] = builder.Configuration["XiHan:Security:Jwt:Issuer"] ?? jwt["Issuer"],
+    ["XiHan:Security:Jwt:Audience"] = builder.Configuration["XiHan:Security:Jwt:Audience"] ?? jwt["Audience"],
+    ["XiHan:Security:Jwt:ClockSkewSeconds"] = builder.Configuration["XiHan:Security:Jwt:ClockSkewSeconds"] ?? (jwt.GetValue<int?>("ClockSkewMinutes") is { } skew ? (skew * 60).ToString() : null),
+    ["XiHan:MultiTenancy:TenantClaim"] = builder.Configuration["XiHan:MultiTenancy:TenantClaim"] ?? "tenantid",
+    ["XiHan:MultiTenancy:ValidateAgainstStore"] = builder.Configuration["XiHan:MultiTenancy:ValidateAgainstStore"] ?? "false",
+});
+
 // Redis 缓存 Provider：顶替画像里的内存缓存（Saas 的登录封禁、延迟队列、按前缀失效都依赖 Redis）
 var redisEnabled = builder.Configuration.GetValue<bool>("XiHan:Caching:Redis:IsEnabled");
 
 builder.AddXiHan(xihan =>
 {
     xihan.UseFullProfile();
+    xihan.UseFeature<JwtSecurityFeature>();
     if (redisEnabled)
     {
         xihan.UseFeature<RedisCachingFeature>();
