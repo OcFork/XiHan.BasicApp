@@ -16,7 +16,7 @@ namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 /// </summary>
 /// <remarks>
 /// 本类型在当前租户上下文内维护规则不变量，不负责 HTTP 权限判断或切换任意目标租户。
-/// 所有写方法都依赖上层应用服务提供事务边界，仓储更新通过实体 <c>RowVersion</c> 参与乐观并发控制。
+/// 所有写方法都依赖上层应用服务提供事务边界，仓储更新通过实体 <c>ConcurrencyStamp</c> 参与乐观并发控制。
 /// </remarks>
 public sealed class NumberingRuleDomainService : INumberingRuleDomainService
 {

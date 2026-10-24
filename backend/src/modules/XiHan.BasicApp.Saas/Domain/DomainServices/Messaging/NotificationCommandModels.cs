@@ -36,7 +36,7 @@ public sealed record NotificationCreateCommand(
 /// 通知更新命令
 /// </summary>
 public sealed record NotificationUpdateCommand(
-    long BasicId,
+    long Id,
     NotificationType NotificationType,
     string Title,
     string? Content,
@@ -61,7 +61,7 @@ public sealed record NotificationUpdateCommand(
 /// <summary>
 /// 通知发布命令
 /// </summary>
-public sealed record NotificationPublishCommand(long BasicId, NotificationTargetType? TargetType, IReadOnlyList<long>? UserIds);
+public sealed record NotificationPublishCommand(long Id, NotificationTargetType? TargetType, IReadOnlyList<long>? UserIds);
 
 /// <summary>
 /// 通知渠道收件人解析结果（邮箱/短信位各自经偏好门控后的用户主键集合；未勾选渠道为空集合）

@@ -33,7 +33,7 @@ public sealed record EmailCreateCommand(
 /// 邮件更新命令
 /// </summary>
 public sealed record EmailUpdateCommand(
-    long BasicId,
+    long Id,
     long? ReceiveUserId,
     EmailType EmailType,
     string FromEmail,
@@ -57,7 +57,7 @@ public sealed record EmailUpdateCommand(
 /// 邮件状态更新命令
 /// </summary>
 public sealed record EmailStatusUpdateCommand(
-    long BasicId,
+    long Id,
     EmailStatus EmailStatus,
     DateTimeOffset? SendTime,
     int? RetryCount,
@@ -86,7 +86,7 @@ public sealed record SmsCreateCommand(
 /// 短信更新命令
 /// </summary>
 public sealed record SmsUpdateCommand(
-    long BasicId,
+    long Id,
     long? ReceiverId,
     SmsType SmsType,
     string ToPhone,
@@ -104,7 +104,7 @@ public sealed record SmsUpdateCommand(
 /// 短信状态更新命令
 /// </summary>
 public sealed record SmsStatusUpdateCommand(
-    long BasicId,
+    long Id,
     SmsStatus SmsStatus,
     DateTimeOffset? SendTime,
     string? ProviderMessageId,

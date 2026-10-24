@@ -13,7 +13,7 @@ namespace XiHan.BasicApp.Workflow.Infrastructure.Stores;
 /// <remarks>
 /// 实体的 JSON 列是真源（完整模型快照），投影列仅供检索；两者同写同变。
 /// 例外是租户：所属租户以行上的 TenantId 为准（平台就是 0 号租户），还原模型时回填，不采信 JSON 里的值。
-/// 框架标识为雪花数值字符串，与实体 BasicId（long）双向转换。
+/// 框架标识为雪花数值字符串，与实体 Id（long）双向转换。
 /// </remarks>
 public static class WorkflowStoreMapper
 {

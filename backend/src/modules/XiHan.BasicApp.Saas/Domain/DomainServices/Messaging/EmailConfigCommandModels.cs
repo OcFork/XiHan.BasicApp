@@ -30,7 +30,7 @@ public sealed record EmailConfigCreateCommand(
 /// </summary>
 /// <remarks>Password 为空表示保留原密码（前端脱敏不回显）</remarks>
 public sealed record EmailConfigUpdateCommand(
-    long BasicId,
+    long Id,
     string ConfigName,
     string SmtpHost,
     int SmtpPort,
@@ -47,12 +47,12 @@ public sealed record EmailConfigUpdateCommand(
 /// <summary>
 /// 邮件网关配置状态变更命令
 /// </summary>
-public sealed record EmailConfigStatusChangeCommand(long BasicId, bool IsEnabled);
+public sealed record EmailConfigStatusChangeCommand(long Id, bool IsEnabled);
 
 /// <summary>
 /// 邮件网关配置默认变更命令
 /// </summary>
-public sealed record EmailConfigDefaultChangeCommand(long BasicId);
+public sealed record EmailConfigDefaultChangeCommand(long Id);
 
 /// <summary>
 /// 邮件网关配置命令结果

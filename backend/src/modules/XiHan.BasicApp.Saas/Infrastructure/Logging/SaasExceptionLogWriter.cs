@@ -1,15 +1,16 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using SqlSugar;
 using System.Reflection;
-using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.BasicApp.Core.Security;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http;
+using SqlSugar;
+using XiHan.BasicApp.Core.Auditing.Writers;
 using XiHan.BasicApp.Core.Auditing;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Logging;

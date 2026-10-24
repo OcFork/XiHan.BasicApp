@@ -7,6 +7,7 @@ using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using XiHan.BasicApp.Web.Core.Session;
+using XiHan.BasicApp.Core.Caching;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
 

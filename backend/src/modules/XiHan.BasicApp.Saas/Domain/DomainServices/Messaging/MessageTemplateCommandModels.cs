@@ -25,7 +25,7 @@ public sealed record MessageTemplateCreateCommand(
 /// 消息模板更新命令
 /// </summary>
 public sealed record MessageTemplateUpdateCommand(
-    long BasicId,
+    long Id,
     string TemplateName,
     string? Subject,
     string Content,
@@ -37,7 +37,7 @@ public sealed record MessageTemplateUpdateCommand(
 /// <summary>
 /// 消息模板状态变更命令
 /// </summary>
-public sealed record MessageTemplateStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record MessageTemplateStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 消息模板命令结果

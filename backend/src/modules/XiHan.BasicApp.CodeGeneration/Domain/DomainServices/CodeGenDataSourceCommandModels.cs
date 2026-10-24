@@ -32,7 +32,7 @@ public sealed record CodeGenDataSourceCreateCommand(
 /// 数据源更新命令
 /// </summary>
 public sealed record CodeGenDataSourceUpdateCommand(
-    long BasicId,
+    long Id,
     string SourceName,
     string? SourceDescription,
     DatabaseType DatabaseType,
@@ -51,7 +51,7 @@ public sealed record CodeGenDataSourceUpdateCommand(
 /// <summary>
 /// 数据源状态变更命令
 /// </summary>
-public sealed record CodeGenDataSourceStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record CodeGenDataSourceStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 数据源命令结果（包装实体；密码/连接串为加密态，输出前由 Mapper 脱敏）

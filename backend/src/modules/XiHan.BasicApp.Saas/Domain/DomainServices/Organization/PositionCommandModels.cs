@@ -20,7 +20,7 @@ public sealed record PositionCreateCommand(
 /// 岗位更新命令
 /// </summary>
 public sealed record PositionUpdateCommand(
-    long BasicId,
+    long Id,
     string PositionName,
     int Sort,
     string? Remark);
@@ -28,7 +28,7 @@ public sealed record PositionUpdateCommand(
 /// <summary>
 /// 岗位状态变更命令
 /// </summary>
-public sealed record PositionStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record PositionStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 岗位命令结果

@@ -26,7 +26,7 @@ public sealed record FieldLevelSecurityCreateCommand(
 /// 字段级安全更新命令
 /// </summary>
 public sealed record FieldLevelSecurityUpdateCommand(
-    long BasicId,
+    long Id,
     FieldSecurityTargetType TargetType,
     long TargetId,
     string EntityName,
@@ -41,7 +41,7 @@ public sealed record FieldLevelSecurityUpdateCommand(
 /// <summary>
 /// 字段级安全状态变更命令
 /// </summary>
-public sealed record FieldLevelSecurityStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record FieldLevelSecurityStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 字段级安全命令结果

@@ -2,10 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
+using XiHan.BasicApp.Core.Bot.Email.Abstractions;
+using XiHan.BasicApp.Core.Bot.Email.Models;
+using XiHan.BasicApp.Core.Bot.Email.Options;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

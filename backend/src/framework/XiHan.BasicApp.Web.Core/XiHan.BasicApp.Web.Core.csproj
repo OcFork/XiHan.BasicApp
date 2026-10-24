@@ -33,6 +33,7 @@
     <!-- 从 4.x Web.Core 承接的客户端信息（IP 归属地、UA 解析）所需 -->
     <ItemGroup>
       <PackageReference Include="IP2Region.Net" Version="3.0.2" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
       <PackageReference Include="UAParser" Version="3.1.47" />
     </ItemGroup>
 

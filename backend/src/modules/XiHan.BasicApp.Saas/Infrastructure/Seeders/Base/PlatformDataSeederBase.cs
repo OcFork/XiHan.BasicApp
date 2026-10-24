@@ -3,8 +3,10 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Data.SqlSugar.Initializers;
+using XiHan.BasicApp.Core.Data.SqlSugar.Seeders;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

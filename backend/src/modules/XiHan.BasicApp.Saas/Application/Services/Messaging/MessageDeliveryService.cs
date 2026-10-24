@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.Json;
+using XiHan.BasicApp.Core.Messaging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
@@ -74,9 +75,9 @@ public sealed class MessageDeliveryService
         return result;
     }
 
-    private static MessageEnvelope BuildEmailEnvelope(EmailCreateCommand command)
+    private static OutboundMessage BuildEmailEnvelope(EmailCreateCommand command)
     {
-        return new MessageEnvelope
+        return new OutboundMessage
         {
             Channel = SaasMessageChannelNames.Email,
             TenantId = null,
@@ -96,9 +97,9 @@ public sealed class MessageDeliveryService
         };
     }
 
-    private static MessageEnvelope BuildSmsEnvelope(SmsCreateCommand command)
+    private static OutboundMessage BuildSmsEnvelope(SmsCreateCommand command)
     {
-        return new MessageEnvelope
+        return new OutboundMessage
         {
             Channel = SaasMessageChannelNames.Sms,
             TenantId = null,
@@ -153,7 +154,7 @@ public sealed class MessageDeliveryService
     /// <summary>
     /// 按 TemplateCode 从模板库查找并渲染信封内容（租户模板优先回退全局；模板缺失/损坏保留原始内容）。
     /// </summary>
-    private async Task RenderTemplateAsync(MessageEnvelope envelope)
+    private async Task RenderTemplateAsync(OutboundMessage envelope)
     {
         if (string.IsNullOrWhiteSpace(envelope.TemplateCode))
         {

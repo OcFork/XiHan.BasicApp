@@ -35,7 +35,7 @@ public sealed class PrintTemplateCacheItem
     public PrintTemplateScope ResolvedScope { get; set; }
 
     /// <summary>数据库行版本。</summary>
-    // xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+    // xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
     public string ConcurrencyStamp { get; set; } = string.Empty;
 
     /// <summary>缓存创建时间。</summary>

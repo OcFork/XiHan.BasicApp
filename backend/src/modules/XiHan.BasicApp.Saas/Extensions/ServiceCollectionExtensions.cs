@@ -3,10 +3,30 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
+using XiHan.BasicApp.Core.Auditing.Writers;
+using XiHan.BasicApp.Core.Auditing;
+using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Bot.DingTalk.Abstractions;
+using XiHan.BasicApp.Core.Bot.Email.Abstractions;
+using XiHan.BasicApp.Core.Bot.Lark.Abstractions;
+using XiHan.BasicApp.Core.Bot.Sms.Abstractions;
+using XiHan.BasicApp.Core.Bot.Telegram.Abstractions;
+using XiHan.BasicApp.Core.Bot.Telegram.Extensions.DependencyInjection;
+using XiHan.BasicApp.Core.Bot.WeCom.Abstractions;
+using XiHan.BasicApp.Core.Data.SqlSugar.Initializers;
+using XiHan.BasicApp.Core.Data.SqlSugar.Seeders;
+using XiHan.BasicApp.Core.Data.SqlSugar.Tenanting;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Messaging;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Abstractions;
+using XiHan.BasicApp.Core.Upgrade.Abstractions;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.Authorization;
 using XiHan.BasicApp.Saas.Application.Caching;
@@ -23,7 +43,6 @@ using XiHan.BasicApp.Saas.Domain.Numbering;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Auth;
 using XiHan.BasicApp.Saas.Infrastructure.Exporting;
-using XiHan.BasicApp.Saas.Infrastructure.Upgrade;
 using XiHan.BasicApp.Saas.Infrastructure.Logging;
 using XiHan.BasicApp.Saas.Infrastructure.Messaging;
 using XiHan.BasicApp.Saas.Infrastructure.MultiTenancy;
@@ -31,15 +50,14 @@ using XiHan.BasicApp.Saas.Infrastructure.Repositories;
 using XiHan.BasicApp.Saas.Infrastructure.Security;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using XiHan.BasicApp.Saas.Infrastructure.Tasks;
-using XiHan.BasicApp.Core.Entities;
-using XiHan.Framework.Messaging.Abstractions;
-using StackExchange.Redis;
-using XiHan.BasicApp.Core.Auditing;
-using XiHan.BasicApp.Core.Authorization.Permissions;
-using XiHan.BasicApp.Core.Data;
-using XiHan.BasicApp.Core.Security;
-using XiHan.BasicApp.Core.Upgrade.Abstractions;
+using XiHan.BasicApp.Saas.Infrastructure.Upgrade;
+using XiHan.BasicApp.Web.Core.Access;
+using XiHan.BasicApp.Web.Core.Authentication.Jwt;
+using XiHan.BasicApp.Web.Core.Authentication.OAuth;
+using XiHan.BasicApp.Web.Core.Authentication.Users;
+using XiHan.BasicApp.Web.Core.Security.OpenApi;
 using XiHan.BasicApp.Web.Core.Session;
+using XiHan.Framework.Messaging.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Extensions;
 
@@ -411,9 +429,7 @@ public static class ServiceCollectionExtensions
     /// 添加 SaaS 领域事件处理器
     /// </summary>
     /// <remarks>
-    /// 事件总线的 <c>OnRegistered</c> 自动发现仅覆盖以接口为服务类型的注册（由 Castle 动态代理扫描触发），
-    /// 具体类注册不会被发现。因此这里在注册的同时显式将处理器加入
-    /// <see cref="XiHanLocalEventBusOptions.Handlers"/>，确保 LocalEventBus 完成订阅。
+    /// 5.0 下事件处理器是消息处理器，订阅由 xihan migrate v4 生成的 SaasV4Services 按主题注册；这里只保留处理器自身的注册。
     /// Transient 生命周期确保每次事件发布时获取新实例，避免并发冲突。
     /// </remarks>
     /// <param name="services">服务集合</param>
@@ -616,7 +632,6 @@ public static class ServiceCollectionExtensions
         where THandler : class
     {
         services.AddTransient<THandler>();
-        services.Configure<XiHanLocalEventBusOptions>(options => options.Handlers.AddIfNotContains(typeof(THandler)));
         return services;
     }
 }

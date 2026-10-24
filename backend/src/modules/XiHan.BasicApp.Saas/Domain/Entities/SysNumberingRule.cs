@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
+using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
@@ -12,7 +14,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// <remarks>
 /// <para><c>TenantId == 0</c> 表示平台全局规则；业务租户规则保存在当前租户范围内。</para>
 /// <para>
-/// 流水推进不由应用层读改写完成，而是由仓储的条件更新语句在数据库内一次完成，并显式推进 <c>RowVersion</c>；
+/// 流水推进不由应用层读改写完成，而是由仓储的条件更新语句在数据库内一次完成，并显式推进 <c>ConcurrencyStamp</c>；
 /// 管理端的实体式更新走行版本乐观锁，因此不会把发号期间推进过的流水整行写回旧值。
 /// </para>
 /// </remarks>

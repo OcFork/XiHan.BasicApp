@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.Framework.Domain;
 
@@ -24,7 +25,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 字段与框架 <c>TelegramMessageAuditRecord</c> 全集一一映射
 ///
 /// 查询：
-/// - 机器人出站流水：IX_BoNa + ORDER BY CreatedTime DESC
+/// - 机器人出站流水：IX_BoNa + ORDER BY CreatedAt DESC
 /// - 会话消息追踪：IX_ChId
 /// - 租户审计概览：IX_TeId_CrTi
 ///

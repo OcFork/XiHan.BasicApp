@@ -21,7 +21,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 敏感正文（如密码重置链接）应设置合理 ExpirationTime
 ///
 /// 查询：
-/// - 待发队列：WHERE EmailStatus=Pending ORDER BY CreatedTime
+/// - 待发队列：WHERE EmailStatus=Pending ORDER BY CreatedAt
 /// - 租户邮件列表：IX_TeId_EmSt_SeTi（组合最优：租户+状态+时间倒序）
 /// - 按收件人反查：IX_ToEm
 ///

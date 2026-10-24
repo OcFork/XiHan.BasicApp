@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
+using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -103,7 +105,7 @@ public partial class SysNumberingAllocation : BasicAppCreationEntity
     /// 发号时间。
     /// </summary>
     /// <remarks>
-    /// 与基类 <c>CreatedTime</c> 的区别：本列是格式快照的时间基准，
+    /// 与基类 <c>CreatedAt</c> 的区别：本列是格式快照的时间基准，
     /// 日期段文本与周期键都由这一个瞬间换算得出，三者必须严格同源，
     /// 因此不能改用审计列（审计列由框架在写入时另行赋值）。
     /// </remarks>

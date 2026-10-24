@@ -1,13 +1,14 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Localization;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Security;
 using XiHan.Framework.Localization.Abstractions;
-using XiHan.BasicApp.Core.Exceptions;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 
@@ -222,6 +223,7 @@ public sealed class TenantDomainService
         var tenant = await GetTenantOrThrowAsync(tenantId, cancellationToken);
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
         var member = await GetTenantMemberOrThrowAsync(memberId, cancellationToken);
         if (member.MemberType != TenantMemberType.PlatformAdmin)
         {
@@ -253,6 +255,7 @@ public sealed class TenantDomainService
         var tenant = await GetTenantOrThrowAsync(command.TenantId, cancellationToken);
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(tenant.Id, tenant.TenantName);
         var now = DateTimeOffset.UtcNow;
 
         var owners = await _tenantUserRepository.GetListAsync(member => member.MemberType == TenantMemberType.Owner, cancellationToken);

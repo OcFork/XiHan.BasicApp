@@ -32,7 +32,7 @@ public sealed record OAuthAppCreateCommand(
 /// OAuth 应用更新命令
 /// </summary>
 public sealed record OAuthAppUpdateCommand(
-    long BasicId,
+    long Id,
     string AppName,
     string? AppDescription,
     OAuthAppType AppType,
@@ -50,7 +50,7 @@ public sealed record OAuthAppUpdateCommand(
 /// <summary>
 /// OAuth 应用状态变更命令
 /// </summary>
-public sealed record OAuthAppStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record OAuthAppStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// OAuth 应用命令结果

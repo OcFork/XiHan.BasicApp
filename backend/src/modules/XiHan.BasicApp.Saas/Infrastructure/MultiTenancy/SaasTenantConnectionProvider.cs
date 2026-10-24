@@ -1,14 +1,17 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Globalization;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SqlSugar;
-using System.Collections.Concurrent;
+using XiHan.BasicApp.Core.Data.SqlSugar.Options;
+using XiHan.BasicApp.Core.Data.SqlSugar.Tenanting;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.BasicApp.Core.Security;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.MultiTenancy;
 
@@ -41,7 +44,7 @@ public sealed class SaasTenantConnectionProvider : ISqlSugarTenantConnectionProv
     private readonly string _tenantConfigIdPrefix;
 
     // 值为 null 表示「该租户无需独立连接」的已缓存结论；异常不入缓存，下次请求重试（保持 fail-closed）
-    private readonly ConcurrentDictionary<long, SqlSugarTenantConnection?> _cache = new();
+    private readonly ConcurrentDictionary<string, SqlSugarTenantConnection?> _cache = new(StringComparer.Ordinal);
 
     /// <summary>
     /// 构造函数
@@ -62,8 +65,10 @@ public sealed class SaasTenantConnectionProvider : ISqlSugarTenantConnectionProv
     /// <param name="tenantId">当前租户标识</param>
     /// <param name="tenantName">当前租户名称（可空）</param>
     /// <returns>需要独立连接时返回描述符；无需独立连接（走默认连接）时返回 <c>null</c></returns>
-    public SqlSugarTenantConnection? Resolve(long tenantId, string? tenantName)
+    public SqlSugarTenantConnection? Resolve(string tenantId, string? tenantName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        tenantId = tenantId.Trim();
         if (_cache.TryGetValue(tenantId, out var cached))
         {
             return cached;
@@ -80,11 +85,17 @@ public sealed class SaasTenantConnectionProvider : ISqlSugarTenantConnectionProv
     /// <param name="tenantId">租户标识</param>
     public void Invalidate(long tenantId)
     {
-        _cache.TryRemove(tenantId, out _);
+        _cache.TryRemove(tenantId.ToString(CultureInfo.InvariantCulture), out _);
     }
 
-    private SqlSugarTenantConnection? LoadDescriptor(long tenantId)
+    private SqlSugarTenantConnection? LoadDescriptor(string tenantId)
     {
+        // 租户标识是租户实体主键的字符串形式；不是数字就按 fail-closed 拒绝
+        if (!long.TryParse(tenantId, NumberStyles.None, CultureInfo.InvariantCulture, out var tenantKey))
+        {
+            throw new InvalidOperationException($"租户标识 {tenantId} 不是有效的租户主键（fail-closed）。");
+        }
+
         SysTenant? tenant;
         using (var scope = _scopeFactory.CreateScope())
         {
@@ -96,7 +107,7 @@ public sealed class SaasTenantConnectionProvider : ISqlSugarTenantConnectionProv
             using (currentTenant.Change(null))
             {
                 var client = serviceProvider.GetRequiredService<ISqlSugarClientResolver>().GetClientForEntity<SysTenant>();
-                tenant = client.Queryable<SysTenant>().Where(x => x.Id == tenantId).First();
+                tenant = client.Queryable<SysTenant>().Where(x => x.Id == tenantKey).First();
             }
         }
 

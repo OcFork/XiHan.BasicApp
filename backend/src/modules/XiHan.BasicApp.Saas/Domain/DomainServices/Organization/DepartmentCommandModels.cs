@@ -26,7 +26,7 @@ public sealed record DepartmentCreateCommand(
 /// 部门更新命令
 /// </summary>
 public sealed record DepartmentUpdateCommand(
-    long BasicId,
+    long Id,
     long? ParentId,
     string DepartmentName,
     DepartmentType DepartmentType,
@@ -40,7 +40,7 @@ public sealed record DepartmentUpdateCommand(
 /// <summary>
 /// 部门状态变更命令
 /// </summary>
-public sealed record DepartmentStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record DepartmentStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 部门命令结果

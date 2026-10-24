@@ -2,14 +2,16 @@
 // 由 xihan migrate v4 生成；提交前请检查。
 
 using Microsoft.Extensions.DependencyInjection;
-using XiHan.BasicApp.Saas.Application.AppServices;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.AppServices.Metadata;
 using XiHan.BasicApp.Saas.Application.AppServices.Monitoring;
+using XiHan.BasicApp.Saas.Application.AppServices;
+using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.EventHandlers;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.OpenApi.AppServices;
-using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Saas.OpenApi.Contracts;
 using XiHan.Framework.Messaging.Abstractions;
 
 namespace XiHan.BasicApp.Saas;

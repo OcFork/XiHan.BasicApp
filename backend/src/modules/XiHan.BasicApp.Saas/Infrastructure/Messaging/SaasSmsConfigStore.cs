@@ -1,12 +1,14 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using BotSmsProviderType = XiHan.BasicApp.Core.Bot.Sms.Enums.SmsProviderType;
 using Microsoft.Extensions.DependencyInjection;
+using SaasSmsProviderType = XiHan.BasicApp.Saas.Domain.Entities.SmsProviderType;
+using XiHan.BasicApp.Core.Bot.Sms.Abstractions;
+using XiHan.BasicApp.Core.Bot.Sms.Options;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Security;
-using BotSmsProviderType = XiHan.Framework.Bot.Sms.Enums.SmsProviderType;
-using SaasSmsProviderType = XiHan.BasicApp.Saas.Domain.Entities.SmsProviderType;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

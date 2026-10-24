@@ -33,7 +33,7 @@ public sealed record ConstraintRuleCreateCommand(
 /// 约束规则更新命令
 /// </summary>
 public sealed record ConstraintRuleUpdateCommand(
-    long BasicId,
+    long Id,
     string RuleName,
     ConstraintType ConstraintType,
     ConstraintTargetType TargetType,
@@ -49,7 +49,7 @@ public sealed record ConstraintRuleUpdateCommand(
 /// <summary>
 /// 约束规则状态命令
 /// </summary>
-public sealed record ConstraintRuleStatusCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record ConstraintRuleStatusCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 约束规则命令结果

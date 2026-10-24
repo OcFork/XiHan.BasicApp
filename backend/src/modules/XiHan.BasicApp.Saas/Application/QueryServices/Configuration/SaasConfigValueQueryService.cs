@@ -8,6 +8,7 @@ using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Caching;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

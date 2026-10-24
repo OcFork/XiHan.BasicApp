@@ -50,7 +50,7 @@ public sealed record NumberingRuleCreateCommand(
 /// <param name="Sort">新的管理端显示排序值，不能为负数。</param>
 /// <param name="Remark">新的可选维护备注。</param>
 public sealed record NumberingRuleUpdateCommand(
-    long BasicId,
+    long Id,
     string RuleName,
     string? Prefix,
     string Separator,
@@ -68,7 +68,7 @@ public sealed record NumberingRuleUpdateCommand(
 /// <param name="BasicId">待更新规则主键，必须为正数并属于当前领域作用域。</param>
 /// <param name="Status">目标启停状态，必须是有效的 <see cref="EnableStatus"/> 枚举值。</param>
 /// <param name="Remark">可选状态变更备注；非空时同时更新规则备注。</param>
-public sealed record NumberingRuleStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record NumberingRuleStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 安全重置业务编号规则命令。
@@ -77,7 +77,7 @@ public sealed record NumberingRuleStatusChangeCommand(long BasicId, EnableStatus
 /// <param name="NextValue">重置后下一次发号应使用的流水值，必须为正数且不得进入历史已分配区间。</param>
 /// <param name="Reason">必填重置原因，用于敏感操作结构化审计。</param>
 /// <param name="ConfirmRuleCode">全局规则必填的规则编码二次确认；租户私有规则可为空。</param>
-public sealed record NumberingRuleResetCommand(long BasicId, long NextValue, string Reason, string? ConfirmRuleCode);
+public sealed record NumberingRuleResetCommand(long Id, long NextValue, string Reason, string? ConfirmRuleCode);
 
 /// <summary>
 /// 业务编号规则命令结果。

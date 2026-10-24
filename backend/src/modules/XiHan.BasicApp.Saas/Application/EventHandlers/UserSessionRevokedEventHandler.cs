@@ -2,17 +2,18 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.Json;
-using XiHan.BasicApp.Saas.Application.Caching;
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Hubs;
-using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Primitives;
-using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Web.Core.RealTime.Constants;
 using XiHan.BasicApp.Web.Core.RealTime.Services;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.EventHandlers;
 

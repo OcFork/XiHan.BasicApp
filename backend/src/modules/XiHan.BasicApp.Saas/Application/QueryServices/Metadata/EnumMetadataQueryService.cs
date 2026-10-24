@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using XiHan.BasicApp.Saas.Application.Dtos.Metadata;
-using XiHan.Framework.Localization.Abstractions.Enums;
+using XiHan.BasicApp.Core.Localization;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

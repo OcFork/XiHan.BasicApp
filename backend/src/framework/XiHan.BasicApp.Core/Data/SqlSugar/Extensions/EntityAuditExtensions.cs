@@ -45,7 +45,7 @@ public static class EntityAuditExtensions
     }
 
     /// <summary>
-    /// 按“新增”语义赋值：CreatedTime、CreatedId、CreatedBy、TenantId；若当前属性为 IsDeleted 则置为 false。
+    /// 按“新增”语义赋值：CreatedAt、CreatedId、CreatedBy、TenantId；若当前属性为 IsDeleted 则置为 false。
     /// </summary>
     /// <param name="entityInfo">SqlSugar 数据过滤模型</param>
     /// <param name="context">审计上下文（当前用户、租户等）</param>
@@ -70,7 +70,7 @@ public static class EntityAuditExtensions
     }
 
     /// <summary>
-    /// 按“修改”语义赋值：ModifiedTime、ModifiedId、ModifiedBy（会覆盖已有值）。
+    /// 按“修改”语义赋值：ModifiedAt、ModifiedId、ModifiedBy（会覆盖已有值）。
     /// </summary>
     /// <param name="entityInfo">SqlSugar 数据过滤模型</param>
     /// <param name="context">审计上下文（当前用户、租户等）</param>
@@ -85,7 +85,7 @@ public static class EntityAuditExtensions
     }
 
     /// <summary>
-    /// 按“删除”语义赋值：DeletedTime、DeletedId、DeletedBy。仅当实体 IsDeleted 为 true 时对当前字段生效。
+    /// 按“删除”语义赋值：DeletedAt、DeletedId、DeletedBy。仅当实体 IsDeleted 为 true 时对当前字段生效。
     /// </summary>
     /// <param name="entityInfo">SqlSugar 数据过滤模型</param>
     /// <param name="context">审计上下文（当前用户、租户等）</param>

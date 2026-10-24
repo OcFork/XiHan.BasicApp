@@ -61,6 +61,7 @@ public sealed class SaasConditionSubjectLoader
     /// </summary>
     public async Task<SaasConditionOrganization> GetOrganizationAsync(long userId, long tenantId, CancellationToken cancellationToken = default)
     {
+        using var _ = ChangeTenant(tenantId);
         var assignments = await _userDepartmentRepository.GetValidByUserIdAsync(userId, cancellationToken);
         if (assignments.Count == 0)
         {

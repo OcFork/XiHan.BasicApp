@@ -19,7 +19,7 @@ namespace XiHan.BasicApp.Core.Data.SqlSugar.Repository;
 ///   <item>软删除/恢复均<b>幂等</b>：已软删的行再软删、未删除的行再恢复，一律静默跳过（不抛异常、不产生写操作）。</item>
 ///   <item>恢复走含软删写路径（<c>UpdateIncludingDeletedAsync</c>）：预读保留租户过滤（写边界豁免作用域内除外）、仅忽略软删过滤——
 ///         常规更新的预读带软删过滤，对已软删行必失败，恢复曾因此全线不可用。</item>
-///   <item>恢复同时清空全部删除审计字段（DeletedTime/DeletedId/DeletedBy）——只清 DeletedTime 会残留
+///   <item>恢复同时清空全部删除审计字段（DeletedAt/DeletedId/DeletedBy）——只清 DeletedAt 会残留
 ///         「被 X 删除于 null」的矛盾数据；AOP 的 ToDeleted 仅在 IsDeleted=true 时介入，恢复清理必须由仓储层完成。</item>
 ///   <item><see cref="PurgeAsync"/>/<see cref="PurgeRangeAsync"/> 是软删数据的唯一物理清除通路（合规/GDPR 场景）：
 ///         常规 Delete 家族的 DELETE 语句被自动查询过滤烘入 <c>Is_Deleted=0</c>，对已软删行永远 0 行；
@@ -470,7 +470,7 @@ public class SqlSugarSoftDeleteRepository<TEntity, TKey> : SqlSugarRepositoryBas
     /// </summary>
     /// <remarks>
     /// AOP 的 ToDeleted 仅在 IsDeleted=true 时介入删除审计字段，恢复路径必须由仓储层清理；
-    /// 只清 DeletedTime 会把从库里读回的 DeletedId/DeletedBy 原样写回，残留「被 X 删除于 null」的矛盾数据。
+    /// 只清 DeletedAt 会把从库里读回的 DeletedId/DeletedBy 原样写回，残留「被 X 删除于 null」的矛盾数据。
     /// </remarks>
     /// <param name="entity">实体</param>
     private static void MarkRestored(TEntity entity)

@@ -24,6 +24,11 @@
       <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
+    <!-- Redis 延迟队列、登录封禁等直接使用 Redis（与 5.0 Caching.Redis 同一连接） -->
+    <ItemGroup>
+      <PackageReference Include="StackExchange.Redis" Version="3.4.5" />
+    </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\framework\XiHan.BasicApp.Web.Core\XiHan.BasicApp.Web.Core.csproj" />
     </ItemGroup>

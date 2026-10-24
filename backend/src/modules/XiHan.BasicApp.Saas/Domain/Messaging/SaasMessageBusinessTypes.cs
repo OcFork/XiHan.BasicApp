@@ -13,7 +13,7 @@ namespace XiHan.BasicApp.Saas.Domain.Messaging;
 public static class SaasMessageBusinessTypes
 {
     /// <summary>
-    /// 系统通知多渠道扇出（BusinessId = SysNotification.BasicId）
+    /// 系统通知多渠道扇出（BusinessId = SysNotification.Id）
     /// </summary>
     public const string Notification = "message.notification";
 }

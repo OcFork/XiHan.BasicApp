@@ -28,7 +28,7 @@ public sealed record StorageConfigCreateCommand(
 /// </summary>
 /// <remarks>SecretAccessKey 为空表示保留原密钥；BucketName 在 Local 类型时存放本地根路径</remarks>
 public sealed record StorageConfigUpdateCommand(
-    long BasicId,
+    long Id,
     string ConfigName,
     StorageConfigType StorageType,
     string? Endpoint,
@@ -42,12 +42,12 @@ public sealed record StorageConfigUpdateCommand(
 /// <summary>
 /// 存储配置状态变更命令
 /// </summary>
-public sealed record StorageConfigStatusChangeCommand(long BasicId, bool IsEnabled);
+public sealed record StorageConfigStatusChangeCommand(long Id, bool IsEnabled);
 
 /// <summary>
 /// 存储配置默认变更命令
 /// </summary>
-public sealed record StorageConfigDefaultChangeCommand(long BasicId);
+public sealed record StorageConfigDefaultChangeCommand(long Id);
 
 /// <summary>
 /// 存储配置命令结果

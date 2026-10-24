@@ -1,9 +1,10 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.BasicApp.Core.Aggregates;
+using XiHan.BasicApp.Core.Data.SqlSugar.Repository;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Saas.Domain.Repositories;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

@@ -8,10 +8,10 @@ using XiHan.BasicApp.Saas.Domain.Enums;
 namespace XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 
 /// <summary>
-/// 列配置单列更新命令（可变字段覆盖；BasicId 用于定位行）
+/// 列配置单列更新命令（可变字段覆盖；Id 用于定位行）
 /// </summary>
 public sealed record CodeGenTableColumnUpdateCommand(
-    long BasicId,
+    long Id,
     string? CSharpType,
     string? CSharpProperty,
     string? TsType,

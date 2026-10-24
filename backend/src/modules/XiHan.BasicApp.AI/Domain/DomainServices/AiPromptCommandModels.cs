@@ -24,7 +24,7 @@ public sealed record AiPromptCreateCommand(
 /// AI 提示词更新命令（编码不可变，不在命令内）
 /// </summary>
 public sealed record AiPromptUpdateCommand(
-    long BasicId,
+    long Id,
     string PromptName,
     string? Category,
     string? Version,
@@ -36,7 +36,7 @@ public sealed record AiPromptUpdateCommand(
 /// <summary>
 /// AI 提示词状态变更命令
 /// </summary>
-public sealed record AiPromptStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record AiPromptStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// AI 提示词命令结果

@@ -1,14 +1,17 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Bot.Email.Abstractions;
+using XiHan.BasicApp.Core.Bot.Email.Options;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Messaging;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Domain.Repositories;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -299,7 +302,7 @@ public sealed class NotificationFanoutService
     /// </summary>
     private Task ScheduleBotBroadcastAsync(SysNotification notification)
     {
-        var envelope = new MessageEnvelope
+        var envelope = new OutboundMessage
         {
             Channel = SaasMessageChannelNames.Bot,
             Subject = notification.Title,
@@ -330,7 +333,7 @@ public sealed class NotificationFanoutService
     /// <summary>
     /// 执行机器人广播投递：任何失败只记日志，不向上抛出
     /// </summary>
-    private async Task DispatchBotAsync(MessageEnvelope envelope, long notificationId)
+    private async Task DispatchBotAsync(OutboundMessage envelope, long notificationId)
     {
         try
         {

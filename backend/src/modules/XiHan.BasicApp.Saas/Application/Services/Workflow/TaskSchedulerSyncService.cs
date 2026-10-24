@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Abstractions;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Models;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;

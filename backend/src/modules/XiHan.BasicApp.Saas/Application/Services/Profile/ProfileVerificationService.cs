@@ -2,12 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.Json;
+using XiHan.BasicApp.Core.Bot.Email.Abstractions;
+using XiHan.BasicApp.Core.Bot.Email.Options;
+using XiHan.BasicApp.Core.Exceptions;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Web.Core.Authentication.OneTimeCode;
+using XiHan.BasicApp.Web.Core.Authentication.Otp;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

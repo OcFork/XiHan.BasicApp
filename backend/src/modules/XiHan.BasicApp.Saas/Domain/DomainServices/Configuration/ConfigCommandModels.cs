@@ -27,7 +27,7 @@ public sealed record ConfigCreateCommand(
 /// 参数配置更新命令
 /// </summary>
 public sealed record ConfigUpdateCommand(
-    long BasicId,
+    long Id,
     string ConfigName,
     string? ConfigGroup,
     string? ConfigValue,
@@ -42,7 +42,7 @@ public sealed record ConfigUpdateCommand(
 /// <summary>
 /// 参数配置状态变更命令
 /// </summary>
-public sealed record ConfigStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record ConfigStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 参数配置命令结果

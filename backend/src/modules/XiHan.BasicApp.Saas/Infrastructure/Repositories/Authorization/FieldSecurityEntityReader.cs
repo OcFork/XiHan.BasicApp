@@ -3,9 +3,10 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
-using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Data.SqlSugar.Repository;
 using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Saas.Domain.Repositories;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

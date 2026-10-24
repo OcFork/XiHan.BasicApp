@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
+using XiHan.BasicApp.Core.Entities;
 
 namespace XiHan.BasicApp.Saas.Domain.Entities;
 
@@ -20,7 +22,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 ///
 /// 查询：
 /// - 用户未读计数：IX_TeId_UsId_NoSt + WHERE NotificationStatus=Unread
-/// - 用户消息中心列表：按 UserId + CreatedTime DESC 分页
+/// - 用户消息中心列表：按 UserId + CreatedAt DESC 分页
 ///
 /// 删除：
 /// - 用户"删除消息"通过 NotificationStatus=Deleted 状态标记，非物理删除；物理清理由定时任务按策略批量执行

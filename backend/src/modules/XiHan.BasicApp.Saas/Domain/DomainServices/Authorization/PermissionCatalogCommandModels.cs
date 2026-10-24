@@ -29,7 +29,7 @@ public sealed record PermissionCreateCommand(
 /// 权限定义更新命令
 /// </summary>
 public sealed record PermissionUpdateCommand(
-    long BasicId,
+    long Id,
     string PermissionName,
     string? PermissionDescription,
     string? Tags,
@@ -42,7 +42,7 @@ public sealed record PermissionUpdateCommand(
 /// <summary>
 /// 权限定义状态命令
 /// </summary>
-public sealed record PermissionStatusCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record PermissionStatusCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 资源定义创建命令
@@ -63,7 +63,7 @@ public sealed record ResourceCreateCommand(
 /// 资源定义更新命令
 /// </summary>
 public sealed record ResourceUpdateCommand(
-    long BasicId,
+    long Id,
     string ResourceName,
     ResourceType ResourceType,
     string? ResourcePath,
@@ -76,7 +76,7 @@ public sealed record ResourceUpdateCommand(
 /// <summary>
 /// 资源定义状态命令
 /// </summary>
-public sealed record ResourceStatusCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record ResourceStatusCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 操作定义创建命令
@@ -100,7 +100,7 @@ public sealed record OperationCreateCommand(
 /// 操作定义更新命令
 /// </summary>
 public sealed record OperationUpdateCommand(
-    long BasicId,
+    long Id,
     string OperationName,
     OperationTypeCode OperationTypeCode,
     OperationCategory Category,
@@ -116,7 +116,7 @@ public sealed record OperationUpdateCommand(
 /// <summary>
 /// 操作定义状态命令
 /// </summary>
-public sealed record OperationStatusCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record OperationStatusCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 权限定义命令结果

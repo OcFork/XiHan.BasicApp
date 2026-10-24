@@ -30,7 +30,7 @@ namespace XiHan.BasicApp.Core.Entities;
 /// - 限制：同一编码至多保留一条软删行（IsDeleted=true）；如需第二次软删同编码记录，服务层须先物理清理旧软删行
 /// - 纯创建型（Creation）关联/日志实体为硬删，无 IsDeleted，唯一索引保持原样
 /// </remarks>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
 public abstract class BasicAppEntity : IEntity<long>, IHasConcurrencyStamp, IMultiTenant, IEntityBase<long>, IMultiTenantEntity
 {
@@ -71,7 +71,7 @@ public abstract class BasicAppEntity : IEntity<long>, IHasConcurrencyStamp, IMul
 /// <summary>
 /// BasicApp 实体基类（自增主键）
 /// </summary>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
 public abstract class BasicAppEntityWithIdentity : IEntity<long>, IHasConcurrencyStamp, IMultiTenant, IEntityBase<long>, IMultiTenantEntity
 {
@@ -96,9 +96,9 @@ public abstract class BasicAppEntityWithIdentity : IEntity<long>, IHasConcurrenc
 /// <summary>
 /// BasicApp 创建审计实体基类
 /// </summary>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
-public abstract class BasicAppCreationEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IMultiTenant, ICreationEntity<long>, IMultiTenantEntity
+public abstract class BasicAppCreationEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IMultiTenant, IEntityBase<long>, ICreationEntity<long>, IMultiTenantEntity
 {
     /// <inheritdoc />
     [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
@@ -133,9 +133,9 @@ public abstract class BasicAppCreationEntity : IEntity<long>, IHasConcurrencySta
 /// <summary>
 /// BasicApp 修改审计实体基类
 /// </summary>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
-public abstract class BasicAppModificationEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, IMultiTenant, IModificationEntity<long>, IMultiTenantEntity
+public abstract class BasicAppModificationEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, IMultiTenant, IEntityBase<long>, ICreationEntity<long>, IModificationEntity<long>, IMultiTenantEntity
 {
     /// <inheritdoc />
     [SugarColumn(ColumnName = "Basic_Id", IsPrimaryKey = true, IsIdentity = false, ColumnDescription = "主键")]
@@ -182,7 +182,7 @@ public abstract class BasicAppModificationEntity : IEntity<long>, IHasConcurrenc
 /// <summary>
 /// BasicApp 删除审计实体基类
 /// </summary>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
 public abstract class BasicAppDeletionEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, ISoftDeletable, IMultiTenant, IFullAuditedEntity<long>, IMultiTenantEntity
 {
@@ -247,7 +247,7 @@ public abstract class BasicAppDeletionEntity : IEntity<long>, IHasConcurrencySta
 /// <summary>
 /// BasicApp 完整审计实体基类
 /// </summary>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
 public abstract class BasicAppFullAuditedEntity : IEntity<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, ISoftDeletable, IMultiTenant, IFullAuditedEntity<long>, IMultiTenantEntity
 {
@@ -328,7 +328,7 @@ public abstract class BasicAppFullAuditedEntity : IEntity<long>, IHasConcurrency
 /// <summary>
 /// BasicApp 聚合根基类
 /// </summary>
-// xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+// xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
 // xihan-migrate(V4-02): TenantId 改为字符串；把 Tenant_Id 列类型与按数字比较的地方一起改掉。
 public abstract class BasicAppAggregateRoot : XiHan.BasicApp.Core.Aggregates.IAggregateRoot<long>, IHasConcurrencyStamp, IHasCreationTime, IHasModificationTime, ISoftDeletable, IMultiTenant, IMultiTenantEntity
 {

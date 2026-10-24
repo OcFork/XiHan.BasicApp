@@ -2,12 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.RegularExpressions;
+using XiHan.BasicApp.Core.Repositories;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Repositories;
-using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Web.Core.Authentication.Otp;
+using XiHan.BasicApp.Web.Core.Authentication.Users;
 
 namespace XiHan.BasicApp.Saas.Domain.DomainServices;
 

@@ -1,19 +1,20 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using SqlSugar;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Paging.Dtos;
+using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.BasicApp.Core.Paging.Dtos;
-using XiHan.BasicApp.Core.Paging.Models;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

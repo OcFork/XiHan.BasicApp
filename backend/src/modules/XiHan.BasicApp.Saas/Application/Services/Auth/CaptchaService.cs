@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Web.Core.Authentication.OneTimeCode;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

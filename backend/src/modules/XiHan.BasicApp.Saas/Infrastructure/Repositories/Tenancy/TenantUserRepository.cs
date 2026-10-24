@@ -2,10 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Repositories;
 

@@ -2,9 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
+using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Saas.Infrastructure.Caching;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

@@ -1,13 +1,15 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
-using System.Collections.Concurrent;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Abstractions;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Models;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 

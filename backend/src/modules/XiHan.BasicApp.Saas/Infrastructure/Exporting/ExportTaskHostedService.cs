@@ -1,14 +1,16 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
-using XiHan.BasicApp.Saas.Application.Exporting;
-using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tasks.BackgroundServices;
+using XiHan.BasicApp.Saas.Application.Exporting;
+using XiHan.BasicApp.Saas.Domain.DomainServices;
+using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.BasicApp.Saas.Infrastructure.Caching;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Exporting;
 
@@ -18,7 +20,7 @@ namespace XiHan.BasicApp.Saas.Infrastructure.Exporting;
 public sealed class ExportTaskMessage : IBackgroundTaskItem
 {
     /// <summary>
-    /// 导出任务主键（SysExportTask.BasicId）。
+    /// 导出任务主键（SysExportTask.Id）。
     /// </summary>
     public long ExportTaskId { get; init; }
 
@@ -158,6 +160,7 @@ public sealed class ExportTaskHostedService : XiHanBackgroundServiceBase<ExportT
     {
         try
         {
+            using var scope = _scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IExportTaskRepository>();
             var runner = scope.ServiceProvider.GetRequiredService<ITenantDataScopeRunner>();
 

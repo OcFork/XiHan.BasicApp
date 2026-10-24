@@ -27,7 +27,7 @@ public sealed record TenantEditionCreateCommand(
 /// 租户版本更新命令
 /// </summary>
 public sealed record TenantEditionUpdateCommand(
-    long BasicId,
+    long Id,
     string EditionName,
     string? Description,
     int? UserLimit,
@@ -42,12 +42,12 @@ public sealed record TenantEditionUpdateCommand(
 /// <summary>
 /// 租户版本状态变更命令
 /// </summary>
-public sealed record TenantEditionStatusChangeCommand(long BasicId, EnableStatus Status);
+public sealed record TenantEditionStatusChangeCommand(long Id, EnableStatus Status);
 
 /// <summary>
 /// 默认租户版本变更命令
 /// </summary>
-public sealed record TenantEditionDefaultChangeCommand(long BasicId);
+public sealed record TenantEditionDefaultChangeCommand(long Id);
 
 /// <summary>
 /// 租户版本权限授权命令
@@ -57,7 +57,7 @@ public sealed record TenantEditionPermissionGrantCommand(long EditionId, long Pe
 /// <summary>
 /// 租户版本权限状态变更命令
 /// </summary>
-public sealed record TenantEditionPermissionStatusChangeCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record TenantEditionPermissionStatusChangeCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 租户版本命令结果
@@ -72,7 +72,7 @@ public sealed record TenantEditionPermissionCommandResult(SysTenantEditionPermis
 /// <summary>
 /// 租户版本权限批量变更中的单条映射状态变更项
 /// </summary>
-public sealed record TenantEditionPermissionStatusItem(long BasicId, ValidityStatus Status);
+public sealed record TenantEditionPermissionStatusItem(long Id, ValidityStatus Status);
 
 /// <summary>
 /// 租户版本权限批量变更命令（一次性提交授予、撤销与启停）

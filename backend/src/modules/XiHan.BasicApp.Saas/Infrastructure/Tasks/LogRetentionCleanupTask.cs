@@ -21,7 +21,7 @@ namespace XiHan.BasicApp.Saas.Infrastructure.Tasks;
 /// <para>口径：</para>
 /// <list type="bullet">
 ///   <item>保留期天数：读取平台参数 <c>saas.log.retention-days</c>；未配置时为 <see cref="DefaultRetentionDays"/> 天，配置非法直接报错；</item>
-///   <item>覆盖：访问/操作/异常/登录/差异/开放接口/权限变更/条件命中 共 8 类日志，统一按分表字段 CreatedTime 删除早于截止时间的行；</item>
+///   <item>覆盖：访问/操作/异常/登录/差异/开放接口/权限变更/条件命中 共 8 类日志，统一按分表字段 CreatedAt 删除早于截止时间的行；</item>
 ///   <item>日志严格按上下文隔离，逐个作用域（平台与每个数据可达的租户）切入清理，库隔离租户在它自己的库里清理；删除走 SqlSugar SplitTable（仅命中实际存在的月表）；</item>
 ///   <item>单个作用域、单类失败不影响其它（逐项 try/catch 并记错误日志），结果汇总返回。</item>
 /// </list>

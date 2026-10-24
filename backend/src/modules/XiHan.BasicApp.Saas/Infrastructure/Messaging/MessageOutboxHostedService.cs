@@ -1,13 +1,16 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
-using XiHan.BasicApp.Saas.Domain.Messaging;
-using XiHan.BasicApp.Saas.Domain.DomainServices;
+using XiHan.BasicApp.Core.Messaging;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tasks.BackgroundServices;
+using XiHan.BasicApp.Saas.Domain.DomainServices;
+using XiHan.BasicApp.Saas.Domain.Messaging;
+using XiHan.BasicApp.Saas.Infrastructure.Caching;
 using XiHan.Framework.Messaging.Abstractions;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
@@ -23,7 +26,7 @@ public sealed class MessageOutboxMessage : IBackgroundTaskItem
     public string Channel { get; init; } = SaasMessageChannelNames.Email;
 
     /// <summary>
-    /// 业务实体主键（SysEmail.BasicId / SysSms.BasicId）。
+    /// 业务实体主键（SysEmail.Id / SysSms.Id）。
     /// </summary>
     public long EntityId { get; init; }
 
@@ -134,7 +137,7 @@ public sealed class MessageOutboxHostedService : XiHanBackgroundServiceBase<Mess
 
             // 经既有调度器 + Sender（EntityId 重放）发送：加载行 → 发送 → 更新状态/重试计数
             var dispatcher = scope.ServiceProvider.GetRequiredService<IMessageDispatcher>();
-            var envelope = new MessageEnvelope
+            var envelope = new OutboundMessage
             {
                 Channel = message.Channel,
                 Recipients = [new MessageRecipient { Address = "outbox", DisplayName = "outbox" }],
@@ -184,6 +187,7 @@ public sealed class MessageOutboxHostedService : XiHanBackgroundServiceBase<Mess
     {
         try
         {
+            using var scope = _scopeFactory.CreateScope();
             var outbox = scope.ServiceProvider.GetRequiredService<DbMessageOutbox>();
             var runner = scope.ServiceProvider.GetRequiredService<ITenantDataScopeRunner>();
 

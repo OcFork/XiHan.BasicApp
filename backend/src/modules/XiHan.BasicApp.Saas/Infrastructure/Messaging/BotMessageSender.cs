@@ -3,6 +3,10 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Bot.Clients;
+using XiHan.BasicApp.Core.Bot.Enums;
+using XiHan.BasicApp.Core.Bot.Models;
+using XiHan.BasicApp.Core.Messaging;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
@@ -70,7 +74,7 @@ public sealed class BotMessageSender : IMessageSender
     /// <param name="recipient">接收人（bot 通道无收件地址语义，仅回填结果）</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>发送结果</returns>
-    public async Task<MessageSendResult> SendAsync(MessageEnvelope envelope, MessageRecipient recipient, CancellationToken cancellationToken = default)
+    public async Task<MessageSendResult> SendAsync(OutboundMessage envelope, MessageRecipient recipient, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(envelope);
         ArgumentNullException.ThrowIfNull(recipient);
@@ -128,7 +132,7 @@ public sealed class BotMessageSender : IMessageSender
     /// <summary>
     /// 解析定向投递渠道：元数据 Channels（逗号分隔）→ 去空白拆分；缺省空列表 = 广播全部提供者
     /// </summary>
-    private static IReadOnlyList<string> ResolveTargetChannels(MessageEnvelope envelope)
+    private static IReadOnlyList<string> ResolveTargetChannels(OutboundMessage envelope)
     {
         if (!envelope.Metadata.TryGetValue(ChannelsMetadataKey, out var channelsValue)
             || string.IsNullOrWhiteSpace(channelsValue))
@@ -143,7 +147,7 @@ public sealed class BotMessageSender : IMessageSender
     /// 构建统一发送结果
     /// </summary>
     private static MessageSendResult BuildResult(
-        MessageEnvelope envelope,
+        OutboundMessage envelope,
         MessageRecipient recipient,
         bool isSuccess,
         string? errorMessage,
@@ -164,7 +168,7 @@ public sealed class BotMessageSender : IMessageSender
     /// <summary>
     /// 渲染模板内容：按 TemplateCode 从模板库查找（租户优先回退全局）并渲染，模板缺失/损坏回退信封主题与内容
     /// </summary>
-    private async Task<(string? Subject, string? Content)> RenderContentAsync(MessageEnvelope envelope, CancellationToken cancellationToken)
+    private async Task<(string? Subject, string? Content)> RenderContentAsync(OutboundMessage envelope, CancellationToken cancellationToken)
     {
         var templateCode = envelope.Metadata.TryGetValue("TemplateCode", out var templateCodeVal) && !string.IsNullOrWhiteSpace(templateCodeVal)
             ? templateCodeVal

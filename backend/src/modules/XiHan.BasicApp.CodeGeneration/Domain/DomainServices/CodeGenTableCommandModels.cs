@@ -11,7 +11,7 @@ namespace XiHan.BasicApp.CodeGeneration.Domain.DomainServices;
 /// 代码生成表配置更新命令
 /// </summary>
 public sealed record CodeGenTableUpdateCommand(
-    long BasicId,
+    long Id,
     string TableName,
     string? TableComment,
     string ClassName,
@@ -39,7 +39,7 @@ public sealed record CodeGenTableUpdateCommand(
 /// <summary>
 /// 代码生成表配置状态变更命令
 /// </summary>
-public sealed record CodeGenTableStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record CodeGenTableStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 代码生成表配置命令结果（包装实体）

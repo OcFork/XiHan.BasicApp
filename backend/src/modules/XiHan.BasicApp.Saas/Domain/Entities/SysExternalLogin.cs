@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using SqlSugar;
+using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.Framework.Domain;
 
@@ -26,7 +27,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 用户已绑定账号列表：IX_UsId
 ///
 /// 删除：
-/// - 仅软删（回填 DeletedTime）；解绑前校验防止失去唯一登录方式
+/// - 仅软删（回填 DeletedAt）；解绑前校验防止失去唯一登录方式
 ///
 /// 场景：
 /// - 单点登录（SSO）：企业微信 / 钉钉 / 飞书扫码

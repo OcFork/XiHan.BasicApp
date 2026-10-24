@@ -1,13 +1,14 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Web.Core.Authentication.OAuth;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.OAuth;
 

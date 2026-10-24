@@ -20,7 +20,7 @@ public sealed record VersionCreateCommand(
 /// 版本更新命令
 /// </summary>
 public sealed record VersionUpdateCommand(
-    long BasicId,
+    long Id,
     string AppVersion,
     string DbVersion,
     string? MinSupportVersion,
@@ -31,12 +31,12 @@ public sealed record VersionUpdateCommand(
 /// <summary>
 /// 版本升级开始命令
 /// </summary>
-public sealed record VersionUpgradeStartCommand(long BasicId, string? UpgradeNode, DateTimeOffset? UpgradeStartTime);
+public sealed record VersionUpgradeStartCommand(long Id, string? UpgradeNode, DateTimeOffset? UpgradeStartTime);
 
 /// <summary>
 /// 版本升级完成命令
 /// </summary>
-public sealed record VersionUpgradeFinishCommand(long BasicId, string? AppVersion, string? DbVersion, string? MinSupportVersion);
+public sealed record VersionUpgradeFinishCommand(long Id, string? AppVersion, string? DbVersion, string? MinSupportVersion);
 
 /// <summary>
 /// 版本命令结果

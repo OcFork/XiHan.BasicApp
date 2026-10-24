@@ -37,7 +37,7 @@ public sealed record AccessPolicyCreateCommand(
 /// 访问策略更新命令（不改动作与状态）
 /// </summary>
 public sealed record AccessPolicyUpdateCommand(
-    long BasicId,
+    long Id,
     string PolicyName,
     string? Description,
     int Priority,
@@ -49,12 +49,12 @@ public sealed record AccessPolicyUpdateCommand(
 /// <summary>
 /// 访问策略动作命令
 /// </summary>
-public sealed record AccessPolicyActionCommand(long BasicId, AccessPolicyAction Action);
+public sealed record AccessPolicyActionCommand(long Id, AccessPolicyAction Action);
 
 /// <summary>
 /// 访问策略状态命令
 /// </summary>
-public sealed record AccessPolicyStatusCommand(long BasicId, EnableStatus Status);
+public sealed record AccessPolicyStatusCommand(long Id, EnableStatus Status);
 
 /// <summary>
 /// 访问策略命令结果

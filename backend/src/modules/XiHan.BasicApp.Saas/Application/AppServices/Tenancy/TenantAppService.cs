@@ -1,19 +1,20 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Net.Mail;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
-using XiHan.BasicApp.Saas.Application.Contracts;
+using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.Caching;
+using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.Mappers;
+using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.BasicApp.Core.Security;
-using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Web.Core.Authentication.Users;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

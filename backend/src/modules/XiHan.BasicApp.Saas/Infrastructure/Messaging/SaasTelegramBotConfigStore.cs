@@ -3,6 +3,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Bot.Telegram.Abstractions;
+using XiHan.BasicApp.Core.Bot.Telegram.Options;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
@@ -14,7 +16,7 @@ namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 /// </summary>
 /// <remarks>
 /// 读取全部「启用」的 <c>SysTelegramBot</c>（含租户过滤）并解密 Token，
-/// 映射为框架自有模型 <see cref="TelegramBotConfig"/> 列表（Id=BasicId，逗号串解析为数组）；
+/// 映射为框架自有模型 <see cref="TelegramBotConfig"/> 列表（Id=Id，逗号串解析为数组）；
 /// Token 解密失败或列表项解析失败的行/项跳过并记日志（fail-closed，不拉起可疑机器人）。
 /// 结果按平台设置 <c>ConfigCacheSeconds</c> 做进程内 TTL 缓存，缓解管理器轮询压力。
 /// Singleton 生命周期，Scoped 仓储经 <see cref="IServiceScopeFactory"/> 开作用域解析。

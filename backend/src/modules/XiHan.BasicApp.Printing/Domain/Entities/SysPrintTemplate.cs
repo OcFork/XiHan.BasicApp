@@ -12,7 +12,7 @@ namespace XiHan.BasicApp.Printing.Domain.Entities;
 /// <remarks>
 /// <para><c>TenantId == 0</c> 表示平台全局模板；业务租户模板保存在当前租户范围内。</para>
 /// <para>模板编码创建后不可修改；数据源编码可为空或调整，仅用于提供字段契约、设计素材与默认样例。</para>
-/// <para>管理端更新通过继承的 <c>RowVersion</c> 参与乐观并发控制；模板 JSON 不写入操作日志。</para>
+/// <para>管理端更新通过继承的 <c>ConcurrencyStamp</c> 参与乐观并发控制；模板 JSON 不写入操作日志。</para>
 /// </remarks>
 [SugarTable(TableName = "Sys_Print_Template", TableDescription = "打印模板表")]
 [SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]

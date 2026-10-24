@@ -26,7 +26,7 @@ public partial class SysTenant
         var oldStatus = TenantStatus;
         TenantStatus = newStatus;
 
-        AddLocalEvent(new TenantStatusChangedDomainEvent(TenantId, Id, oldStatus, newStatus, operatorUserId, reason));
+        Raise(new TenantStatusChangedDomainEvent(TenantId, Id, oldStatus, newStatus, operatorUserId, reason));
     }
 
     /// <summary>

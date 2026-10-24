@@ -31,7 +31,7 @@ public sealed record AiAssistantCreateCommand(
 /// AI 助手更新命令（助手编码不可变）
 /// </summary>
 public sealed record AiAssistantUpdateCommand(
-    long BasicId,
+    long Id,
     string AssistantName,
     string? Avatar,
     string? Description,
@@ -50,7 +50,7 @@ public sealed record AiAssistantUpdateCommand(
 /// <summary>
 /// AI 助手状态变更命令
 /// </summary>
-public sealed record AiAssistantStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record AiAssistantStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// AI 助手命令结果

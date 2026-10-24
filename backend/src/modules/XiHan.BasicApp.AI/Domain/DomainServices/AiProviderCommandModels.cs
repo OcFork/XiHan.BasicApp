@@ -32,7 +32,7 @@ public sealed record AiProviderCreateCommand(
 /// </summary>
 /// <remarks>ApiKey 为 null/空表示保留原密钥；配置编码 ConfigCode 不可变，不在命令内。</remarks>
 public sealed record AiProviderUpdateCommand(
-    long BasicId,
+    long Id,
     string ConfigName,
     string Provider,
     string Model,
@@ -51,7 +51,7 @@ public sealed record AiProviderUpdateCommand(
 /// <summary>
 /// AI Provider 状态变更命令
 /// </summary>
-public sealed record AiProviderStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record AiProviderStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// AI Provider 命令结果

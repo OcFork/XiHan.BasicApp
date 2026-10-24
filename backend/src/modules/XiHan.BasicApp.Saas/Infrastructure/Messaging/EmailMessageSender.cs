@@ -3,11 +3,15 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Bot.Email.Abstractions;
+using XiHan.BasicApp.Core.Bot.Email.Messaging;
+using XiHan.BasicApp.Core.Bot.Email.Models;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Messaging;
+using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.Framework.Messaging.Abstractions;
-using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 
@@ -58,7 +62,7 @@ public sealed class EmailMessageSender : IMessageSender
     /// <param name="recipient">接收人</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>发送结果</returns>
-    public async Task<MessageSendResult> SendAsync(MessageEnvelope envelope, MessageRecipient recipient, CancellationToken cancellationToken = default)
+    public async Task<MessageSendResult> SendAsync(OutboundMessage envelope, MessageRecipient recipient, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(envelope);
         ArgumentNullException.ThrowIfNull(recipient);
@@ -254,7 +258,7 @@ public sealed class EmailMessageSender : IMessageSender
     /// <summary>
     /// 渲染模板内容：按 TemplateCode 从模板库查找（租户优先回退全局）并渲染，模板缺失/损坏回退原始内容
     /// </summary>
-    private async Task<string?> RenderContentAsync(MessageEnvelope envelope, AsyncServiceScope scope, CancellationToken cancellationToken)
+    private async Task<string?> RenderContentAsync(OutboundMessage envelope, AsyncServiceScope scope, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(envelope.TemplateCode))
         {

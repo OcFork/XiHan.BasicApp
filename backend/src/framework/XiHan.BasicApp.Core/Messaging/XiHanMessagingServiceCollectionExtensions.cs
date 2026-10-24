@@ -1,0 +1,42 @@
+// Copyright (c) 2021-Present XiHanFun and contributors.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using XiHan.BasicApp.Core.Messaging;
+
+namespace XiHan.BasicApp.Core.Messaging;
+
+/// <summary>
+/// 消息服务注册扩展
+/// </summary>
+public static class XiHanMessagingServiceCollectionExtensions
+{
+    /// <summary>
+    /// 注册消息模块核心服务
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <param name="configure">配置回调</param>
+    /// <returns>服务集合</returns>
+    public static IServiceCollection AddXiHanMessaging(
+        this IServiceCollection services,
+        Action<XiHanMessagingOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+        else
+        {
+            services.Configure<XiHanMessagingOptions>(_ => { });
+        }
+
+        // 仅负责路由：消息调度器 + 未配置兜底发送器。具体发送器（邮件/短信）与「后台异步发送（发件箱）」由业务层提供。
+        services.TryAddSingleton<IMessageDispatcher, DefaultMessageDispatcher>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IMessageSender, NotConfiguredMessageSender>());
+
+        return services;
+    }
+}

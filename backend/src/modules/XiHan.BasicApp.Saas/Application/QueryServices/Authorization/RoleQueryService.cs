@@ -19,6 +19,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
+using XiHan.BasicApp.Core.Caching;
 
 namespace XiHan.BasicApp.Saas.Application.QueryServices;
 

@@ -11,7 +11,7 @@ public interface IEntityBase
     /// <summary>
     /// 版本控制标识，用于处理并发
     /// </summary>
-    // xihan-migrate(V4-02): RowVersion（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
+    // xihan-migrate(V4-02): ConcurrencyStamp（long）改为 ConcurrencyStamp（string）；把 Row_Version 列改成字符串类型。
     string ConcurrencyStamp { get; set; }
 }
 

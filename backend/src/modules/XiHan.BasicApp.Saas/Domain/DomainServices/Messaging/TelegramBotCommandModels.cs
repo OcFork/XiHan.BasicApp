@@ -25,7 +25,7 @@ public sealed record TelegramBotCreateCommand(
 /// </summary>
 /// <remarks>Token 为空表示保留原 Token（前端脱敏不回显）</remarks>
 public sealed record TelegramBotUpdateCommand(
-    long BasicId,
+    long Id,
     string BotName,
     string? Token,
     string? AdminUsers,
@@ -38,7 +38,7 @@ public sealed record TelegramBotUpdateCommand(
 /// <summary>
 /// Telegram 机器人状态变更命令
 /// </summary>
-public sealed record TelegramBotStatusChangeCommand(long BasicId, bool IsEnabled);
+public sealed record TelegramBotStatusChangeCommand(long Id, bool IsEnabled);
 
 /// <summary>
 /// Telegram 机器人命令结果

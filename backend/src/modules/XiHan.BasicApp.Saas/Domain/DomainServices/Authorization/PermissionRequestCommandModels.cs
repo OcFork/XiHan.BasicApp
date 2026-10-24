@@ -21,7 +21,7 @@ public sealed record PermissionRequestCreateCommand(
 /// 权限申请更新命令
 /// </summary>
 public sealed record PermissionRequestUpdateCommand(
-    long BasicId,
+    long Id,
     long RequestUserId,
     long? PermissionId,
     long? RoleId,
@@ -34,7 +34,7 @@ public sealed record PermissionRequestUpdateCommand(
 /// 权限申请状态命令
 /// </summary>
 public sealed record PermissionRequestStatusCommand(
-    long BasicId,
+    long Id,
     long OperatorUserId,
     PermissionRequestStatus RequestStatus,
     string? Remark);

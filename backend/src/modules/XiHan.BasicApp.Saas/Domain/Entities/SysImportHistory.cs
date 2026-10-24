@@ -20,7 +20,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 导入执行完毕（无论成败）追加一条；硬删（无软删除），可按保留策略清理
 ///
 /// 查询：
-/// - 导入对话框「最近导入」：IX_TeId_UsId_PaCo + WHERE UserId=? AND PageCode=? ORDER BY CreatedTime DESC LIMIT N
+/// - 导入对话框「最近导入」：IX_TeId_UsId_PaCo + WHERE UserId=? AND PageCode=? ORDER BY CreatedAt DESC LIMIT N
 /// </remarks>
 [SugarTable(TableName = "Sys_Import_History", TableDescription = "导入历史表")]
 [SugarIndex("IX_{table}_TeId_CrTi", nameof(TenantId), OrderByType.Asc, nameof(CreatedAt), OrderByType.Desc)]

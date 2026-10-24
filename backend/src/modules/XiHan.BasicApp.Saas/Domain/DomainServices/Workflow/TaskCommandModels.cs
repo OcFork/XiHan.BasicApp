@@ -75,7 +75,7 @@ public sealed record TaskCreateCommand(
 /// 任务更新命令
 /// </summary>
 public sealed record TaskUpdateCommand(
-    long BasicId,
+    long Id,
     string TaskName,
     string? TaskDescription,
     string? TaskGroup,
@@ -101,13 +101,13 @@ public sealed record TaskUpdateCommand(
 /// <summary>
 /// 任务启停状态变更命令
 /// </summary>
-public sealed record TaskStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record TaskStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 任务运行状态变更命令
 /// </summary>
 public sealed record TaskRunStatusChangeCommand(
-    long BasicId,
+    long Id,
     RunTaskStatus RunTaskStatus,
     DateTimeOffset? NextRunTime,
     DateTimeOffset? LastRunTime,

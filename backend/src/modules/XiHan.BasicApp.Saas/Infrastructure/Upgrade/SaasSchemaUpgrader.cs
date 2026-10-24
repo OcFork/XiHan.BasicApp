@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Options;
+using XiHan.BasicApp.Core.Data.SqlSugar.Initializers;
+using XiHan.BasicApp.Core.Data.SqlSugar.Options;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Upgrade.Abstractions;
 using XiHan.BasicApp.Core.Upgrade.Enums;

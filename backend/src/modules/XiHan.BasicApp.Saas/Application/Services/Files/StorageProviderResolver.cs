@@ -4,10 +4,13 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using XiHan.BasicApp.Core.ObjectStorage.Options;
+using XiHan.BasicApp.Core.ObjectStorage.Providers;
+using XiHan.BasicApp.Core.ObjectStorage;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -49,6 +52,7 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
     /// </summary>
     public async Task<StorageRoute> RouteForUploadAsync(string? routeKey, string? providerName, CancellationToken cancellationToken = default)
     {
+        using var scope = _scopeFactory.CreateScope();
         var config = await GetDbDrivenDefaultAsync(scope.ServiceProvider, cancellationToken);
         if (config is not null)
         {
@@ -65,6 +69,7 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
     {
         ArgumentNullException.ThrowIfNull(storage);
 
+        using var scope = _scopeFactory.CreateScope();
         if (storage.StorageConfigId is { } configId)
         {
             // 文件记着上传时用的配置：要么是文件所在作用域自己的，要么是租户未自配时用的平台默认——

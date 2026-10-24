@@ -21,7 +21,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - 验证码类短信应设短 ExpirationTime（一般 5 分钟），防止盗用
 ///
 /// 查询：
-/// - 待发队列：WHERE SmsStatus=Pending ORDER BY CreatedTime
+/// - 待发队列：WHERE SmsStatus=Pending ORDER BY CreatedAt
 /// - 租户最近发送：IX_TeId_SmSt_SeTi
 /// - 按手机号反查：IX_ToPh
 ///

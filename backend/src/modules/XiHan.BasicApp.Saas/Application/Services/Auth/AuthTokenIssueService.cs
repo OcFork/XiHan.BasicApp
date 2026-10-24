@@ -3,9 +3,10 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Web.Core.Authentication.Jwt;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

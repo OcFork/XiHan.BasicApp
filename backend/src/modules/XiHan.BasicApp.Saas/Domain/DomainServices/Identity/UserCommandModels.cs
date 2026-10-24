@@ -34,7 +34,7 @@ public sealed record UserCreateCommand(
 /// 用户更新命令
 /// </summary>
 public sealed record UserUpdateCommand(
-    long BasicId,
+    long Id,
     string? RealName,
     string? NickName,
     string? Avatar,
@@ -48,7 +48,7 @@ public sealed record UserUpdateCommand(
 /// <summary>
 /// 用户状态变更命令
 /// </summary>
-public sealed record UserStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record UserStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 用户密码重置命令
@@ -116,7 +116,7 @@ public sealed record RoleMemberBatchUpdateResult(
 /// 用户角色更新命令
 /// </summary>
 public sealed record UserRoleUpdateCommand(
-    long BasicId,
+    long Id,
     DateTimeOffset? EffectiveTime,
     DateTimeOffset? ExpirationTime,
     string? GrantReason,
@@ -125,7 +125,7 @@ public sealed record UserRoleUpdateCommand(
 /// <summary>
 /// 用户角色状态变更命令
 /// </summary>
-public sealed record UserRoleStatusChangeCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record UserRoleStatusChangeCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 用户直授权限批量变更中的单条授予项
@@ -155,7 +155,7 @@ public sealed record UserPermissionBatchUpdateResult(
 /// 用户直授权限更新命令
 /// </summary>
 public sealed record UserPermissionUpdateCommand(
-    long BasicId,
+    long Id,
     PermissionAction PermissionAction,
     DateTimeOffset? EffectiveTime,
     DateTimeOffset? ExpirationTime,
@@ -165,7 +165,7 @@ public sealed record UserPermissionUpdateCommand(
 /// <summary>
 /// 用户直授权限状态变更命令
 /// </summary>
-public sealed record UserPermissionStatusChangeCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record UserPermissionStatusChangeCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 成员数据范围设置命令：覆盖档位与自定义部门一次落地
@@ -211,7 +211,7 @@ public sealed record UserDepartmentBatchUpdateResult(
 /// 用户部门归属更新命令
 /// </summary>
 public sealed record UserDepartmentUpdateCommand(
-    long BasicId,
+    long Id,
     bool IsMain,
     string? Remark,
     long? PositionId = null,
@@ -222,12 +222,12 @@ public sealed record UserDepartmentUpdateCommand(
 /// <summary>
 /// 用户部门归属状态变更命令
 /// </summary>
-public sealed record UserDepartmentStatusChangeCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record UserDepartmentStatusChangeCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 用户会话撤销命令
 /// </summary>
-public sealed record UserSessionRevokeCommand(long BasicId, string Reason, long? OperatorUserId);
+public sealed record UserSessionRevokeCommand(long Id, string Reason, long? OperatorUserId);
 
 /// <summary>
 /// 用户全部会话撤销命令

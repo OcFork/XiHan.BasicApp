@@ -46,7 +46,7 @@ public class NotificationMessage
     /// <summary>
     /// 创建时间
     /// </summary>
-    public DateTime CreatedTime { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 是否已读

@@ -2,7 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Caching.Distributed;
+using XiHan.BasicApp.Core.Bot.Telegram.Abstractions;
 using XiHan.BasicApp.Saas.Application.Caching;
+using XiHan.BasicApp.Core.Caching;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Messaging;
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using XiHan.BasicApp.Core.Application;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;

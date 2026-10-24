@@ -28,7 +28,7 @@ public sealed record SmsConfigCreateCommand(
 /// </summary>
 /// <remarks>AccessKeySecret 为空表示保留原密钥（前端脱敏不回显）</remarks>
 public sealed record SmsConfigUpdateCommand(
-    long BasicId,
+    long Id,
     string ConfigName,
     SmsProviderType Provider,
     string AccessKeyId,
@@ -43,12 +43,12 @@ public sealed record SmsConfigUpdateCommand(
 /// <summary>
 /// 短信网关配置状态变更命令
 /// </summary>
-public sealed record SmsConfigStatusChangeCommand(long BasicId, bool IsEnabled);
+public sealed record SmsConfigStatusChangeCommand(long Id, bool IsEnabled);
 
 /// <summary>
 /// 短信网关配置默认变更命令
 /// </summary>
-public sealed record SmsConfigDefaultChangeCommand(long BasicId);
+public sealed record SmsConfigDefaultChangeCommand(long Id);
 
 /// <summary>
 /// 短信网关配置命令结果

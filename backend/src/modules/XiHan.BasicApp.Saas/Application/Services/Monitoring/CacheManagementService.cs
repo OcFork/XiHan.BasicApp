@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Caching.Distributed;
+using XiHan.BasicApp.Core.Caching;
 using XiHan.BasicApp.Saas.Application.Caching;
 
 namespace XiHan.BasicApp.Saas.Application.Services;

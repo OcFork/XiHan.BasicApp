@@ -5,19 +5,21 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Abstractions;
+using XiHan.BasicApp.Core.Tasks.ScheduledJobs.Extensions;
 using XiHan.BasicApp.Core;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Saas.Extensions;
 using XiHan.BasicApp.Saas.Hubs;
 using XiHan.BasicApp.Saas.Infrastructure.OAuth;
 using XiHan.BasicApp.Saas.Infrastructure.Tasks;
-using XiHan.BasicApp.Saas.Extensions;
-using XiHan.BasicApp.Web.Core;
-using XiHan.Framework.Kernel;
-using XiHan.Framework.Kernel.Hosting;
-using XiHan.Framework.Primitives;
-using XiHan.Framework.Primitives.Manifests;
 using XiHan.BasicApp.Web.Core.RealTime.Constants;
+using XiHan.BasicApp.Web.Core;
+using XiHan.Framework.Kernel.Hosting;
+using XiHan.Framework.Kernel;
+using XiHan.Framework.Primitives.Manifests;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas;
 
@@ -68,10 +70,10 @@ public sealed class BasicAppSaasFeature : IHostedFeature
         // ProtectedPathPrefixes=["/api"] 不会被 appsettings 的值替换，而是被追加，导致最终为 ["/api", 配置值...]，
         // 把整个第一方前端 /api/* 全纳入强制签名（登录等匿名调用直接 401「缺少安全请求头」）。
         // 此处以 appsettings 配置值为准重建这两个路径列表（.Get 返回全新列表，无默认污染）；PostConfigure 在框架绑定之后执行，最终生效。
-        services.AddOptions<XiHan.Framework.Web.Api.Security.OpenApi.XiHanOpenApiSecurityOptions>()
+        services.AddOptions<XiHan.BasicApp.Web.Core.Security.OpenApi.XiHanOpenApiSecurityOptions>()
             .PostConfigure<IConfiguration>((options, configuration) =>
             {
-                var sectionName = XiHan.Framework.Web.Api.Security.OpenApi.XiHanOpenApiSecurityOptions.SectionName;
+                var sectionName = XiHan.BasicApp.Web.Core.Security.OpenApi.XiHanOpenApiSecurityOptions.SectionName;
 
                 var protectedPrefixes = configuration.GetSection($"{sectionName}:ProtectedPathPrefixes").Get<List<string>>();
                 if (protectedPrefixes is not null)
@@ -106,26 +108,12 @@ public sealed class BasicAppSaasFeature : IHostedFeature
     }
 
     /// <inheritdoc />
-    public Task StartAsync(IServiceProvider services, CancellationToken cancellationToken)
+    public async Task StartAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
-        // xihan-migrate(V4-01): GetApplicationBuilder() 在 StartAsync 里没有对应物；中间件与端点改到 Program.cs 的 app.UseXiHan() 之后注册。
-        var app = context.GetApplicationBuilder();
-
-        app.UseEndpoints(endpoints =>
-        {
-            // 映射 SignalR Hub 端点
-            endpoints.MapXiHanHub<BasicAppNotificationHub>(SignalRConstants.HubPaths.Notification);
-
-            // 第三方登录（OAuth）端点：/api/OAuth/ExternalLogin（发起）+ /api/OAuth/Callback（回调）
-            endpoints.MapOAuthEndpoints();
-
-            // OAuth2 授权服务端标准端点：/connect/authorize（跳同意页）+ /connect/token（令牌）+ /connect/revoke（撤销）
-            endpoints.MapOAuthConnectEndpoints();
-
-            // OIDC 端点：发现文档 + JWKS + 用户信息（未启用时不注册任何路由）
-            endpoints.MapOidcEndpoints();
-        });
-
+        // xihan-migrate(P5-04): 端点改到宿主 Program.cs 的 app.UseXiHan() 之后注册：
+        //   MapXiHanHub<BasicAppNotificationHub>(SignalRConstants.HubPaths.Notification)（SignalR）、
+        //   MapOAuthEndpoints()（第三方登录发起/回调）、MapOAuthConnectEndpoints()（/connect/authorize|token|revoke）、
+        //   MapOidcEndpoints()（发现文档 + JWKS + 用户信息）。
         var scheduler = services.GetRequiredService<IJobScheduler>();
         var logger = services.GetRequiredService<ILogger<BasicAppSaasFeature>>();
 
@@ -138,13 +126,11 @@ public sealed class BasicAppSaasFeature : IHostedFeature
         // 2. 同步数据库中所有启用的 SysTask 记录到调度器（含崩溃残留 Running 状态复位）
         using var scope = services.CreateScope();
         var schedulerSyncService = scope.ServiceProvider.GetRequiredService<ITaskSchedulerSyncService>();
-        schedulerSyncService.SyncAllActiveJobsAsync().GetAwaiter().GetResult();
+        await schedulerSyncService.SyncAllActiveJobsAsync().ConfigureAwait(false);
         logger.LogInformation("数据库中的活跃 SysTask 记录已同步到调度器");
 
         // 3. 权限条件盘点：启动时写一行各类条数的汇总，详单在权限管理页的「条件盘点」
         LogPermissionConditionInventory(services, logger);
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

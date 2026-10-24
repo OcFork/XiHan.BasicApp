@@ -30,7 +30,7 @@ public sealed record CodeGenTemplateCreateCommand(
 /// 代码生成模板更新命令
 /// </summary>
 public sealed record CodeGenTemplateUpdateCommand(
-    long BasicId,
+    long Id,
     string TemplateName,
     string? TemplateDescription,
     string? TemplateGroup,
@@ -48,7 +48,7 @@ public sealed record CodeGenTemplateUpdateCommand(
 /// <summary>
 /// 代码生成模板状态变更命令
 /// </summary>
-public sealed record CodeGenTemplateStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record CodeGenTemplateStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 代码生成模板命令结果

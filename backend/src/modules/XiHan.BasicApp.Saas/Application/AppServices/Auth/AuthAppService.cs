@@ -1,11 +1,8 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.BasicApp.Core.Security;
-using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Primitives;
-using XiHan.BasicApp.Saas.Application.AccessPolicies;
-using XiHan.BasicApp.Saas.Application.Caching;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,27 +10,35 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Security.Cryptography;
-using System.Text.Json;
+using XiHan.BasicApp.Core.Authorization.Permissions;
+using XiHan.BasicApp.Core.Bot.Email.Abstractions;
+using XiHan.BasicApp.Core.Bot.Email.Options;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Localization;
+using XiHan.BasicApp.Core.Repositories;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Saas.Application.AccessPolicies;
+using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Application.Contracts;
 using XiHan.BasicApp.Saas.Application.Dtos;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Application.Services;
-using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Configurations;
+using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Domain.Messaging;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Entities;
-using XiHan.BasicApp.Core.Repositories;
-using XiHan.Framework.Localization.Abstractions;
-using XiHan.BasicApp.Core.Authorization.Permissions;
-using XiHan.BasicApp.Core.Data;
-using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Web.Core.Authentication.OAuth;
+using XiHan.BasicApp.Web.Core.Authentication.Otp;
 using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.Framework.Localization.Abstractions;
+using XiHan.Framework.Messaging.Abstractions;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 
@@ -557,6 +562,7 @@ public sealed partial class AuthAppService
         cancellationToken.ThrowIfCancellationRequested();
         var userId = _currentUser.UserId ?? throw new InvalidOperationException("当前用户未登录。");
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(_currentUser.TenantId, _currentUser.TenantId?.ToString());
 
         var userInfo = await _authContextQueryService.GetCurrentUserInfoAsync(
             userId,
@@ -619,6 +625,7 @@ public sealed partial class AuthAppService
         // 先登录后选租户：登录页不再选择租户，统一在平台态完成身份认证
         // （邮箱全平台唯一定位；平台账号可用用户名），登录成功后按成员关系决定落点
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var platformScope = _currentTenant.Change(null);
 
         var authResult = await _authenticationDomainService.AuthenticatePasswordLoginAsync(
             login,
@@ -714,6 +721,7 @@ public sealed partial class AuthAppService
 
         // 先登录后选租户：平台态按全平台唯一邮箱定位用户
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var platformScope = _currentTenant.Change(null);
 
         // 复用邮箱登录的用户定位与账号可用性校验，确保仅向有效账号下发验证码
         var authResult = await _authenticationDomainService.AuthenticateEmailLoginAsync(email, tenantId: null, now, cancellationToken);
@@ -749,6 +757,7 @@ public sealed partial class AuthAppService
 
         // 先登录后选租户：平台态验证 + 智能落点
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var platformScope = _currentTenant.Change(null);
 
         if (!await _emailLoginCodeService.TryConsumeAsync(tenantId: null, email, code, cancellationToken))
         {
@@ -800,6 +809,7 @@ public sealed partial class AuthAppService
 
         // 先登录后选租户：平台态按已验证的手机号定位用户，短信网关取平台默认
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var platformScope = _currentTenant.Change(null);
 
         // 复用手机号登录的用户定位与账号可用性校验，确保仅向有效账号下发验证码
         var authResult = await _authenticationDomainService.AuthenticatePhoneLoginAsync(phone, tenantId: null, now, cancellationToken);
@@ -838,6 +848,7 @@ public sealed partial class AuthAppService
 
         // 先登录后选租户：平台态验证 + 智能落点
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var platformScope = _currentTenant.Change(null);
 
         if (!await _phoneLoginCodeService.TryConsumeAsync(phone, code, cancellationToken))
         {
@@ -964,6 +975,7 @@ public sealed partial class AuthAppService
         }
 
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var tenantScope = _currentTenant.Change(_currentUser.TenantId, _currentUser.TenantId?.ToString());
         var sessionBusinessId = _currentUser.FindClaim(XiHanClaimTypes.SessionId)?.Value;
         if (string.IsNullOrWhiteSpace(sessionBusinessId))
         {
@@ -1520,6 +1532,7 @@ public sealed partial class AuthAppService
 
         // 平台态签发，落点（控制中心 / 唯一租户）由统一逻辑决定，与密码登录一致
         // xihan-migrate(V4-07): ICurrentTenant.Change 没有 5.0 对应物：租户随调用的 Baggage 走；改为带租户 Baggage 发起新调用（App.CreateContext）。
+        using var platformScope = _currentTenant.Change(null);
         var token = await IssueLoginTokenWithLandingAsync(user, security: null, user.UserName, deviceId: null, now, initialLockReason: null, cancellationToken);
         _logger.LogInformation("第三方登录成功 provider={Provider} userId={UserId} 新用户={IsNewUser}", info.Provider, user.Id, isNewUser);
         return ExternalLoginResultDto.LoginSuccess(token);

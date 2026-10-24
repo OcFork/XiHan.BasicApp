@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
+using XiHan.BasicApp.Core.Bot.Telegram.Abstractions;
+using XiHan.BasicApp.Core.Bot.Telegram.Options;
 using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Configurations;
 

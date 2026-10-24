@@ -25,7 +25,7 @@ namespace XiHan.BasicApp.Core.Data.SqlSugar.Repository;
 ///         <c>DbClient.Updateable&lt;T&gt;()</c>/<c>Deleteable&lt;T&gt;()</c> 工厂内部自动挂 <c>EnableQueryFilter</c>，仓储<b>禁止再显式调用 <c>.EnableQueryFilter()</c></b></b>：
 ///         重复挂会把同一份过滤烘进 WHERE 两次、生成同名参数（<c>@constant*</c>），一旦叠加 Diff 的 <c>GetDiffTable</c> 重查旧值即触发
 ///         MySQL 驱动“Parameter already been defined”崩溃（PG 驱动容忍重名故不崩，但仍是冗余死条件）。</item>
-///   <item>审计字段（CreatedTime/ModifiedTime/TenantId 等）通过 SqlSugar <c>DataExecuting</c> AOP 自动注入。</item>
+///   <item>审计字段（CreatedAt/ModifiedAt/TenantId 等）通过 SqlSugar <c>DataExecuting</c> AOP 自动注入。</item>
 ///   <item>实体差异日志通过 SqlSugar 原生 <c>OnDiffLogEvent</c> AOP 处理：仓储只需在写操作挂 <c>.EnableDiffLogEvent(typeof(TEntity))</c>（不叠 <c>EnableQueryFilter</c> 即安全）。</item>
 ///   <item><b>写路径租户边界（读共享 ≠ 写共享）</b>：平台就是 0 号租户（无租户上下文按 0 处理），
 ///         每个作用域只能改写/删除本作用域的行——租户态只写本租户行（不含读共享放行的 <c>TenantId=0</c> 全局行），

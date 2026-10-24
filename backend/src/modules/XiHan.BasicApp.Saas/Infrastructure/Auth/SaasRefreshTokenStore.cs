@@ -1,9 +1,10 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Caching.Distributed;
+using XiHan.BasicApp.Web.Core.Authentication.Jwt;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
 

@@ -1,10 +1,12 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.BasicApp.Core.Security;
-using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Web.Core.Authentication.Users;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Auth;
 
@@ -77,6 +79,7 @@ public sealed class SaasUserStore : IUserStore
             return null;
         }
 
+        using var accountScope = EnterAccountScope(user);
         var security = await FindSecurityAsync(id, cancellationToken);
         return MapToUserInfo(user, security);
     }
@@ -170,6 +173,7 @@ public sealed class SaasUserStore : IUserStore
         var user = await FindUserByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException($"用户 {id} 不存在。");
 
+        using var accountScope = EnterAccountScope(user);
         var security = await FindSecurityAsync(id, cancellationToken)
             ?? throw new InvalidOperationException($"用户 {id} 的安全记录不存在。");
 
@@ -204,6 +208,7 @@ public sealed class SaasUserStore : IUserStore
             return 0;
         }
 
+        using var accountScope = EnterAccountScope(user);
         return await _clientResolver.GetClientForEntity<SysUserSecurity>()
             .Queryable<SysUserSecurity>()
             .Where(s => s.UserId == user.Id && !s.IsDeleted)
@@ -231,6 +236,7 @@ public sealed class SaasUserStore : IUserStore
             return;
         }
 
+        using var accountScope = EnterAccountScope(user);
         var security = await FindSecurityAsync(user.Id, cancellationToken);
         if (security is null)
         {
@@ -265,6 +271,7 @@ public sealed class SaasUserStore : IUserStore
             return;
         }
 
+        using var accountScope = EnterAccountScope(user);
         var userId = user.Id;
         await _clientResolver.GetClientForEntity<SysUserSecurity>()
             .Updateable<SysUserSecurity>()
@@ -298,6 +305,7 @@ public sealed class SaasUserStore : IUserStore
             return;
         }
 
+        using var accountScope = EnterAccountScope(user);
         var security = await FindSecurityAsync(user.Id, cancellationToken);
         if (security is null)
         {
@@ -345,6 +353,7 @@ public sealed class SaasUserStore : IUserStore
             return null;
         }
 
+        using var accountScope = EnterAccountScope(user);
         // 取整行走实体属性绑定：DateTimeOffset? 列的标量投影会走 SqlSugar 值类型 ChangeType 路径，
         // DateTime→DateTimeOffset 直转抛 InvalidCastException（LockoutEndTime 非空时所有登录 500）
         var security = await FindSecurityAsync(user.Id, cancellationToken);

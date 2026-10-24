@@ -6,10 +6,11 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tasks.BackgroundServices;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.BasicApp.Core.Security;
-using XiHan.BasicApp.Core.Data;
 using XiHan.BasicApp.Web.Core.Clients;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;

@@ -39,7 +39,7 @@ public sealed record MenuCreateCommand(
 /// 菜单更新命令
 /// </summary>
 public sealed record MenuUpdateCommand(
-    long BasicId,
+    long Id,
     long? ParentId,
     long? PermissionId,
     string MenuName,
@@ -66,7 +66,7 @@ public sealed record MenuUpdateCommand(
 /// <summary>
 /// 菜单状态变更命令
 /// </summary>
-public sealed record MenuStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record MenuStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 菜单命令结果

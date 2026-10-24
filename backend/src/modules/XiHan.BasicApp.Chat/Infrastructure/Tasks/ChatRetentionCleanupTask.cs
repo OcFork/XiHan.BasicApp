@@ -99,7 +99,7 @@ public sealed class ChatRetentionCleanupTask
         // 先级联删回应再删消息：回应行没有独立保留期，其存活期完全由所属消息决定
         // （SysChatMessageReaction 的实体注释即以此为契约）。顺序反过来的话，消息行一旦消失，
         // 就再也无法按「所属消息已过期」筛出回应，回应表会只增不减。
-        // 判据用「所属消息已过期」而非回应自身的 CreatedTime：回应必晚于消息，按回应时间删
+        // 判据用「所属消息已过期」而非回应自身的 CreatedAt：回应必晚于消息，按回应时间删
         // 会漏掉「老消息 + 新回应」这一类，正是悬空外键的来源。
         var reactionCount = await client.Deleteable<SysChatMessageReaction>()
             .Where(reaction => SqlFunc.Subqueryable<SysChatMessage>()

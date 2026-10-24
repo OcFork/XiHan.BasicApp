@@ -40,7 +40,7 @@ public static class GeneratedColumnNames
     }
 
     /// <summary>
-    /// 归一化列名：去掉下划线，使 <c>Basic_Id</c> 与 <c>BasicId</c> 视为同一列
+    /// 归一化列名：去掉下划线，使 <c>Basic_Id</c> 与 <c>Id</c> 视为同一列
     /// </summary>
     private static string Normalize(string columnName)
     {

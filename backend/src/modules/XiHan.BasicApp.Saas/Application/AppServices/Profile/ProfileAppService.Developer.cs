@@ -1,13 +1,14 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using XiHan.BasicApp.Saas.Application.Services;
+using XiHan.BasicApp.Core.Exceptions;
+using XiHan.BasicApp.Core.Localization;
+using XiHan.BasicApp.Core.Repositories;
 using XiHan.BasicApp.Saas.Application.Dtos;
+using XiHan.BasicApp.Saas.Application.Services;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
-using XiHan.BasicApp.Core.Repositories;
 using XiHan.Framework.Localization.Abstractions;
-using XiHan.BasicApp.Core.Exceptions;
 using XiHan.Framework.Utils.Security;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;

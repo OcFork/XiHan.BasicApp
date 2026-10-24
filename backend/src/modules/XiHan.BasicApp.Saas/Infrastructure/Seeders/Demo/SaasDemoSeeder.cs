@@ -2,11 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Data.SqlSugar.Extensions;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Permissions;
-using XiHan.BasicApp.Core.Data;
-using XiHan.BasicApp.Core.Security;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Seeders;
 

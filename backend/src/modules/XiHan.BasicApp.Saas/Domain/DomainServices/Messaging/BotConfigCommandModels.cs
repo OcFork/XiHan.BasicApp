@@ -26,7 +26,7 @@ public sealed record BotConfigCreateCommand(
 /// </summary>
 /// <remarks>Secret 为空表示保留原秘钥（前端脱敏不回显）</remarks>
 public sealed record BotConfigUpdateCommand(
-    long BasicId,
+    long Id,
     string ConfigName,
     BotProviderType Provider,
     string WebhookUrl,
@@ -38,12 +38,12 @@ public sealed record BotConfigUpdateCommand(
 /// <summary>
 /// 机器人配置状态变更命令
 /// </summary>
-public sealed record BotConfigStatusChangeCommand(long BasicId, bool IsEnabled);
+public sealed record BotConfigStatusChangeCommand(long Id, bool IsEnabled);
 
 /// <summary>
 /// 机器人配置默认变更命令（默认互斥按 Provider 维度）
 /// </summary>
-public sealed record BotConfigDefaultChangeCommand(long BasicId);
+public sealed record BotConfigDefaultChangeCommand(long Id);
 
 /// <summary>
 /// 机器人配置命令结果

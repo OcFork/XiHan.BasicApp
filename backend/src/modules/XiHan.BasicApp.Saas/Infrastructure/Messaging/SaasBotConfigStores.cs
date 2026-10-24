@@ -3,6 +3,12 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using XiHan.BasicApp.Core.Bot.DingTalk.Abstractions;
+using XiHan.BasicApp.Core.Bot.DingTalk.Options;
+using XiHan.BasicApp.Core.Bot.Lark.Abstractions;
+using XiHan.BasicApp.Core.Bot.Lark.Options;
+using XiHan.BasicApp.Core.Bot.WeCom.Abstractions;
+using XiHan.BasicApp.Core.Bot.WeCom.Options;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;

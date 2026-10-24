@@ -1,18 +1,20 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Application.QueryServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Enums;
 using XiHan.BasicApp.Saas.Domain.Repositories;
-using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Web.Core.Authentication.Jwt;
+using XiHan.BasicApp.Web.Core.Authentication.Oidc;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 

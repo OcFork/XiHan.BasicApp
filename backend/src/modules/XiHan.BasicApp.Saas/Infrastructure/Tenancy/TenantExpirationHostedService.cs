@@ -1,13 +1,14 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Tasks.BackgroundServices;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Domain.Entities;
-using XiHan.BasicApp.Core.Data;
 
 namespace XiHan.BasicApp.Saas.Infrastructure.Tenancy;
 

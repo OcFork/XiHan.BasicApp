@@ -23,7 +23,7 @@ public sealed record RoleCreateCommand(
 /// 角色更新命令
 /// </summary>
 public sealed record RoleUpdateCommand(
-    long BasicId,
+    long Id,
     string RoleName,
     string? RoleDescription,
     RoleType RoleType,
@@ -34,7 +34,7 @@ public sealed record RoleUpdateCommand(
 /// <summary>
 /// 角色状态变更命令
 /// </summary>
-public sealed record RoleStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record RoleStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 角色权限批量变更命令（一次性提交授予与撤销）
@@ -48,7 +48,7 @@ public sealed record RolePermissionBatchUpdateCommand(
 /// 角色权限更新命令
 /// </summary>
 public sealed record RolePermissionUpdateCommand(
-    long BasicId,
+    long Id,
     PermissionAction PermissionAction,
     DateTimeOffset? EffectiveTime,
     DateTimeOffset? ExpirationTime,
@@ -58,7 +58,7 @@ public sealed record RolePermissionUpdateCommand(
 /// <summary>
 /// 角色权限状态变更命令
 /// </summary>
-public sealed record RolePermissionStatusChangeCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record RolePermissionStatusChangeCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 角色数据范围设置命令：档位与自定义部门一次落地

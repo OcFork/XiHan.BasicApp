@@ -19,7 +19,7 @@ namespace XiHan.BasicApp.Saas.Domain.Entities;
 /// - CreatedId = 发起人；TenantId = 发起租户。导出中心列表按 CreatedId 自鉴权。
 ///
 /// 查询：
-/// - 导出中心「我的任务」：IX_TeId_CrTi + WHERE CreatedId=? ORDER BY CreatedTime DESC 分页
+/// - 导出中心「我的任务」：IX_TeId_CrTi + WHERE CreatedId=? ORDER BY CreatedAt DESC 分页
 /// - 后台扫描待执行：IX_St + WHERE Status=Pending（无租户上下文跨租户扫描）
 /// </remarks>
 [SugarTable(TableName = "Sys_Export_Task", TableDescription = "导出任务表")]
@@ -90,7 +90,7 @@ public partial class SysExportTask : BasicAppFullAuditedEntity, IMultiTenant
     public virtual string FieldsSnapshot { get; set; } = string.Empty;
 
     /// <summary>
-    /// 产物文件ID（成功后关联 SysFile.BasicId）
+    /// 产物文件ID（成功后关联 SysFile.Id）
     /// </summary>
     [SugarColumn(ColumnName = "File_Id", ColumnDescription = "产物文件ID", IsNullable = true)]
     public virtual long? FileId { get; set; }

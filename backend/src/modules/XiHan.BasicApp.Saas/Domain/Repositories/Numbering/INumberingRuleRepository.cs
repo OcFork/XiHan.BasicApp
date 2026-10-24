@@ -66,7 +66,7 @@ public interface INumberingRuleRepository : ISaasRepository<SysNumberingRule>
     /// <returns>成功占用区间时为 <see langword="true"/>；任一守卫拒绝时为 <see langword="false"/>。</returns>
     /// <remarks>
     /// <para>语句自身完成「读取当前值并累加」，不经过应用层读改写，因此不存在丢失更新。</para>
-    /// <para>推进的同时显式自增 <c>RowVersion</c>，使管理端加载后的整实体回写会因乐观锁失败而拒绝，不会把流水打回旧值。</para>
+    /// <para>推进的同时显式自增 <c>ConcurrencyStamp</c>，使管理端加载后的整实体回写会因乐观锁失败而拒绝，不会把流水打回旧值。</para>
     /// <para>命中的行会被数据库持有排他锁直到事务提交，<see cref="ReadCurrentValueAsync"/> 因此能读到本次推进后的确切值。</para>
     /// </remarks>
     /// <exception cref="ArgumentException"><paramref name="periodKey"/> 为空或仅包含空白字符。</exception>

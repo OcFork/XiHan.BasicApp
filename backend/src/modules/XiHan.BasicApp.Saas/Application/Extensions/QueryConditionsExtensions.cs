@@ -69,7 +69,7 @@ public static class QueryConditionsExtensions
     /// <typeparam name="T">实体类型</typeparam>
     /// <typeparam name="TValue">字段值类型</typeparam>
     /// <param name="conditions">查询条件对象</param>
-    /// <param name="selector">字段选择器，例如 <c>u => u.CreatedTime</c></param>
+    /// <param name="selector">字段选择器，例如 <c>u => u.CreatedAt</c></param>
     /// <param name="direction">排序方向，默认为升序</param>
     /// <param name="priority">排序优先级，数值越小优先级越高，默认为 0</param>
     /// <returns>当前 <see cref="QueryConditions"/> 实例（支持链式调用）</returns>

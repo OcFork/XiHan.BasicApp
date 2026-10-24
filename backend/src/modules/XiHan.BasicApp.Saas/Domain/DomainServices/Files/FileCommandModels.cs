@@ -27,7 +27,7 @@ public sealed record FileFastUploadCommand(
 /// 文件元数据更新命令
 /// </summary>
 public sealed record FileMetadataUpdateCommand(
-    long BasicId,
+    long Id,
     int? Width,
     int? Height,
     int? Duration,
@@ -46,22 +46,22 @@ public sealed record FileMetadataUpdateCommand(
 /// <summary>
 /// 文件状态更新命令
 /// </summary>
-public sealed record FileStatusUpdateCommand(long BasicId, FileStatus Status, string? Remark);
+public sealed record FileStatusUpdateCommand(long Id, FileStatus Status, string? Remark);
 
 /// <summary>
 /// 文件存储状态更新命令
 /// </summary>
-public sealed record FileStorageStatusUpdateCommand(long BasicId, FileStorageStatus Status, string? UploadFailureReason, string? Remark);
+public sealed record FileStorageStatusUpdateCommand(long Id, FileStorageStatus Status, string? UploadFailureReason, string? Remark);
 
 /// <summary>
 /// 文件主存储切换命令
 /// </summary>
-public sealed record FilePrimaryStorageSwitchCommand(long BasicId, long StorageId, string? Remark);
+public sealed record FilePrimaryStorageSwitchCommand(long Id, long StorageId, string? Remark);
 
 /// <summary>
 /// 文件删除命令
 /// </summary>
-public sealed record FileDeleteCommand(long BasicId, string? Reason);
+public sealed record FileDeleteCommand(long Id, string? Reason);
 
 /// <summary>
 /// 上传中文件创建命令

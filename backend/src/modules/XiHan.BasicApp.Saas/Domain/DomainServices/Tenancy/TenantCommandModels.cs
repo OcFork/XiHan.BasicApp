@@ -32,7 +32,7 @@ public sealed record TenantCreateCommand(
 /// 不含隔离模式：数据按创建时的模式落库（字段隔离在平台库、库隔离在独立库），改模式等于迁移数据，不是改一个字段。
 /// </remarks>
 public sealed record TenantUpdateCommand(
-    long BasicId,
+    long Id,
     string TenantName,
     string? TenantShortName,
     string? Logo,
@@ -49,7 +49,7 @@ public sealed record TenantUpdateCommand(
 /// <summary>
 /// 租户状态变更命令
 /// </summary>
-public sealed record TenantStatusChangeCommand(long BasicId, TenantStatus TenantStatus, string? Reason, long? OperatorUserId);
+public sealed record TenantStatusChangeCommand(long Id, TenantStatus TenantStatus, string? Reason, long? OperatorUserId);
 
 /// <summary>
 /// 租户成员添加命令
@@ -96,7 +96,7 @@ public sealed record TenantOwnerTransferCommand(long TenantId, long MemberId);
 /// 租户成员更新命令
 /// </summary>
 public sealed record TenantMemberUpdateCommand(
-    long BasicId,
+    long Id,
     TenantMemberType MemberType,
     DateTimeOffset? EffectiveTime,
     DateTimeOffset? ExpirationTime,
@@ -107,12 +107,12 @@ public sealed record TenantMemberUpdateCommand(
 /// <summary>
 /// 租户成员邀请状态变更命令
 /// </summary>
-public sealed record TenantMemberInviteStatusChangeCommand(long BasicId, TenantMemberInviteStatus InviteStatus, string? InviteRemark);
+public sealed record TenantMemberInviteStatusChangeCommand(long Id, TenantMemberInviteStatus InviteStatus, string? InviteRemark);
 
 /// <summary>
 /// 租户成员状态变更命令
 /// </summary>
-public sealed record TenantMemberStatusChangeCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record TenantMemberStatusChangeCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 租户命令结果

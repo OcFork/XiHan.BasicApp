@@ -22,7 +22,7 @@ public sealed record DictCreateCommand(
 /// 字典更新命令
 /// </summary>
 public sealed record DictUpdateCommand(
-    long BasicId,
+    long Id,
     string DictName,
     string DictType,
     string? DictDescription,
@@ -32,7 +32,7 @@ public sealed record DictUpdateCommand(
 /// <summary>
 /// 字典状态变更命令
 /// </summary>
-public sealed record DictStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record DictStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 字典项创建命令
@@ -54,7 +54,7 @@ public sealed record DictItemCreateCommand(
 /// 字典项更新命令
 /// </summary>
 public sealed record DictItemUpdateCommand(
-    long BasicId,
+    long Id,
     long? ParentId,
     string ItemName,
     string? ItemValue,
@@ -67,7 +67,7 @@ public sealed record DictItemUpdateCommand(
 /// <summary>
 /// 字典项状态变更命令
 /// </summary>
-public sealed record DictItemStatusChangeCommand(long BasicId, EnableStatus Status, string? Remark);
+public sealed record DictItemStatusChangeCommand(long Id, EnableStatus Status, string? Remark);
 
 /// <summary>
 /// 字典命令结果

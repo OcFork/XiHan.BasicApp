@@ -26,7 +26,7 @@ public sealed record PermissionConditionCreateCommand(
 /// 权限 ABAC 条件更新命令
 /// </summary>
 public sealed record PermissionConditionUpdateCommand(
-    long BasicId,
+    long Id,
     long? RolePermissionId,
     long? UserPermissionId,
     int ConditionGroup,
@@ -41,7 +41,7 @@ public sealed record PermissionConditionUpdateCommand(
 /// <summary>
 /// 权限 ABAC 条件状态命令
 /// </summary>
-public sealed record PermissionConditionStatusCommand(long BasicId, ValidityStatus Status, string? Remark);
+public sealed record PermissionConditionStatusCommand(long Id, ValidityStatus Status, string? Remark);
 
 /// <summary>
 /// 权限 ABAC 条件命令结果

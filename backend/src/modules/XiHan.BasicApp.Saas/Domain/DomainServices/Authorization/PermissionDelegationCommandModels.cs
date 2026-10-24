@@ -22,7 +22,7 @@ public sealed record PermissionDelegationCreateCommand(
 /// 权限委托更新命令
 /// </summary>
 public sealed record PermissionDelegationUpdateCommand(
-    long BasicId,
+    long Id,
     long DelegatorUserId,
     long DelegateeUserId,
     long? PermissionId,
@@ -35,7 +35,7 @@ public sealed record PermissionDelegationUpdateCommand(
 /// <summary>
 /// 权限委托状态命令
 /// </summary>
-public sealed record PermissionDelegationStatusCommand(long BasicId, DelegationStatus DelegationStatus, string? Remark);
+public sealed record PermissionDelegationStatusCommand(long Id, DelegationStatus DelegationStatus, string? Remark);
 
 /// <summary>
 /// 权限委托命令结果

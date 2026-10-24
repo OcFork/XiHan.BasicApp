@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using XiHan.BasicApp.Saas.Application;
 using XiHan.BasicApp.Saas.OpenApi.Contracts;
 using XiHan.BasicApp.Saas.OpenApi.Dtos;
+using XiHan.BasicApp.Web.Core.Security.OpenApi;
 
 namespace XiHan.BasicApp.Saas.OpenApi.AppServices;
 
