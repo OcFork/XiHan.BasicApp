@@ -92,7 +92,7 @@ public sealed class FileAppService
     /// 注意裸 <c>[UnitOfWork]</c> 实际不开事务（IsTransactional 可空，不传即不覆盖，选项默认非事务），
     /// 所以这里必须显式写 true。
     /// </remarks>
-    // xihan-migrate(V4-06): DownloadFileAsync 没法变成操作（泛型、ref/out 参数、流或 ASP.NET 类型）；请手工暴露。
+    // 返回流，不能做成 5.0 操作；由 FileTransferEndpoints 以 ASP.NET 端点暴露。
     public async Task<Stream> DownloadFileAsync(long fileId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

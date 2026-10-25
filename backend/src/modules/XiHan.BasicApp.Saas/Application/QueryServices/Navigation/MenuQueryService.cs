@@ -84,7 +84,6 @@ public sealed class MenuQueryService
     /// <param name="input">查询条件</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>菜单列表</returns>
-    // xihan-migrate(V4-06): 同一资源内动词重复；'list-menu-2' 加了数字后缀，请手工改名。
     public async Task<IReadOnlyList<MenuListItemDto>> GetMenuListAsync(MenuListQueryDto input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);

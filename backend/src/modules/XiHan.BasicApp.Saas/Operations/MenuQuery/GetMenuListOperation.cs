@@ -25,7 +25,7 @@ namespace XiHan.BasicApp.Saas.Operations.MenuQuery;
 /// <summary>
 /// 由 xihan migrate v4 生成；提交前请检查。
 /// </summary>
-[Operation("menu-query.list-menu-2", Permission = SaasPermissionCodes.Menu.Read)]
+[Operation("menu-query.list-all-menu", Permission = SaasPermissionCodes.Menu.Read)]
 public sealed class GetMenuListOperation(IMenuQueryService service) : IOperation<MenuListQueryDto, IReadOnlyList<MenuListItemDto>>
 {
     /// <inheritdoc />
