@@ -12,6 +12,7 @@ using XiHan.BasicApp.Saas.Domain.Events;
 using XiHan.BasicApp.Saas.Hubs;
 using XiHan.BasicApp.Web.Core.RealTime.Constants;
 using XiHan.BasicApp.Web.Core.RealTime.Services;
+using XiHan.Framework.Messaging.Abstractions.Handlers;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
 

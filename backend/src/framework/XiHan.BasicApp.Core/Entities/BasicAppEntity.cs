@@ -4,6 +4,8 @@
 using SqlSugar;
 using XiHan.BasicApp.Core.Entities;
 using XiHan.BasicApp.Core.Tenancy;
+using XiHan.Framework.Domain.Entities;
+using XiHan.Framework.Domain.Events;
 using XiHan.Framework.Domain;
 
 namespace XiHan.BasicApp.Core.Entities;

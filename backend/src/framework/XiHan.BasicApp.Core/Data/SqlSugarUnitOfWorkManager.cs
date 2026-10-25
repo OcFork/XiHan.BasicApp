@@ -1,11 +1,14 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using SqlSugar;
-using XiHan.Framework.Messaging.Abstractions;
-using XiHan.Framework.Domain;
-using XiHan.BasicApp.Core.Events;
 using System.Text.Json;
+using SqlSugar;
+using XiHan.BasicApp.Core.Events;
+using XiHan.Framework.Domain.Events;
+using XiHan.Framework.Domain;
+using XiHan.Framework.Messaging.Abstractions.Envelopes;
+using XiHan.Framework.Messaging.Abstractions.Publishing;
+using XiHan.Framework.Messaging.Abstractions;
 
 namespace XiHan.BasicApp.Core.Data;
 

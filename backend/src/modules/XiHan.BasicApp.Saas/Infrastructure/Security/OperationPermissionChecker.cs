@@ -18,7 +18,7 @@ namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 /// 请求内从当前 HttpContext 的 RequestServices 取，没有 HTTP 请求（进程内调用、后台任务）时临时开作用域，租户仍由执行流环境提供。
 /// 匿名主体由内核 <c>PermissionPolicy</c> 先行拒绝，这里不再判。
 /// </remarks>
-public sealed class OperationPermissionChecker : XiHan.Framework.Security.Abstractions.IPermissionChecker
+public sealed class OperationPermissionChecker : XiHan.Framework.Security.Abstractions.Permissions.IPermissionChecker
 {
     private readonly IServiceProvider _rootServices;
 

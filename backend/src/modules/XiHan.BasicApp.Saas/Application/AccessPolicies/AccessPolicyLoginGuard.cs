@@ -1,19 +1,21 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Core.Tenancy;
 using XiHan.BasicApp.Saas.Application.Conditions;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.BasicApp.Core.Entities;
+using XiHan.BasicApp.Web.Core.Clients;
+using XiHan.Framework.Messaging.Abstractions.Envelopes;
+using XiHan.Framework.Messaging.Abstractions.Publishing;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
-using XiHan.BasicApp.Core.Data;
-using XiHan.BasicApp.Web.Core.Clients;
-using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AccessPolicies;
 

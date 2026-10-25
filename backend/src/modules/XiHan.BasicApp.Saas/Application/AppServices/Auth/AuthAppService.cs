@@ -19,6 +19,7 @@ using XiHan.BasicApp.Core.Exceptions;
 using XiHan.BasicApp.Core.Localization;
 using XiHan.BasicApp.Core.Repositories;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 using XiHan.BasicApp.Saas.Application.AccessPolicies;
 using XiHan.BasicApp.Saas.Application.Caching;
 using XiHan.BasicApp.Saas.Application.Contracts;
@@ -37,9 +38,10 @@ using XiHan.BasicApp.Web.Core.Authentication.OAuth;
 using XiHan.BasicApp.Web.Core.Authentication.Otp;
 using XiHan.BasicApp.Web.Core.Clients;
 using XiHan.Framework.Localization.Abstractions;
+using XiHan.Framework.Messaging.Abstractions.Envelopes;
+using XiHan.Framework.Messaging.Abstractions.Publishing;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
-using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.AppServices;
 

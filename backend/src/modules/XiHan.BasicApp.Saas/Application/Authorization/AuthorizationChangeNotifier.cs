@@ -2,12 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.Json;
+using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Tenancy;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Events;
-using XiHan.BasicApp.Core.Security;
+using XiHan.Framework.Messaging.Abstractions.Envelopes;
+using XiHan.Framework.Messaging.Abstractions.Publishing;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.Framework.Primitives;
-using XiHan.BasicApp.Core.Tenancy;
 
 namespace XiHan.BasicApp.Saas.Application.Authorization;
 

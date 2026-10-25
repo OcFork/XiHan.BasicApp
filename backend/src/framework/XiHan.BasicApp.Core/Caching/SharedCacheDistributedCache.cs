@@ -5,6 +5,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Core.Tenancy;
+using XiHan.Framework.Caching.Abstractions.Caches;
+using XiHan.Framework.Caching.Abstractions.Stores;
 using XiHan.Framework.Caching.Abstractions;
 
 namespace XiHan.BasicApp.Core.Caching;

@@ -1,14 +1,15 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
+using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Core.Localization;
+using XiHan.Framework.Localization.Abstractions.Messages;
+using XiHan.Framework.Localization.Abstractions;
 using XiHan.Framework.Utils.Core;
 using XiHan.Framework.Utils.Enums;
-using XiHan.Framework.Localization.Abstractions;
 
 namespace XiHan.BasicApp.Core.Localization;
 
