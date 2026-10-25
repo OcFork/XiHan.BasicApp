@@ -26,13 +26,17 @@ using XiHan.BasicApp.Core.Paging.Dtos;
 using XiHan.BasicApp.Core.Paging.Enums;
 using XiHan.BasicApp.Core.Paging.Models;
 using XiHan.BasicApp.Core.Security;
+using XiHan.BasicApp.Core.Serialization;
 
 namespace XiHan.BasicApp.Printing.Operations;
 
 /// <summary>
 /// 由 xihan migrate v4 生成；提交前请检查。
 /// </summary>
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, NumberHandling = JsonNumberHandling.AllowReadingFromString)]
+// 网络契约与 4.x 一致：枚举按名称、long 按字符串（雪花 ID 超过 2^53）、日期接受管理端控件的「yyyy-MM-dd HH:mm:ss」
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, NumberHandling = JsonNumberHandling.AllowReadingFromString,
+    UseStringEnumConverter = true,
+    Converters = new[] { typeof(Int64StringConverter), typeof(NullableInt64StringConverter), typeof(LenientDateTimeOffsetConverter), typeof(NullableLenientDateTimeOffsetConverter), typeof(LenientDateTimeConverter), typeof(NullableLenientDateTimeConverter) })]
 [JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.EmptyResponse))]
 [JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.PrintDataSourceQuery.GetListRequest))]
 [JsonSerializable(typeof(XiHan.BasicApp.Printing.Operations.PrintTemplateQuery.GetPrintTemplateDetailRequest))]

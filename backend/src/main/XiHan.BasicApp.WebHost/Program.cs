@@ -8,6 +8,7 @@ using XiHan.BasicApp.Core.Bot.Telegram.Webhook;
 using XiHan.BasicApp.Core;
 using XiHan.BasicApp.Printing;
 using XiHan.BasicApp.Saas.Hubs;
+using XiHan.BasicApp.Saas.Infrastructure.Files;
 using XiHan.BasicApp.Saas.Infrastructure.OAuth;
 using XiHan.BasicApp.Saas;
 using XiHan.BasicApp.Web.Core.RealTime.Constants;
@@ -86,6 +87,8 @@ app.MapXiHanOpenApi();
 app.MapBasicAppHealth();
 app.MapXiHanHub<BasicAppNotificationHub>(SignalRConstants.HubPaths.Notification);
 app.MapXiHanHub<BasicAppChatHub>(SignalRConstants.HubPaths.Chat);
+// 文件上传（multipart）与下载（流）走 ASP.NET 端点，路径沿用 5.0 集合级动词形态 /api/file:upload、/api/file:download
+app.MapFileTransferEndpoints();
 app.MapOAuthEndpoints();
 app.MapOAuthConnectEndpoints();
 app.MapOidcEndpoints();
