@@ -250,11 +250,11 @@ public sealed class SaasDomainEventContractTests
     [Fact]
     public void AuthorizationDecision_Factories_ShouldOnlyDifferInGrantFlag()
     {
-        var grant = AuthorizationDecision.Grant("saas:user:read", "角色授权命中", 11);
-        var deny = AuthorizationDecision.Deny("saas:user:read", "未命中任何授权");
+        var grant = AuthorizationDecision.Grant("saas.user.read", "角色授权命中", 11);
+        var deny = AuthorizationDecision.Deny("saas.user.read", "未命中任何授权");
 
         Assert.True(grant.IsGranted);
-        Assert.Equal("saas:user:read", grant.PermissionCode, StringComparer.Ordinal);
+        Assert.Equal("saas.user.read", grant.PermissionCode, StringComparer.Ordinal);
         Assert.Equal("角色授权命中", grant.Reason, StringComparer.Ordinal);
         Assert.Equal(11, grant.PermissionId);
 
@@ -294,7 +294,7 @@ public sealed class SaasDomainEventContractTests
     {
         var snapshot = new PermissionGrantSnapshot(
             11,
-            "saas:user:read",
+            "saas.user.read",
             PermissionAction.Grant,
             AuthorizationGrantSource.Role,
             Priority: 10,

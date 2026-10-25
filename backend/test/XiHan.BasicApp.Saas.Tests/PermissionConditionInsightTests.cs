@@ -30,7 +30,7 @@ public sealed class PermissionConditionInsightTests
     private const long ChildRoleId = 12;
     private const long PermissionId = 5;
     private const long RolePermissionId = 501;
-    private const string Code = "saas:position:update";
+    private const string Code = "saas.position.update";
 
     private static readonly DateTimeOffset Now = new(2026, 10, 23, 2, 0, 0, TimeSpan.Zero);
 

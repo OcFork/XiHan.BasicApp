@@ -22,7 +22,7 @@ public sealed class AuthorizationConditionResolverTests
     private const long RoleA = 11;
     private const long RoleB = 12;
     private const long ParentOfA = 13;
-    private const string Code = "saas:order:export";
+    private const string Code = "saas.order.export";
 
     private readonly List<SysRolePermission> _rolePermissions = [];
     private readonly List<SysUserPermission> _userPermissions = [];

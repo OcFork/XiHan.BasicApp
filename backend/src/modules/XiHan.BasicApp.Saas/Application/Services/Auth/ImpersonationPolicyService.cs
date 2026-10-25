@@ -245,7 +245,7 @@ public sealed class ImpersonationPolicyService : IImpersonationPolicyService
 
         var impersonationCodes = codes
             .Where(static code => code.StartsWith(
-                $"{SaasPermissionCodes.Module}:{SaasPermissionCodes.Impersonation.Group}:",
+                $"{SaasPermissionCodes.Module}.{SaasPermissionCodes.Impersonation.Group}.",
                 StringComparison.OrdinalIgnoreCase))
             .ToList();
         if (impersonationCodes.Count == 0)

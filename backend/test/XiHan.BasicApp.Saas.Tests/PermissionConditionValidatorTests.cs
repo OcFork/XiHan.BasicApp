@@ -35,10 +35,10 @@ public sealed class PermissionConditionValidatorTests
             .ReturnsAsync(new SysUserPermission { PermissionId = PlainPermissionId });
         _permissions
             .Setup(repository => repository.GetByIdAsync(RegisteredPermissionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SysPermission { PermissionCode = "saas:position:update" });
+            .ReturnsAsync(new SysPermission { PermissionCode = "saas.position.update" });
         _permissions
             .Setup(repository => repository.GetByIdAsync(PlainPermissionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SysPermission { PermissionCode = "saas:position:read" });
+            .ReturnsAsync(new SysPermission { PermissionCode = "saas.position.read" });
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public sealed class PermissionConditionValidatorTests
     private PermissionConditionValidator CreateValidator()
     {
         var resources = PermissionConditionTestKit.Resources(
-            PermissionResourceRegistration.Create<SysPosition>("saas:position:update", PermissionResourceKeys.FromArgument("id")));
+            PermissionResourceRegistration.Create<SysPosition>("saas.position.update", PermissionResourceKeys.FromArgument("id")));
         return new PermissionConditionValidator(
             PermissionConditionTestKit.Compiler(resources),
             _rolePermissions.Object,

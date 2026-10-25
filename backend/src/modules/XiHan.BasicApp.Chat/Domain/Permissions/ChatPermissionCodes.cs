@@ -19,16 +19,16 @@ public static class ChatPermissionCodes
     public const string Resource = "chat";
 
     /// <summary>查看聊天（会话列表/消息历史）。</summary>
-    public const string Read = "chat:read";
+    public const string Read = "chat.read";
 
     /// <summary>发送聊天消息（含撤回自己的消息）。</summary>
-    public const string Send = "chat:send";
+    public const string Send = "chat.send";
 
     /// <summary>聊天会话管理（建群/成员管理）。</summary>
-    public const string Manage = "chat:manage";
+    public const string Manage = "chat.manage";
 
     /// <summary>聊天审计（管理侧跨会话消息查询）。</summary>
-    public const string Audit = "chat:audit";
+    public const string Audit = "chat.audit";
 
     /// <summary>
     /// 全部权限码

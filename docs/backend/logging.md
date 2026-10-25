@@ -8,12 +8,12 @@ XiHan.BasicApp 把"谁在什么时候、从哪里、对什么做了什么、结�
 
 | 日志 | 实体 | 记录什么 | 写入触发 | 权限码（查看） |
 | --- | --- | --- | --- | --- |
-| 访问日志 | `SysAccessLog` | 每次 HTTP 资源访问的鉴权/结果决策（含未授权尝试） | 请求日志中间件 | `saas:access-log:read` |
-| API 日志 | `SysOpenApiLog` | 开放接口层的完整请求/响应详情（体/头/耗时/签名） | 开放接口中间件 | `saas:api-log:read` |
-| 操作日志 | `SysOperationLog` | 业务语义的操作轨迹（用户"做了什么"） | MVC 动作过滤器 | `saas:operation-log:read` |
-| 异常日志 | `SysExceptionLog` | 运行时异常（堆栈/请求上下文/严重级别） | 异常中间件 + 异常过滤器 | `saas:exception-log:read` |
-| 登录日志 | `SysLoginLog` | 每次登录/登出/认证审计尝试（成功与失败） | 认证领域事件 | `saas:login-log:read` |
-| 实体变更 | `SysDiffLog` | 数据库实体的增删改快照（字段级差异） | SqlSugar ORM 拦截器 | `saas:diff-log:read` |
+| 访问日志 | `SysAccessLog` | 每次 HTTP 资源访问的鉴权/结果决策（含未授权尝试） | 请求日志中间件 | `saas.access-log.read` |
+| API 日志 | `SysOpenApiLog` | 开放接口层的完整请求/响应详情（体/头/耗时/签名） | 开放接口中间件 | `saas.api-log.read` |
+| 操作日志 | `SysOperationLog` | 业务语义的操作轨迹（用户"做了什么"） | MVC 动作过滤器 | `saas.operation-log.read` |
+| 异常日志 | `SysExceptionLog` | 运行时异常（堆栈/请求上下文/严重级别） | 异常中间件 + 异常过滤器 | `saas.exception-log.read` |
+| 登录日志 | `SysLoginLog` | 每次登录/登出/认证审计尝试（成功与失败） | 认证领域事件 | `saas.login-log.read` |
+| 实体变更 | `SysDiffLog` | 数据库实体的增删改快照（字段级差异） | SqlSugar ORM 拦截器 | `saas.diff-log.read` |
 
 > 注意"API 日志"的真实实体名是 `SysOpenApiLog`（开放接口日志），不是 `SysApiLog`。前端菜单叫"开放接口日志"，路由 `/log/api`。
 
@@ -166,7 +166,7 @@ services.AddScoped<IEntityAuditContextProvider, SaasEntityDiffContextProvider>()
 
 ### 导出
 
-六类日志都可导出：每类有一个导出 Provider（`AccessLogExportProvider` 等，`BusinessType` 形如 `log.access`），复用查询服务分页取数，导出权限用对应的 `saas:xxx-log:export` 权限码。导出与列表遵循**一致的脱敏**策略。
+六类日志都可导出：每类有一个导出 Provider（`AccessLogExportProvider` 等，`BusinessType` 形如 `log.access`），复用查询服务分页取数，导出权限用对应的 `saas.xxx-log.export` 权限码。导出与列表遵循**一致的脱敏**策略。
 
 ### 前端页面
 
@@ -183,15 +183,15 @@ services.AddScoped<IEntityAuditContextProvider, SaasEntityDiffContextProvider>()
 
 > 同一分组下还有"日志链路追踪"（`/log/trace`）、"权限变更日志"（`/log/permission-change`）与"条件命中"（`/log/access-policy`）三个页面，见下文[相关能力](#相关能力-权限变更日志与链路追踪查询)。
 
-每页是一个查询表格（时间区间 + 多维过滤 + 多字段排序 + 导出按钮），点行进共享的详情抽屉 `_components/LogDetailDrawer.vue` 查看完整字段——实体变更页在详情里渲染 `BeforeData`/`AfterData`/`ChangedFields` 的前后对比。导出按钮受 `saas:xxx-log:export` 权限码控制（无权限不渲染）。
+每页是一个查询表格（时间区间 + 多维过滤 + 多字段排序 + 导出按钮），点行进共享的详情抽屉 `_components/LogDetailDrawer.vue` 查看完整字段——实体变更页在详情里渲染 `BeforeData`/`AfterData`/`ChangedFields` 的前后对比。导出按钮受 `saas.xxx-log.export` 权限码控制（无权限不渲染）。
 
 ## 相关能力：权限变更日志与链路追踪查询
 
 "审计中心"菜单分组下，除本页六类外还挂了三个紧密关联、但**不计入"六类"**的能力，它们共用同一套保留策略（含前文的 `LogRetentionCleanupTask`）：
 
-- **权限变更日志 `SysPermissionChangeLog`**（菜单"权限变更日志"，路由 `/log/permission-change`，权限码 `saas:permission-change-log:read`，仅查看、无导出）：结构化记录"谁在什么时候给谁授予/撤销了什么权限"——`OperatorUserId`/`TargetUserId`/`TargetRoleId`/`PermissionId` + `ChangeType`，按月分表。授权写路径通过 `IAuthorizationChangeNotifier` 发布 `AuthorizationChangedDomainEvent`，`PermissionChangeLogEventHandler` 订阅后落库；查询走只读的 `PermissionChangeLogQueryService`。与 `SysDiffLog` 的边界：`SysDiffLog` 记通用实体字段变更，本表专注权限授予/撤销这一业务语义。
-- **条件命中记录 `SysAccessPolicyHit`**（菜单"条件命中"，路由 `/log/access-policy`，权限码 `saas:access-policy-hit:read`，仅查看、无导出）：访问策略与权限条件的命中，`Source` 区分来源；同一策略、动作、时机、是否拦截、IP、方法、路径、用户在同一分钟里合并为一行、累计次数，在内存里合并后由后台服务批量落库。平台策略的命中记在平台，租户策略与权限条件的命中记在该租户。见[访问策略 · 命中记录](./access-policy#命中记录)。
-- **链路追踪查询 `TraceQueryService`**（菜单"日志链路追踪"，路由 `/log/trace`，权限码 `saas:log-trace:read`）：按维度（用户名 / 会话标识 / `TraceId` / IP / 用户主键）+ 时间范围（≤ 31 天，防止扫描过多月表）跨**全部 8 类**分表日志（本页六类、权限变更日志与条件命中记录）聚合成一条时间倒序时间线；权限变更日志没有用户名与会话维度，条件命中记录没有会话维度，这两种维度下它们不参与，单类型默认最多返回 200 条（上限 500，超出标记 `Truncated`）。它是本页反复强调的"用 `TraceId` 串联同一次请求全链路"能力的实际查询入口。
+- **权限变更日志 `SysPermissionChangeLog`**（菜单"权限变更日志"，路由 `/log/permission-change`，权限码 `saas.permission-change-log.read`，仅查看、无导出）：结构化记录"谁在什么时候给谁授予/撤销了什么权限"——`OperatorUserId`/`TargetUserId`/`TargetRoleId`/`PermissionId` + `ChangeType`，按月分表。授权写路径通过 `IAuthorizationChangeNotifier` 发布 `AuthorizationChangedDomainEvent`，`PermissionChangeLogEventHandler` 订阅后落库；查询走只读的 `PermissionChangeLogQueryService`。与 `SysDiffLog` 的边界：`SysDiffLog` 记通用实体字段变更，本表专注权限授予/撤销这一业务语义。
+- **条件命中记录 `SysAccessPolicyHit`**（菜单"条件命中"，路由 `/log/access-policy`，权限码 `saas.access-policy-hit.read`，仅查看、无导出）：访问策略与权限条件的命中，`Source` 区分来源；同一策略、动作、时机、是否拦截、IP、方法、路径、用户在同一分钟里合并为一行、累计次数，在内存里合并后由后台服务批量落库。平台策略的命中记在平台，租户策略与权限条件的命中记在该租户。见[访问策略 · 命中记录](./access-policy#命中记录)。
+- **链路追踪查询 `TraceQueryService`**（菜单"日志链路追踪"，路由 `/log/trace`，权限码 `saas.log-trace.read`）：按维度（用户名 / 会话标识 / `TraceId` / IP / 用户主键）+ 时间范围（≤ 31 天，防止扫描过多月表）跨**全部 8 类**分表日志（本页六类、权限变更日志与条件命中记录）聚合成一条时间倒序时间线；权限变更日志没有用户名与会话维度，条件命中记录没有会话维度，这两种维度下它们不参与，单类型默认最多返回 200 条（上限 500，超出标记 `Truncated`）。它是本页反复强调的"用 `TraceId` 串联同一次请求全链路"能力的实际查询入口。
 
 ## 与框架的关系
 

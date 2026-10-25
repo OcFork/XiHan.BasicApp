@@ -67,7 +67,7 @@ public sealed class PermissionResourceRowReaderIntegrationTests : IDisposable
         var other = await InsertAsync(OtherTenant, "other", isDeleted: false);
         var resolver = new Mock<ISqlSugarClientResolver>();
         resolver.Setup(value => value.GetClientForEntity(It.IsAny<Type>())).Returns(_db);
-        var registration = PermissionResourceRegistration.Create<SysPosition>("saas:position:update", PermissionResourceKeys.FromArgument("id"));
+        var registration = PermissionResourceRegistration.Create<SysPosition>("saas.position.update", PermissionResourceKeys.FromArgument("id"));
 
         IReadOnlyList<object> rows;
         using (_tenant.Change(OwnTenant))

@@ -13,26 +13,26 @@ namespace XiHan.BasicApp.CodeGeneration.Domain.Permissions;
 public static class CodeGenPermissionCodes
 {
     /// <summary>模块编码</summary>
-    public const string Module = "code_gen";
+    public const string Module = "code-gen";
 
     /// <summary>资源编码</summary>
-    public const string Resource = "code_gen";
+    public const string Resource = "code-gen";
 
     /// <summary>查看（列表/详情/预览）</summary>
-    public const string Read = "code_gen:read";
+    public const string Read = "code-gen.read";
 
     /// <summary>创建（数据源/表/列/模板配置）</summary>
-    public const string Create = "code_gen:create";
+    public const string Create = "code-gen.create";
 
     /// <summary>更新</summary>
-    public const string Update = "code_gen:update";
+    public const string Update = "code-gen.update";
 
     /// <summary>删除</summary>
-    public const string Delete = "code_gen:delete";
+    public const string Delete = "code-gen.delete";
 
     /// <summary>导入（从数据库导入表结构、导入模板）</summary>
-    public const string Import = "code_gen:import";
+    public const string Import = "code-gen.import";
 
     /// <summary>执行（执行代码生成）</summary>
-    public const string Execute = "code_gen:execute";
+    public const string Execute = "code-gen.execute";
 }

@@ -71,16 +71,16 @@
 public static class Position
 {
     public const string Group = "position";
-    public const string Read = "saas:position:read";
-    public const string Create = "saas:position:create";
-    public const string Update = "saas:position:update";
-    public const string Status = "saas:position:status";
-    public const string Delete = "saas:position:delete";
-    public const string Export = "saas:position:export";
+    public const string Read = "saas.position.read";
+    public const string Create = "saas.position.create";
+    public const string Update = "saas.position.update";
+    public const string Status = "saas.position.status";
+    public const string Delete = "saas.position.delete";
+    public const string Export = "saas.position.export";
 }
 ```
 
-再把这些码追加进同文件的 `All` 集合。代码里**一律引用 `SaasPermissionCodes.Position.Read`，绝不内联字符串** `"saas:position:read"`。
+再把这些码追加进同文件的 `All` 集合。代码里**一律引用 `SaasPermissionCodes.Position.Read`，绝不内联字符串** `"saas.position.read"`。
 
 #### 2. 权限**定义**（落库种子）→ `SaasPermissionDefinitions`
 

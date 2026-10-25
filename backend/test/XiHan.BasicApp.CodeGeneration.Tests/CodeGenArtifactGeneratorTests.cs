@@ -253,7 +253,7 @@ public sealed class CodeGenArtifactGeneratorTests
         Assert.Contains("新增/状态/打印按钮用按钮码 `catalog.sys-product.{create|status|print}` 门控", content, StringComparison.Ordinal);
         Assert.Contains("services.RegisterPrintDataSource(SysProductPrintDataSource.Definition)", content, StringComparison.Ordinal);
         Assert.Contains("新建编码为 `catalog.sys-product` 的模板", content, StringComparison.Ordinal);
-        Assert.Contains("`print-template:use`", content, StringComparison.Ordinal);
+        Assert.Contains("`print-template.use`", content, StringComparison.Ordinal);
 
         var withoutPrint = MenuPermissionArtifactGenerator.Build(CodeGenerationTestHelper.CreateContext(), [])[1].Content;
         Assert.Contains("新增/编辑/删除按钮用按钮码 `catalog.sys-product.{create|update|delete}` 门控", withoutPrint, StringComparison.Ordinal);

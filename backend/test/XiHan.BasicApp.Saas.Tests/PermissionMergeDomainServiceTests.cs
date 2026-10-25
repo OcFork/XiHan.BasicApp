@@ -44,9 +44,9 @@ public sealed class PermissionMergeDomainServiceTests
             EffectiveTime = Now.AddHours(-2),
             ExpirationTime = Now.AddHours(2)
         };
-        var permission101 = CreatePermission(101, "saas:user:read", priority: 7);
-        var permission102 = CreatePermission(102, "saas:user:create");
-        var permission103 = CreatePermission(103, "saas:user:update");
+        var permission101 = CreatePermission(101, "saas.user.read", priority: 7);
+        var permission102 = CreatePermission(102, "saas.user.create");
+        var permission103 = CreatePermission(103, "saas.user.update");
 
         var fixture = CreateFixture(
             rolePermissions: [rolePermission],
@@ -74,7 +74,7 @@ public sealed class PermissionMergeDomainServiceTests
         var delegationGrant = Assert.Single(grants, grant => grant.Source == AuthorizationGrantSource.Delegation);
         Assert.Equal(103, delegationGrant.PermissionId);
         Assert.Equal(PermissionAction.Grant, delegationGrant.Action);
-        Assert.Equal("saas:user:update", delegationGrant.PermissionCode);
+        Assert.Equal("saas.user.update", delegationGrant.PermissionCode);
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ public sealed class PermissionMergeDomainServiceTests
     {
         var rolePermission = new SysRolePermission { RoleId = 10, PermissionId = 999 };
         var userPermission = new SysUserPermission { UserId = 1, PermissionId = 102 };
-        var permission102 = CreatePermission(102, "saas:user:create");
+        var permission102 = CreatePermission(102, "saas.user.create");
 
         var fixture = CreateFixture(
             rolePermissions: [rolePermission],
@@ -129,7 +129,7 @@ public sealed class PermissionMergeDomainServiceTests
     public async Task Merge_ShouldReflectPermissionStatus()
     {
         var userPermission = new SysUserPermission { UserId = 1, PermissionId = 102 };
-        var disabledPermission = CreatePermission(102, "saas:user:create", enabled: false);
+        var disabledPermission = CreatePermission(102, "saas.user.create", enabled: false);
 
         var fixture = CreateFixture(rolePermissions: [], userPermissions: [userPermission], delegations: [], permissions: [disabledPermission]);
 
@@ -162,7 +162,7 @@ public sealed class PermissionMergeDomainServiceTests
     public async Task Merge_WithEmptyRoleIds_ShouldNotQueryRolePermissions()
     {
         var userPermission = new SysUserPermission { UserId = 1, PermissionId = 102 };
-        var permission102 = CreatePermission(102, "saas:user:create");
+        var permission102 = CreatePermission(102, "saas.user.create");
 
         var fixture = CreateFixture(rolePermissions: [], userPermissions: [userPermission], delegations: [], permissions: [permission102]);
 
@@ -188,7 +188,7 @@ public sealed class PermissionMergeDomainServiceTests
             EffectiveTime = Now.AddHours(-5),
             ExpirationTime = Now.AddHours(5)
         };
-        var permission101 = CreatePermission(101, "saas:user:read");
+        var permission101 = CreatePermission(101, "saas.user.read");
 
         var fixture = CreateFixture(rolePermissions: [rolePermission], userPermissions: [], delegations: [], permissions: [permission101]);
 

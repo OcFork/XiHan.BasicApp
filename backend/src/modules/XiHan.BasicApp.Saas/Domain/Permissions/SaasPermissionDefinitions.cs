@@ -539,7 +539,7 @@ public static class SaasPermissionDefinitions
             return "other";
         }
 
-        var parts = permissionCode.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        var parts = permissionCode.Split('.', StringSplitOptions.RemoveEmptyEntries);
         return parts.Length >= 3 ? parts[1] : (parts.Length > 0 ? parts[0] : "other");
     }
 

@@ -78,21 +78,21 @@ OAuth 授权码换令牌与模仿登录不做登录时检查：前者由第三�
 
 - 参数 [`saas.security.login-auto-ban`](./settings)，**缺省关闭**；打开后缺省 10 分钟内失败 20 次封 30 分钟，24 小时内再犯时长翻倍，最长 1440 分钟。只认平台这一条，租户不能覆盖。
 - 计入的是账号密码不对、登录验证码不对、两步验证码不对这类失败；被访问策略拒绝的登录不计，认证前命中平台放行策略的 IP 不计。
-- 平台上下文的访问策略页有「自动封禁」：查看当前封禁、解封（权限码 `saas:access-policy:ban`，解封同时清零计数），有参数配置编辑权限时直接在这里改参数。
+- 平台上下文的访问策略页有「自动封禁」：查看当前封禁、解封（权限码 `saas.access-policy.ban`，解封同时清零计数），有参数配置编辑权限时直接在这里改参数。
 - 多实例部署必须启用 Redis，计数与名单才在节点间共享，见[部署 · 访问策略与真实 IP](../deployment#访问策略与真实-ip)。
 
 ## 权限码与菜单
 
 | 权限码 | 说明 |
 | --- | --- |
-| `saas:access-policy:read` | 查看访问策略与当前封禁（菜单「系统管理 → 访问策略」） |
-| `saas:access-policy:create` | 新建（只能建成只记录） |
-| `saas:access-policy:update` | 修改条件、优先级、生效期与动作（含启用拦截） |
-| `saas:access-policy:status` | 启用、停用 |
-| `saas:access-policy:delete` | 删除，历史命中记录保留 |
-| `saas:access-policy:trial` | 试运行 |
-| `saas:access-policy:ban` | 解除自动封禁，只在平台生效 |
-| `saas:access-policy-hit:read` | 查看命中记录（菜单「审计中心 → 条件命中」） |
+| `saas.access-policy.read` | 查看访问策略与当前封禁（菜单「系统管理 → 访问策略」） |
+| `saas.access-policy.create` | 新建（只能建成只记录） |
+| `saas.access-policy.update` | 修改条件、优先级、生效期与动作（含启用拦截） |
+| `saas.access-policy.status` | 启用、停用 |
+| `saas.access-policy.delete` | 删除，历史命中记录保留 |
+| `saas.access-policy.trial` | 试运行 |
+| `saas.access-policy.ban` | 解除自动封禁，只在平台生效 |
+| `saas.access-policy-hit.read` | 查看命中记录（菜单「审计中心 → 条件命中」） |
 
 平台与租户两侧都有这些权限码（`ban` 只在平台）。初始化的专业版、企业版套餐都含除 `ban` 外的全部；已有套餐不会自动带上，要到「租户管理 → 版本套餐」勾选。
 

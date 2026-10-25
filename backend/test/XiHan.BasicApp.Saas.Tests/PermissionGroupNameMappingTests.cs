@@ -33,7 +33,7 @@ public sealed class PermissionGroupNameMappingTests
     [Fact]
     public void ModulePermissionWithResource_ShouldUseResourceName()
     {
-        var dto = PermissionApplicationMapper.ToListItemDto(Permission("workflow:read"), new SysResource { ResourceCode = "workflow", ResourceName = "工作流" }, null);
+        var dto = PermissionApplicationMapper.ToListItemDto(Permission("workflow.read"), new SysResource { ResourceCode = "workflow", ResourceName = "工作流" }, null);
 
         Assert.Equal("workflow", dto.GroupCode);
         Assert.Equal("工作流", dto.GroupName);
@@ -43,8 +43,8 @@ public sealed class PermissionGroupNameMappingTests
     /// 不挂资源的模块功能权限不把组码当名字。
     /// </summary>
     [Theory]
-    [InlineData("chat:read", "chat")]
-    [InlineData("print-template:read", "print-template")]
+    [InlineData("chat.read", "chat")]
+    [InlineData("print-template.read", "print-template")]
     public void ModuleFunctionalPermission_ShouldLeaveGroupNameEmpty(string permissionCode, string groupCode)
     {
         var dto = PermissionApplicationMapper.ToListItemDto(Permission(permissionCode), null, null);

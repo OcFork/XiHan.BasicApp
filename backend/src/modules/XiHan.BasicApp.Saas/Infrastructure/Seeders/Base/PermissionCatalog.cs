@@ -277,12 +277,12 @@ public sealed record PermissionSeed(
     OperationSeed? Operation = null)
 {
     /// <summary>
-    /// 资源型权限：码为「资源:操作」，名称、说明、是否审计随操作
+    /// 资源型权限：码为「资源.操作」（内核文法：小写点分，段内只有字母、数字、连字符），名称、说明、是否审计随操作
     /// </summary>
     public static PermissionSeed Of(ResourceSeed resource, OperationSeed operation, PermissionSide side, int sort)
     {
         return new PermissionSeed(
-            $"{resource.Code}:{operation.Code}",
+            $"{resource.Code}.{operation.Code}",
             $"{resource.Name}-{operation.Name}",
             $"对{resource.Name}执行{operation.Name}操作",
             resource.Code,

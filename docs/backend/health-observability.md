@@ -131,7 +131,7 @@ Web.Api 管线优先使用 `Activity.Current.TraceId`，没有 Activity 时回�
 
 ## 进程监控页面
 
-`/setting/server` 由 `ServerAppService` 提供当前节点的 CPU、内存、磁盘、GPU、网络、主板和 .NET 运行时信息，权限为 `saas:server:read`。
+`/setting/server` 由 `ServerAppService` 提供当前节点的 CPU、内存、磁盘、GPU、网络、主板和 .NET 运行时信息，权限为 `saas.server.read`。
 
 它不是集群监控：负载均衡下每次请求可能落到不同实例。要观察集群趋势、分位耗时和跨服务链路，应把 OpenTelemetry 数据导出到 Collector 与监控后端。
 

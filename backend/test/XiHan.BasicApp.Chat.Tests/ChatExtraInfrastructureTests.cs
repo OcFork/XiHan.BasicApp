@@ -331,7 +331,7 @@ public sealed class ChatExtraInfrastructureTests
     [InlineData(null, false)]
     [InlineData("1;drop", false)]
     [InlineData("1.5", false)]
-    [InlineData("chat:conv:1", false)]
+    [InlineData("chat.conv.1", false)]
     public void TryParseConversationId_ShouldFailClosedOnAnythingButPositiveInteger(string? raw, bool expected)
     {
         var method = typeof(BasicAppChatHub).GetMethod(

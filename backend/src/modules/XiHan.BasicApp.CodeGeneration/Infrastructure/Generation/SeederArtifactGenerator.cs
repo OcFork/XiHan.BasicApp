@@ -127,7 +127,7 @@ public sealed class %CLASS%PermissionCatalog : IPermissionCatalogContribution, I
     public IReadOnlyList<PermissionSeed> Permissions { get; } =
     [
         .. %CLASS%PermissionDefinitions.Items.Select((item, index) => new PermissionSeed(
-            $"{Resource.Code}:{item.Action}",
+            $"{Resource.Code}.{item.Action}",
             item.Name,
             item.Description,
             Resource.Code,

@@ -235,7 +235,7 @@ public sealed partial class CodeGenerationEngine(
     private async Task<IReadOnlyCollection<string>> FindCollidingPermissionCodesAsync(CodeGenerationContext context, CancellationToken cancellationToken)
     {
         var candidateCodes = MenuPermissionArtifactShared.EffectiveActions(context)
-            .Select(action => $"{context.TableName}:{action}")
+            .Select(action => $"{MenuPermissionArtifactShared.Resource(context)}.{action}")
             .ToList();
         if (candidateCodes.Count == 0)
         {

@@ -98,7 +98,7 @@ public sealed class ChatDomainServiceTests
             new ChatAssistantConversationCommand(UserId: 2, AssistantId: 9, AssistantName: "小曦", Avatar: null));
 
         Assert.True(result.Created);
-        Assert.Equal("ai:9:2", result.Conversation.PairKey);
+        Assert.Equal("ai.9.2", result.Conversation.PairKey);
         Assert.Equal(ChatConversationType.Assistant, result.Conversation.ConversationType);
         Assert.Equal(9, result.Conversation.AssistantId);
         Assert.Equal(1, result.Conversation.MemberCount);
@@ -106,7 +106,7 @@ public sealed class ChatDomainServiceTests
         Assert.NotNull(addedMember);
         Assert.Equal(2, addedMember.UserId);
         fixture.ConversationRepository.Verify(
-            value => value.GetByPairKeyAsync("ai:9:2", It.IsAny<CancellationToken>()),
+            value => value.GetByPairKeyAsync("ai.9.2", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -117,9 +117,9 @@ public sealed class ChatDomainServiceTests
     public async Task GetOrCreateAssistantConversationAsync_ExistingShouldReturnWithoutCreate()
     {
         var fixture = CreateFixture(CreateUser(2, "李四"));
-        var existing = CreateConversation(100, ChatConversationType.Assistant, pairKey: "ai:9:2");
+        var existing = CreateConversation(100, ChatConversationType.Assistant, pairKey: "ai.9.2");
         fixture.ConversationRepository
-            .Setup(value => value.GetByPairKeyAsync("ai:9:2", It.IsAny<CancellationToken>()))
+            .Setup(value => value.GetByPairKeyAsync("ai.9.2", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existing);
 
         var result = await fixture.Service.GetOrCreateAssistantConversationAsync(

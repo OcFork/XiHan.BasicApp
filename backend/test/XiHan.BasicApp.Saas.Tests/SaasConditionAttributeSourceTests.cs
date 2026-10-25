@@ -230,8 +230,8 @@ public sealed class SaasConditionAttributeSourceTests
         httpContext.SetEndpoint(new Endpoint(
             null,
             new EndpointMetadataCollection(
-                new PermissionAuthorizeAttribute("saas:user:export"),
-                new PermissionAuthorizeAttribute("saas:user:read"),
+                new PermissionAuthorizeAttribute("saas.user.export"),
+                new PermissionAuthorizeAttribute("saas.user.read"),
                 new ControllerActionDescriptor { ControllerName = "User", ActionName = "Export" }),
             "test"));
         var source = CreateSource(new SaasConditionContext { TenantId = TenantId, Now = Now, HttpContext = httpContext });
@@ -240,7 +240,7 @@ public sealed class SaasConditionAttributeSourceTests
         await AssertValuesAsync(source, SaasConditionAttributes.ResourceMethod, "POST");
         await AssertValuesAsync(source, SaasConditionAttributes.ResourceService, "User");
         await AssertValuesAsync(source, SaasConditionAttributes.ResourceAction, "Export");
-        await AssertValuesAsync(source, SaasConditionAttributes.ResourcePermissionCodes, "saas:user:export", "saas:user:read");
+        await AssertValuesAsync(source, SaasConditionAttributes.ResourcePermissionCodes, "saas.user.export", "saas.user.read");
         await AssertValuesAsync(source, "resource.route.ID", "42");
         await AssertValuesAsync(source, "resource.query.Status", "draft");
         await AssertValuesAsync(source, SaasConditionAttributes.EnvironmentClientUserAgent, "Mozilla/5.0");
@@ -254,16 +254,16 @@ public sealed class SaasConditionAttributeSourceTests
     public async Task Resource_PermissionCodes_ExplicitWins()
     {
         var httpContext = new DefaultHttpContext();
-        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(new PermissionAuthorizeAttribute("saas:user:read")), "test"));
+        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(new PermissionAuthorizeAttribute("saas.user.read")), "test"));
         var source = CreateSource(new SaasConditionContext
         {
             TenantId = TenantId,
             Now = Now,
             HttpContext = httpContext,
-            PermissionCodes = ["saas:role:export"]
+            PermissionCodes = ["saas.role.export"]
         });
 
-        await AssertValuesAsync(source, SaasConditionAttributes.ResourcePermissionCodes, "saas:role:export");
+        await AssertValuesAsync(source, SaasConditionAttributes.ResourcePermissionCodes, "saas.role.export");
     }
 
     /// <summary>
@@ -377,7 +377,7 @@ public sealed class SaasConditionAttributeSourceTests
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Connection.RemoteIpAddress = IPAddress.Parse("::ffff:10.1.2.3");
-        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(new PermissionAuthorizeAttribute("saas:user:export")), "test"));
+        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(new PermissionAuthorizeAttribute("saas.user.export")), "test"));
         var source = CreateSource(new SaasConditionContext { TenantId = TenantId, Now = Now, UserId = UserId, HttpContext = httpContext });
         var registry = new DefaultConditionAttributeRegistry(SaasConditionAttributes.All);
         var compiled = new DefaultConditionCompiler(registry).Compile(

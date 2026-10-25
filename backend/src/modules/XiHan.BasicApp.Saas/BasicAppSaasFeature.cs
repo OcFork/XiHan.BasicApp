@@ -53,9 +53,11 @@ public sealed class BasicAppSaasFeature : IHostedFeature
     {
         var services = context.Services;
 
-        // 登记本程序集全部 [Operation]（源生成器产出）；SaaS 权限目录按权限码注册同名策略（permission:<code>），操作契约上的 Permission 据此判定
+        // 登记本程序集全部 [Operation]（源生成器产出）与 SaaS 权限目录（进内核 PermissionRegistry，操作契约上的 Permission 据此生成权限策略）
         context.AddGeneratedOperations();
         context.AddPermissionDefinitions(SaasPermissionDefinitions.All);
+        // 内核权限策略的判定交给应用自己的检查器（授权快照、会话有效性、模仿态禁用、权限条件）
+        services.Replace(ServiceDescriptor.Singleton<XiHan.Framework.Security.Abstractions.IPermissionChecker, OperationPermissionChecker>());
 
         // 注册 SaaS 模块种子数据（基础数据始终播种；演示数据只在 Saas:Seed:EnableDemoData 为 true 时写入）
         services.AddSaasDataSeeders();

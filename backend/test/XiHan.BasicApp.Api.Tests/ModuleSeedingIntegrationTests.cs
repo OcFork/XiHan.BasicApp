@@ -150,7 +150,7 @@ public sealed class ModuleSeedingIntegrationTests : IDisposable
         var enterprise = await _db.Queryable<SysTenantEdition>().SingleAsync(edition => edition.EditionCode == SaasEditionSeeder.Codes.Enterprise);
         var whitelist = await _db.Queryable<SysTenantEditionPermission>().Where(binding => binding.EditionId == enterprise.BasicId).Select(binding => binding.PermissionId).ToListAsync();
         Assert.Equal(tenantEffective.Order(), whitelist.Order());
-        Assert.Contains(permissions, permission => permission.PermissionCode == "workflow:read" && tenantEffective.Contains(permission.BasicId));
+        Assert.Contains(permissions, permission => permission.PermissionCode == "workflow.read" && tenantEffective.Contains(permission.BasicId));
         Assert.DoesNotContain(permissions, permission => permission.ModuleCode == "code_gen" && tenantEffective.Contains(permission.BasicId));
 
         var demoTenant = await _db.Queryable<SysTenant>().SingleAsync(tenant => tenant.TenantCode == "demo-enterprise");
@@ -160,7 +160,7 @@ public sealed class ModuleSeedingIntegrationTests : IDisposable
 
         // 演示的直授禁止：装了聊天模块就写上
         var direct = await _db.Queryable<SysUser>().SingleAsync(user => user.Email == "direct@enterprise.demo");
-        var chatSend = permissions.Single(permission => permission.PermissionCode == "chat:send");
+        var chatSend = permissions.Single(permission => permission.PermissionCode == "chat.send");
         Assert.True(await _db.Queryable<SysUserPermission>().AnyAsync(item => item.UserId == direct.BasicId && item.PermissionId == chatSend.BasicId && item.PermissionAction == PermissionAction.Deny));
     }
 

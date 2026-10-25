@@ -506,8 +506,8 @@ public sealed class SaasAppPageRegistryTests
     [Fact]
     public void Descriptors_ShouldUseValueEquality()
     {
-        var left = new ButtonDescriptor("a.b", "新增", "a", "saas:a:create", 1);
-        var right = new ButtonDescriptor("a.b", "新增", "a", "saas:a:create", 1);
+        var left = new ButtonDescriptor("a.b", "新增", "a", "saas.a.create", 1);
+        var right = new ButtonDescriptor("a.b", "新增", "a", "saas.a.create", 1);
 
         Assert.Equal(left, right);
         Assert.NotEqual(left, right with { Sort = 2 });

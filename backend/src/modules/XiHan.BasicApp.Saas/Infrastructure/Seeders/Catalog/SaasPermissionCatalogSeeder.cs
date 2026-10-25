@@ -62,5 +62,5 @@ public sealed class SaasPermissionCatalogSeeder(
             definition.IsRequireAudit,
             definition.Sort,
             ResourceByGroup[definition.GroupCode],
-            OperationSeeds.Get(definition.PermissionCode[(definition.PermissionCode.LastIndexOf(':') + 1)..])))];
+            OperationSeeds.Get(definition.PermissionCode[(definition.PermissionCode.LastIndexOf('.') + 1)..])))];
 }

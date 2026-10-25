@@ -109,7 +109,7 @@ internal static class MenuPermissionArtifactShared
     /// <summary>
     /// 资源编码（权限码资源段）= 表名（snake，全局唯一）
     /// </summary>
-    public static string Resource(CodeGenerationContext context) => context.TableName.ToLowerInvariant();
+    public static string Resource(CodeGenerationContext context) => context.TableName.ToLowerInvariant().Replace('_', '-');
 
     /// <summary>
     /// 展示名（业务名优先，其次表注释，最后类名）

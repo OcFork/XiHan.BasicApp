@@ -313,8 +313,8 @@ public sealed class ChatExtraMapperTests
     [Fact]
     public void ConversationGroup_ShouldUseStablePrefixedFormat()
     {
-        Assert.Equal("chat:conv:1", ChatRealtimeMethods.ConversationGroup(1));
-        Assert.Equal("chat:conv:9007199254740993", ChatRealtimeMethods.ConversationGroup(9007199254740993L));
+        Assert.Equal("chat.conv.1", ChatRealtimeMethods.ConversationGroup(1));
+        Assert.Equal("chat.conv.9007199254740993", ChatRealtimeMethods.ConversationGroup(9007199254740993L));
     }
 
     /// <summary>

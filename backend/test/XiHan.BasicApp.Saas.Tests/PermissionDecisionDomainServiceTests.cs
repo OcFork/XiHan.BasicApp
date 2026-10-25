@@ -26,7 +26,7 @@ public sealed class PermissionDecisionDomainServiceTests
     [InlineData("   ")]
     public void Decide_WithNullOrWhiteSpaceCode_ShouldDeny(string? permissionCode)
     {
-        var decision = _service.Decide(permissionCode!, [Grant(1, "saas:user:read")], Now);
+        var decision = _service.Decide(permissionCode!, [Grant(1, "saas.user.read")], Now);
 
         Assert.False(decision.IsGranted);
         Assert.Contains("权限编码为空", decision.Reason, StringComparison.Ordinal);
@@ -38,7 +38,7 @@ public sealed class PermissionDecisionDomainServiceTests
     [Fact]
     public void Decide_WithoutMatchingGrants_ShouldDeny()
     {
-        var decision = _service.Decide("saas:user:read", [Grant(1, "saas:user:create")], Now);
+        var decision = _service.Decide("saas.user.read", [Grant(1, "saas.user.create")], Now);
 
         Assert.False(decision.IsGranted);
         Assert.Contains("未匹配有效授权", decision.Reason, StringComparison.Ordinal);
@@ -50,7 +50,7 @@ public sealed class PermissionDecisionDomainServiceTests
     [Fact]
     public void Decide_ShouldMatchPermissionCodeCaseInsensitively()
     {
-        var decision = _service.Decide("SAAS:USER:READ", [Grant(1, "saas:user:read")], Now);
+        var decision = _service.Decide("SAAS:USER:READ", [Grant(1, "saas.user.read")], Now);
 
         Assert.True(decision.IsGranted);
     }
@@ -62,8 +62,8 @@ public sealed class PermissionDecisionDomainServiceTests
     public void Decide_ShouldIgnoreDisabledGrant()
     {
         var decision = _service.Decide(
-            "saas:user:read",
-            [Grant(1, "saas:user:read", enabled: false)],
+            "saas.user.read",
+            [Grant(1, "saas.user.read", enabled: false)],
             Now);
 
         Assert.False(decision.IsGranted);
@@ -78,7 +78,7 @@ public sealed class PermissionDecisionDomainServiceTests
     {
         var expired = new EffectivePeriod(Now.AddHours(-2), Now.AddHours(-1));
 
-        var decision = _service.Decide("saas:user:read", [Grant(1, "saas:user:read", period: expired)], Now);
+        var decision = _service.Decide("saas.user.read", [Grant(1, "saas.user.read", period: expired)], Now);
 
         Assert.False(decision.IsGranted);
     }
@@ -91,7 +91,7 @@ public sealed class PermissionDecisionDomainServiceTests
     {
         var future = new EffectivePeriod(Now.AddHours(1), null);
 
-        var decision = _service.Decide("saas:user:read", [Grant(1, "saas:user:read", period: future)], Now);
+        var decision = _service.Decide("saas.user.read", [Grant(1, "saas.user.read", period: future)], Now);
 
         Assert.False(decision.IsGranted);
     }
@@ -104,12 +104,12 @@ public sealed class PermissionDecisionDomainServiceTests
     {
         var grants = new[]
         {
-            Grant(1, "saas:user:read", PermissionAction.Deny, AuthorizationGrantSource.User),
-            Grant(2, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Role),
-            Grant(3, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Delegation)
+            Grant(1, "saas.user.read", PermissionAction.Deny, AuthorizationGrantSource.User),
+            Grant(2, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Role),
+            Grant(3, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Delegation)
         };
 
-        var decision = _service.Decide("saas:user:read", grants, Now);
+        var decision = _service.Decide("saas.user.read", grants, Now);
 
         Assert.False(decision.IsGranted);
         Assert.Equal(1, decision.PermissionId);
@@ -124,11 +124,11 @@ public sealed class PermissionDecisionDomainServiceTests
     {
         var grants = new[]
         {
-            Grant(1, "saas:user:read", PermissionAction.Deny, AuthorizationGrantSource.Role),
-            Grant(2, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.User)
+            Grant(1, "saas.user.read", PermissionAction.Deny, AuthorizationGrantSource.Role),
+            Grant(2, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.User)
         };
 
-        var decision = _service.Decide("saas:user:read", grants, Now);
+        var decision = _service.Decide("saas.user.read", grants, Now);
 
         Assert.True(decision.IsGranted);
         Assert.Equal(2, decision.PermissionId);
@@ -141,8 +141,8 @@ public sealed class PermissionDecisionDomainServiceTests
     public void Decide_RoleGrant_ShouldGrant()
     {
         var decision = _service.Decide(
-            "saas:user:read",
-            [Grant(1, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Role)],
+            "saas.user.read",
+            [Grant(1, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Role)],
             Now);
 
         Assert.True(decision.IsGranted);
@@ -156,8 +156,8 @@ public sealed class PermissionDecisionDomainServiceTests
     public void Decide_RoleDeny_ShouldDeny()
     {
         var decision = _service.Decide(
-            "saas:user:read",
-            [Grant(1, "saas:user:read", PermissionAction.Deny, AuthorizationGrantSource.Role)],
+            "saas.user.read",
+            [Grant(1, "saas.user.read", PermissionAction.Deny, AuthorizationGrantSource.Role)],
             Now);
 
         Assert.False(decision.IsGranted);
@@ -171,8 +171,8 @@ public sealed class PermissionDecisionDomainServiceTests
     public void Decide_DelegationGrant_ShouldGrantWhenNoUserOrRoleGrant()
     {
         var decision = _service.Decide(
-            "saas:user:read",
-            [Grant(1, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Delegation)],
+            "saas.user.read",
+            [Grant(1, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Delegation)],
             Now);
 
         Assert.True(decision.IsGranted);
@@ -187,11 +187,11 @@ public sealed class PermissionDecisionDomainServiceTests
     {
         var grants = new[]
         {
-            Grant(1, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Role, priority: 5),
-            Grant(2, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Role, priority: 10)
+            Grant(1, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Role, priority: 5),
+            Grant(2, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Role, priority: 10)
         };
 
-        var decision = _service.Decide("saas:user:read", grants, Now);
+        var decision = _service.Decide("saas.user.read", grants, Now);
 
         Assert.True(decision.IsGranted);
         Assert.Equal(2, decision.PermissionId);
@@ -205,11 +205,11 @@ public sealed class PermissionDecisionDomainServiceTests
     {
         var grants = new[]
         {
-            Grant(1, "saas:user:create", PermissionAction.Deny, AuthorizationGrantSource.User),
-            Grant(2, "saas:user:read", PermissionAction.Grant, AuthorizationGrantSource.Role)
+            Grant(1, "saas.user.create", PermissionAction.Deny, AuthorizationGrantSource.User),
+            Grant(2, "saas.user.read", PermissionAction.Grant, AuthorizationGrantSource.Role)
         };
 
-        var decision = _service.Decide("saas:user:read", grants, Now);
+        var decision = _service.Decide("saas.user.read", grants, Now);
 
         Assert.True(decision.IsGranted);
     }

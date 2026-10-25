@@ -19,17 +19,17 @@ public static class AiPermissionCodes
     public const string Resource = "ai";
 
     /// <summary>查看（列表/详情）</summary>
-    public const string Read = "ai:read";
+    public const string Read = "ai.read";
 
     /// <summary>创建（新增 provider 配置）</summary>
-    public const string Create = "ai:create";
+    public const string Create = "ai.create";
 
     /// <summary>更新（含设为默认、启停）</summary>
-    public const string Update = "ai:update";
+    public const string Update = "ai.update";
 
     /// <summary>删除</summary>
-    public const string Delete = "ai:delete";
+    public const string Delete = "ai.delete";
 
     /// <summary>执行（测试连接、调用推理）</summary>
-    public const string Execute = "ai:execute";
+    public const string Execute = "ai.execute";
 }

@@ -160,7 +160,7 @@ CREATE INDEX IF NOT EXISTS ix_sys_example_tenant_id
 
 - `/setting/version`：查看 `SysVersion`，只读；写端点已移除。
 - `/log/migration`：查看脚本版本、脚本名、成功状态、执行时间、节点与错误信息。
-- 两页读取都要求 `saas:version:read`；版本列表导出使用 `saas:version:export`。
+- 两页读取都要求 `saas.version.read`；版本列表导出使用 `saas.version.export`。
 
 页面展示的是当前租户上下文解析到的数据库状态。排查独立租户库时要先确认当前租户，不能只看平台库记录。
 

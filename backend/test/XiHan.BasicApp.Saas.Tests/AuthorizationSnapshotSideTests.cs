@@ -50,10 +50,10 @@ public sealed class AuthorizationSnapshotSideTests
 
     private readonly List<SysPermission> _catalog =
     [
-        Permission(TenantCreateId, "saas:tenant:create", PermissionSide.Platform),
-        Permission(DepartmentReadId, "saas:department:read", PermissionSide.Tenant),
-        Permission(UserReadId, "saas:user:read", PermissionSide.Both),
-        Permission(NotificationReadId, "saas:notification:read", PermissionSide.Both)
+        Permission(TenantCreateId, "saas.tenant.create", PermissionSide.Platform),
+        Permission(DepartmentReadId, "saas.department.read", PermissionSide.Tenant),
+        Permission(UserReadId, "saas.user.read", PermissionSide.Both),
+        Permission(NotificationReadId, "saas.notification.read", PermissionSide.Both)
     ];
 
     private readonly List<SysRole> _roles =
@@ -86,8 +86,8 @@ public sealed class AuthorizationSnapshotSideTests
 
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["*", "saas:notification:read", "saas:tenant:create", "saas:user:read"], snapshot.Permissions);
-        Assert.Equal(["saas:department:read"], snapshot.ContextDeniedCodes);
+        Assert.Equal(["*", "saas.notification.read", "saas.tenant.create", "saas.user.read"], snapshot.Permissions);
+        Assert.Equal(["saas.department.read"], snapshot.ContextDeniedCodes);
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public sealed class AuthorizationSnapshotSideTests
 
         Assert.Empty(snapshot.Roles);
         Assert.Empty(snapshot.Permissions);
-        Assert.Contains("saas:tenant:create", snapshot.ContextDeniedCodes);
+        Assert.Contains("saas.tenant.create", snapshot.ContextDeniedCodes);
     }
 
     /// <summary>
@@ -135,8 +135,8 @@ public sealed class AuthorizationSnapshotSideTests
         using var scope = _currentTenant.Change(TenantId);
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:department:read", "saas:user:read"], snapshot.Permissions);
-        Assert.Equal(["saas:tenant:create"], snapshot.ContextDeniedCodes);
+        Assert.Equal(["saas.department.read", "saas.user.read"], snapshot.Permissions);
+        Assert.Equal(["saas.tenant.create"], snapshot.ContextDeniedCodes);
     }
 
     /// <summary>
@@ -150,7 +150,7 @@ public sealed class AuthorizationSnapshotSideTests
 
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:tenant:create"], snapshot.Permissions);
+        Assert.Equal(["saas.tenant.create"], snapshot.Permissions);
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public sealed class AuthorizationSnapshotSideTests
         using var scope = _currentTenant.Change(TenantId);
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:user:read"], snapshot.Permissions);
+        Assert.Equal(["saas.user.read"], snapshot.Permissions);
         Assert.Equal([UserReadId], snapshot.PermissionIds);
     }
 
@@ -183,9 +183,9 @@ public sealed class AuthorizationSnapshotSideTests
         using var scope = _currentTenant.Change(TenantId);
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:department:read", "saas:user:read"], snapshot.Permissions);
+        Assert.Equal(["saas.department.read", "saas.user.read"], snapshot.Permissions);
         Assert.DoesNotContain("*", snapshot.Permissions);
-        Assert.Contains("saas:tenant:create", snapshot.ContextDeniedCodes);
+        Assert.Contains("saas.tenant.create", snapshot.ContextDeniedCodes);
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public sealed class AuthorizationSnapshotSideTests
         using var scope = _currentTenant.Change(TenantId);
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:user:read"], snapshot.Permissions);
+        Assert.Equal(["saas.user.read"], snapshot.Permissions);
     }
 
     /// <summary>
@@ -264,7 +264,7 @@ public sealed class AuthorizationSnapshotSideTests
         using var scope = _currentTenant.Change(TenantId);
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:department:read"], snapshot.Permissions);
+        Assert.Equal(["saas.department.read"], snapshot.Permissions);
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ public sealed class AuthorizationSnapshotSideTests
 
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:notification:read", "saas:user:read"], snapshot.Permissions);
+        Assert.Equal(["saas.notification.read", "saas.user.read"], snapshot.Permissions);
     }
 
     /// <summary>
@@ -295,11 +295,11 @@ public sealed class AuthorizationSnapshotSideTests
         BindRole(ClerkRoleId, bindingTenantId: 0);
 
         var viaClerk = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
-        Assert.Equal(["saas:notification:read"], viaClerk.Permissions);
+        Assert.Equal(["saas.notification.read"], viaClerk.Permissions);
 
         BindRole(BaseRoleId, bindingTenantId: 0);
         var viaBoth = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
-        Assert.Equal(["saas:notification:read", "saas:user:read"], viaBoth.Permissions);
+        Assert.Equal(["saas.notification.read", "saas.user.read"], viaBoth.Permissions);
     }
 
     /// <summary>
@@ -315,7 +315,7 @@ public sealed class AuthorizationSnapshotSideTests
 
         var snapshot = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
 
-        Assert.Equal(["saas:notification:read"], snapshot.Permissions);
+        Assert.Equal(["saas.notification.read"], snapshot.Permissions);
     }
 
     /// <summary>
@@ -331,7 +331,7 @@ public sealed class AuthorizationSnapshotSideTests
         BindRole(ClerkRoleId, bindingTenantId: 0);
 
         var enabled = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);
-        Assert.Equal(["saas:notification:read", "saas:user:read"], enabled.Permissions);
+        Assert.Equal(["saas.notification.read", "saas.user.read"], enabled.Permissions);
 
         DisableRole(MiddleRoleId);
         var disabled = await CreateService().BuildAsync(UserId, DateTimeOffset.UtcNow);

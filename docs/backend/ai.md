@@ -14,7 +14,7 @@ BasicApp 的 AI 能力落在独立模块 `XiHan.BasicApp.AI` 里，与代码生�
 
 此外还有一条**Agent / MCP** 支线：知识检索被封装为技能（`KnowledgeRetrieveSkill`），框架技能注册表自动收纳，进而投影为对话工具与 MCP tools，供外部 AI 客户端（Claude Code / Cursor 等）调用。
 
-模块前端页面挂在「开发工具（develop）」目录下：**AI 提供商**（`/develop/aiProvider`）、**知识库**（`/develop/knowledge`）与**AI 提示词**（`/develop/aiPrompt`），三者均仅对持有 `ai:read` / `knowledge_base:read` / `ai_prompt:read` 者（默认=超管通配 `*`）可见。
+模块前端页面挂在「开发工具（develop）」目录下：**AI 提供商**（`/develop/aiProvider`）、**知识库**（`/develop/knowledge`）与**AI 提示词**（`/develop/aiPrompt`），三者均仅对持有 `ai.read` / `knowledge_base:read` / `ai_prompt:read` 者（默认=超管通配 `*`）可见。
 
 ---
 
@@ -81,14 +81,14 @@ private void InvalidateResolvers()
 
 | 动作 | 权限码 | 事务 | 说明 |
 | --- | --- | --- | --- |
-| `CreateAsync` | `ai:create` | `[UnitOfWork]` | 新增配置；`ConfigCode` 不能含空白、租户内不重复 |
-| `UpdateAsync` | `ai:update` | `[UnitOfWork]` | 更新；`ConfigCode` 不可变，`ApiKey` 留空保留原值 |
-| `UpdateStatusAsync` | `ai:update` | `[UnitOfWork]` | 启停状态 |
-| `SetDefaultAsync` | `ai:update` | `[UnitOfWork]` | 设为默认（已禁用者不可设默认）；领域服务清除其它行 `IsDefault`（单默认互斥） |
-| `DeleteAsync` | `ai:delete` | `[UnitOfWork]` | 软删 |
-| `TestConnectionAsync` | `ai:execute` | 无 | `[HttpPost]`；用**一次性客户端**（不入解析器缓存）向 provider 发一句 `ping`，返回成功/耗时/finishReason——**可测尚未启用的配置** |
+| `CreateAsync` | `ai.create` | `[UnitOfWork]` | 新增配置；`ConfigCode` 不能含空白、租户内不重复 |
+| `UpdateAsync` | `ai.update` | `[UnitOfWork]` | 更新；`ConfigCode` 不可变，`ApiKey` 留空保留原值 |
+| `UpdateStatusAsync` | `ai.update` | `[UnitOfWork]` | 启停状态 |
+| `SetDefaultAsync` | `ai.update` | `[UnitOfWork]` | 设为默认（已禁用者不可设默认）；领域服务清除其它行 `IsDefault`（单默认互斥） |
+| `DeleteAsync` | `ai.delete` | `[UnitOfWork]` | 软删 |
+| `TestConnectionAsync` | `ai.execute` | 无 | `[HttpPost]`；用**一次性客户端**（不入解析器缓存）向 provider 发一句 `ping`，返回成功/耗时/finishReason——**可测尚未启用的配置** |
 
-查询侧 `AiProviderQueryService`：`GetPageAsync`（`[HttpPost]`，`ai:read`，FLS 门控排序/过滤 + 默认兜底排序）与 `GetDetailAsync`。列表/详情均走 `HasApiKey` 布尔而非明文。
+查询侧 `AiProviderQueryService`：`GetPageAsync`（`[HttpPost]`，`ai.read`，FLS 门控排序/过滤 + 默认兜底排序）与 `GetDetailAsync`。列表/详情均走 `HasApiKey` 布尔而非明文。
 
 采样温度限定 `0~2`，越界抛异常。
 
@@ -258,6 +258,6 @@ MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](https://fram
 ## 相关文档
 
 - [框架 · XiHan.Framework.AI](https://framework.docs.xihanfun.com/packages/ai)：底层 provider 解析/热切换、RAG 切片检索、提示词模板、Agent/MCP 桥接的抽象与默认实现
-- [权限模型](./permission)：权限码（本模块用 `ai:read` 这类两段式）、数据范围、字段级脱敏
+- [权限模型](./permission)：权限码（本模块用 `ai.read` 这类两段式）、数据范围、字段级脱敏
 - [多租户](./multi-tenancy)：字段级隔离与 `TenantId=0` 全局约定
 - [部署](../deployment)：环境要求、升级入口与生产配置

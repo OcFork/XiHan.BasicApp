@@ -258,10 +258,10 @@ public sealed class SaasDomainPermissionCatalogContractTests
     /// <param name="permissionCode">待解析的权限码。</param>
     /// <param name="expected">期望解析出的组码。</param>
     [Theory]
-    [InlineData("saas:tenant:read", "tenant")]
-    [InlineData("saas:tenant-member:invite-status", "tenant-member")]
-    [InlineData("saas:tenant:read:extra", "tenant")]
-    [InlineData("saas:tenant", "saas")]
+    [InlineData("saas.tenant.read", "tenant")]
+    [InlineData("saas.tenant-member.invite-status", "tenant-member")]
+    [InlineData("saas.tenant.read.extra", "tenant")]
+    [InlineData("saas.tenant", "saas")]
     [InlineData("saas", "saas")]
     [InlineData("::", "other")]
     [InlineData("", "other")]
@@ -279,7 +279,7 @@ public sealed class SaasDomainPermissionCatalogContractTests
     public void ResolveGroupName_ShouldFallBackToGroupCodeWhenUnregistered()
     {
         Assert.Equal("租户", SaasPermissionDefinitions.ResolveGroupName(SaasPermissionCodes.Tenant.Read), StringComparer.Ordinal);
-        Assert.Equal("nosuchgroup", SaasPermissionDefinitions.ResolveGroupName("saas:nosuchgroup:read"), StringComparer.Ordinal);
+        Assert.Equal("nosuchgroup", SaasPermissionDefinitions.ResolveGroupName("saas.nosuchgroup.read"), StringComparer.Ordinal);
         Assert.Equal("other", SaasPermissionDefinitions.ResolveGroupName(null), StringComparer.Ordinal);
     }
 
@@ -357,23 +357,23 @@ public sealed class SaasDomainPermissionCatalogContractTests
     /// <param name="expected">期望作用侧</param>
     [Theory]
     // 租户目录是平台数据：SysTenant 行都在 0 号，租户持有查看码就能读到全部租户
-    [InlineData("saas:tenant:read", PermissionSide.Platform)]
-    [InlineData("saas:tenant:create", PermissionSide.Platform)]
-    [InlineData("saas:tenant:initdb", PermissionSide.Platform)]
-    [InlineData("saas:tenant-edition:read", PermissionSide.Platform)]
-    [InlineData("saas:cache:clear", PermissionSide.Platform)]
-    [InlineData("saas:task:read", PermissionSide.Platform)]
+    [InlineData("saas.tenant.read", PermissionSide.Platform)]
+    [InlineData("saas.tenant.create", PermissionSide.Platform)]
+    [InlineData("saas.tenant.initdb", PermissionSide.Platform)]
+    [InlineData("saas.tenant-edition.read", PermissionSide.Platform)]
+    [InlineData("saas.cache.clear", PermissionSide.Platform)]
+    [InlineData("saas.task.read", PermissionSide.Platform)]
     // 目录维护是平台的，查看两侧都要（授权界面要列出可授的权限、菜单）
-    [InlineData("saas:permission:create", PermissionSide.Platform)]
-    [InlineData("saas:permission:read", PermissionSide.Both)]
-    [InlineData("saas:menu:read", PermissionSide.Both)]
-    [InlineData("saas:department:read", PermissionSide.Tenant)]
-    [InlineData("saas:role-data-scope:update", PermissionSide.Both)]
-    [InlineData("saas:user-data-scope:update", PermissionSide.Tenant)]
-    [InlineData("saas:tenant-member:read", PermissionSide.Both)]
-    [InlineData("saas:tenant-member:update", PermissionSide.Tenant)]
-    [InlineData("saas:user:read", PermissionSide.Both)]
-    [InlineData("saas:role:create", PermissionSide.Both)]
+    [InlineData("saas.permission.create", PermissionSide.Platform)]
+    [InlineData("saas.permission.read", PermissionSide.Both)]
+    [InlineData("saas.menu.read", PermissionSide.Both)]
+    [InlineData("saas.department.read", PermissionSide.Tenant)]
+    [InlineData("saas.role-data-scope.update", PermissionSide.Both)]
+    [InlineData("saas.user-data-scope.update", PermissionSide.Tenant)]
+    [InlineData("saas.tenant-member.read", PermissionSide.Both)]
+    [InlineData("saas.tenant-member.update", PermissionSide.Tenant)]
+    [InlineData("saas.user.read", PermissionSide.Both)]
+    [InlineData("saas.role.create", PermissionSide.Both)]
     public void Definitions_ShouldDeclareExpectedSide(string code, PermissionSide expected)
     {
         var definition = SaasPermissionDefinitions.All.Single(item => string.Equals(item.PermissionCode, code, StringComparison.OrdinalIgnoreCase));

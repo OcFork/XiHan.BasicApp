@@ -381,7 +381,7 @@ public sealed class PermissionCatalogDomainService
     {
         return code is >= 'a' and <= 'z'
             || code is >= '0' and <= '9'
-            || code is '-' or '_' or '.';
+            || code is '-';
     }
 
     private static bool IsValidOperationCodeChar(char code)
@@ -443,10 +443,10 @@ public sealed class PermissionCatalogDomainService
     private static string ResolveModuleCode(string? moduleCode, string permissionCode)
     {
         var normalizedPermissionCode = permissionCode.Trim();
-        var firstSeparatorIndex = normalizedPermissionCode.IndexOf(':', StringComparison.Ordinal);
+        var firstSeparatorIndex = normalizedPermissionCode.IndexOf('.', StringComparison.Ordinal);
         if (firstSeparatorIndex <= 0)
         {
-            throw new InvalidOperationException("权限编码必须使用 module:resource:action 格式。");
+            throw new InvalidOperationException("权限编码必须使用 module.resource.action 格式（小写点分，至少两段）。");
         }
 
         var codeModule = normalizedPermissionCode[..firstSeparatorIndex];
@@ -600,15 +600,15 @@ public sealed class PermissionCatalogDomainService
             throw new InvalidOperationException("权限编码不能包含空白字符。");
         }
 
-        var segments = normalizedPermissionCode.Split(':');
-        if (segments.Length < 3 || segments.Any(string.IsNullOrWhiteSpace))
+        var segments = normalizedPermissionCode.Split('.');
+        if (segments.Length < 2 || segments.Any(string.IsNullOrWhiteSpace))
         {
-            throw new InvalidOperationException("权限编码必须使用 module:resource:action 格式。");
+            throw new InvalidOperationException("权限编码必须使用 module.resource.action 格式（小写点分，至少两段）。");
         }
 
         foreach (var segment in segments)
         {
-            ValidateCodeSegment(segment, nameof(permissionCode), "权限编码只能包含小写英文、数字、冒号、连字符、下划线或点。");
+            ValidateCodeSegment(segment, nameof(permissionCode), "权限编码每一段只能包含小写英文、数字和连字符，段之间用点分隔。");
         }
     }
 

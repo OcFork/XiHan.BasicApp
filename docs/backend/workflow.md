@@ -74,11 +74,11 @@ services.AddWorkflowEventHandlers();        // ⑤ 待办通知与抄送记录
 
 | 权限码 | 用途 |
 | --- | --- |
-| `workflow:read` | 查看定义 / 实例；也可以查看任意审批的详情 |
-| `workflow:create` | 新建定义 |
-| `workflow:update` | 编辑草稿、发布、新版本、停用、归档；挂起 / 恢复实例 |
-| `workflow:delete` | 删除定义 |
-| `workflow:execute` | 发起实例、干预实例（取消/终止/重试） |
+| `workflow.read` | 查看定义 / 实例；也可以查看任意审批的详情 |
+| `workflow.create` | 新建定义 |
+| `workflow.update` | 编辑草稿、发布、新版本、停用、归档；挂起 / 恢复实例 |
+| `workflow.delete` | 删除定义 |
+| `workflow.execute` | 发起实例、干预实例（取消/终止/重试） |
 
 种子链 `Order` 300–304，顺序恒为「操作 300 → 资源 301 → 权限 302 → 菜单 303 → 角色授权 304」，默认**仅授超管**。
 
@@ -87,8 +87,8 @@ services.AddWorkflowEventHandlers();        // ⑤ 待办通知与抄送记录
 | 页面 | 路由 | 权限 |
 | --- | --- | --- |
 | 审批中心 | `/approval/center`（挂在「审批」目录下） | 无（主体服务端锁定为当前用户） |
-| 流程定义 | `/workflow/definition` | `workflow:read` |
-| 流程实例 | `/workflow/instance` | `workflow:read` |
+| 流程定义 | `/workflow/definition` | `workflow.read` |
+| 流程实例 | `/workflow/instance` | `workflow.read` |
 
 ### ⑤ 待办通知与抄送记录
 
@@ -127,7 +127,7 @@ services.AddWorkflowEventHandlers();        // ⑤ 待办通知与抄送记录
 
 办理后若后续节点或业务回写出错，审批已经记录，页面提示流程进入故障态，由管理员在流程实例页重试。
 
-查看详情的人须是发起人、受理人、办理或抄送过的人，或拥有 `workflow:read`；业务单据数据随之下发，业务侧不必再给审批人开单据的查看权限。
+查看详情的人须是发起人、受理人、办理或抄送过的人，或拥有 `workflow.read`；业务单据数据随之下发，业务侧不必再给审批人开单据的查看权限。
 
 地址栏带 `?instanceId=` 会直接打开该流程的详情（业务页面的「查看审批」就是这样跳过来的），`?tab=done` 等预选页签（待办通知里的链接用它）。这两个参数只用一次：页面读完就把地址换回 `/approval/center`，带参数的标签并入审批中心的标签，切回来或刷新不会再弹出详情。
 

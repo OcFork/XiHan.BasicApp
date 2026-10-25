@@ -12,7 +12,7 @@ namespace XiHan.BasicApp.CodeGeneration.Infrastructure.Generation;
 /// </summary>
 /// <remarks>
 /// 形态：生成"待并入源码"的代码片段 → 重建库经既有 Seeder 链生效，符合 XiHan 单一事实源约定，
-/// 不做运行时写库（避免与重建库覆盖冲突）。权限码沿用 {资源}:{操作} 两段式，资源段取表名（snake）。
+/// 不做运行时写库（避免与重建库覆盖冲突）。权限码按内核文法 {资源}.{操作} 两段式（小写点分，段内只有字母、数字、连字符），资源段取表名并把下划线换成连字符。
 /// 权限码集合随表配置 EnabledActions 裁剪：只生成实际会产出接口/按钮的动作（读取基线 read 恒在）。
 /// </remarks>
 public static class MenuPermissionArtifactGenerator
@@ -60,7 +60,7 @@ public static class MenuPermissionArtifactGenerator
         {
             sb.AppendLine();
             sb.AppendLine($"    /// <summary>{Shared.MetaOf(action).Title}权限</summary>");
-            sb.AppendLine($"    public const string {Shared.Pascalize(action)} = \"{resource}:{action}\";");
+            sb.AppendLine($"    public const string {Shared.Pascalize(action)} = \"{resource}.{action}\";");
         }
 
         sb.AppendLine("}");
@@ -102,14 +102,14 @@ public static class MenuPermissionArtifactGenerator
         sb.AppendLine();
         sb.AppendLine("## 1. 权限码");
         sb.AppendLine();
-        sb.AppendLine($"资源 `{resource}` × 已启用操作，两段式 `{{资源}}:{{操作}}`（同 `code_gen:read`）：");
+        sb.AppendLine($"资源 `{resource}` × 已启用操作，两段式 `{{资源}}.{{操作}}`（同 `code-gen.read`；内核文法：小写点分，段内只有字母、数字、连字符）：");
         sb.AppendLine();
         sb.AppendLine("| 权限码 | 说明 | 需审计 |");
         sb.AppendLine("| --- | --- | --- |");
         foreach (var action in actions)
         {
             var meta = Shared.MetaOf(action);
-            sb.AppendLine($"| `{resource}:{action}` | {meta.Title} | {(meta.IsRequireAudit ? "是" : "否")} |");
+            sb.AppendLine($"| `{resource}.{action}` | {meta.Title} | {(meta.IsRequireAudit ? "是" : "否")} |");
         }
 
         sb.AppendLine();
@@ -145,7 +145,7 @@ public static class MenuPermissionArtifactGenerator
 
         if (context.EnabledActions.Contains(CodeGenActions.Print))
         {
-            sb.AppendLine("   打印按钮跟查看权限走，另需打印模板的使用权限 `print-template:use`。打印数据源 `" + context.ClassName + "PrintDataSource` 随后端产物生成，");
+            sb.AppendLine("   打印按钮跟查看权限走，另需打印模板的使用权限 `print-template.use`。打印数据源 `" + context.ClassName + "PrintDataSource` 随后端产物生成，");
             sb.AppendLine("   须在模块 `ConfigureServices` 里 `services.RegisterPrintDataSource(" + context.ClassName + "PrintDataSource.Definition)` 登记（模块须依赖打印模块），");
             sb.AppendLine("   再到「打印模板」页新建编码为 `" + Shared.PageCode(context) + "` 的模板、数据源选它。");
         }

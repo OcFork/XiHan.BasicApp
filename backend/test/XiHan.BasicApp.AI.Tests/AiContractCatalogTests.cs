@@ -197,7 +197,7 @@ public sealed class AiContractCatalogTests
     [Fact]
     public void PermissionCodes_ExecuteShouldExistOnlyWhereThereIsAnExecutableAction()
     {
-        Assert.Equal("ai:execute", AiPermissionCodes.Execute, StringComparer.Ordinal);
+        Assert.Equal("ai.execute", AiPermissionCodes.Execute, StringComparer.Ordinal);
         Assert.Equal("knowledge_base:execute", KnowledgePermissionCodes.Execute, StringComparer.Ordinal);
         Assert.Null(typeof(AiAssistantPermissionCodes).GetField("Execute", BindingFlags.Public | BindingFlags.Static));
         Assert.Null(typeof(AiPromptPermissionCodes).GetField("Execute", BindingFlags.Public | BindingFlags.Static));

@@ -30,8 +30,8 @@ namespace XiHan.BasicApp.Saas.Tests;
 public sealed class PermissionConditionEnforcementTests
 {
     private const long UserId = 1001;
-    private const string Code = "saas:position:update";
-    private const string OtherCode = "saas:position:read";
+    private const string Code = "saas.position.update";
+    private const string OtherCode = "saas.position.read";
 
     private readonly Mock<ICurrentUser> _currentUser = new();
     private readonly Mock<IPermissionConditionHitRecorder> _hitRecorder = new();
@@ -66,7 +66,7 @@ public sealed class PermissionConditionEnforcementTests
         Assert.False(denied.IsGranted);
         Assert.Equal(PermissionFailureCodes.ConditionNotMet, denied.FailureCode);
 
-        var notGranted = await checker.CheckAsync(Context("saas:tenant:create", Request("10.1.2.3")));
+        var notGranted = await checker.CheckAsync(Context("saas.tenant.create", Request("10.1.2.3")));
         Assert.Equal(PermissionFailureCodes.NotGranted, notGranted.FailureCode);
         _hitRecorder.Verify(recorder => recorder.RecordAsync(It.Is<PermissionConditionHit>(hit => hit.PermissionCode == Code && hit.Mode == PermissionConditionMode.Enforce), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -225,7 +225,7 @@ public sealed class PermissionConditionEnforcementTests
     [Fact]
     public void Registration_MapsScalarProperties()
     {
-        var registration = PermissionResourceRegistration.Create<GuardedPosition>("saas:position:audit", PermissionResourceKeys.FromArgument("id"));
+        var registration = PermissionResourceRegistration.Create<GuardedPosition>("saas.position.audit", PermissionResourceKeys.FromArgument("id"));
         var names = registration.Attributes.Select(attribute => attribute.Name).ToList();
 
         Assert.Contains("resource.positionCode", names);

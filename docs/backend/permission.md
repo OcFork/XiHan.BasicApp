@@ -13,15 +13,15 @@ module : resource : action
 模块     资源       动作
 ```
 
-- 例：`saas:user:read`（读取用户）、`saas:role:export`（导出角色）、`saas:permission:create`（创建权限定义）
-- 可选模块用两段 `resource:action`，资源段本身带模块语义：AI 的 `ai:read`、`knowledge_base:read`、`ai_prompt:read`，Chat 的 `chat:send`，CodeGeneration 的 `code_gen:execute`，Printing 的 `print-template:use`，Workflow 的 `workflow:execute`。代码生成产出的权限码同样是两段式
+- 例：`saas.user.read`（读取用户）、`saas.role.export`（导出角色）、`saas.permission.create`（创建权限定义）
+- 可选模块用两段 `resource:action`，资源段本身带模块语义：AI 的 `ai.read`、`knowledge_base:read`、`ai_prompt:read`，Chat 的 `chat.send`，CodeGeneration 的 `code-gen.execute`，Printing 的 `print-template.use`，Workflow 的 `workflow.execute`。代码生成产出的权限码同样是两段式
 - 超级管理员在**平台**的授权快照里持有**字面通配 `*`**；作用侧不含当前上下文的权限码先于通配拒绝，进了业务租户超管身份不成立（见 [多租户](./multi-tenancy)）。匹配是"命中 `*` 或精确等于该权限码"（大小写不敏感），**不支持** `resource:*:*` 之类的段级通配——通配仅有 `*` 这一个特例，见下文判定链
 
 > Saas 的三段是硬约定：`SaasPermissionDefinitions.ResolveGroupCode` 按 `saas:{resource}:{action}` 取中间段作为**分组码**（资源段），前端权限中心据此把权限归类展示。各可选模块的分组码就是两段式里的资源段。
 
 所有 SaaS 权限码的**唯一手写源**是 `Domain/Permissions/SaasPermissionCodes.cs`（常量）与 `Domain/Permissions/SaasPermissionDefinitions.cs`（分组 + 元数据）：
 
-- `SaasPermissionCodes` 按资源分嵌套静态类，每个动作一个 `const string`，如 `SaasPermissionCodes.User.Read = "saas:user:read"`。后端 `[PermissionAuthorize(SaasPermissionCodes.User.Read)]` 直接引用常量，杜绝魔法字符串。
+- `SaasPermissionCodes` 按资源分嵌套静态类，每个动作一个 `const string`，如 `SaasPermissionCodes.User.Read = "saas.user.read"`。后端 `[PermissionAuthorize(SaasPermissionCodes.User.Read)]` 直接引用常量，杜绝魔法字符串。
 - `SaasPermissionDefinitions.Groups` 是**手写单一事实源**：每个资源块一个 `SaasPermissionGroup`（组码 + 中文组名 + 组内 `SaasPermissionItem` 列表）。落库扁平表 `All`、组码→组名 `GroupNames` 全由 `Groups` 派生，每条权限的 `ModuleCode`（恒为 `saas`）、`Tags`、`Priority`（恒等于 `Sort`）自动生成，无需手写。
 - 新增资源时只在 `Groups` 增一个分组节点、或在已有节点增一条权限项即可，种子据此落库。
 - 每个分组必须声明**作用侧**（`PermissionSide`：平台 / 租户 / 两侧），条目可单独覆盖；作用侧决定权限在哪个上下文生效、能否进入套餐白名单，详见 [多租户 · 权限作用侧](./multi-tenancy#权限作用侧-平台-租户-两侧)。
@@ -159,7 +159,7 @@ FLS 按「实体 × 字段 × 目标（角色 / 用户 / 部门）」定义规�
 
 规则模型、读取方式、只写语义与接线要求见 [数据权限 · 字段级安全](./data-permission#字段级安全-列级)。
 
-**导出与在线同一口径**：后台导出走 `ExportExecutor`，它在后台线程按任务发起人重建 `CurrentTenant` + `CurrentPrincipal`，再调用既有 QueryService，使**数据范围与字段脱敏原样生效**，并显式 `IPermissionChecker` 补齐进程内不触发 `[PermissionAuthorize]` 的缺口。导出校验的是 Provider 的 `RequiredPermission`，即页面导出按钮绑定的 `saas:xxx:export`，不是资源的读权限；提交任务时 `ExportTaskAppService.SubmitAsync` 就按它拦截（只有读权限的人直调提交接口也进不来），执行时再校验一次，覆盖提交后被收回权限的情况。重建的主体与在线请求同一口径：发起时记下的会话声明（会话已登出或被下线，导出随之失败）、与签发令牌同一来源的角色（超管判定等依赖角色的规则一致）、模仿者声明（模仿态禁用的权限在导出里同样禁用）；租户停用、到期或未就绪时导出直接失败。因此导出与在线列表看到的数据、脱敏结果一致。
+**导出与在线同一口径**：后台导出走 `ExportExecutor`，它在后台线程按任务发起人重建 `CurrentTenant` + `CurrentPrincipal`，再调用既有 QueryService，使**数据范围与字段脱敏原样生效**，并显式 `IPermissionChecker` 补齐进程内不触发 `[PermissionAuthorize]` 的缺口。导出校验的是 Provider 的 `RequiredPermission`，即页面导出按钮绑定的 `saas.xxx.export`，不是资源的读权限；提交任务时 `ExportTaskAppService.SubmitAsync` 就按它拦截（只有读权限的人直调提交接口也进不来），执行时再校验一次，覆盖提交后被收回权限的情况。重建的主体与在线请求同一口径：发起时记下的会话声明（会话已登出或被下线，导出随之失败）、与签发令牌同一来源的角色（超管判定等依赖角色的规则一致）、模仿者声明（模仿态禁用的权限在导出里同样禁用）；租户停用、到期或未就绪时导出直接失败。因此导出与在线列表看到的数据、脱敏结果一致。
 
 ## ABAC 条件与约束规则
 
@@ -224,7 +224,7 @@ services.AddPermissionResource<SysNotification>(
 
 **在哪里配**：角色管理的「授权条件」、用户管理的「直授条件」打开同一个抽屉，左边是这个角色或用户的有效授权，右边编辑选中那条授权上的条件。属性下拉只列登记过的属性，运算符只列适用于该属性的（与保存时的校验同一份规则，见 [框架 · 条件求值](https://framework.docs.xihanfun.com/packages/authorization#条件求值-可配置条件)）；改到旧写法的条件时提示改用的新名。挂了条件的授权在分配权限的穿梭框里标「有条件」。
 
-**盘点与试算**（权限码 `saas:permission-condition:trial`，平台与租户两侧都有，初始化的专业版、企业版套餐含它）：
+**盘点与试算**（权限码 `saas.permission-condition.trial`，平台与租户两侧都有，初始化的专业版、企业版套餐含它）：
 
 - 权限管理页的「条件盘点」逐条检查存量条件：属性是否登记（含数据行属性有没有按权限码登记）、是否用了旧名、运算符与值能否求值、值类型与属性是否相符、所在授权是否还有效、绑定是否二选一，并给每个条件组一个结论——可正常求值、恒不满足、不影响任何人（授权已失效）、已停用。平台上下文扫全部租户，租户上下文只看本租户；可导出 CSV。应用启动时写一行各类条数的汇总日志。
 - 权限管理页的「条件试算」选人、权限码，填模拟的 IP、时刻、User-Agent、路径、方法、查询串与路由值（不填取当前请求与当前时刻），给出走了哪条授予路径、每组每个子句取到什么值、结果如何；权限码登记了数据行属性时可填数据行主键按那一行算。
@@ -255,7 +255,7 @@ services.AddPermissionResource<SysNotification>(
 
 - `SessionId`（关联 `SysUserSession` 主键）+ `RoleId` 在租户内唯一；`Status`（`SessionRoleStatus`）为 `Active`/`Inactive`/`Expired`，配合 `ActivatedTime`/`DeactivatedTime`/`ExpirationTime` 记录生命周期。
 - **激活的模型约定**：该用户确实持有此角色（`SysUserRole` 存在且未过期），且激活须通过 DSD 约束检查（`SysConstraintRule` 中 `ConstraintType=DSD`）。
-- 后端目前只提供会话激活角色的查询（权限码 `saas:session-role:read`），激活/停用的写入接口未开放，DSD 规则也没有评估代码；授权快照按用户持有的全部有效角色计算，不区分会话激活子集。
+- 后端目前只提供会话激活角色的查询（权限码 `saas.session-role.read`），激活/停用的写入接口未开放，DSD 规则也没有评估代码；授权快照按用户持有的全部有效角色计算，不区分会话激活子集。
 - 设想的用法：敏感操作前临时激活特权角色，完成后立即停用；定时失效已过期的会话角色。
 
 设计意图是让一次会话只以其激活的角色子集办事，从而即便持有互斥角色也不会在同一会话同时生效；DSD 约束在**激活时**校验拦截。上面这些都要等激活写入口与 DSD 执法补齐后才成立，当前持有即生效。

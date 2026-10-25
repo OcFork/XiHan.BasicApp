@@ -22,25 +22,25 @@ public static class PrintingPermissionCodes
     public const string Resource = "print-template";
 
     /// <summary>查看打印模板。</summary>
-    public const string Read = "print-template:read";
+    public const string Read = "print-template.read";
 
     /// <summary>创建打印模板。</summary>
-    public const string Create = "print-template:create";
+    public const string Create = "print-template.create";
 
     /// <summary>更新模板元数据和设计 JSON。</summary>
-    public const string Update = "print-template:update";
+    public const string Update = "print-template.update";
 
     /// <summary>启用或停用打印模板。</summary>
-    public const string Status = "print-template:status";
+    public const string Status = "print-template.status";
 
     /// <summary>删除已经停用的打印模板。</summary>
-    public const string Delete = "print-template:delete";
+    public const string Delete = "print-template.delete";
 
     /// <summary>按编码解析、预览或直接打印模板。</summary>
-    public const string Use = "print-template:use";
+    public const string Use = "print-template.use";
 
     /// <summary>管理平台全局模板及租户开放状态（平台侧）。</summary>
-    public const string GlobalManage = "print-template:global-manage";
+    public const string GlobalManage = "print-template.global-manage";
 
     /// <summary>
     /// 全部权限码

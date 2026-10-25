@@ -824,7 +824,7 @@ public sealed class ChatExtraDomainMessageTests
     public async Task AppendAssistantMessageAsync_ShouldPersistWithoutUnreadFanOut()
     {
         var fixture = new ChatExtraDomainFixture();
-        _ = fixture.AddConversation(100, ChatConversationType.Assistant, pairKey: "ai:9:1");
+        _ = fixture.AddConversation(100, ChatConversationType.Assistant, pairKey: "ai.9.1");
         _ = fixture.AddMember(100, 1);
 
         var result = await fixture.Service.AppendAssistantMessageAsync(

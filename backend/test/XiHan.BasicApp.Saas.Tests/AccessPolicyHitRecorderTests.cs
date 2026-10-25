@@ -81,10 +81,10 @@ public sealed class AccessPolicyHitRecorderTests
         var hits = Hits(time);
         var recorder = new AccessPolicyPermissionConditionHitRecorder(hits, time);
 
-        await recorder.RecordAsync(new PermissionConditionHit(11, 7, "saas:user:export", mode, "/api/User/Export", "trace-1", "POST", "203.0.113.9", "curl/8"));
+        await recorder.RecordAsync(new PermissionConditionHit(11, 7, "saas.user.export", mode, "/api/User/Export", "trace-1", "POST", "203.0.113.9", "curl/8"));
 
         var hit = Assert.Single(hits.Drain(Now, includeCurrentMinute: true)).First;
-        Assert.Equal((7L, AccessPolicyHitSource.PermissionCondition, "saas:user:export", action, AccessPolicyPhase.Authorization, blocked),
+        Assert.Equal((7L, AccessPolicyHitSource.PermissionCondition, "saas.user.export", action, AccessPolicyPhase.Authorization, blocked),
             (hit.TenantId, hit.Source, hit.PolicyCode, hit.Action, hit.Phase, hit.IsBlocked));
         Assert.Equal(("203.0.113.9", "POST", (long?)11), (hit.Request.Ip, hit.Request.Method, hit.Request.UserId));
     }

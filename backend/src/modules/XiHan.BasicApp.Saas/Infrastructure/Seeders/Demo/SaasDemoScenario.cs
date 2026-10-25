@@ -239,7 +239,7 @@ public static class SaasDemoScenario
     /// </summary>
     private static readonly DemoGrant EmployeeGrant = DemoGrant
         .Codes("工作台、消息、通知", P.UserStatistics.Read, P.Message.Read, P.Notification.Read)
-        .AndModules("chat:read", "chat:send", "workflow:read", "workflow:execute");
+        .AndModules("chat.read", "chat.send", "workflow.read", "workflow.execute");
 
     /// <summary>
     /// 租户管理员的角色
@@ -327,7 +327,7 @@ public static class SaasDemoScenario
                 new("viewer", "只读查看", "各模块的查看权限，全部数据", DataPermissionScope.All, DemoGrant.AllRead, 50),
                 new("project_lead", "项目负责人", "成员上限 1 且已占满：再分配给别人会被拒绝",
                     DataPermissionScope.DepartmentOnly,
-                    DemoGrant.Codes("工作台", P.UserStatistics.Read).AndModules("workflow:read", "workflow:create", "workflow:update", "workflow:execute"),
+                    DemoGrant.Codes("工作台", P.UserStatistics.Read).AndModules("workflow.read", "workflow.create", "workflow.update", "workflow.execute"),
                     60, MaxMembers: 1),
                 new("archived", "已停用的角色", "角色已停用：持有它的成员拿不到它的任何权限",
                     DataPermissionScope.SelfOnly, DemoGrant.Codes("成员查看", P.User.Read), 90, Status: EnableStatus.Disabled),
@@ -363,7 +363,7 @@ public static class SaasDemoScenario
                 new("scoped@enterprise.demo", TenantMemberType.Member, "成员级数据范围覆盖为本部门（优先于角色的本人数据）", ["employee"], "mkt", "specialist",
                     DataScopeOverride: DataPermissionScope.DepartmentOnly),
                 new("direct@enterprise.demo", TenantMemberType.Member, "直授成员查看、禁止聊天发送（禁止优先于角色授予）", ["employee"], "mkt", "specialist",
-                    Permissions: [new(P.User.Read, PermissionAction.Grant), new("chat:send", PermissionAction.Deny, IsModuleCode: true)]),
+                    Permissions: [new(P.User.Read, PermissionAction.Grant), new("chat.send", PermissionAction.Deny, IsModuleCode: true)]),
                 new("temp@enterprise.demo", TenantMemberType.Member, "只读查看昨天已到期；部门主管 7 天后才生效", [new("viewer", ExpiresInDays: -1), new("dept_manager", EffectiveInDays: 7)], "rd", "engineer"),
                 new("intern@enterprise.demo", TenantMemberType.Guest, "访客：成员身份 30 天后到期", ["viewer"], "rd", "intern", ExpiresInDays: 30),
                 new("left@enterprise.demo", TenantMemberType.Member, "成员身份昨天已到期：进不了本租户", ["employee"], "mkt", ExpiresInDays: -1),

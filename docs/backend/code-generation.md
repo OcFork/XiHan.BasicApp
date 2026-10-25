@@ -212,10 +212,10 @@ Options            扩展键（树/主从结构字段、ParentMenuId 等）
 
 | 步骤 | 方法 | 权限码 |
 | --- | --- | --- |
-| 列库表 | `ListDatabaseTablesAsync` | `code_gen:read` |
-| 导入表结构 | `ImportTableAsync` | `code_gen:import` |
-| 预览 | `PreviewAsync` | `code_gen:read` |
-| 执行生成 | `GenerateAsync` | `code_gen:execute` |
+| 列库表 | `ListDatabaseTablesAsync` | `code-gen.read` |
+| 导入表结构 | `ImportTableAsync` | `code-gen.import` |
+| 预览 | `PreviewAsync` | `code-gen.read` |
+| 执行生成 | `GenerateAsync` | `code-gen.execute` |
 
 端到端流程：
 
@@ -275,8 +275,8 @@ Options            扩展键（树/主从结构字段、ParentMenuId 等）
 
 | 方法 | 行为 | 权限码 |
 | --- | --- | --- |
-| `GetSchemaAsync` | 按 `SysCodeGenTableColumn` 投影字段 schema（属性名、标签、`TsType`/`HtmlType`/`QueryType`、列表/查询/必填开关） | `code_gen:read` |
-| `GetPageAsync` | 用 `ISqlSugarClientResolver.GetCurrentClient()` 对表名做动态分页查询（`Queryable<Dictionary<string, object>>().AS(tableName)`） | `code_gen:read` |
+| `GetSchemaAsync` | 按 `SysCodeGenTableColumn` 投影字段 schema（属性名、标签、`TsType`/`HtmlType`/`QueryType`、列表/查询/必填开关） | `code-gen.read` |
+| `GetPageAsync` | 用 `ISqlSugarClientResolver.GetCurrentClient()` 对表名做动态分页查询（`Queryable<Dictionary<string, object>>().AS(tableName)`） | `code-gen.read` |
 
 表名只取自已配置且启用（`Status = Enabled`）的 `SysCodeGenTable` 记录，从不直接拼接用户传入的表名字符串，因此没有 SQL 注入面；未启用的表配置访问会抛友好异常。当前只做 schema + 列表（只读），写入/DDL 未开放。前端"查看运行时数据"弹窗（表格行操作）即消费这两个接口，适合在正式生成代码前先验证列配置是否符合预期。
 

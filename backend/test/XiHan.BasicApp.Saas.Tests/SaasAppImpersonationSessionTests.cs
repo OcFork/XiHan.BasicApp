@@ -325,11 +325,11 @@ public sealed class SaasAppImpersonationSessionTests
     /// </summary>
     /// <param name="permissionCode">权限码。</param>
     [Theory]
-    [InlineData("saas:user-security:reset-password")]
-    [InlineData("saas:role-permission:grant")]
-    [InlineData("saas:user-role:grant")]
-    [InlineData("saas:impersonation:start")]
-    [InlineData("saas:tenant:delete")]
+    [InlineData("saas.user-security.reset-password")]
+    [InlineData("saas.role-permission.grant")]
+    [InlineData("saas.user-role.grant")]
+    [InlineData("saas.impersonation.start")]
+    [InlineData("saas.tenant.delete")]
     public async Task IsGrantedAsync_WhileImpersonating_ShouldDenyBlacklistedCodes(string permissionCode)
     {
         var checker = CreatePermissionChecker(isImpersonating: true, permissions: [permissionCode]);

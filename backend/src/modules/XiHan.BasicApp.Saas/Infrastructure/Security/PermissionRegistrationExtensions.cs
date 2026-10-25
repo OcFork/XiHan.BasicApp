@@ -1,7 +1,6 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.DependencyInjection;
 using XiHan.BasicApp.Saas.Domain.Permissions;
 using XiHan.BasicApp.Saas.Infrastructure.Seeders;
 using XiHan.Framework.Kernel.Hosting;
@@ -10,16 +9,13 @@ using XiHan.Framework.Kernel.Security;
 namespace XiHan.BasicApp.Saas.Infrastructure.Security;
 
 /// <summary>
-/// 把应用的权限目录接进 5.0 授权：每个权限码注册一个同名策略 <see cref="AppPermissionPolicy"/>（<c>permission:&lt;code&gt;</c>）。
-/// 操作契约上的 <c>Permission</c> 只有找得到同名策略才会放行判定，否则授权中间件按「策略不存在」拒绝
+/// 把应用的权限目录登记进内核 <c>PermissionRegistry</c>：操作契约上的 <c>Permission</c> 只有登记过的权限码才会生成
+/// <c>permission:&lt;code&gt;</c> 策略，未登记的按「策略不存在」拒绝。权限码遵循内核文法（小写点分，段内只有字母、数字、连字符）
 /// </summary>
-/// <remarks>
-/// 同一权限码在不同模块重复声明会让策略目录在启动时抛「策略名重复」——这是真实的目录冲突，故意不吞掉。
-/// </remarks>
 public static class PermissionRegistrationExtensions
 {
     /// <summary>
-    /// 注册 SaaS 权限定义（<see cref="SaasPermissionDefinitions.All"/>）对应的策略
+    /// 登记 SaaS 权限定义（<see cref="SaasPermissionDefinitions.All"/>）
     /// </summary>
     /// <param name="context">特性上下文</param>
     /// <param name="definitions">权限定义</param>
@@ -28,12 +24,16 @@ public static class PermissionRegistrationExtensions
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(definitions);
-        AddPolicies(context, definitions.Select(definition => definition.PermissionCode));
+        foreach (var definition in definitions)
+        {
+            Add(context, definition.PermissionCode, definition.PermissionName, definition.PermissionDescription);
+        }
+
         return context;
     }
 
     /// <summary>
-    /// 注册权限目录种子（各模块 <c>PermissionCatalogSeeder</c> 的静态种子）对应的策略
+    /// 登记权限目录种子（各模块 <c>PermissionCatalogSeeder</c> 的静态种子）
     /// </summary>
     /// <param name="context">特性上下文</param>
     /// <param name="seeds">权限种子</param>
@@ -42,24 +42,24 @@ public static class PermissionRegistrationExtensions
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(seeds);
-        AddPolicies(context, seeds.Select(seed => seed.Code));
+        foreach (var seed in seeds)
+        {
+            Add(context, seed.Code, seed.Name, seed.Description);
+        }
+
         return context;
     }
 
     /// <summary>
-    /// 按权限码注册策略；同一清单里重复出现的码只注册一次
+    /// 登记一条权限；同一权限码被多个目录声明时以先登记的为准，不让重复定义把宿主启动打断
     /// </summary>
-    private static void AddPolicies(FeatureContext context, IEnumerable<string> codes)
+    private static void Add(FeatureContext context, string code, string name, string description)
     {
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var code in codes)
+        if (context.Permissions.Find(code).HasValue)
         {
-            if (string.IsNullOrWhiteSpace(code) || !seen.Add(code))
-            {
-                continue;
-            }
-
-            context.Services.AddSingleton<IPolicy>(services => new AppPermissionPolicy(code, services));
+            return;
         }
+
+        _ = context.AddPermission(new PermissionDefinition(code, name, string.IsNullOrWhiteSpace(description) ? null : description));
     }
 }
