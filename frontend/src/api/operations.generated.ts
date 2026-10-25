@@ -59,7 +59,7 @@ export const OPERATIONS: Readonly<Record<string, Readonly<Partial<Record<Operati
   'Auth/Login': { POST: { id: 'auth.login', method: 'POST', path: '/api/auth:login' } },
   'Auth/LoginConfig': { GET: { id: 'auth.get-login-config', method: 'POST', path: '/api/auth:get-login-config' } },
   'Auth/Logout': { POST: { id: 'auth.logout', method: 'POST', path: '/api/auth:logout' } },
-  'Auth/OAuthBindTicket': { POST: { id: 'auth.create-o-bind-ticket', method: 'POST', path: '/api/auth:create-o-bind-ticket' } },
+  'Auth/OAuthBindTicket': { POST: { id: 'auth.create-o-auth-bind-ticket', method: 'POST', path: '/api/auth:create-o-auth-bind-ticket' } },
   'Auth/PasswordResetRequest': { POST: { id: 'auth.password-reset-request', method: 'POST', path: '/api/auth:password-reset-request' } },
   'Auth/Permissions': { GET: { id: 'auth.get-permissions', method: 'POST', path: '/api/auth:get-permissions' } },
   'Auth/PhoneLogin': { POST: { id: 'auth.phone-login', method: 'POST', path: '/api/auth:phone-login' } },

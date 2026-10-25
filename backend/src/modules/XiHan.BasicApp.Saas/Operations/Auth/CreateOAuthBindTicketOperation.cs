@@ -38,7 +38,7 @@ namespace XiHan.BasicApp.Saas.Operations.Auth;
 /// <summary>
 /// 由 xihan migrate v4 生成；提交前请检查。
 /// </summary>
-[Operation("auth.create-o-bind-ticket", Policy = "authenticated")]
+[Operation("auth.create-o-auth-bind-ticket", Policy = "authenticated")]
 public sealed class CreateOAuthBindTicketOperation(IAuthAppService service) : IOperation<CreateOAuthBindTicketRequest, string>
 {
     /// <inheritdoc />
