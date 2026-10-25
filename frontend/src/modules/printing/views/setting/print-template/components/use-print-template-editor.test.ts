@@ -16,7 +16,7 @@ import { PrintTemplateScope } from '../../../../api/print-template.types'
 import { usePrintTemplateEditor } from './use-print-template-editor'
 
 const saved = vi.hoisted(() => ({
-  basicId: 'tpl-1',
+  id: 'tpl-1',
   templateCode: 'invoice',
   templateName: '发票',
   templateJson: '{}',
@@ -25,7 +25,7 @@ const saved = vi.hoisted(() => ({
   allowTenantUse: false,
   sort: 0,
   remark: null,
-  rowVersion: '1',
+  concurrencyStamp: '1',
 }))
 
 const printing = vi.hoisted(() => {
@@ -75,7 +75,7 @@ describe('打开', () => {
   })
 
   it('本机草稿键是模板 id', async () => {
-    const { editor, props } = setup({ ...saved, basicId: 'tpl-9' } as unknown as PrintTemplateDetailDto)
+    const { editor, props } = setup({ ...saved, id: 'tpl-9' } as unknown as PrintTemplateDetailDto)
     props.show = true
     await flushPromises()
 
@@ -85,7 +85,7 @@ describe('打开', () => {
 
 describe('保存', () => {
   it('只更新这份模板：设计取设计器里的，元数据与行版本沿用详情；存好后设计器记为已保存', async () => {
-    const { editor, props } = setup({ ...saved, basicId: 'tpl-9', remark: '季度版', rowVersion: '3' } as unknown as PrintTemplateDetailDto)
+    const { editor, props } = setup({ ...saved, id: 'tpl-9', remark: '季度版', concurrencyStamp: '3' } as unknown as PrintTemplateDetailDto)
     props.show = true
     await flushPromises()
     const markSaved = vi.fn()
@@ -94,8 +94,8 @@ describe('保存', () => {
     await editor.save()
 
     expect(printTemplateApi.update).toHaveBeenCalledWith({
-      basicId: 'tpl-9',
-      rowVersion: '3',
+      id: 'tpl-9',
+      concurrencyStamp: '3',
       scope: PrintTemplateScope.Tenant,
       templateName: '发票',
       dataSourceCode: null,

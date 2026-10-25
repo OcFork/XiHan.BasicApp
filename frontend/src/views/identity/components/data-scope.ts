@@ -28,9 +28,9 @@ export function setIncludeChildren(
 /** 部门树拍平成 部门 → 上级 */
 export function buildParentMap(nodes: readonly DepartmentTreeNodeDto[], parentId: ApiId | null = null, map = new Map<ApiId, ApiId | null>()) {
   for (const node of nodes) {
-    map.set(node.basicId, parentId)
+    map.set(node.id, parentId)
     if (node.children?.length)
-      buildParentMap(node.children, node.basicId, map)
+      buildParentMap(node.children, node.id, map)
   }
   return map
 }

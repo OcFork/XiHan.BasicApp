@@ -24,14 +24,14 @@ export const tenantApi = {
   create(input: TenantCreateDto) {
     return tenantBaseCommandApi.create(input)
   },
-  detail(id: TenantDetailDto['basicId']) {
+  detail(id: TenantDetailDto['id']) {
     return tenantReadApi.detail(id)
   },
   /** 删除租户（软删，后端要求租户已停用或暂停） */
-  remove(id: TenantDetailDto['basicId']) {
+  remove(id: TenantDetailDto['id']) {
     return tenantCommandApi.delete('Tenant', { id })
   },
-  initializeDatabase(id: TenantDetailDto['basicId']) {
+  initializeDatabase(id: TenantDetailDto['id']) {
     // 仅库隔离租户：建库 → 建表 → 登记版本。
     // InitializeDatabaseAsync(long id)：简单类型参数被动态 API 推断为 query，POST 也不把 id 拼进路由段，
     // 故 id 走 query（同 export Cancel 模式），route 为 /Tenant/InitializeDatabase?id=

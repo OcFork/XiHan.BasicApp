@@ -120,12 +120,12 @@ describe('权限码判定', () => {
 
   it('超管带着的 "*" 不当通配：只认服务端展开下发的码，没下发的（作用侧不含当前上下文）判为无', () => {
     const store = useAccessStore()
-    store.setAccessCodes(['*', 'saas:user:read'])
+    store.setAccessCodes(['*', 'saas.user.read'])
     store.setAccessButtons(['identity.user.create'])
 
-    expect(store.hasCode('saas:user:read')).toBe(true)
+    expect(store.hasCode('saas.user.read')).toBe(true)
     expect(store.hasCode('identity.user.create')).toBe(true)
-    expect(store.hasCode('saas:department:read')).toBe(false)
+    expect(store.hasCode('saas.department.read')).toBe(false)
     expect(store.hasCode('identity.user.assign-department')).toBe(false)
     expect(store.hasCode('')).toBe(false)
   })

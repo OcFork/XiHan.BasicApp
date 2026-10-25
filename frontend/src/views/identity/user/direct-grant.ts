@@ -2,13 +2,13 @@ import type { ApiId, PermissionAction, UserPermissionBatchGrantItemDto } from '@
 
 /** 当前生效的一条角色直授：记录主键用于撤销，角色主键用于比对 */
 export interface RoleGrantRow {
-  basicId: ApiId
+  id: ApiId
   roleId: ApiId
 }
 
 /** 当前生效的一条权限直授 */
 export interface PermissionGrantRow {
-  basicId: ApiId
+  id: ApiId
   permissionAction: PermissionAction
   permissionId: ApiId
 }
@@ -22,7 +22,7 @@ export function diffRoleGrants(selected: readonly ApiId[], current: readonly Rol
   const currentRoleIds = new Set(current.map(row => row.roleId))
   return {
     grantRoleIds: selected.filter(roleId => !currentRoleIds.has(roleId)),
-    revokeUserRoleIds: current.filter(row => !selectedSet.has(row.roleId)).map(row => row.basicId),
+    revokeUserRoleIds: current.filter(row => !selectedSet.has(row.roleId)).map(row => row.id),
   }
 }
 
@@ -62,6 +62,6 @@ export function diffPermissionGrants(
     .map(([permissionId, permissionAction]) => ({ permissionId, permissionAction }))
   const revokeUserPermissionIds = current
     .filter(row => !actions.has(row.permissionId))
-    .map(row => row.basicId)
+    .map(row => row.id)
   return { grants, revokeUserPermissionIds }
 }

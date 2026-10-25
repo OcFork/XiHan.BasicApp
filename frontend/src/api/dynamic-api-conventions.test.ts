@@ -1,8 +1,9 @@
 /**
- * Dynamic API 路由约定的回归锚点。
+ * 5.0 操作路由约定的回归锚点。
  *
- * 职责边界：源码注释里写明的「后端动词前缀是否剥离 / 参数绑到 query 还是 body / 控制器名易写错」
- * 这类坑，每条配一个违约即失败的用例。这些约定一旦被改回去就是线上 404 或参数绑不上，
+ * 职责边界：门面仍按 4.x 的「控制器/动作」书写，由 operations.generated.ts 解析成 5.0 路由。
+ * 这里每条用例锁一个容易回退的约定：动作落到哪个资源与动词、主键是否进实例级路径、
+ * 参数走查询串还是请求体、空值如何裁剪。这些约定一旦被改回去就是线上 404 或参数绑不上，
  * 单看类型签名发现不了。
  */
 import type { AxiosRequestConfig } from '~/request'
@@ -71,22 +72,22 @@ function only(): RecordedCall {
 }
 
 describe('文件接口的谓词与参数绑定', () => {
-  it('彻底删除走 DELETE /File/File，三个参数全部走查询串——框架的 DELETE 不收请求体', async () => {
-    await fileApi.destroy({ basicId: '1975', deletePhysical: true, reason: '违规' })
+  it('彻底删除走 DELETE /api/file/{id}，主键进路径，三个参数仍走查询串——DELETE 不收请求体', async () => {
+    await fileApi.destroy({ id: '1975', deletePhysical: true, reason: '违规' })
 
     expect(only()).toEqual({
       method: 'DELETE',
-      url: '/File/File',
-      config: { params: { basicId: '1975', deletePhysical: true, reason: '违规' } },
+      url: '/api/file/1975',
+      config: { params: { id: '1975', deletePhysical: true, reason: '违规' } },
     })
   })
 
-  it('下载走鉴权的 POST /File/DownloadFile，fileId 走 query 且响应类型为 blob', async () => {
+  it('下载走鉴权的 POST /api/file:download，fileId 走 query 且响应类型为 blob', async () => {
     await fileApi.download('2048')
 
     const call = only()
     expect(call.method).toBe('POST')
-    expect(call.url).toBe('/File/DownloadFile')
+    expect(call.url).toBe('/api/file:download')
     expect(call.body).toBeUndefined()
     expect(call.config).toEqual({ params: { fileId: '2048' }, responseType: 'blob' })
   })
@@ -94,7 +95,9 @@ describe('文件接口的谓词与参数绑定', () => {
   it('签名地址把原始 fileId 交给 axios 编码，自己不做一次 encodeURIComponent（否则双重编码）', async () => {
     await fileApi.generatePresignedUrl('目录/文件 名.png')
 
-    expect(only().config?.params).toEqual({ fileId: '目录/文件 名.png' })
+    const call = only()
+    expect(call.url).toBe('/api/file:generate-presigned-url')
+    expect(call.config?.params).toEqual({ fileId: '目录/文件 名.png' })
   })
 
   it('上传把可选字段拍成 FormData，undefined / null / 空串跳过，0 与 false 保留', async () => {
@@ -109,7 +112,7 @@ describe('文件接口的谓词与参数绑定', () => {
     })
 
     const call = only()
-    expect(call.url).toBe('/File/UploadFile')
+    expect(call.url).toBe('/api/file:upload')
     const form = call.body as FormData
     expect(form.get('File')).toBe(file)
     expect(form.get('Directory')).toBe('avatars')
@@ -141,110 +144,110 @@ describe('文件接口的谓词与参数绑定', () => {
     expect(only().config?.onUploadProgress).toBeUndefined()
   })
 
-  it('存储配置的设为默认保留完整方法名走 POST——Set 前缀不在动词约定表内', async () => {
-    await storageConfigApi.setDefault({ basicId: '1' } as never)
+  it('存储配置的设为默认是实例级自定义动词，主键进路径、请求体照常带上', async () => {
+    await storageConfigApi.setDefault({ id: '1' } as never)
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/StorageConfig/SetDefaultStorageConfig' })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/storage-config/1:set-default', body: { id: '1' } })
   })
 })
 
-describe('非 CRUD 前缀的动作保留完整方法名', () => {
-  it('导出任务取消走 POST /ExportTask/Cancel，id 走 query 而不是路由段', async () => {
+describe('实例级动作把主键放进路径', () => {
+  it('导出任务取消走 POST /api/export-task/{id}:cancel，id 仍随查询串上送', async () => {
     await exportTaskApi.cancel('7')
 
     expect(only()).toEqual({
       method: 'POST',
-      url: '/ExportTask/Cancel',
+      url: '/api/export-task/7:cancel',
       body: undefined,
       config: { params: { id: '7' } },
     })
   })
 
-  it('导出任务删除是 DELETE /ExportTask/Delete——Delete 在这里是动作名不是被剥离的动词', async () => {
+  it('导出任务删除是标准动词 delete，落到 DELETE /api/export-task/{id}', async () => {
     await exportTaskApi.remove('7')
 
     expect(only()).toEqual({
       method: 'DELETE',
-      url: '/ExportTask/Delete',
+      url: '/api/export-task/7',
       config: { params: { id: '7' } },
     })
   })
 
-  it('通知催办走 POST /Notification/Remind，id 走 query（POST 不把 id 拼进路由段）', async () => {
+  it('通知催办走 POST /api/notification/{id}:remind，请求体为空', async () => {
     await notificationApi.remind('88')
 
     const call = only()
-    expect(call.url).toBe('/Notification/Remind')
+    expect(call.url).toBe('/api/notification/88:remind')
     expect(call.body).toBeUndefined()
     expect(call.config).toEqual({ params: { id: '88' } })
   })
 
-  it('任务执行走 POST /Task/RunTask，主键以 basicId 放在请求体', async () => {
+  it('任务执行走 POST /api/task/{id}:run，主键同时在路径和请求体里', async () => {
     await taskApi.run('66')
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/Task/RunTask', body: { basicId: '66' } })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/task/66:run', body: { id: '66' } })
   })
 
-  it('会话撤销走 POST /UserSession/RevokeUserSession——Revoke 不在动词剥离表内', async () => {
-    await userSessionApi.revokeSession({ basicId: '5' } as never)
+  it('会话撤销走 POST /api/user-session/{id}:revoke', async () => {
+    await userSessionApi.revokeSession({ id: '5' } as never)
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/UserSession/RevokeUserSession' })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/user-session/5:revoke' })
   })
 
-  it('版本权限撤销是 POST 而不是 DELETE，id 走 query', async () => {
+  it('版本权限撤销是 POST 自定义动词而不是 DELETE，主键进路径', async () => {
     await tenantEditionPermissionApi.revoke('9')
 
     expect(only()).toEqual({
       method: 'POST',
-      url: '/TenantEdition/RevokeTenantEditionPermission',
+      url: '/api/tenant-edition/9:revoke-permission',
       body: undefined,
       config: { params: { id: '9' } },
     })
   })
 
-  it('第三方应用重置密钥走 POST，id 走 query', async () => {
+  it('第三方应用重置密钥走 POST /api/o-auth-app/{id}:regenerate-secret', async () => {
     await oauthAppApi.regenerateSecret('3')
 
     expect(only()).toEqual({
       method: 'POST',
-      url: '/OAuthApp/RegenerateOAuthAppSecret',
+      url: '/api/o-auth-app/3:regenerate-secret',
       body: undefined,
       config: { params: { id: '3' } },
     })
   })
 
-  it('租户初始化数据库走 POST /Tenant/InitializeDatabase，id 走 query', async () => {
+  it('租户初始化数据库走 POST /api/tenant/{id}:initialize-database', async () => {
     await tenantApi.initializeDatabase('7')
 
     expect(only()).toEqual({
       method: 'POST',
-      url: '/Tenant/InitializeDatabase',
+      url: '/api/tenant/7:initialize-database',
       body: undefined,
       config: { params: { id: '7' } },
     })
   })
 
-  it('库隔离租户初始化管理员走 POST /Tenant/InitializeTenantAdmin，参数走 body', async () => {
+  it('库隔离租户初始化管理员的请求只有 tenantId 没有 id，落到集合级 POST /api/tenant:initialize-admin', async () => {
     const input = { adminEmail: 'owner@example.com', adminPassword: 'Owner@2026', adminUserName: 'owner', tenantId: '7' }
     await tenantApi.initializeTenantAdmin(input)
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/Tenant/InitializeTenantAdmin', body: input })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/tenant:initialize-admin', body: input })
   })
 
-  it('机器人配置设为默认保留 SetDefaultBotConfig 全名', async () => {
-    await botConfigApi.setDefault({ basicId: '1' } as never)
+  it('机器人配置设为默认走 POST /api/bot-config/{id}:set-default', async () => {
+    await botConfigApi.setDefault({ id: '1' } as never)
 
-    expect(only().url).toBe('/BotConfig/SetDefaultBotConfig')
+    expect(only().url).toBe('/api/bot-config/1:set-default')
   })
 })
 
-describe('易写错的控制器归属', () => {
+describe('易写错的资源归属', () => {
   // 回归锚点：重置密码曾在 userApi 与 userSecurityApi 上各挂一条（同端点、不同返回 DTO），
   // userApi 那条已删除，入口只剩 userSecurityApi.resetPassword（= userManagementApi.security.resetPassword）。
-  it('重置密码打的是 UserSecurity 控制器，不是 User——后端实现在 UserSecurityAppService', async () => {
-    await userSecurityApi.resetPassword({ basicId: '1', newPassword: 'x' } as never)
+  it('重置密码打的是 user-security 资源，不是 user——后端实现在 UserSecurityAppService', async () => {
+    await userSecurityApi.resetPassword({ id: '1', newPassword: 'x' } as never)
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/UserSecurity/ResetUserPassword' })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/user-security:reset-user-password' })
   })
 
   it('userApi 上不再挂重置密码，避免同端点两个入口给出不同返回类型', () => {
@@ -253,134 +256,137 @@ describe('易写错的控制器归属', () => {
     expect(typeof userManagementApi.security.resetPassword).toBe('function')
   })
 
-  it('用户部门归属的命令端是 UserDepartment 控制器（曾误写成 User 直接 404）', async () => {
+  it('用户部门归属的命令端是 user-department 资源（曾误写成 user 直接 404）', async () => {
     await userDepartmentApi.batchUpdate({ userId: '1', assigns: [], revokeUserDepartmentIds: [] })
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/UserDepartment/BatchUpdateUserDepartments' })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/user-department:batch-update-user-departments' })
   })
 
-  it('角色成员的批量变更与成员列表落在用户角色的命令 / 查询控制器', async () => {
+  it('角色成员的批量变更与成员列表落在用户角色的命令 / 查询资源，成员列表的 roleId 走请求体', async () => {
     await userRoleApi.batchUpdateRoleMembers({ roleId: '1', grantUserIds: [], revokeUserRoleIds: [] })
     await userRoleApi.roleMembers('1')
 
     expect(calls.map(item => `${item.method} ${item.url}`)).toEqual([
-      'POST /UserRole/BatchUpdateRoleMembers',
-      'GET /UserRoleQuery/RoleMembers',
+      'POST /api/user-role:batch-update-role-members',
+      'POST /api/user-role-query:get-role-members',
     ])
+    expect(calls[1]?.body).toEqual({ roleId: '1' })
   })
 
-  it('数据范围设置与角色继承的批量变更分别落在各自的命令控制器', async () => {
+  it('数据范围设置与角色继承的批量变更分别落在各自的命令资源', async () => {
     await roleDataScopeApi.set({ roleId: '1', dataScope: DataPermissionScope.All, departments: [] })
     await userDataScopeApi.set({ userId: '1', dataScope: null, departments: [] })
     await roleHierarchyApi.batchUpdateParents({ roleId: '1', addParentRoleIds: [], removeParentRoleIds: [] })
 
     expect(calls.map(item => `${item.method} ${item.url}`)).toEqual([
-      'POST /Role/SetRoleDataScope',
-      'POST /UserDataScope/SetUserDataScope',
-      'POST /Role/BatchUpdateRoleParents',
+      'POST /api/role:set-data-scope',
+      'POST /api/user-data-scope:set',
+      'POST /api/role:batch-update-parents',
     ])
   })
 
-  it('切换租户打的是 Auth 控制器，不是 Tenant', async () => {
+  it('切换租户打的是 auth 资源，不是 tenant', async () => {
     await tenantApi.switchTenant({ tenantId: '10' } as never)
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/Auth/SwitchTenant' })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/auth:switch-tenant' })
   })
 
-  it('租户成员的写操作挂在 Tenant 控制器下，读操作才走 TenantMemberQuery', async () => {
+  it('租户成员的写操作挂在 tenant 资源下，读操作才走 tenant-member-query', async () => {
     await tenantMemberApi.add({ userId: '1' } as never)
     await tenantMemberApi.invite({ email: 'a@b.c' } as never)
     await tenantMemberApi.detail('2')
 
     expect(calls.map(item => `${item.method} ${item.url}`)).toEqual([
-      'POST /Tenant/TenantMember',
-      'POST /Tenant/InviteTenantMember',
-      'GET /TenantMemberQuery/TenantMemberDetail',
+      'POST /api/tenant:create-member',
+      'POST /api/tenant:invite-member',
+      'POST /api/tenant-member-query/2:get-tenant-member-detail',
     ])
+    expect(calls[2]?.body).toEqual({ id: '2' })
   })
 
-  it('支持人员入驻与移除挂在 Tenant 控制器下，移除的两个主键走查询串——框架的 DELETE 不收请求体', async () => {
+  it('支持人员入驻与移除挂在 tenant 资源下，移除是 POST 自定义动词，两个主键走请求体', async () => {
     await tenantMemberApi.addSupport({ tenantId: '7', userId: '1' })
     await tenantMemberApi.removeSupport('7', '9')
 
     expect(calls.map(item => `${item.method} ${item.url}`)).toEqual([
-      'POST /Tenant/TenantSupportMember',
-      'DELETE /Tenant/TenantSupportMember',
+      'POST /api/tenant:create-support-member',
+      'POST /api/tenant:delete-support-member',
     ])
-    expect(calls[1]?.config?.params).toEqual({ tenantId: '7', memberId: '9' })
+    expect(calls[1]?.body).toEqual({ tenantId: '7', memberId: '9' })
   })
 
-  it('所有权转移挂在 Tenant 控制器下、方法名整体作路由，参数走 body', async () => {
+  it('所有权转移挂在 tenant 资源下，参数走 body', async () => {
     const input = { tenantId: '7', memberId: '9' }
     await tenantMemberApi.transferOwner(input)
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/Tenant/TransferTenantOwner', body: input })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/tenant:transfer-owner', body: input })
   })
 
-  it('租户看自己的订阅走 TenantQuery 的只读 GET，不带租户参数', async () => {
+  it('租户看自己的订阅走 tenant-query，不带租户参数', async () => {
     await tenantApi.mySubscription()
 
-    expect(only()).toMatchObject({ method: 'GET', url: '/TenantQuery/MySubscription' })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/tenant-query:get-my-subscription', body: {} })
   })
 })
 
-describe('管理页聚合详情的查询参数名', () => {
-  it('四个管理详情各自用后端形参名绑定，发 id 会绑不上退化成 0', async () => {
+describe('管理页聚合详情的参数名', () => {
+  it('三个管理详情各自用后端请求的属性名绑定，发 id 会绑不上退化成 0', async () => {
     await userManagementApi.detailView('1')
     await roleManagementApi.detailView('2')
     await permissionCenterApi.detailView('3')
 
-    expect(calls.map(item => [item.url, item.config?.params])).toEqual([
-      ['/UserManagementQuery/UserManagementDetail', { userId: '1' }],
-      ['/RoleManagementQuery/RoleManagementDetail', { roleId: '2' }],
-      ['/PermissionCenterQuery/PermissionCenterDetail', { permissionId: '3' }],
+    expect(calls.map(item => [item.url, item.body])).toEqual([
+      ['/api/user-management-query:get-user-management-detail', { userId: '1' }],
+      ['/api/role-management-query:get-role-management-detail', { roleId: '2' }],
+      ['/api/permission-center-query:get-permission-center-detail', { permissionId: '3' }],
     ])
   })
 })
 
 describe('查询参数的空值裁剪与默认值', () => {
-  it('菜单列表不传条件时发出空查询参数表，不拼出 ?Keyword= 这类空条件', async () => {
+  it('菜单列表不传条件时发出空请求体，不带空串条件', async () => {
     await menuApi.list()
 
-    expect(only()).toMatchObject({ method: 'GET', url: '/MenuQuery/MenuList' })
-    expect(only().config?.params).toEqual({})
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/menu-query:list-all-menu' })
+    expect(only().body).toEqual({})
   })
 
   it('菜单列表把 null / 空串条件裁掉，false 与 0 保留', async () => {
     await menuApi.list({ keyword: '', parentId: null, isVisible: false, isExternal: true })
 
-    expect(only().config?.params).toEqual({ IsVisible: false, IsExternal: true })
+    expect(only().body).toEqual({ IsVisible: false, IsExternal: true })
   })
 
   it('部门树的 Limit 无条件下发，OnlyEnabled 只在显式给值时下发', async () => {
     await departmentApi.tree({ limit: 50 })
     await departmentApi.tree({ limit: 50, onlyEnabled: false, keyword: '  ' })
 
-    expect(calls.map(item => item.config?.params)).toEqual([
-      { Limit: 50 },
-      { Limit: 50, OnlyEnabled: false, Keyword: '  ' },
+    expect(calls.map(item => [item.url, item.body])).toEqual([
+      ['/api/department-query:get-department-tree', { Limit: 50 }],
+      ['/api/department-query:get-department-tree', { Limit: 50, OnlyEnabled: false, Keyword: '  ' }],
     ])
   })
 
-  // 回归锚点：itemTree 曾直接拼对象字面量，缺字段时会把 undefined 写进 params；
-  // 现改为与部门树/菜单树同一口径——逐字段 append，空值不入查询串，0 与 false 仍是有效取值。
-  it('字典项树逐字段裁剪：0 与 false 照发，缺字段不写进查询串', async () => {
+  // 回归锚点：itemTree 曾直接拼对象字面量，缺字段时会把 undefined 写进参数；
+  // 现改为与部门树/菜单树同一口径——逐字段 append，空值不上送，0 与 false 仍是有效取值。
+  it('字典项树逐字段裁剪：0 与 false 照发，缺字段不写进请求体', async () => {
     await dictApi.itemTree({ dictId: '1', limit: 0, onlyEnabled: false })
-    expect(only().config?.params).toEqual({ DictId: '1', Limit: 0, OnlyEnabled: false })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/dict-query:get-dict-item-tree' })
+    expect(only().body).toEqual({ DictId: '1', Limit: 0, OnlyEnabled: false })
 
     calls.length = 0
     // DTO 上三个字段都是必填，但调用方常以类型断言绕过；此处用 toStrictEqual 才能查出 undefined 键
     await dictApi.itemTree({ dictId: '1' } as never)
-    expect(only().config?.params).toStrictEqual({ DictId: '1' })
+    expect(only().body).toStrictEqual({ DictId: '1' })
   })
 
-  it('缓存键查询与批量删除的模式默认为 *', async () => {
+  it('缓存键查询与按模式删除都是 POST 自定义动词，模式默认为 * 且随请求体上送', async () => {
     await cacheApi.getKeys()
     await cacheApi.removeByPattern()
 
-    expect(calls.map(item => [item.method, item.url, item.config?.params])).toEqual([
-      ['GET', '/Cache/Keys', { Pattern: '*' }],
-      ['DELETE', '/Cache/ByPattern', { Pattern: '*' }],
+    expect(calls.map(item => [item.method, item.url, item.body])).toEqual([
+      ['POST', '/api/cache:get-keys', { Pattern: '*' }],
+      ['POST', '/api/cache:delete-by-pattern', { Pattern: '*' }],
     ])
   })
 
@@ -389,44 +395,45 @@ describe('查询参数的空值裁剪与默认值', () => {
 
     const call = only()
     expect(call.method).toBe('POST')
+    expect(call.url).toBe('/api/cache:exists')
     expect(call.body).toBeUndefined()
     expect(call.config?.params).toEqual({ Key: 'auth:token:1' })
   })
 
-  it('服务器信息的两个开关不传时不进查询串，与其它树形/可选参数接口同口径', async () => {
+  it('服务器信息的两个开关不传时不进请求体，与其它树形/可选参数接口同口径', async () => {
     // 回归锚点：原实现直接拼 { IncludeDisk: undefined, IncludeNetwork: undefined }，
-    // 与 dictApi.itemTree / departmentApi.tree / menuApi.tree 的 appendDynamicApiParam 裁剪口径不一致；
-    // 开启接口签名后 query 串形态不一致会影响签名。
+    // 与 dictApi.itemTree / departmentApi.tree / menuApi.tree 的 appendDynamicApiParam 裁剪口径不一致。
     // 必须用 toStrictEqual：toEqual 把「值为 undefined 的键」视同「键不存在」，改前改后都会绿。
     await serverApi.getServerInfo()
 
-    expect(only().config?.params).toStrictEqual({})
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/server:get-info' })
+    expect(only().body).toStrictEqual({})
   })
 
   it('服务器信息的开关显式传 false 时照常下发（false 是有效取值，不是空值）', async () => {
     await serverApi.getServerInfo({ includeDisk: false, includeNetwork: true })
 
-    expect(only().config?.params).toStrictEqual({ IncludeDisk: false, IncludeNetwork: true })
+    expect(only().body).toStrictEqual({ IncludeDisk: false, IncludeNetwork: true })
   })
 })
 
 describe('站内信的请求体形状', () => {
-  it('确认 / 已读 / 弹窗已展示三个动作把主键包成 { basicId } 上送', async () => {
+  it('确认 / 已读 / 弹窗已展示三个动作是实例级动词，主键进路径并包成 { id } 上送', async () => {
     await userInboxApi.confirm('11')
     await userInboxApi.markRead('12')
     await userInboxApi.markPopupShown('13')
 
     expect(calls.map(item => [item.url, item.body])).toEqual([
-      ['/UserInbox/Confirm', { basicId: '11' }],
-      ['/UserInbox/MarkRead', { basicId: '12' }],
-      ['/UserInbox/MarkPopupShown', { basicId: '13' }],
+      ['/api/user-inbox/11:confirm', { id: '11' }],
+      ['/api/user-inbox/12:mark-read', { id: '12' }],
+      ['/api/user-inbox/13:mark-popup-shown', { id: '13' }],
     ])
   })
 
-  it('全部已读不带请求体', async () => {
+  it('全部已读是集合级动词，不带请求体', async () => {
     await userInboxApi.markAllRead()
 
-    expect(only()).toMatchObject({ method: 'POST', url: '/UserInbox/MarkAllRead', body: undefined })
+    expect(only()).toMatchObject({ method: 'POST', url: '/api/user-inbox:mark-all-read', body: undefined })
   })
 })
 

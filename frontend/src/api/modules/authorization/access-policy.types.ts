@@ -38,12 +38,12 @@ export interface AccessPolicyConditionDto {
 export interface AccessPolicyListItemDto extends BasicDto {
   action: AccessPolicyAction
   conditionCount: number
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   effectiveTime?: DateTimeString | null
   expirationTime?: DateTimeString | null
   isActive: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   phase: AccessPolicyPhase
   policyCode: string
   policyName: string

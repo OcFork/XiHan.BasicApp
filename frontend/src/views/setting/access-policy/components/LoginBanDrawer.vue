@@ -83,7 +83,7 @@ async function loadSettings() {
   try {
     const page = await configApi.page({ ...createPageRequest({ page: { pageIndex: 1, pageSize: 20 } }), keyword: LOGIN_AUTO_BAN_CONFIG_KEY })
     const item = page.items.find(row => row.configKey === LOGIN_AUTO_BAN_CONFIG_KEY)
-    config.value = item ? await configApi.detail(item.basicId) : null
+    config.value = item ? await configApi.detail(item.id) : null
     settings.value = config.value ? readAutoBanSettings(config.value.configValue, config.value.defaultValue) : null
     settingsUnreadable.value = settings.value === null
   }
@@ -109,7 +109,7 @@ async function saveSettings() {
   settingsSaving.value = true
   try {
     config.value = await configApi.update({
-      basicId: current.basicId,
+      id: current.id,
       configDescription: current.configDescription,
       configGroup: current.configGroup,
       configName: current.configName,

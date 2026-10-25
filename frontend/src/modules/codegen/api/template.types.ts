@@ -32,8 +32,8 @@ export interface CodeGenTemplateListItemDto extends BasicDto {
   isEnabled: boolean
   sort: number
   status: EnableStatus
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
 }
 
 /** 代码生成模板详情 DTO（含模板正文） */

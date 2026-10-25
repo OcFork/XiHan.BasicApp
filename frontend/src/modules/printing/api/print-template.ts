@@ -60,8 +60,8 @@ export const printTemplateApi = {
   delete(input: PrintTemplateDeleteDto) {
     // Dynamic API 的 DELETE 不发送请求体；显式展开 DTO，既满足简单查询参数约束，也保持后端复杂对象模型绑定。
     return commandApi.delete('PrintTemplate', {
-      basicId: input.basicId,
-      rowVersion: input.rowVersion,
+      id: input.id,
+      concurrencyStamp: input.concurrencyStamp,
       scope: input.scope,
     })
   },

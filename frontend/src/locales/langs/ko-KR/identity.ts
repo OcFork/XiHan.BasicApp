@@ -515,7 +515,7 @@ export default {
     label_form_remark: '비고',
     label_form_description: '설명',
     ph_permission_name: '권한 이름을 입력하세요',
-    ph_permission_code: '예: saas:user:read',
+    ph_permission_code: '예: saas.user.read',
     ph_module_code: '기본값은 권한 코드의 첫 번째 세그먼트예요',
     ph_resource: '리소스를 검색해 선택하세요',
     ph_operation: '오퍼레이션을 검색해 선택하세요',

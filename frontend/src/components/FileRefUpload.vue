@@ -123,7 +123,7 @@ async function handleUpload(request: FileUploadRequest) {
   uploading.value = true
   try {
     const detail = await fileApi.upload({ file: request.file, directory: props.directory })
-    const fileId = String(detail.basicId)
+    const fileId = String(detail.id)
     knownNames.set(fileId, detail.originalName)
     // 只落文件主键：展示地址由读取侧按需换取，避免持久化会过期的签名地址
     emit('update:value', fileId)

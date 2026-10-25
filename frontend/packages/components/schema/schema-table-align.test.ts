@@ -10,14 +10,14 @@ import { describe, expect, it } from 'vitest'
 import { i18n } from '~/locales'
 import SchemaTablePanel from './SchemaTablePanel.vue'
 
-interface Row { basicId: string, name: string, path: string }
+interface Row { id: string, name: string, path: string }
 
 // 面板按 object 收行：这里在渲染时再认回具体行型
 const columns: SchemaColumn<object>[] = [
   { key: 'name', title: '名称', render: row => (row as Row).name },
   { key: 'path', title: '路径', render: row => (row as Row).path },
 ]
-const data: Row[] = [{ basicId: '1', name: '甲', path: '/a' }]
+const data: Row[] = [{ id: '1', name: '甲', path: '/a' }]
 
 function columnDefs(props: Record<string, unknown> = {}): TableColumnDef[] {
   const wrapper = mount(SchemaTablePanel, {

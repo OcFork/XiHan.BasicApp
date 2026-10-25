@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest'
 import { i18n } from '~/locales'
 import XGrantTransfer from './GrantTransfer.vue'
 
-const items: GrantTransferItem[] = [{ basicId: '1' }, { basicId: '2' }]
+const items: GrantTransferItem[] = [{ id: '1' }, { id: '2' }]
 const names = new Map([['1', '甲'], ['2', '乙']])
 
 function mountTransfer(sourceTitle: string, targetTitle: string) {
@@ -20,7 +20,7 @@ function mountTransfer(sourceTitle: string, targetTitle: string) {
       items,
       value: ['2'],
       groups: [{ key: 'all', name: '', items }],
-      getLabel: (item: GrantTransferItem) => names.get(String(item.basicId)) ?? '',
+      getLabel: (item: GrantTransferItem) => names.get(String(item.id)) ?? '',
       sourceTitle,
       targetTitle,
       searchPlaceholder: '搜索',

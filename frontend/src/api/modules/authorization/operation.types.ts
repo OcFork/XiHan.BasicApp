@@ -58,14 +58,14 @@ export interface OperationPageQueryDto extends PageRequest {
 export interface OperationListItemDto extends BasicDto {
   category: OperationCategory
   color?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   httpMethod?: HttpMethodType | null
   icon?: string | null
   isDangerous: boolean
   isGlobal: boolean
   isRequireAudit: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   operationCode: string
   operationName: string
   operationTypeCode: OperationTypeCode

@@ -120,7 +120,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'handledTime', title: t('log.exception.handled_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 38 },
   { key: 'errorCode', title: t('log.exception.error_code'), dataType: 'string', advancedSearch: true, sortable: true, minWidth: 100, order: 39 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 40 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 40 },
   // 仅高级搜索（不作为列）：异常时间区间，经 conditions.filters Between 下发
   { key: 'exceptionTime', title: t('log.exception.exception_time'), dataType: 'datetime', visible: false, advancedSearch: true, searchRange: true, order: 50 },
 ])
@@ -169,7 +169,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'log.exception',
   exportPermission: 'log.exception.export',
   pageName: t('log.exception.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, { timeField: 'exceptionTime', ipKey: 'operationIp' }),
   resource: {
     page: params => logManagementApi.exception.page(buildExceptionQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
@@ -199,7 +199,7 @@ async function handleDetail(row: ExceptionLogListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await logManagementApi.exception.detail(row.basicId) ?? row
+    detailData.value = await logManagementApi.exception.detail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

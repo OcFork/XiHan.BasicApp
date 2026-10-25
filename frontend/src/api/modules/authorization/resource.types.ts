@@ -72,10 +72,10 @@ export interface ResourcePageQueryDto extends PageRequest {
 
 export interface ResourceListItemDto extends BasicDto {
   accessLevel: ResourceAccessLevel
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   isGlobal: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   resourceCode: string
   resourceName: string
   resourcePath?: string | null

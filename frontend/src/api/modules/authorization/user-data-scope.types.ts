@@ -6,7 +6,7 @@ import type { DataScopeDepartmentDto } from './role-data-scope.types'
 import type { DataPermissionScope } from './role.types'
 
 export interface UserDataScopeListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   departmentCode?: string | null
   departmentId: ApiId
   departmentName?: string | null

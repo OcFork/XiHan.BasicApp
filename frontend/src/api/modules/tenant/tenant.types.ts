@@ -19,7 +19,7 @@ export interface TenantPageQueryDto extends PageRequest {
 
 export interface TenantListItemDto extends BasicDto {
   configStatus: TenantConfigStatus
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   databaseType?: TenantDatabaseType | null
   domain?: string | null
   editionId?: ApiId | null
@@ -31,7 +31,7 @@ export interface TenantListItemDto extends BasicDto {
   isExpired: boolean
   isolationMode: TenantIsolationMode
   logo?: string | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   sort: number
   /** 存储空间限制(MB)（后端 long，按字符串传输） */
   storageLimit?: NumericString | null

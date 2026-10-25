@@ -515,7 +515,7 @@ export default {
     label_form_remark: '備考',
     label_form_description: '説明',
     ph_permission_name: '権限名を入力してください',
-    ph_permission_code: '例: saas:user:read',
+    ph_permission_code: '例: saas.user.read',
     ph_module_code: '既定では権限コードの先頭セグメントを使用します',
     ph_resource: 'リソースを検索して選択',
     ph_operation: 'オペレーションを検索して選択',

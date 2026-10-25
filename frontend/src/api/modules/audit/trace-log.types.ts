@@ -31,7 +31,7 @@ export interface TraceTimelineQueryDto {
 }
 
 export interface TraceTimelineItemDto {
-  basicId: ApiId
+  id: ApiId
   executionTime?: NumericString | null
   ip?: string | null
   location?: string | null

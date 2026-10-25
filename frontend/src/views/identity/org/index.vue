@@ -38,7 +38,7 @@ const editFormId = useId()
 const membershipFormId = useId()
 
 interface DeptFormModel extends DepartmentCreateDto {
-  basicId?: ApiId
+  id?: ApiId
 }
 
 const statusOptions = useEnumOptions('EnableStatus', STATUS_OPTIONS)
@@ -53,7 +53,7 @@ function treeToCascaderOptions(nodes: DepartmentTreeNodeDto[]): TreeSelectOption
   return nodes.map(node => ({
     children: node.children && node.children.length > 0 ? treeToCascaderOptions(node.children) : undefined,
     label: node.departmentName,
-    value: node.basicId,
+    value: node.id,
   }))
 }
 
@@ -117,7 +117,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'phone', title: t('identity.org.col_phone'), dataType: 'phone', minWidth: 130, order: 5 },
   { key: 'email', title: t('identity.org.col_email'), dataType: 'email', minWidth: 180, order: 6 },
   { key: 'sort', title: t('identity.org.col_sort'), dataType: 'number', width: 80, order: 7 },
-  { key: 'createdTime', title: t('identity.org.col_create_time'), dataType: 'datetime', minWidth: 170, order: 8 },
+  { key: 'createdAt', title: t('identity.org.col_create_time'), dataType: 'datetime', minWidth: 170, order: 8 },
 ])
 
 // ── 资源适配器：归一化查询参数 → 后端 API ──────────────────────
@@ -129,7 +129,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'identity.org.delete',
   statusPermission: 'identity.org.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   tree: { childrenKey: 'children', defaultExpandAll: false },
   fields: fields.value,
   resource: {
@@ -142,7 +142,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<Record<string, unknown>[]>
     },
     remove: id => orgManagementApi.delete(id),
-    updateStatus: (id, enabled) => orgManagementApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => orgManagementApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('identity.org.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'identity.org.create' },
@@ -162,7 +162,7 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'addChild':
       if (row) {
-        handleAdd(row.basicId)
+        handleAdd(row.id)
       }
       break
     case 'view':
@@ -187,7 +187,7 @@ function onAction(payload: SchemaActionPayload) {
 const modalVisible = ref(false)
 const submitLoading = ref(false)
 const deptForm = ref<DeptFormModel>(createDefaultForm())
-const modalTitle = computed(() => (deptForm.value.basicId ? t('identity.org.form_edit_title') : t('identity.org.form_create_title')))
+const modalTitle = computed(() => (deptForm.value.id ? t('identity.org.form_edit_title') : t('identity.org.form_create_title')))
 
 // ── 详情弹窗 ───────────────────────────────────────────────────
 const detailVisible = ref(false)
@@ -231,7 +231,7 @@ function formatStatus(value?: EnableStatus | null) {
 function findDepartmentName(parentId: ApiId) {
   function walk(nodes: DepartmentTreeNodeDto[]): string | undefined {
     for (const node of nodes) {
-      if (node.basicId === parentId) {
+      if (node.id === parentId) {
         return node.departmentName
       }
       if (node.children?.length) {
@@ -308,7 +308,7 @@ function buildFormModel(row: DepartmentDetailDto | DepartmentListItemDto): DeptF
   return {
     ...createDefaultForm(),
     address: 'address' in row ? row.address ?? null : null,
-    basicId: row.basicId,
+    id: row.id,
     departmentCode: row.departmentCode,
     departmentName: row.departmentName,
     departmentType: row.departmentType,
@@ -324,7 +324,7 @@ function buildFormModel(row: DepartmentDetailDto | DepartmentListItemDto): DeptF
 
 async function handleEdit(row: DepartmentListItemDto) {
   try {
-    const detail = await orgManagementApi.detail(row.basicId)
+    const detail = await orgManagementApi.detail(row.id)
     deptForm.value = buildFormModel(detail ?? row)
   }
   catch (error) {
@@ -340,7 +340,7 @@ async function handleView(row: DepartmentListItemDto) {
   managementDetail.value = null
 
   try {
-    const detail = await orgManagementApi.detailView(row.basicId)
+    const detail = await orgManagementApi.detailView(row.id)
     // 后端异常时可能返回非 DTO 形状（缺少 department/childDepartments/members），按未找到处理，避免渲染崩溃
     if (!detail || !detail.department) {
       managementDetail.value = null
@@ -360,7 +360,7 @@ async function handleView(row: DepartmentListItemDto) {
 async function handleToggleStatus(row: DepartmentListItemDto) {
   const nextStatus = row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled
   try {
-    await orgManagementApi.updateStatus({ basicId: row.basicId, status: nextStatus })
+    await orgManagementApi.updateStatus({ id: row.id, status: nextStatus })
     toast.success(t('identity.org.msg_status_updated'))
     await reloadAll()
   }
@@ -375,7 +375,7 @@ const positionOptions = ref<{ label: string, value: ApiId }[]>([])
 async function loadPositionOptions() {
   try {
     const positions = await positionApi.enabledList()
-    positionOptions.value = positions.map(item => ({ label: item.positionName, value: item.basicId }))
+    positionOptions.value = positions.map(item => ({ label: item.positionName, value: item.id }))
   }
   catch {
     positionOptions.value = []
@@ -383,7 +383,7 @@ async function loadPositionOptions() {
 }
 
 interface MembershipFormModel {
-  basicId: ApiId
+  id: ApiId
   isMain: boolean
   jobLevel: string | null
   jobNumber: string | null
@@ -398,13 +398,13 @@ const membershipMemberName = ref('')
 const membershipForm = ref<MembershipFormModel>(createDefaultMembershipForm())
 
 function createDefaultMembershipForm(): MembershipFormModel {
-  return { basicId: '', isMain: false, jobLevel: null, jobNumber: null, joinTime: null, positionId: null, remark: null }
+  return { id: '', isMain: false, jobLevel: null, jobNumber: null, joinTime: null, positionId: null, remark: null }
 }
 
 function openEditMembership(member: DepartmentManagementMemberDto) {
   membershipMemberName.value = member.realName || member.nickName || member.userName || String(member.userId)
   membershipForm.value = {
-    basicId: member.basicId,
+    id: member.id,
     isMain: member.isMain,
     jobLevel: member.jobLevel ?? null,
     jobNumber: member.jobNumber ?? null,
@@ -416,7 +416,7 @@ function openEditMembership(member: DepartmentManagementMemberDto) {
 }
 
 async function refreshManagementDetail() {
-  const deptId = managementDetail.value?.department.basicId
+  const deptId = managementDetail.value?.department.id
   if (!deptId) {
     return
   }
@@ -432,7 +432,7 @@ async function submitMembership() {
   membershipLoading.value = true
   try {
     await userDepartmentApi.update({
-      basicId: membershipForm.value.basicId,
+      id: membershipForm.value.id,
       isMain: membershipForm.value.isMain,
       jobLevel: toStr(membershipForm.value.jobLevel),
       jobNumber: toStr(membershipForm.value.jobNumber),
@@ -457,7 +457,7 @@ function validateForm() {
     toast.warning(t('identity.org.msg_department_name_required'))
     return false
   }
-  if (!deptForm.value.basicId && !deptForm.value.departmentCode.trim()) {
+  if (!deptForm.value.id && !deptForm.value.departmentCode.trim()) {
     toast.warning(t('identity.org.msg_department_code_required'))
     return false
   }
@@ -471,10 +471,10 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (deptForm.value.basicId) {
+    if (deptForm.value.id) {
       const updateInput: DepartmentUpdateDto = {
         address: toStr(deptForm.value.address),
-        basicId: deptForm.value.basicId,
+        id: deptForm.value.id,
         departmentName: deptForm.value.departmentName.trim(),
         departmentType: deptForm.value.departmentType,
         email: toStr(deptForm.value.email),
@@ -627,7 +627,7 @@ onMounted(() => {
                 <XhDescriptionsItem>
                   <XhDescriptionsLabel>{{ t('identity.org.label_create_time') }}</XhDescriptionsLabel>
                   <XhDescriptionsValue>
-                    {{ formatNullableDate(detDept!.createdTime) }}
+                    {{ formatNullableDate(detDept!.createdAt) }}
                   </XhDescriptionsValue>
                 </XhDescriptionsItem>
                 <XhDescriptionsItem v-if="detDept!.remark" style="grid-column: span 2">
@@ -644,7 +644,7 @@ onMounted(() => {
                   v-if="managementDetail.childDepartments?.length"
                   :columns="childDeptColumns"
                   :data="managementDetail.childDepartments"
-                  :row-key="(row: DepartmentListItemDto) => row.basicId"
+                  :row-key="(row: DepartmentListItemDto) => row.id"
                 />
                 <XhEmptyStateRoot v-else size="sm" style="padding: 32px 0">
                   <XhEmptyStateIndicator>
@@ -661,7 +661,7 @@ onMounted(() => {
                   v-if="managementDetail.members?.length"
                   :columns="memberColumns"
                   :data="managementDetail.members"
-                  :row-key="(row: DepartmentManagementMemberDto) => row.basicId"
+                  :row-key="(row: DepartmentManagementMemberDto) => row.id"
                 />
                 <XhEmptyStateRoot v-else size="sm" style="padding: 32px 0">
                   <XhEmptyStateIndicator>
@@ -726,7 +726,7 @@ onMounted(() => {
             <XhFieldControl>
               <XInput
                 v-model:value="deptForm.departmentCode"
-                :disabled="Boolean(deptForm.basicId)"
+                :disabled="Boolean(deptForm.id)"
                 clearable
                 :placeholder="t('identity.org.ph_department_code')"
               />

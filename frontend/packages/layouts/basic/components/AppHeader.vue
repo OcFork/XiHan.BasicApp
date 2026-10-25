@@ -344,14 +344,14 @@ const NOTIFICATION_RECEIVED_EVENT = 'xihan:notification-received'
 let signalRThrottleTimer: ReturnType<typeof setTimeout> | null = null
 
 async function loadNotifications() {
-  const userId = userStore.userInfo?.basicId
+  const userId = userStore.userInfo?.id
   if (!userId)
     return
   notificationStore.loading = true
   try {
     const list = await appContext.apis.userInboxApi.list(userId, true, userStore.userInfo?.tenantId)
     notificationStore.setItems(list.map(n => ({
-      basicId: n.basicId,
+      id: n.id,
       title: n.title,
       content: n.content ?? undefined,
       contentFormat: n.contentFormat,
@@ -375,10 +375,10 @@ async function loadNotifications() {
 }
 
 async function handleNotificationMarkRead(id: string) {
-  const userId = userStore.userInfo?.basicId
+  const userId = userStore.userInfo?.id
   if (!userId)
     return
-  const prev = notificationStore.items.find(n => n.basicId === id)
+  const prev = notificationStore.items.find(n => n.id === id)
   const prevStatus = prev?.notificationStatus
   const prevReadTime = prev?.readTime
   notificationStore.markItemRead(id)
@@ -394,7 +394,7 @@ async function handleNotificationMarkRead(id: string) {
 }
 
 async function handleNotificationConfirm(id: string) {
-  const userId = userStore.userInfo?.basicId
+  const userId = userStore.userInfo?.id
   if (!userId)
     return
   notificationStore.markItemConfirmed(id)
@@ -407,19 +407,19 @@ async function handleNotificationConfirm(id: string) {
 }
 
 async function handleNotificationMarkAllRead() {
-  const userId = userStore.userInfo?.basicId
+  const userId = userStore.userInfo?.id
   if (!userId)
     return
   const snapshot = notificationStore.items
     .filter(n => n.notificationStatus === NotificationStatus.Unread)
-    .map(n => ({ id: n.basicId, status: n.notificationStatus, readTime: n.readTime }))
+    .map(n => ({ id: n.id, status: n.notificationStatus, readTime: n.readTime }))
   notificationStore.markAllRead()
   try {
     await appContext.apis.userInboxApi.markAllRead(userId, userStore.userInfo?.tenantId)
   }
   catch {
     for (const s of snapshot) {
-      const item = notificationStore.items.find(n => n.basicId === s.id)
+      const item = notificationStore.items.find(n => n.id === s.id)
       if (item) {
         item.notificationStatus = s.status
         item.readTime = s.readTime

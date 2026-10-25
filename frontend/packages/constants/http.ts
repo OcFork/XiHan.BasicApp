@@ -12,15 +12,3 @@ export const HTTP_STATUS = {
   LOCKED: 423,
   INTERNAL_SERVER_ERROR: 500,
 } as const
-
-// ==================== 业务状态码 ====================
-
-export const BIZ_CODE = {
-  SUCCESS: 200,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  /** 会话已锁屏（与 HTTP 423 对齐） */
-  LOCKED: 423,
-  TOKEN_EXPIRED: 4001,
-  REFRESH_TOKEN_EXPIRED: 4002,
-} as const

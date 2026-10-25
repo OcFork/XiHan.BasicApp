@@ -124,7 +124,7 @@ export interface AppEnumNameQuery {
 }
 
 export interface AppUserInboxItem {
-  basicId: string
+  id: string
   title: string
   content?: null | string
   contentFormat?: NotificationContentFormat
@@ -183,7 +183,7 @@ export interface AppContextApis {
   /** 导入历史（Schema 页面导入留痕：执行完毕上报 + 当前用户最近导入记录） */
   importHistoryApi: {
     create: (input: { pageCode: string, resourceCode?: null | string, fileName: string, totalCount: number, successCount: number, failCount: number, errorSummary?: null | string }) => Promise<unknown>
-    recent: (pageCode: string, count?: number) => Promise<Array<{ basicId: number | string, pageCode: string, resourceCode?: null | string, fileName: string, totalCount: number, successCount: number, failCount: number, errorSummary?: null | string, createdTime: string }>>
+    recent: (pageCode: string, count?: number) => Promise<Array<{ id: number | string, pageCode: string, resourceCode?: null | string, fileName: string, totalCount: number, successCount: number, failCount: number, errorSummary?: null | string, createdAt: string }>>
   }
   /** 导出中心（提交异步导出任务，后台 worker 执行；进度经灵动岛、产物在导出中心下载） */
   exportTaskApi: {

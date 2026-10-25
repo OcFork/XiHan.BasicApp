@@ -73,7 +73,7 @@ const GENDER_TAG_TYPE: Record<UserGender, 'neutral' | 'info' | 'warning'> = {
 }
 
 interface UserFormState {
-  basicId?: ApiId
+  id?: ApiId
   userName: string
   realName: string
   nickName: string
@@ -135,7 +135,7 @@ const identityReadonly = computed(() => userForm.value.isExternal)
  * 否则资料先存进去、后面的接口再被拒，留下存了一半的用户。新建时状态随创建一起提交
  */
 const formAccess = computed(() => ({
-  status: !userForm.value.basicId || hasPermission('identity.user.status'),
+  status: !userForm.value.id || hasPermission('identity.user.status'),
   lock: hasPermission('identity.user.lock'),
   loginPolicy: hasPermission('identity.user.login-policy'),
   role: { grant: hasPermission('identity.user.grant-role'), revoke: hasPermission('identity.user.revoke-role') },
@@ -150,7 +150,7 @@ const effectiveRoleIds = computed(() => new Set(existingRoles.value.map(role => 
 const effectiveDeptIds = computed(() => new Set(existingDepts.value.map(dept => dept.departmentId)))
 
 const formTitle = computed(() =>
-  userForm.value.basicId ? t('identity.user.form_edit_title', { name: userForm.value.userName }) : t('identity.user.form_create_title'),
+  userForm.value.id ? t('identity.user.form_edit_title', { name: userForm.value.userName }) : t('identity.user.form_create_title'),
 )
 
 const schemaPageRef = ref<{ reload: () => Promise<void> } | null>(null)
@@ -296,7 +296,7 @@ function flattenDeptOptions(
 ): { label: string, value: ApiId }[] {
   const out: { label: string, value: ApiId }[] = []
   for (const n of nodes) {
-    out.push({ label: `${'　'.repeat(depth)}${n.departmentName}`, value: n.basicId })
+    out.push({ label: `${'　'.repeat(depth)}${n.departmentName}`, value: n.id })
     if (n.children?.length)
       out.push(...flattenDeptOptions(n.children, depth + 1))
   }
@@ -314,7 +314,7 @@ function buildUserQuery(params: SchemaQueryParams) {
   return {
     ...createPageRequest({
       page: { pageIndex: params.page, pageSize: params.pageSize },
-      // 排序 + 区间(createdTime)/多选(status) 等通用过滤统一走 conditions
+      // 排序 + 区间(createdAt)/多选(status) 等通用过滤统一走 conditions
       conditions: { sorts: querySortsFromSchema(params.sorts), filters: params.conditionFilters ?? [] },
     }),
     keyword: toStr(f.keyword),
@@ -497,7 +497,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   // 创建时间（仅列）
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, width: 170, order: 7 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, width: 170, order: 7 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -507,12 +507,12 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'identity.user.delete',
   statusPermission: 'identity.user.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: params => userManagementApi.page(buildUserQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
     remove: id => userManagementApi.delete(id),
-    updateStatus: (id, enabled) => userManagementApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => userManagementApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
     export: { businessType: 'identity.user', buildQuery: buildUserQuery },
   },
   actions: [
@@ -569,11 +569,11 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'view':
       if (row)
-        void openDetail(row.basicId)
+        void openDetail(row.id)
       break
     case 'edit':
       if (row)
-        void openEdit(row.basicId)
+        void openEdit(row.id)
       break
     case 'grantRole':
       if (row)
@@ -657,7 +657,7 @@ async function fillFormFromDetail(detail: UserManagementDetailDto) {
   const u = detail.user
   const sec = detail.security
   userForm.value = {
-    basicId: u.basicId,
+    id: u.id,
     userName: u.userName,
     realName: u.realName ?? '',
     nickName: u.nickName ?? '',
@@ -677,7 +677,7 @@ async function fillFormFromDetail(detail: UserManagementDetailDto) {
   }
   originalSecurity.value = pickSecurity(userForm.value)
   // 详情里的 roles 连撤销过、已过期的历史行一并返回；比对基准要的是当前生效的那份
-  existingRoles.value = await userManagementApi.roles.list(u.basicId, true)
+  existingRoles.value = await userManagementApi.roles.list(u.id, true)
   // 部门归属同理：撤销过的行仍在详情里，只拿有效的做勾选与比对
   existingDepts.value = detail.departments.filter(d => d.status === ValidityStatus.Valid)
   selRoleIds.value = existingRoles.value.map(r => r.roleId)
@@ -718,7 +718,7 @@ async function openDetail(id: ApiId) {
 function openDelete(row: UserListItemDto) {
   if (row.isSystemAccount)
     return
-  delTarget.value = { id: row.basicId, name: row.userName }
+  delTarget.value = { id: row.id, name: row.userName }
   showDelModal.value = true
 }
 
@@ -734,7 +734,7 @@ function togglePick(arr: ApiId[], id: ApiId) {
  * 只在可选角色范围内比对——不在列表里的（如已停用）勾选区看不到，也就不该被顺手撤掉
  */
 async function syncRoles(userId: ApiId) {
-  const optionIds = new Set(roleOptions.value.map(role => role.basicId))
+  const optionIds = new Set(roleOptions.value.map(role => role.id))
   const { grantRoleIds, revokeUserRoleIds } = diffRoleGrants(
     selRoleIds.value,
     existingRoles.value.filter(item => optionIds.has(item.roleId)),
@@ -758,7 +758,7 @@ async function syncDepartments(userId: ApiId) {
   const assigns = selDeptIds.value
     .filter(id => optionIds.has(id) && !boundIds.has(id))
     .map(departmentId => ({ departmentId, isMain: false }))
-  const revokeUserDepartmentIds = current.filter(d => !selected.has(d.departmentId)).map(d => d.basicId)
+  const revokeUserDepartmentIds = current.filter(d => !selected.has(d.departmentId)).map(d => d.id)
   if (assigns.length === 0 && revokeUserDepartmentIds.length === 0) {
     return
   }
@@ -772,7 +772,7 @@ async function saveUser() {
     formTab.value = '0'
     return
   }
-  if (!form.basicId && !form.initialPassword.trim()) {
+  if (!form.id && !form.initialPassword.trim()) {
     toast.warning(t('identity.user.msg_initial_password_required'))
     formTab.value = '0'
     return
@@ -780,9 +780,9 @@ async function saveUser() {
   submitLoading.value = true
   try {
     // 外部成员：账号资料、状态与安全设置由注册地维护，这里只提交本租户的角色与部门
-    if (form.isExternal && form.basicId) {
-      await syncRoles(form.basicId)
-      await syncDepartments(form.basicId)
+    if (form.isExternal && form.id) {
+      await syncRoles(form.id)
+      await syncDepartments(form.id)
       toast.success(t('common.messages.save_success'))
       closeModals()
       reloadList()
@@ -791,10 +791,10 @@ async function saveUser() {
 
     // 状态、锁定、登录策略各走一个受门控的接口，只提交改过的
     const changed = diffUserFormSecurity(pickSecurity(form), originalSecurity.value)
-    let userId = form.basicId
+    let userId = form.id
     if (userId) {
       const updateInput: UserUpdateDto = {
-        basicId: userId,
+        id: userId,
         avatar: form.avatar,
         birthday: form.birthday ? new Date(form.birthday).toISOString() : null,
         country: normalizeStr(form.country),
@@ -807,7 +807,7 @@ async function saveUser() {
       }
       await userManagementApi.update(updateInput)
       if (changed.status) {
-        await userManagementApi.updateStatus({ basicId: userId, status: form.status })
+        await userManagementApi.updateStatus({ id: userId, status: form.status })
       }
     }
     else {
@@ -831,7 +831,7 @@ async function saveUser() {
         inviteRemark: null,
       }
       const created = await userManagementApi.create(createInput)
-      userId = created.basicId
+      userId = created.id
     }
 
     if (userId) {
@@ -869,7 +869,7 @@ async function saveUser() {
 async function toggleLock(row: UserListItemDto) {
   let locked: boolean
   try {
-    const detail = await userManagementApi.detailView(row.basicId)
+    const detail = await userManagementApi.detailView(row.id)
     locked = detail?.security?.isLocked ?? false
   }
   catch (error) {
@@ -886,7 +886,7 @@ async function toggleLock(row: UserListItemDto) {
     onOk: async () => {
       try {
         await userManagementApi.security.updateLock({
-          userId: row.basicId,
+          userId: row.id,
           isLocked: !locked,
           lockoutEndTime: null,
         })
@@ -908,7 +908,7 @@ function displayName(row: UserListItemDto): string {
 function canImpersonate(row: UserListItemDto) {
   return userStore.userInfo?.canImpersonate === true
     && row.status === EnableStatus.Enabled
-    && String(row.basicId) !== userStore.userInfo?.basicId
+    && String(row.id) !== userStore.userInfo?.id
 }
 
 function impersonate(row: UserListItemDto) {
@@ -921,7 +921,7 @@ function impersonate(row: UserListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await authStore.startImpersonation({ targetUserId: String(row.basicId) })
+        await authStore.startImpersonation({ targetUserId: String(row.id) })
       }
       catch (error) {
         toast.danger((error as Error)?.message || t('identity.user.impersonate_failed'))
@@ -940,7 +940,7 @@ function forceLogout(row: UserListItemDto) {
     onOk: async () => {
       try {
         await userManagementApi.sessions.revokeUserSessions({
-          userId: row.basicId,
+          userId: row.id,
           reason: t('identity.user.logout_reason'),
         })
         toast.success(t('identity.user.logout_done'))
@@ -986,7 +986,7 @@ function resetPassword(row: UserListItemDto) {
     onOk: async () => {
       try {
         await userManagementApi.security.resetPassword({
-          userId: row.basicId,
+          userId: row.id,
           newPassword: tempPassword,
           remark: t('identity.user.reset_password_reason'),
         })
@@ -1025,7 +1025,7 @@ function resetOtp(row: UserListItemDto) {
     onOk: async () => {
       try {
         await userManagementApi.security.resetTwoFactor({
-          userId: row.basicId,
+          userId: row.id,
           remark: t('identity.user.reset_otp_reason'),
         })
         toast.success(t('identity.user.reset_otp_done'))
@@ -1063,7 +1063,7 @@ async function openScopeDrawer(row: UserListItemDto) {
   try {
     const [tree, setting] = await Promise.all([
       userManagementApi.departments.tree({ limit: 1000, onlyEnabled: true }),
-      userDataScopeApi.setting(row.basicId),
+      userDataScopeApi.setting(row.id),
     ])
     scopeTree.value = tree
     resetScopeDraft({
@@ -1090,7 +1090,7 @@ async function saveScopes() {
 
   scopeSubmitting.value = true
   try {
-    await userDataScopeApi.set({ userId: user.basicId, ...toDataScopePayload(scopeDraft.value) })
+    await userDataScopeApi.set({ userId: user.id, ...toDataScopePayload(scopeDraft.value) })
     toast.success(t('identity.data_scope.saved'))
     scopeVisible.value = false
   }
@@ -1119,11 +1119,11 @@ const roleTypeOptions = useEnumOptions('RoleType', ROLE_TYPE_OPTIONS)
  * 否则右栏「已授角色」会漏掉它们，审阅时看不全
  */
 const roleGrantItems = computed<RoleSelectItemDto[]>(() => {
-  const known = new Set(roleOptions.value.map(role => role.basicId))
+  const known = new Set(roleOptions.value.map(role => role.id))
   const extra = roleGrants.value
     .filter(grant => !known.has(grant.roleId))
     .map(grant => ({
-      basicId: grant.roleId,
+      id: grant.roleId,
       roleName: grant.roleName ?? String(grant.roleId),
       roleCode: grant.roleCode ?? '',
       roleType: grant.roleType ?? RoleType.Custom,
@@ -1155,7 +1155,7 @@ async function openRoleGrantDrawer(row: UserListItemDto) {
   roleDirty.value = false
   roleGrantLoading.value = true
   try {
-    roleGrants.value = await userManagementApi.roles.list(row.basicId, true)
+    roleGrants.value = await userManagementApi.roles.list(row.id, true)
     roleDraft.value = roleGrants.value.map(grant => grant.roleId)
   }
   catch (error) {
@@ -1187,8 +1187,8 @@ async function saveRoleGrants() {
   }
   roleGrantLoading.value = true
   try {
-    await userManagementApi.roles.batchUpdate({ userId: user.basicId, grantRoleIds, revokeUserRoleIds })
-    roleGrants.value = await userManagementApi.roles.list(user.basicId, true)
+    await userManagementApi.roles.batchUpdate({ userId: user.id, grantRoleIds, revokeUserRoleIds })
+    roleGrants.value = await userManagementApi.roles.list(user.id, true)
     roleDraft.value = roleGrants.value.map(grant => grant.roleId)
     roleDirty.value = false
     toast.success(t('identity.user.grant_saved', { grant: grantRoleIds.length, revoke: revokeUserRoleIds.length }))
@@ -1220,7 +1220,7 @@ async function loadConditionTargets() {
   }
   conditionsLoading.value = true
   try {
-    conditionTargets.value = toGrantConditionTargets('user', await userManagementApi.permissions.list(conditionsUser.value.basicId, true))
+    conditionTargets.value = toGrantConditionTargets('user', await userManagementApi.permissions.list(conditionsUser.value.id, true))
   }
   catch (error) {
     toast.danger((error as Error).message || t('identity.user.grant_load_failed'))
@@ -1253,12 +1253,12 @@ const permDirty = ref(false)
  * 条目为权限目录，再补上已直授却不在目录里的（例如授予后权限被停用）：
  * 否则右栏会漏掉它们，保存时却仍原样保留，界面与实际对不上
  */
-const permGrantItems = computed<Array<PermissionGrantItem & { basicId: ApiId }>>(() => {
-  const known = new Set(permCatalog.value.map(permission => permission.basicId))
+const permGrantItems = computed<Array<PermissionGrantItem & { id: ApiId }>>(() => {
+  const known = new Set(permCatalog.value.map(permission => permission.id))
   const extra = permGrants.value
     .filter(grant => !known.has(grant.permissionId))
     .map(grant => ({
-      basicId: grant.permissionId,
+      id: grant.permissionId,
       permissionCode: grant.permissionCode ?? '',
       permissionName: grant.permissionName ?? String(grant.permissionId),
       moduleCode: grant.moduleCode,
@@ -1297,7 +1297,7 @@ async function openPermGrantDrawer(row: UserListItemDto) {
   try {
     const [grants] = await Promise.all([
       // 撤销直授是把行置为失效而非删行，只取有效行，否则撤销后仍显示为已直授
-      userManagementApi.permissions.list(row.basicId, true),
+      userManagementApi.permissions.list(row.id, true),
       loadPermCatalog(),
     ])
     permGrants.value = grants
@@ -1332,8 +1332,8 @@ async function savePermGrants() {
   }
   permGrantLoading.value = true
   try {
-    await userManagementApi.permissions.batchUpdate({ userId: user.basicId, grants, revokeUserPermissionIds })
-    permGrants.value = await userManagementApi.permissions.list(user.basicId, true)
+    await userManagementApi.permissions.batchUpdate({ userId: user.id, grants, revokeUserPermissionIds })
+    permGrants.value = await userManagementApi.permissions.list(user.id, true)
     derivePermActions()
     const denied = grants.filter(item => item.permissionAction === PermissionAction.Deny).length
     toast.success(t('identity.user.grant_perm_saved', { grant: grants.length - denied, deny: denied, revoke: revokeUserPermissionIds.length }))
@@ -1412,7 +1412,7 @@ async function confirmDelete() {
                 <XInput
                   v-model:value="userForm.userName"
                   :placeholder="t('identity.user.ph_username')"
-                  :disabled="!!userForm.basicId"
+                  :disabled="!!userForm.id"
                   autocomplete="off"
                 />
               </XhFieldControl>
@@ -1474,7 +1474,7 @@ async function confirmDelete() {
               </XhFieldControl>
               <XhFieldErrorText />
             </XhFieldRoot>
-            <XhFieldRoot v-if="!userForm.basicId">
+            <XhFieldRoot v-if="!userForm.id">
               <XhFieldLabel>{{ t('identity.user.label_initial_password') }}</XhFieldLabel>
               <XhFieldControl>
                 <XInput
@@ -1581,11 +1581,11 @@ async function confirmDelete() {
             <div class="pick-grid">
               <button
                 v-for="r in roleOptions"
-                :key="r.basicId"
+                :key="r.id"
                 type="button"
-                class="pick-chip" :class="[selRoleIds.includes(r.basicId) ? 'on' : '']"
-                :disabled="!canTogglePick(r.basicId, selRoleIds, effectiveRoleIds, formAccess.role)"
-                @click="togglePick(selRoleIds, r.basicId)"
+                class="pick-chip" :class="[selRoleIds.includes(r.id) ? 'on' : '']"
+                :disabled="!canTogglePick(r.id, selRoleIds, effectiveRoleIds, formAccess.role)"
+                @click="togglePick(selRoleIds, r.id)"
               >
                 <Icon icon="tabler:user-check" width="13" height="13" />
                 {{ r.roleName }}
@@ -1877,10 +1877,10 @@ async function confirmDelete() {
               >
                 <!-- 左栏标出已在另一页签里的：挪过来会把它从拒绝改成授予 -->
                 <template #suffix="{ item, side }">
-                  <XhTagRoot v-if="side === 'source' && permActions.get(item.basicId) === PermissionAction.Deny" variant="subtle" size="sm" tone="danger">
+                  <XhTagRoot v-if="side === 'source' && permActions.get(item.id) === PermissionAction.Deny" variant="subtle" size="sm" tone="danger">
                     <XhTagLabel>{{ t('identity.user.grant_perm_deny_target') }}</XhTagLabel>
                   </XhTagRoot>
-                  <XhTagRoot v-if="side === 'target' && (permGrantByPermissionId.get(item.basicId)?.conditionCount ?? 0) > 0" variant="subtle" size="sm" tone="info">
+                  <XhTagRoot v-if="side === 'target' && (permGrantByPermissionId.get(item.id)?.conditionCount ?? 0) > 0" variant="subtle" size="sm" tone="info">
                     <XhTagLabel>{{ t('identity.user.grant_perm_conditional') }}</XhTagLabel>
                   </XhTagRoot>
                 </template>
@@ -1899,10 +1899,10 @@ async function confirmDelete() {
                 @update:value="next => onPermTransfer(PermissionAction.Deny, next)"
               >
                 <template #suffix="{ item, side }">
-                  <XhTagRoot v-if="side === 'source' && permActions.get(item.basicId) === PermissionAction.Grant" variant="subtle" size="sm" tone="success">
+                  <XhTagRoot v-if="side === 'source' && permActions.get(item.id) === PermissionAction.Grant" variant="subtle" size="sm" tone="success">
                     <XhTagLabel>{{ t('identity.user.grant_perm_allow_target') }}</XhTagLabel>
                   </XhTagRoot>
-                  <XhTagRoot v-if="side === 'target' && (permGrantByPermissionId.get(item.basicId)?.conditionCount ?? 0) > 0" variant="subtle" size="sm" tone="info">
+                  <XhTagRoot v-if="side === 'target' && (permGrantByPermissionId.get(item.id)?.conditionCount ?? 0) > 0" variant="subtle" size="sm" tone="info">
                     <XhTagLabel>{{ t('identity.user.grant_perm_conditional') }}</XhTagLabel>
                   </XhTagRoot>
                 </template>

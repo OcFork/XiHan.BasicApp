@@ -76,7 +76,7 @@ async function loadCandidates() {
       return
     }
     // 自己不出现在候选里：服务端也会拒，先在这里省掉一次无效往返
-    candidates.value = items.filter(item => item.basicId !== userStore.userInfo?.basicId)
+    candidates.value = items.filter(item => item.id !== userStore.userInfo?.id)
   }
   catch (error) {
     if (seq !== requestSeq) {
@@ -106,7 +106,7 @@ async function start(candidate: ImpersonationCandidate) {
   errorMessage.value = ''
   try {
     await authStore.startImpersonation({
-      targetUserId: candidate.basicId,
+      targetUserId: candidate.id,
       // 平台选了租户就进该租户；租户里不传，沿用当前租户
       tenantId: isPlatform.value ? (targetTenantId.value ?? null) : undefined,
       reason: reason.value.trim() || null,
@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
             <template v-else-if="candidates.length">
               <button
                 v-for="candidate in candidates"
-                :key="candidate.basicId"
+                :key="candidate.id"
                 type="button"
                 class="impersonation-item"
                 :disabled="authStore.impersonationLoading"

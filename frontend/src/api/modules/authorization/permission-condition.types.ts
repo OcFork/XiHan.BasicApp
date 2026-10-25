@@ -6,7 +6,7 @@ export interface PermissionConditionListItemDto extends BasicDto {
   attributeName: string
   conditionGroup: number
   conditionValue: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   isNegated: boolean
   operator: ConditionOperator
@@ -30,7 +30,7 @@ export interface PermissionConditionDetailDto extends PermissionConditionListIte
   createdId?: ApiId | null
   modifiedBy?: string | null
   modifiedId?: ApiId | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
 }
 
 export interface PermissionConditionCreateDto {

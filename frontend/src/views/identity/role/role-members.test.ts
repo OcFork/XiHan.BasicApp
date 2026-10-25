@@ -2,8 +2,8 @@ import type { RoleMemberDto, UserSelectItemDto } from '@/api'
 import { describe, expect, it } from 'vitest'
 import { diffRoleMembers, mergeMemberCandidates } from './role-members'
 
-function candidate(basicId: string, userName: string, realName?: string): UserSelectItemDto {
-  return { basicId, userName, realName } as UserSelectItemDto
+function candidate(id: string, userName: string, realName?: string): UserSelectItemDto {
+  return { id, userName, realName } as UserSelectItemDto
 }
 
 function member(userId: string, userRoleId: string, isExternalMember = false): RoleMemberDto {
@@ -18,9 +18,9 @@ describe('mergeMemberCandidates', () => {
     )
 
     expect(items).toEqual([
-      { basicId: '1', displayName: 'Alice', userName: 'alice', isExternalMember: false },
-      { basicId: '2', displayName: 'bob', userName: 'bob', isExternalMember: true },
-      { basicId: '3', displayName: 'u3', userName: 'u3', isExternalMember: false },
+      { id: '1', displayName: 'Alice', userName: 'alice', isExternalMember: false },
+      { id: '2', displayName: 'bob', userName: 'bob', isExternalMember: true },
+      { id: '3', displayName: 'u3', userName: 'u3', isExternalMember: false },
     ])
   })
 })

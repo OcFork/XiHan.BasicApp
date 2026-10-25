@@ -79,14 +79,14 @@ describe('客户端 Hub 方法与路径', () => {
 })
 
 describe('权限码与本地存储键', () => {
-  it('三个权限码互不重复且统一 chat: 前缀', () => {
+  it('三个权限码互不重复且统一 chat. 前缀', () => {
     const values = Object.values(CHAT_PERMISSIONS)
 
     expect(new Set(values).size).toBe(values.length)
     for (const value of values) {
-      expect(value.startsWith('chat:')).toBe(true)
+      expect(value.startsWith('chat.')).toBe(true)
     }
-    expect(values).toStrictEqual(['chat:read', 'chat:send', 'chat:manage'])
+    expect(values).toStrictEqual(['chat.read', 'chat.send', 'chat.manage'])
   })
 
   it('三个 localStorage 键互不重复，草稿、发送键偏好、语音已听各占一格', () => {

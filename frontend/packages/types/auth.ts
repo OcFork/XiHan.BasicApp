@@ -3,7 +3,7 @@ import type { MenuRoute } from './menu'
 // ==================== 认证 & 用户类型 ====================
 
 export interface UserInfo {
-  basicId: string
+  id: string
   userName: string
   nickName?: string
   appTitle?: string
@@ -56,7 +56,7 @@ export interface ImpersonationTenantOption {
 
 /** 模仿登录的候选目标 */
 export interface ImpersonationCandidate {
-  basicId: string
+  id: string
   userName: string
   nickName?: null | string
   realName?: null | string

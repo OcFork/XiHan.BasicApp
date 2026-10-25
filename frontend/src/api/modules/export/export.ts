@@ -42,7 +42,7 @@ export interface ExportTaskSubmitInput {
 
 /**
  * 我的导出任务分页查询入参。
- * businessType / status / scope / format 多选与 createdTime / finishedTime 区间走 conditions.filters，
+ * businessType / status / scope / format 多选与 createdAt / finishedTime 区间走 conditions.filters，
  * 排序走 conditions.sorts；顶层只有关键字。
  */
 export interface ExportTaskPageQuery extends PageRequest {
@@ -51,7 +51,7 @@ export interface ExportTaskPageQuery extends PageRequest {
 
 /** 导出任务 DTO */
 export interface ExportTaskDto {
-  basicId: ApiId
+  id: ApiId
   businessType: string
   taskName: string
   scope: ExportScope
@@ -64,7 +64,7 @@ export interface ExportTaskDto {
   fileName?: null | string
   fileSize: number
   errorMessage?: null | string
-  createdTime: string
+  createdAt: string
   startedTime?: null | string
   finishedTime?: null | string
 }

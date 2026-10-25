@@ -55,7 +55,7 @@ export interface DiffLogListItemDto extends BasicDto {
   beforeData?: string | null
   changeDescription?: string | null
   changedFields?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   entityId?: string | null
   entityName?: string | null

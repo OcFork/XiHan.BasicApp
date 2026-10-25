@@ -29,8 +29,8 @@ export interface AiProviderListItemDto extends BasicDto {
   hasApiKey: boolean
   sort: number
   status: EnableStatus
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
 }
 
 /** AI Provider 详情 DTO（后端 AiProviderDetailDto，不含密钥明文） */

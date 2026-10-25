@@ -12,7 +12,7 @@ defineOptions({ name: 'SettingEmailConfigPage' })
 
 interface EmailConfigFormModel {
   acceptInvalidCertificate: boolean
-  basicId?: string
+  id?: string
   configCode: string
   configName: string
   fromEmail: string
@@ -96,7 +96,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'sort', title: t('message.email_config.columns.sort'), dataType: 'number', sortable: true, width: 80, order: 9 },
-  { key: 'createdTime', title: t('message.email_config.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 10 },
+  { key: 'createdAt', title: t('message.email_config.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 10 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -104,7 +104,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'setting.email-config.export',
   pageName: t('message.email_config.page_name'),
   statusPermission: 'setting.email-config.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -120,7 +120,7 @@ const schema = computed<PageSchema>(() => ({
         keyword: (f.keyword as string | undefined)?.trim() || undefined,
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => emailConfigApi.updateStatus({ basicId: id, isEnabled: enabled }),
+    updateStatus: (id, enabled) => emailConfigApi.updateStatus({ id, isEnabled: enabled }),
   },
   actions: [
     { key: 'create', title: t('message.email_config.actions.create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'setting.email-config.create' },
@@ -181,9 +181,9 @@ const submitLoading = ref(false)
 const editingHasPassword = ref(false)
 const form = ref<EmailConfigFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (form.value.basicId ? t('message.email_config.form.edit_title') : t('message.email_config.form.add_title')))
+const modalTitle = computed(() => (form.value.id ? t('message.email_config.form.edit_title') : t('message.email_config.form.add_title')))
 const passwordPlaceholder = computed(() =>
-  form.value.basicId && editingHasPassword.value ? t('message.email_config.form.password_configured') : t('message.email_config.form.password_placeholder'),
+  form.value.id && editingHasPassword.value ? t('message.email_config.form.password_configured') : t('message.email_config.form.password_placeholder'),
 )
 
 function createDefaultForm(): EmailConfigFormModel {
@@ -214,7 +214,7 @@ function handleAdd() {
 
 async function handleEdit(row: EmailConfigListItemDto) {
   try {
-    const detail = await emailConfigApi.detail(row.basicId)
+    const detail = await emailConfigApi.detail(row.id)
     if (!detail) {
       toast.warning(t('message.email_config.message.detail_not_found'))
       return
@@ -223,7 +223,7 @@ async function handleEdit(row: EmailConfigListItemDto) {
     editingHasPassword.value = detail.hasPassword
     form.value = {
       acceptInvalidCertificate: detail.acceptInvalidCertificate,
-      basicId: detail.basicId,
+      id: detail.id,
       configCode: detail.configCode,
       configName: detail.configName,
       fromEmail: detail.fromEmail,
@@ -247,7 +247,7 @@ async function handleEdit(row: EmailConfigListItemDto) {
 }
 
 function validateForm() {
-  if (!form.value.basicId && !form.value.configCode.trim()) {
+  if (!form.value.id && !form.value.configCode.trim()) {
     toast.warning(t('message.email_config.message.input_config_code'))
     return false
   }
@@ -283,10 +283,10 @@ async function handleSubmit() {
   submitLoading.value = true
 
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       await emailConfigApi.update({
         acceptInvalidCertificate: form.value.acceptInvalidCertificate,
-        basicId: form.value.basicId,
+        id: form.value.id,
         configName: form.value.configName.trim(),
         fromEmail: form.value.fromEmail.trim(),
         fromName: form.value.fromName.trim(),
@@ -344,7 +344,7 @@ function handleToggleStatus(row: EmailConfigListItemDto) {
     cancelText: t('message.email_config.form.cancel'),
     onOk: async () => {
       try {
-        await emailConfigApi.updateStatus({ basicId: row.basicId, isEnabled: next })
+        await emailConfigApi.updateStatus({ id: row.id, isEnabled: next })
         toast.success(t('message.email_config.message.status_updated'))
         reloadList()
       }
@@ -364,7 +364,7 @@ function handleSetDefault(row: EmailConfigListItemDto) {
     cancelText: t('message.email_config.form.cancel'),
     onOk: async () => {
       try {
-        await emailConfigApi.setDefault({ basicId: row.basicId })
+        await emailConfigApi.setDefault({ id: row.id })
         toast.success(t('message.email_config.message.set_default_success'))
         reloadList()
       }
@@ -385,7 +385,7 @@ function handleDelete(row: EmailConfigListItemDto) {
     cancelText: t('message.email_config.form.cancel'),
     onOk: async () => {
       try {
-        await emailConfigApi.delete(row.basicId)
+        await emailConfigApi.delete(row.id)
         toast.success(t('message.email_config.message.delete_success'))
         reloadList()
       }
@@ -423,7 +423,7 @@ function handleDelete(row: EmailConfigListItemDto) {
               <XInput
                 v-model:value="form.configCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('message.email_config.form.config_code_placeholder')"
               />
             </XhFieldControl>
@@ -535,7 +535,7 @@ function handleDelete(row: EmailConfigListItemDto) {
           </XhFieldRoot>
         </XhFormFieldGroup>
 
-        <template v-if="!form.basicId">
+        <template v-if="!form.id">
           <XhFormFieldGroup name="isEnabled">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('message.email_config.form.is_enabled') }}</XhFieldLabel>

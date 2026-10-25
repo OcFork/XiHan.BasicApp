@@ -25,8 +25,8 @@ export interface AiAssistantListItemDto extends BasicDto {
   isEnabled: boolean
   sort: number
   status: EnableStatus
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
 }
 
 /** AI 助手详情 DTO（后端 AiAssistantDetailDto） */
@@ -61,7 +61,7 @@ export interface AiAssistantCreateDto {
 
 /** AI 助手更新 DTO（后端 AiAssistantUpdateDto，assistantCode 不可变） */
 export interface AiAssistantUpdateDto {
-  basicId: ApiId
+  id: ApiId
   assistantName: string
   avatar?: string | null
   description?: string | null
@@ -80,12 +80,12 @@ export interface AiAssistantUpdateDto {
 
 /** AI 助手状态更新 DTO（后端 AiAssistantStatusUpdateDto） */
 export interface AiAssistantStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   status: EnableStatus
   remark?: string | null
 }
 
 /** AI 助手单体动作 DTO（设为默认，后端 AiAssistantActionDto，仅携带主键） */
 export interface AiAssistantActionDto {
-  basicId: ApiId
+  id: ApiId
 }

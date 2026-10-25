@@ -48,7 +48,7 @@ const startOptions = computed<AppDropdownOption[]>(() => {
   if (hasChatAssistantProvider()) {
     options.push({ key: 'assistant', label: t('chat.start.assistant') })
   }
-  // 建群需要会话管理权限（后端 chat:manage 门控）
+  // 建群需要会话管理权限（后端 chat.manage 门控）
   if (userStore.hasPermission(CHAT_PERMISSIONS.manage)) {
     options.splice(1, 0, { key: 'group', label: t('chat.start.group') })
   }

@@ -12,7 +12,7 @@ import { useNotificationStore } from './notification'
 
 function makeItem(overrides?: Partial<NotificationItem>): NotificationItem {
   return {
-    basicId: 'n-1',
+    id: 'n-1',
     title: '标题',
     notificationType: NotificationType.System,
     notificationStatus: NotificationStatus.Read,
@@ -76,8 +76,8 @@ describe('「需要关注」口径 = 未读 或 需确认但未确认', () => {
     const store = useNotificationStore()
 
     store.setItems([
-      makeItem({ basicId: 'a', notificationStatus: NotificationStatus.Deleted }),
-      makeItem({ basicId: 'b', notificationStatus: NotificationStatus.Deleted, needConfirm: true }),
+      makeItem({ id: 'a', notificationStatus: NotificationStatus.Deleted }),
+      makeItem({ id: 'b', notificationStatus: NotificationStatus.Deleted, needConfirm: true }),
     ])
 
     expect(store.unreadCount).toBe(1)
@@ -95,9 +95,9 @@ describe('「需要关注」口径 = 未读 或 需确认但未确认', () => {
     const store = useNotificationStore()
 
     store.setItems([
-      makeItem({ basicId: 'a', notificationStatus: NotificationStatus.Unread }),
-      makeItem({ basicId: 'b', needConfirm: true }),
-      makeItem({ basicId: 'c' }),
+      makeItem({ id: 'a', notificationStatus: NotificationStatus.Unread }),
+      makeItem({ id: 'b', needConfirm: true }),
+      makeItem({ id: 'c' }),
     ])
 
     expect(store.unreadCount).toBe(2)
@@ -107,28 +107,28 @@ describe('「需要关注」口径 = 未读 或 需确认但未确认', () => {
 describe('站内信与「提及我」的切分', () => {
   it('allItems 就是全部通知（含全局）', () => {
     const store = useNotificationStore()
-    const list = [makeItem({ basicId: 'a', isGlobal: true }), makeItem({ basicId: 'b', isGlobal: false })]
+    const list = [makeItem({ id: 'a', isGlobal: true }), makeItem({ id: 'b', isGlobal: false })]
 
     store.setItems(list)
 
-    expect(store.allItems.map(n => n.basicId)).toEqual(['a', 'b'])
+    expect(store.allItems.map(n => n.id)).toEqual(['a', 'b'])
   })
 
   it('mentionedItems 只收 isGlobal 显式为 false 的通知', () => {
     const store = useNotificationStore()
 
     store.setItems([
-      makeItem({ basicId: 'global', isGlobal: true }),
-      makeItem({ basicId: 'mine', isGlobal: false }),
+      makeItem({ id: 'global', isGlobal: true }),
+      makeItem({ id: 'mine', isGlobal: false }),
     ])
 
-    expect(store.mentionedItems.map(n => n.basicId)).toEqual(['mine'])
+    expect(store.mentionedItems.map(n => n.id)).toEqual(['mine'])
   })
 
   it('isGlobal 缺省（undefined）的通知不算「提及我」', () => {
     const store = useNotificationStore()
 
-    store.setItems([makeItem({ basicId: 'unknown' })])
+    store.setItems([makeItem({ id: 'unknown' })])
 
     expect(store.mentionedItems).toEqual([])
   })
@@ -137,13 +137,13 @@ describe('站内信与「提及我」的切分', () => {
     const store = useNotificationStore()
 
     store.setItems([
-      makeItem({ basicId: 'g-unread', isGlobal: true, notificationStatus: NotificationStatus.Unread }),
-      makeItem({ basicId: 'm-unread', isGlobal: false, notificationStatus: NotificationStatus.Unread }),
-      makeItem({ basicId: 'm-read', isGlobal: false }),
+      makeItem({ id: 'g-unread', isGlobal: true, notificationStatus: NotificationStatus.Unread }),
+      makeItem({ id: 'm-unread', isGlobal: false, notificationStatus: NotificationStatus.Unread }),
+      makeItem({ id: 'm-read', isGlobal: false }),
     ])
 
-    expect(store.unreadAll.map(n => n.basicId)).toEqual(['g-unread', 'm-unread'])
-    expect(store.unreadMentioned.map(n => n.basicId)).toEqual(['m-unread'])
+    expect(store.unreadAll.map(n => n.id)).toEqual(['g-unread', 'm-unread'])
+    expect(store.unreadMentioned.map(n => n.id)).toEqual(['m-unread'])
   })
 })
 
@@ -200,8 +200,8 @@ describe('标记已读 / 已确认', () => {
     vi.setSystemTime(new Date('2024-06-01T00:00:00.000Z'))
     const store = useNotificationStore()
     store.setItems([
-      makeItem({ basicId: 'a', notificationStatus: NotificationStatus.Unread }),
-      makeItem({ basicId: 'b', readTime: '2020-01-01T00:00:00.000Z' }),
+      makeItem({ id: 'a', notificationStatus: NotificationStatus.Unread }),
+      makeItem({ id: 'b', readTime: '2020-01-01T00:00:00.000Z' }),
     ])
 
     store.markAllRead()
@@ -224,29 +224,29 @@ describe('标记已读 / 已确认', () => {
 describe('插入与重置', () => {
   it('prependItem 把新通知插到列表最前', () => {
     const store = useNotificationStore()
-    store.setItems([makeItem({ basicId: 'old' })])
+    store.setItems([makeItem({ id: 'old' })])
 
-    store.prependItem(makeItem({ basicId: 'new' }))
+    store.prependItem(makeItem({ id: 'new' }))
 
-    expect(store.items.map(n => n.basicId)).toEqual(['new', 'old'])
+    expect(store.items.map(n => n.id)).toEqual(['new', 'old'])
   })
 
   it('prependItem 不做去重，同 id 会重复出现（去重责任在调用方）', () => {
     const store = useNotificationStore()
-    store.setItems([makeItem({ basicId: 'dup' })])
+    store.setItems([makeItem({ id: 'dup' })])
 
-    store.prependItem(makeItem({ basicId: 'dup' }))
+    store.prependItem(makeItem({ id: 'dup' }))
 
     expect(store.items).toHaveLength(2)
   })
 
   it('setItems 整体替换列表，旧条目立即消失', () => {
     const store = useNotificationStore()
-    store.setItems([makeItem({ basicId: 'a' })])
+    store.setItems([makeItem({ id: 'a' })])
 
-    store.setItems([makeItem({ basicId: 'b' })])
+    store.setItems([makeItem({ id: 'b' })])
 
-    expect(store.items.map(n => n.basicId)).toEqual(['b'])
+    expect(store.items.map(n => n.id)).toEqual(['b'])
   })
 
   it('$reset 清空列表并复位 loading', () => {

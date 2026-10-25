@@ -157,7 +157,7 @@ function recordFields(kind: 'done' | 'cc'): ListFieldSchema[] {
   fields.push(
     { key: 'instanceStatus', title: t('workflow.approval.col_status'), dataType: 'string', width: 120, order: 20, render: row => statusTag((row as unknown as WorkflowApprovalRecordItemDto).instanceStatus) },
     { key: 'instanceOutcome', title: t('workflow.approval.col_outcome'), dataType: 'string', width: 120, order: 21, render: row => outcomeTag((row as unknown as WorkflowApprovalRecordItemDto).instanceOutcome) },
-    { key: 'createdTime', title: t(kind === 'done' ? 'workflow.approval.col_handled_time' : 'workflow.approval.col_cc_time'), dataType: 'datetime', minWidth: 170, order: 22 },
+    { key: 'createdAt', title: t(kind === 'done' ? 'workflow.approval.col_handled_time' : 'workflow.approval.col_cc_time'), dataType: 'datetime', minWidth: 170, order: 22 },
   )
   return fields
 }
@@ -165,7 +165,7 @@ function recordFields(kind: 'done' | 'cc'): ListFieldSchema[] {
 const doneSchema = computed<PageSchema>(() => ({
   pageCode: 'workflow_approval.done',
   pageName: t('workflow.approval.tab_done'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: recordFields('done'),
   resource: {
     page: params => workflowApprovalApi.donePage({
@@ -179,7 +179,7 @@ const doneSchema = computed<PageSchema>(() => ({
 const ccSchema = computed<PageSchema>(() => ({
   pageCode: 'workflow_approval.cc',
   pageName: t('workflow.approval.tab_cc'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: recordFields('cc'),
   resource: {
     page: params => workflowApprovalApi.ccPage({
@@ -199,7 +199,7 @@ const statusOptions = computed(() => Object.values(WorkflowInstanceStatus).map(s
 const startedSchema = computed<PageSchema>(() => ({
   pageCode: 'workflow_approval.started',
   pageName: t('workflow.approval.tab_started'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: [
     keywordField.value,
     {
@@ -253,7 +253,7 @@ function onRecordAction(payload: SchemaActionPayload) {
 function onStartedAction(payload: SchemaActionPayload) {
   const row = payload.row as unknown as WorkflowApprovalInstanceItemDto | undefined
   if (row && payload.key === 'view')
-    openDetail(String(row.basicId))
+    openDetail(String(row.id))
 }
 </script>
 

@@ -138,7 +138,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'code_gen.table',
   pageName: t('develop.code_gen.tabs.table'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -196,7 +196,7 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'preview':
       if (row) {
-        currentTableId.value = row.basicId
+        currentTableId.value = row.id
         currentTableName.value = row.tableName
         previewVisible.value = true
       }
@@ -213,7 +213,7 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'columns':
       if (row) {
-        currentTableId.value = row.basicId
+        currentTableId.value = row.id
         columnVisible.value = true
       }
       break
@@ -224,13 +224,13 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'edit':
       if (row) {
-        currentTableId.value = row.basicId
+        currentTableId.value = row.id
         editVisible.value = true
       }
       break
     case 'runtime':
       if (row) {
-        currentTableId.value = row.basicId
+        currentTableId.value = row.id
         currentTableName.value = row.tableName
         runtimeVisible.value = true
       }
@@ -261,7 +261,7 @@ async function handleGenerate(row: CodeGenTableListItemDto) {
   generating.value = true
   try {
     const result = await codeGenerationApi.generate({
-      tableId: row.basicId,
+      tableId: row.id,
       genType: GenType.Zip,
     })
     if (!result.success) {
@@ -293,7 +293,7 @@ async function handleGenerateToDisk(row: CodeGenTableListItemDto) {
   generating.value = true
   try {
     const result = await codeGenerationApi.generate({
-      tableId: row.basicId,
+      tableId: row.id,
       genType: GenType.Project,
     })
     if (!result.success) {
@@ -325,7 +325,7 @@ function handleSync(row: CodeGenTableListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        const result = await codeGenerationApi.syncSchema(row.basicId)
+        const result = await codeGenerationApi.syncSchema(row.id)
         toast.success(t('develop.code_gen.table.sync_result', {
           added: result.addedCount,
           updated: result.updatedCount,
@@ -350,7 +350,7 @@ function handleDelete(row: CodeGenTableListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await codeGenTableApi.delete(row.basicId)
+        await codeGenTableApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }

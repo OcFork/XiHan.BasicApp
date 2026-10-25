@@ -129,7 +129,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   function currentUserId(): string {
-    return useUserStore().userInfo?.basicId ?? ''
+    return useUserStore().userInfo?.id ?? ''
   }
 
   // 未读合计（免打扰会话不计入顶栏角标）
@@ -350,7 +350,7 @@ export const useChatStore = defineStore('chat', () => {
   function touchConversationBySend(saved: ChatMessageItem) {
     const conv = conversations.value.find(c => c.conversationId === saved.conversationId)
     if (conv) {
-      conv.lastMessageTime = saved.createdTime
+      conv.lastMessageTime = saved.createdAt
       conv.lastMessagePreview = previewOf(saved)
       sortConversations()
     }
@@ -376,7 +376,7 @@ export const useChatStore = defineStore('chat', () => {
       attachments: input.attachments ?? [],
       isRecalled: false,
       clientMessageId,
-      createdTime: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       replyToMessageId: input.replyToMessageId,
       replyPreview: localExtras?.replyPreview ?? null,
       mentionedUserIds: input.mentionedUserIds ?? [],
@@ -634,7 +634,7 @@ export const useChatStore = defineStore('chat', () => {
       loadConversations().catch(() => {})
       return
     }
-    conv.lastMessageTime = conversation.lastMessageTime ?? message.createdTime
+    conv.lastMessageTime = conversation.lastMessageTime ?? message.createdAt
     conv.lastMessagePreview = conversation.lastMessagePreview ?? previewOf(message)
     const isSelf = message.senderUserId === currentUserId()
     // 系统提示消息（senderUserId=0）：只刷时间线与预览，不计未读（与后端一致）

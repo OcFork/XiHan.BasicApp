@@ -53,7 +53,7 @@ const editFormId = useId()
 const statusEnumOptions = useEnumOptions('EnableStatus', STATUS_OPTIONS)
 
 interface TableFormModel {
-  basicId: string
+  id: string
   tableName: string
   tableComment?: string | null
   className: string
@@ -127,7 +127,7 @@ function isDefaultActions(actions: string[]) {
 
 function createDefaultForm(): TableFormModel {
   return {
-    basicId: '',
+    id: '',
     tableName: '',
     tableComment: null,
     className: '',
@@ -202,7 +202,7 @@ async function loadDetail() {
       value: column.columnName,
     }))
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       tableName: detail.tableName,
       tableComment: detail.tableComment ?? null,
       className: detail.className,
@@ -246,8 +246,8 @@ async function ensureTableOptions() {
   try {
     const tables = await codeGenTableApi.options()
     tableOptions.value = tables
-      .filter(item => item.basicId !== form.value.basicId)
-      .map(item => ({ label: `${item.tableName}（${item.className}）`, value: item.basicId }))
+      .filter(item => item.id !== form.value.id)
+      .map(item => ({ label: `${item.tableName}（${item.className}）`, value: item.id }))
   }
   catch {
     tableOptions.value = []
@@ -314,7 +314,7 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     const updateInput: CodeGenTableUpdateDto = {
-      basicId: form.value.basicId,
+      id: form.value.id,
       tableName: form.value.tableName.trim(),
       tableComment: form.value.tableComment,
       className: form.value.className.trim(),
@@ -343,7 +343,7 @@ async function handleSubmit() {
     await codeGenTableApi.update(updateInput)
     if (editingStatus.value !== form.value.status) {
       await codeGenTableApi.updateStatus({
-        basicId: form.value.basicId,
+        id: form.value.id,
         remark: t('develop.code_gen.table_edit.update_status_remark'),
         status: form.value.status,
       })

@@ -3,7 +3,7 @@ import type { PermissionGrantItem } from '~/components/common/permission-grant-p
 import { ValidityStatus } from '@/api'
 
 /** 版本权限穿梭框条目：目录项，或生效中却不在目录里的映射 */
-export type EditionPermissionItem = PermissionGrantItem & { basicId: ApiId }
+export type EditionPermissionItem = PermissionGrantItem & { id: ApiId }
 
 /** 版本权限的变更：字段与批量接口一致，提交时补上版本主键 */
 export type EditionGrantDiff = Omit<TenantEditionPermissionBatchUpdateDto, 'editionId'>
@@ -23,11 +23,11 @@ export function mergeMappedIntoCatalog(
   catalog: readonly PermissionListItemDto[],
   mappings: readonly TenantEditionPermissionListItemDto[],
 ): EditionPermissionItem[] {
-  const known = new Set(catalog.map(permission => permission.basicId))
+  const known = new Set(catalog.map(permission => permission.id))
   const extra = mappings
     .filter(mapping => mapping.status === ValidityStatus.Valid && !known.has(mapping.permissionId))
     .map(mapping => ({
-      basicId: mapping.permissionId,
+      id: mapping.permissionId,
       permissionCode: mapping.permissionCode ?? '',
       permissionName: mapping.permissionName ?? String(mapping.permissionId),
       moduleCode: mapping.moduleCode,
@@ -55,12 +55,12 @@ export function diffEditionGrants(
       diff.grantPermissionIds.push(permissionId)
     }
     else if (mapping.status !== ValidityStatus.Valid) {
-      diff.statusChanges.push({ basicId: mapping.basicId, status: ValidityStatus.Valid })
+      diff.statusChanges.push({ id: mapping.id, status: ValidityStatus.Valid })
     }
   }
   for (const mapping of mappings) {
     if (mapping.status === ValidityStatus.Valid && !target.has(mapping.permissionId)) {
-      diff.revokeEditionPermissionIds.push(mapping.basicId)
+      diff.revokeEditionPermissionIds.push(mapping.id)
     }
   }
   return diff

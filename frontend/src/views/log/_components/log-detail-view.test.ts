@@ -37,7 +37,7 @@ describe('日志详情定义', () => {
   })
 
   it.each(Object.entries(SCHEMAS))('%s：不再列出重复的审计列', (_, schema) => {
-    expect(schema.fields.map(field => field.key).filter(key => ['createdTime', 'createdId', 'createdBy'].includes(key))).toEqual([])
+    expect(schema.fields.map(field => field.key).filter(key => ['createdAt', 'createdId', 'createdBy'].includes(key))).toEqual([])
   })
 
   it.each(Object.entries(SCHEMAS))('%s：结果字段带语气', (_, schema) => {
@@ -62,10 +62,10 @@ describe('日志详情视图', () => {
     method: 'POST',
     requestUrl: '/api/WorkflowDefinition/NewVersion',
     traceId: '9ef5a8c3',
-    basicId: 207795978470952990n.toString(),
+    id: 207795978470952990n.toString(),
     errorMessage: null,
     userAgent: 'Mozilla/5.0',
-    createdTime: '2026-10-14 16:53:30',
+    createdAt: '2026-10-14 16:53:30',
   }
   const view = buildLogDetailView(schema, record, format)
 
@@ -79,13 +79,13 @@ describe('日志详情视图', () => {
   it('分组按固定顺序、跳过空组，抬头用过的字段不重复出现', () => {
     expect(view.groups.map(group => group.group)).toEqual(['subject', 'request', 'trace'])
     const groupKeys = view.groups.flatMap(group => group.entries.map(entry => entry.field.key))
-    expect(groupKeys).toEqual(['module', 'function', 'method', 'requestUrl', 'traceId', 'basicId'])
+    expect(groupKeys).toEqual(['module', 'function', 'method', 'requestUrl', 'traceId', 'id'])
     expect(LOG_DETAIL_GROUP_ORDER[0]).toBe('subject')
   })
 
   it('代码块只留有值的，审计列这类定义里没有的键不出现', () => {
     expect(view.blocks.map(block => block.field.key)).toEqual(['userAgent'])
-    expect(JSON.stringify(view)).not.toContain('createdTime')
+    expect(JSON.stringify(view)).not.toContain('createdAt')
   })
 
   it('没有语气的结果字段退回成普通标签', () => {

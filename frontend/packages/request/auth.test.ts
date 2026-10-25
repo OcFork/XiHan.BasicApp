@@ -22,7 +22,7 @@ import {
   RequestClient,
 } from './index'
 
-const REFRESH_URL = '/api/Auth/RefreshToken'
+const REFRESH_URL = '/api/auth:refresh-token'
 const logs = useRequestLogs()
 
 let replace: Mock<() => Promise<void>>
@@ -42,8 +42,9 @@ beforeEach(() => {
 it('423 拉起会话锁定遮罩并透传服务端回传的锁定信息', async () => {
   storeTokens()
   const client = makeClient(config => Promise.reject(httpError(423, {
-    code: 423,
-    data: { reason: 'lockscreen', displayName: '曦寒', avatarUrl: 'https://cdn/x.png' },
+    status: 423,
+    code: 'SAAS_LOCKED_001',
+    details: { reason: 'lockscreen', displayName: '曦寒', avatarUrl: 'https://cdn/x.png' },
   }, config)))
 
   await client.getFlat('/Sys/Any')
@@ -59,7 +60,7 @@ it('423 拉起会话锁定遮罩并透传服务端回传的锁定信息', async 
 it('423 绝不登出：不清令牌、不跳登录页、不调登出钩子', async () => {
   // 回归锚点：锁定态下身份仍然有效，走 forceLogout 会把用户直接踢下线
   storeTokens()
-  const client = makeClient(config => Promise.reject(httpError(423, { data: {} }, config)))
+  const client = makeClient(config => Promise.reject(httpError(423, { details: {} }, config)))
 
   await client.getFlat('/Sys/Any')
 
@@ -74,7 +75,7 @@ it('423 也不触发令牌刷新', async () => {
   const requested: string[] = []
   const client = makeClient((config) => {
     requested.push(String(config.url))
-    return Promise.reject(httpError(423, { data: {} }, config))
+    return Promise.reject(httpError(423, { details: {} }, config))
   })
 
   await client.getFlat('/Sys/Any')
@@ -84,7 +85,7 @@ it('423 也不触发令牌刷新', async () => {
 
 it('423 响应体缺字段或字段类型不对时锁定信息统一为 null', async () => {
   const client = makeClient(config => Promise.reject(httpError(423, {
-    data: { reason: 42, displayName: null },
+    details: { reason: 42, displayName: null },
   }, config)))
   const bare = makeClient(config => Promise.reject(httpError(423, null, config)))
 
@@ -131,11 +132,11 @@ it('401 刷新成功后用新令牌重放原请求并返回业务数据', async 
   const seenAuthorizations: string[] = []
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
-      return Promise.resolve(ok(config, { isSuccess: true, code: 200, data: { accessToken: 'new-access' } }))
+      return Promise.resolve(ok(config, { accessToken: 'new-access' }))
     }
     seenAuthorizations.push(String(config.headers.get('Authorization')))
     return String(config.headers.get('Authorization')) === 'Bearer new-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, code: 200, data: { id: 9 } }))
+      ? Promise.resolve(ok(config, { id: 9 }))
       : Promise.reject(httpError(401, null, config))
   })
 
@@ -151,10 +152,10 @@ it('刷新请求带上本地的旧访问令牌与刷新令牌作为请求体', a
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
       refreshBody = JSON.parse(String(config.data))
-      return Promise.resolve(ok(config, { isSuccess: true, data: { accessToken: 'new-access' } }))
+      return Promise.resolve(ok(config, { accessToken: 'new-access' }))
     }
     return String(config.headers.get('Authorization')) === 'Bearer new-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, data: null }))
+      ? Promise.resolve(ok(config, null))
       : Promise.reject(httpError(401, null, config))
   })
 
@@ -163,14 +164,14 @@ it('刷新请求带上本地的旧访问令牌与刷新令牌作为请求体', a
   expect(refreshBody).toEqual({ accessToken: 'old-access', refreshToken: 'old-refresh' })
 })
 
-it('刷新响应未包裹信封时直接读顶层的 accessToken', async () => {
+it('刷新响应的载荷就是令牌对，直接读顶层的 accessToken 与 refreshToken', async () => {
   storeTokens()
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
       return Promise.resolve(ok(config, { accessToken: 'flat-access', refreshToken: 'flat-refresh' }))
     }
     return String(config.headers.get('Authorization')) === 'Bearer flat-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, data: 'done' }))
+      ? Promise.resolve(ok(config, 'done'))
       : Promise.reject(httpError(401, null, config))
   })
 
@@ -182,10 +183,10 @@ it('刷新响应带新刷新令牌时一并落盘，不带时保留原刷新令�
   storeTokens()
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
-      return Promise.resolve(ok(config, { isSuccess: true, data: { accessToken: 'new-access' } }))
+      return Promise.resolve(ok(config, { accessToken: 'new-access' }))
     }
     return String(config.headers.get('Authorization')) === 'Bearer new-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, data: null }))
+      ? Promise.resolve(ok(config, null))
       : Promise.reject(httpError(401, null, config))
   })
 
@@ -197,7 +198,7 @@ it('刷新响应带新刷新令牌时一并落盘，不带时保留原刷新令�
 it('刷新响应缺 accessToken 时判定刷新失败并登出', async () => {
   storeTokens()
   const client = makeClient(config => (config.url === REFRESH_URL
-    ? Promise.resolve(ok(config, { isSuccess: true, data: { refreshToken: 'only-refresh' } }))
+    ? Promise.resolve(ok(config, { refreshToken: 'only-refresh' }))
     : Promise.reject(httpError(401, null, config))))
 
   const { error } = await client.getFlat('/Sys/Detail')
@@ -244,7 +245,7 @@ it('重放后再次 401 时不发起第二次刷新，直接登出', async () =>
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
       refreshCount += 1
-      return Promise.resolve(ok(config, { isSuccess: true, data: { accessToken: `token-${refreshCount}` } }))
+      return Promise.resolve(ok(config, { accessToken: `token-${refreshCount}` }))
     }
     businessCount += 1
     return Promise.reject(httpError(401, null, config))
@@ -263,10 +264,10 @@ it('多个并发 401 只触发一次刷新，并用新令牌重放全部挂起�
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
       refreshCount += 1
-      return delayed(() => ok(config, { isSuccess: true, data: { accessToken: 'shared-access' } }))
+      return delayed(() => ok(config, { accessToken: 'shared-access' }))
     }
     return String(config.headers.get('Authorization')) === 'Bearer shared-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, data: config.url }))
+      ? Promise.resolve(ok(config, config.url))
       : Promise.reject(httpError(401, null, config))
   })
 
@@ -351,10 +352,10 @@ it('401 重放不会重复登记请求日志，最终状态收敛为 success', a
   storeTokens()
   const client = makeClient((config) => {
     if (config.url === REFRESH_URL) {
-      return Promise.resolve(ok(config, { isSuccess: true, data: { accessToken: 'new-access' } }))
+      return Promise.resolve(ok(config, { accessToken: 'new-access' }))
     }
     return String(config.headers.get('Authorization')) === 'Bearer new-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, code: 200, data: null }))
+      ? Promise.resolve(ok(config, null))
       : Promise.reject(httpError(401, null, config))
   })
 
@@ -387,10 +388,10 @@ it('刷新端点路径可由构造参数改写', async () => {
   const client = makeClient((config) => {
     requested.push(String(config.url))
     if (config.url === '/api/Identity/Renew') {
-      return Promise.resolve(ok(config, { isSuccess: true, data: { accessToken: 'new-access' } }))
+      return Promise.resolve(ok(config, { accessToken: 'new-access' }))
     }
     return String(config.headers.get('Authorization')) === 'Bearer new-access'
-      ? Promise.resolve(ok(config, { isSuccess: true, data: null }))
+      ? Promise.resolve(ok(config, null))
       : Promise.reject(httpError(401, null, config))
   }, { refreshTokenUrl: '/Identity/Renew' })
 
@@ -412,7 +413,7 @@ it('未绑定 router 时强制登出退化为整页跳转到登录页', async ()
 
 it('旁路刷新入口刷新成功时返回新令牌且不登出', async () => {
   storeTokens()
-  makeClient(config => Promise.resolve(ok(config, { isSuccess: true, data: { accessToken: 'signalr-access' } })))
+  makeClient(config => Promise.resolve(ok(config, { accessToken: 'signalr-access' })))
 
   await expect(refreshSessionToken()).resolves.toBe('signalr-access')
   expect(logout).not.toHaveBeenCalled()
@@ -433,7 +434,7 @@ it('旁路刷新入口在没有刷新令牌时返回 null 并登出，不发任�
   const requested: string[] = []
   makeClient((config) => {
     requested.push(String(config.url))
-    return Promise.resolve(ok(config, { isSuccess: true, data: null }))
+    return Promise.resolve(ok(config, null))
   })
 
   await expect(refreshSessionToken()).resolves.toBeNull()

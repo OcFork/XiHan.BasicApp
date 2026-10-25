@@ -80,7 +80,7 @@ export interface ChatMessageItem {
   isRecalled: boolean
   /** 客户端消息ID（乐观上屏去重） */
   clientMessageId?: null | string
-  createdTime: string
+  createdAt: string
   /** 被回复消息ID */
   replyToMessageId?: null | string
   /** 回复快照「{发送人}: {内容截断}」 */
@@ -295,7 +295,7 @@ export interface ChatApiContract {
   openDepartmentConversation: (departmentId: string) => Promise<ChatConversationOpenResult>
   addMembers: (conversationId: string, userIds: string[]) => Promise<void>
   removeMember: (conversationId: string, userId: string) => Promise<void>
-  /** 主动退群：退出对象恒为当前登录用户，因而只需 chat:read，不需要群治理权限 */
+  /** 主动退群：退出对象恒为当前登录用户，因而只需 chat.read，不需要群治理权限 */
   leaveConversation: (conversationId: string) => Promise<void>
   sendMessage: (input: ChatMessageSendInput) => Promise<ChatMessageItem>
   recallMessage: (messageId: string) => Promise<void>

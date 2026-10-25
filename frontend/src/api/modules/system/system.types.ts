@@ -31,7 +31,7 @@ export enum TwoFactorMethod {
 }
 
 export interface UserManagementDepartmentDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   departmentCode?: string | null
   departmentId: ApiId
   departmentName?: string | null
@@ -48,7 +48,7 @@ export interface UserManagementSecurityDto extends BasicDto {
   allowMultiLogin: boolean
   createdBy?: string | null
   createdId?: ApiId | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   emailVerified: boolean
   failedLoginAttempts: number
   isLocked: boolean
@@ -62,7 +62,7 @@ export interface UserManagementSecurityDto extends BasicDto {
   maxLoginDevices: number
   modifiedBy?: string | null
   modifiedId?: ApiId | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   nickName?: string | null
   passwordExpirationTime?: DateTimeString | null
   phoneVerified: boolean
@@ -75,11 +75,11 @@ export interface UserManagementSecurityDto extends BasicDto {
 }
 
 export interface UserManagementExternalLoginDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   externalAccountMasked: string
   externalEmailMasked?: string | null
   lastLoginTime?: DateTimeString | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   nickName?: string | null
   provider: string
   providerDisplayName?: string | null
@@ -90,7 +90,7 @@ export interface UserManagementExternalLoginDto extends BasicDto {
 
 export interface UserManagementPasswordHistoryDto extends BasicDto {
   changedTime: DateTimeString
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   nickName?: string | null
   realName?: string | null
   userId: ApiId
@@ -114,8 +114,8 @@ export interface UserManagementDetailDto {
 
 export interface RoleManagementGrantedUserDto {
   avatar?: string | null
-  basicId: ApiId
-  createdTime: DateTimeString
+  id: ApiId
+  createdAt: DateTimeString
   effectiveTime?: DateTimeString | null
   expirationTime?: DateTimeString | null
   grantReason?: string | null
@@ -130,8 +130,8 @@ export interface RoleManagementGrantedUserDto {
 
 /** 部门管理成员项 */
 export interface DepartmentManagementMemberDto {
-  basicId: ApiId
-  createdTime: DateTimeString
+  id: ApiId
+  createdAt: DateTimeString
   isMain: boolean
   jobLevel?: string | null
   jobNumber?: string | null

@@ -149,7 +149,7 @@ it('请求刚出站时日志处于 pending，方法名大写且带上拼接后�
   let inFlight: FrontendRequestLog | undefined
   const client = respondingClient(() => {
     inFlight = logs.value[0]
-    return { isSuccess: true, code: 200, data: null }
+    return null
   })
 
   await client.post('/Sys/Save', { a: 1 })
@@ -170,14 +170,14 @@ it('日志中记录的 requestId 与实际发出的 X-Request-Id 头一致', asy
   expect(logs.value[0]?.requestId).toBe(String(calls[0]?.headers.get('X-Request-Id')))
 })
 
-it('成功响应把日志更新为 success 并回填状态码、业务码、消息与 traceId', async () => {
+it('成功响应把日志更新为 success 并回填状态码与耗时；载荷是业务数据，不再从中读业务码与消息', async () => {
   vi.useFakeTimers()
   // 显式给定时区，避免假定时器期间还要走 Intl.DateTimeFormat
   LocalStorage.set(APP_TIMEZONE_KEY, 'UTC')
   vi.setSystemTime(new Date('2026-08-27T02:00:00.000Z'))
   const client = respondingClient(() => {
     vi.advanceTimersByTime(120)
-    return { isSuccess: true, code: 200, message: '操作成功', traceId: 'trace-9', data: { id: 1 } }
+    return { id: 1, code: 'ORDER-1', message: '业务字段' }
   })
 
   await client.get('/Sys/Detail')
@@ -185,11 +185,10 @@ it('成功响应把日志更新为 success 并回填状态码、业务码、消�
   expect(logs.value[0]).toMatchObject({
     status: 'success',
     statusCode: 200,
-    responseCode: 200,
-    message: '操作成功',
-    traceId: 'trace-9',
     duration: 120,
   })
+  expect(logs.value[0]?.responseCode).toBeUndefined()
+  expect(logs.value[0]?.message).toBeUndefined()
 })
 
 it('系统时钟回拨时耗时被夹到 0 而不是记成负数', async () => {
@@ -199,7 +198,7 @@ it('系统时钟回拨时耗时被夹到 0 而不是记成负数', async () => {
   vi.setSystemTime(new Date('2026-08-27T03:00:00.000Z'))
   const client = respondingClient(() => {
     vi.setSystemTime(new Date('2026-08-27T02:59:55.000Z'))
-    return { isSuccess: true, code: 200, data: null }
+    return null
   })
 
   await client.get('/Sys/ClockSkew')
@@ -208,19 +207,19 @@ it('系统时钟回拨时耗时被夹到 0 而不是记成负数', async () => {
 })
 
 it('traceId 不是字符串时不写进日志', async () => {
-  const client = respondingClient(() => ({ isSuccess: true, code: 200, traceId: 12345, data: null }))
+  const client = respondingClient(() => ({ traceId: 12345 }))
 
   await client.get('/Sys/Detail')
 
   expect(logs.value[0]?.traceId).toBeUndefined()
 })
 
-it('状态码错误把日志更新为 error 并优先记录后端返回的消息', async () => {
-  const client = failingClient(config => httpError(500, { code: 500, message: '后端记账消息' }, config))
+it('状态码错误把日志更新为 error 并记录 Problem Details 的错误码、说明与 traceId', async () => {
+  const client = failingClient(config => httpError(500, { type: 'urn:xihan:error:KERNEL_UNEXPECTED_001', title: 'UNEXPECTED', status: 500, detail: '后端记账消息', code: 'KERNEL_UNEXPECTED_001', traceId: 'trace-9' }, config))
 
   await client.getFlat('/Sys/Boom')
 
-  expect(logs.value[0]).toMatchObject({ status: 'error', statusCode: 500, responseCode: 500, message: '后端记账消息' })
+  expect(logs.value[0]).toMatchObject({ status: 'error', statusCode: 500, responseCode: 'KERNEL_UNEXPECTED_001', message: '后端记账消息', traceId: 'trace-9' })
 })
 
 it('状态码错误无后端消息时日志记录的是用户看到的中文文案，而不是 axios 英文原文', async () => {
@@ -244,18 +243,14 @@ it('网络错误（无响应）同样写入归一化文案的 error 日志且不
   expect(logs.value[0]?.statusCode).toBeUndefined()
 })
 
-it('业务信封失败时也把日志更新为 error 并记录业务消息', async () => {
-  const client = respondingClient(() => ({ isSuccess: false, code: 4003, message: '余额不足', traceId: 'trace-x' }))
+it('2xx 响应一律记为 success：载荷里的 isSuccess / code 是业务字段，不再按信封判失败', async () => {
+  const client = respondingClient(() => ({ isSuccess: false, code: 4003, message: '余额不足' }))
 
-  await client.getFlat('/Pay/Deduct')
+  const { data, error } = await client.getFlat('/Pay/Deduct')
 
-  expect(logs.value[0]).toMatchObject({
-    status: 'error',
-    statusCode: 200,
-    responseCode: 4003,
-    message: '余额不足',
-    traceId: 'trace-x',
-  })
+  expect(error).toBeNull()
+  expect(data).toEqual({ isSuccess: false, code: 4003, message: '余额不足' })
+  expect(logs.value[0]).toMatchObject({ status: 'success', statusCode: 200 })
 })
 
 it('配置里已带 _meta 的请求不重复登记日志也不再覆盖 X-Request-Id', async () => {
@@ -272,7 +267,7 @@ it('配置里已带 _meta 的请求不重复登记日志也不再覆盖 X-Reques
 })
 
 it('多次请求的日志按最新在前排列', async () => {
-  const client = respondingClient(() => ({ isSuccess: true, code: 200, data: null }))
+  const client = respondingClient(() => null)
 
   await client.get('/First')
   await client.get('/Second')
@@ -327,7 +322,7 @@ function capturingClient(calls: InternalAxiosRequestConfig[]): RequestClient {
       calls.push(config)
       return Promise.resolve({
         config,
-        data: { isSuccess: true, code: 200, data: null },
+        data: null,
         headers: new AxiosHeaders(),
         status: 200,
         statusText: 'OK',

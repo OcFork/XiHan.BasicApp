@@ -79,7 +79,7 @@ export interface FileStoragePageQueryDto extends PageRequest {
 
 export interface FileListItemDto extends BasicDto {
   accessLevel: ResourceAccessLevel
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   downloadCount: number
   duration?: number | null
   expirationTime?: DateTimeString | null
@@ -93,7 +93,7 @@ export interface FileListItemDto extends BasicDto {
   lastAccessTime?: DateTimeString | null
   lastDownloadTime?: DateTimeString | null
   mimeType?: string | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   originalName: string
   retentionDays: number
   status: FileStatus
@@ -122,7 +122,7 @@ export interface FileStorageListItemDto extends BasicDto {
   accessControl?: string | null
   cacheControl?: string | null
   compressionRatio?: number | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   enableCdn: boolean
   fileId: ApiId
   isBackup: boolean
@@ -131,7 +131,7 @@ export interface FileStorageListItemDto extends BasicDto {
   isSynced: boolean
   isVerified: boolean
   lastVerifiedTime?: DateTimeString | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   retryCount: number
   sort: number
   status: FileStorageStatus

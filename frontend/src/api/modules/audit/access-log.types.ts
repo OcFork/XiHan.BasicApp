@@ -33,7 +33,7 @@ export interface AccessLogListItemDto extends BasicDto {
   accessResult: AccessResult
   accessTime: DateTimeString
   browser?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   device?: string | null
   errorMessage?: string | null
   executionTime: NumericString

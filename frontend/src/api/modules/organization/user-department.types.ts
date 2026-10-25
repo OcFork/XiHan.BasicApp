@@ -3,7 +3,7 @@ import type { EnableStatus, ValidityStatus } from '../shared'
 import type { DepartmentType } from './department.types'
 
 export interface UserDepartmentListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   departmentCode?: string | null
   departmentId: ApiId
   departmentName?: string | null

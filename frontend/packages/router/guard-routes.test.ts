@@ -77,7 +77,7 @@ function createGuardedRouter(options: RouterOptionsLike = {}): Router {
 }
 
 function userInfoFixture(overrides: Partial<UserInfo> = {}): UserInfo {
-  return { basicId: 'u-1', userName: 'tester', roles: ['admin'], permissions: ['sys:view'], ...overrides }
+  return { id: 'u-1', userName: 'tester', roles: ['admin'], permissions: ['sys:view'], ...overrides }
 }
 
 function permissionFixture(overrides: Partial<PermissionInfo> = {}): PermissionInfo {

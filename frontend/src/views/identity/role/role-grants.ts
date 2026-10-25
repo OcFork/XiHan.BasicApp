@@ -3,7 +3,7 @@ import type { PermissionGrantItem } from '~/components/common/permission-grant-p
 import { PermissionAction, ValidityStatus } from '@/api'
 
 /** 权限穿梭框条目：目录项，或已授予却不在目录里的授权 */
-export type RolePermissionItem = PermissionGrantItem & Partial<Pick<PermissionListItemDto, 'side'>> & { basicId: ApiId }
+export type RolePermissionItem = PermissionGrantItem & Partial<Pick<PermissionListItemDto, 'side'>> & { id: ApiId }
 
 /** 撤销是软删除（Status=Invalid），列表含历史行；比对与回显只认有效授权 */
 export function validRoleGrants(grants: readonly RolePermissionListItemDto[]) {
@@ -18,11 +18,11 @@ export function mergeGrantedIntoCatalog(
   catalog: readonly PermissionListItemDto[],
   grants: readonly RolePermissionListItemDto[],
 ): RolePermissionItem[] {
-  const known = new Set(catalog.map(permission => permission.basicId))
+  const known = new Set(catalog.map(permission => permission.id))
   const extra = validRoleGrants(grants)
     .filter(grant => !known.has(grant.permissionId))
     .map(grant => ({
-      basicId: grant.permissionId,
+      id: grant.permissionId,
       permissionCode: grant.permissionCode ?? '',
       permissionName: grant.permissionName ?? String(grant.permissionId),
       moduleCode: grant.moduleCode,
@@ -53,7 +53,7 @@ export function diffMenuGrants(
     grantPermissionIds: [...target].filter(permId => !granted.has(permId)),
     revokeRolePermissionIds: valid
       .filter(grant => managed.has(grant.permissionId) && !target.has(grant.permissionId))
-      .map(grant => grant.basicId),
+      .map(grant => grant.id),
   }
 }
 

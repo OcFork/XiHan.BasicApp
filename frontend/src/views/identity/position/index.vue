@@ -25,7 +25,7 @@ import { formatDate, getOptionLabel } from '~/utils'
 defineOptions({ name: 'IdentityPositionPage' })
 
 interface PositionFormModel {
-  basicId?: string
+  id?: string
   positionCode: string
   positionName: string
   remark?: string | null
@@ -54,7 +54,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   // enum + options 由框架自动渲染为徽标，无需自定义 render
   { key: 'status', title: t('identity.position.status'), dataType: 'enum', sortable: true, searchable: true, searchMultiple: true, importable: true, dictionaryCode: 'EnableStatus', options: statusOptions.value, searchPlaceholder: t('identity.position.status_placeholder'), width: 100, order: 3 },
   { key: 'sort', title: t('identity.position.sort'), dataType: 'number', sortable: true, importable: true, width: 90, order: 4 },
-  { key: 'createdTime', title: t('identity.position.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 5 },
+  { key: 'createdAt', title: t('identity.position.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 5 },
 ])
 
 // ── 资源适配器：归一化查询参数 → 后端 API ──
@@ -65,7 +65,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'identity.position.delete',
   statusPermission: 'identity.position.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -80,7 +80,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
     remove: id => positionApi.delete(id),
-    updateStatus: (id, enabled) => positionApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => positionApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('identity.position.add'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'identity.position.create' },
@@ -129,7 +129,7 @@ const detailLoading = ref(false)
 const currentDetail = ref<PositionDetailDto | null>(null)
 const positionForm = ref<PositionFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (positionForm.value.basicId ? t('identity.position.edit_title') : t('identity.position.add_title')))
+const modalTitle = computed(() => (positionForm.value.id ? t('identity.position.edit_title') : t('identity.position.add_title')))
 
 function createDefaultForm(): PositionFormModel {
   return {
@@ -167,13 +167,13 @@ async function handleEdit(row: PositionListItemDto) {
   // 列表项不含备注，编辑前取详情回填，避免保存时把备注置空
   let detail: PositionDetailDto | null = null
   try {
-    detail = await positionApi.detail(row.basicId)
+    detail = await positionApi.detail(row.id)
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('identity.position.load_detail_failed'))
   }
   positionForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     positionCode: row.positionCode,
     positionName: row.positionName,
     remark: detail?.remark ?? null,
@@ -189,7 +189,7 @@ async function handleView(row: PositionListItemDto) {
   currentDetail.value = null
 
   try {
-    currentDetail.value = await positionApi.detail(row.basicId)
+    currentDetail.value = await positionApi.detail(row.id)
     if (!currentDetail.value) {
       toast.warning(t('identity.position.detail_not_found'))
     }
@@ -203,7 +203,7 @@ async function handleView(row: PositionListItemDto) {
 }
 
 async function handleDelete(row: PositionListItemDto) {
-  await positionApi.delete(row.basicId)
+  await positionApi.delete(row.id)
   toast.success(t('common.messages.delete_success'))
   reloadPage()
 }
@@ -211,7 +211,7 @@ async function handleDelete(row: PositionListItemDto) {
 async function handleToggleStatus(row: PositionListItemDto) {
   const nextStatus = row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled
   try {
-    await positionApi.updateStatus({ basicId: row.basicId, status: nextStatus })
+    await positionApi.updateStatus({ id: row.id, status: nextStatus })
     toast.success(t('common.messages.status_updated'))
     reloadPage()
   }
@@ -225,7 +225,7 @@ function validateForm() {
     toast.warning(t('identity.position.validate_position_name'))
     return false
   }
-  if (!positionForm.value.basicId && !positionForm.value.positionCode.trim()) {
+  if (!positionForm.value.id && !positionForm.value.positionCode.trim()) {
     toast.warning(t('identity.position.validate_position_code'))
     return false
   }
@@ -239,9 +239,9 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (positionForm.value.basicId) {
+    if (positionForm.value.id) {
       const updateInput: PositionUpdateDto = {
-        basicId: positionForm.value.basicId,
+        id: positionForm.value.id,
         positionName: positionForm.value.positionName.trim(),
         remark: toStr(positionForm.value.remark),
         sort: positionForm.value.sort,
@@ -332,7 +332,7 @@ async function handleSubmit() {
             <XhDescriptionsItem>
               <XhDescriptionsLabel>{{ t('identity.position.created_time') }}</XhDescriptionsLabel>
               <XhDescriptionsValue>
-                {{ formatNullableDate(currentDetail.createdTime) }}
+                {{ formatNullableDate(currentDetail.createdAt) }}
               </XhDescriptionsValue>
             </XhDescriptionsItem>
             <XhDescriptionsItem style="grid-column: span 2">
@@ -388,7 +388,7 @@ async function handleSubmit() {
             <XhFieldControl>
               <XInput
                 v-model:value="positionForm.positionCode"
-                :disabled="Boolean(positionForm.basicId)"
+                :disabled="Boolean(positionForm.id)"
                 clearable
                 :placeholder="t('identity.position.ph_position_code')"
               />
@@ -405,7 +405,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!positionForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!positionForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('identity.position.status') }}</XhFieldLabel>
             <XhFieldControl>

@@ -24,7 +24,7 @@ import { useUserStore } from '~/stores'
 defineOptions({ name: 'PlatformDictPage' })
 
 interface DictFormModel {
-  basicId?: string
+  id?: string
   dictCode: string
   dictDescription?: string | null
   dictName: string
@@ -36,7 +36,7 @@ interface DictFormModel {
 }
 
 interface DictItemFormModel {
-  basicId?: string
+  id?: string
   dictId: string
   isDefault: boolean
   itemCode: string
@@ -96,7 +96,7 @@ watch(() => dictPageRef.value?.rows, (rows) => {
     currentDict.value = null
     return
   }
-  const latest = currentDict.value ? rows.find(d => d.basicId === currentDict.value?.basicId) : undefined
+  const latest = currentDict.value ? rows.find(d => d.id === currentDict.value?.id) : undefined
   currentDict.value = latest ?? rows[0]!
 })
 
@@ -115,7 +115,7 @@ const dictFields = computed<ListFieldSchema[]>(() => [
   { key: 'isBuiltIn', title: t('setting.dict.builtin'), dataType: 'boolean', sortable: true, searchable: true, options: builtInOptions.value, searchPlaceholder: t('setting.dict.builtin_placeholder'), width: 80, order: 4 },
   { key: 'status', title: t('setting.dict.status'), dataType: 'enum', sortable: true, searchable: true, searchMultiple: true, dictionaryCode: 'EnableStatus', options: statusOptions.value, searchPlaceholder: t('setting.dict.status_placeholder'), width: 90, order: 5 },
   { key: 'sort', title: t('setting.dict.sort'), dataType: 'number', sortable: true, width: 80, order: 6 },
-  { key: 'createdTime', title: t('setting.dict.created_time'), dataType: 'datetime', sortable: true, visible: false, minWidth: 170, order: 7 },
+  { key: 'createdAt', title: t('setting.dict.created_time'), dataType: 'datetime', sortable: true, visible: false, minWidth: 170, order: 7 },
 ])
 
 const dictSchema = computed<PageSchema>(() => ({
@@ -124,7 +124,7 @@ const dictSchema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'setting.dict.delete',
   statusPermission: 'setting.dict.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: dictFields.value,
   resource: {
     page: params => dictManagementApi.page({
@@ -138,7 +138,7 @@ const dictSchema = computed<PageSchema>(() => ({
     }) as unknown as Promise<PageResult<Record<string, unknown>>>,
     remove: id => dictManagementApi.delete(id),
     updateStatus: (id, enabled) => dictManagementApi.updateStatus({
-      basicId: id,
+      id,
       status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled,
       remark: enabled ? t('setting.dict.batch_enable_dict_remark') : t('setting.dict.batch_disable_dict_remark'),
     }),
@@ -155,7 +155,7 @@ const dictSchema = computed<PageSchema>(() => ({
 function dictRowProps(row: Record<string, unknown>) {
   const dict = row as unknown as DictListItemDto
   return {
-    class: currentDict.value?.basicId === dict.basicId ? 'dict-row--active' : undefined,
+    class: currentDict.value?.id === dict.id ? 'dict-row--active' : undefined,
     style: 'cursor: pointer;',
     onClick: (e: MouseEvent) => {
       if ((e.target as HTMLElement | null)?.closest('[data-scope="table"][data-part="row-select-trigger"], [data-scope="checkbox"]')) {
@@ -207,7 +207,7 @@ const itemFields = computed<ListFieldSchema[]>(() => [
   { key: 'isDefault', title: t('setting.dict.default'), dataType: 'boolean', sortable: true, width: 80, order: 4 },
   { key: 'status', title: t('setting.dict.status'), dataType: 'enum', sortable: true, searchable: true, searchMultiple: true, dictionaryCode: 'EnableStatus', options: statusOptions.value, searchPlaceholder: t('setting.dict.status_placeholder'), width: 90, order: 5 },
   { key: 'sort', title: t('setting.dict.sort'), dataType: 'number', sortable: true, width: 80, order: 6 },
-  { key: 'createdTime', title: t('setting.dict.created_time'), dataType: 'datetime', sortable: true, visible: false, minWidth: 170, order: 7 },
+  { key: 'createdAt', title: t('setting.dict.created_time'), dataType: 'datetime', sortable: true, visible: false, minWidth: 170, order: 7 },
 ])
 
 /**
@@ -220,7 +220,7 @@ const itemSchema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'setting.dict.delete',
   statusPermission: 'setting.dict.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: itemFields.value,
   resource: {
     page: params => dictManagementApi.itemPage({
@@ -228,12 +228,12 @@ const itemSchema = computed<PageSchema>(() => ({
         page: { pageIndex: params.page, pageSize: params.pageSize },
         conditions: { sorts: querySortsFromSchema(params.sorts), filters: params.conditionFilters ?? [] },
       }),
-      dictId: currentDict.value!.basicId,
+      dictId: currentDict.value!.id,
       keyword: toKeyword(params.filters.keyword),
     }) as unknown as Promise<PageResult<Record<string, unknown>>>,
     remove: id => dictManagementApi.itemDelete(id),
     updateStatus: (id, enabled) => dictManagementApi.itemUpdateStatus({
-      basicId: id,
+      id,
       status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled,
       remark: enabled ? t('setting.dict.batch_enable_item_remark') : t('setting.dict.batch_disable_item_remark'),
     }),
@@ -277,7 +277,7 @@ const dictModalVisible = ref(false)
 const dictSubmitLoading = ref(false)
 const dictEditingStatus = ref<EnableStatus | null>(null)
 const dictForm = ref<DictFormModel>(createDefaultDictForm())
-const dictModalTitle = computed(() => (dictForm.value.basicId ? t('setting.dict.edit_dict_title') : t('setting.dict.add_dict_title')))
+const dictModalTitle = computed(() => (dictForm.value.id ? t('setting.dict.edit_dict_title') : t('setting.dict.add_dict_title')))
 
 function createDefaultDictForm(): DictFormModel {
   return {
@@ -301,13 +301,13 @@ async function handleEdit(row: DictListItemDto) {
   // 列表行不含备注，取详情回填；否则保存时会把备注覆盖为空
   let detail: DictDetailDto | null = null
   try {
-    detail = await dictManagementApi.detail(row.basicId)
+    detail = await dictManagementApi.detail(row.id)
   }
   catch {
     detail = null
   }
   dictForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     dictCode: detail?.dictCode ?? row.dictCode,
     dictDescription: detail?.dictDescription ?? row.dictDescription ?? null,
     dictName: detail?.dictName ?? row.dictName,
@@ -324,7 +324,7 @@ function validateDictForm() {
     toast.warning(t('setting.dict.validate_dict_name'))
     return false
   }
-  if (!dictForm.value.basicId && !dictForm.value.dictCode.trim()) {
+  if (!dictForm.value.id && !dictForm.value.dictCode.trim()) {
     toast.warning(t('setting.dict.validate_dict_code'))
     return false
   }
@@ -338,9 +338,9 @@ async function handleSubmit() {
 
   dictSubmitLoading.value = true
   try {
-    if (dictForm.value.basicId) {
+    if (dictForm.value.id) {
       const updateInput: DictUpdateDto = {
-        basicId: dictForm.value.basicId,
+        id: dictForm.value.id,
         dictDescription: dictForm.value.dictDescription,
         dictName: dictForm.value.dictName.trim(),
         dictType: dictForm.value.dictType.trim(),
@@ -350,7 +350,7 @@ async function handleSubmit() {
       await dictManagementApi.update(updateInput)
       if (dictEditingStatus.value !== dictForm.value.status) {
         await dictManagementApi.updateStatus({
-          basicId: dictForm.value.basicId,
+          id: dictForm.value.id,
           remark: t('setting.dict.dict_status_update_remark'),
           status: dictForm.value.status,
         })
@@ -382,10 +382,10 @@ async function handleSubmit() {
 
 async function handleDelete(row: DictListItemDto) {
   try {
-    await dictManagementApi.delete(row.basicId)
+    await dictManagementApi.delete(row.id)
     toast.success(t('common.messages.delete_success'))
     // 删掉的正是当前选中项：右栏回到未选状态
-    if (currentDict.value?.basicId === row.basicId) {
+    if (currentDict.value?.id === row.id) {
       currentDict.value = null
     }
     reloadDict()
@@ -398,7 +398,7 @@ async function handleDelete(row: DictListItemDto) {
 async function handleToggleStatus(row: DictListItemDto) {
   try {
     await dictManagementApi.updateStatus({
-      basicId: row.basicId,
+      id: row.id,
       remark: row.status === EnableStatus.Enabled ? t('setting.dict.dict_disable_remark') : t('setting.dict.dict_enable_remark'),
       status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
     })
@@ -417,7 +417,7 @@ const itemModalVisible = ref(false)
 const itemSubmitLoading = ref(false)
 const itemEditingStatus = ref<EnableStatus | null>(null)
 const itemForm = ref<DictItemFormModel>(createDefaultDictItemForm())
-const itemModalTitle = computed(() => (itemForm.value.basicId ? t('setting.dict.edit_item_title') : t('setting.dict.add_item_title')))
+const itemModalTitle = computed(() => (itemForm.value.id ? t('setting.dict.edit_item_title') : t('setting.dict.add_item_title')))
 
 function createDefaultDictItemForm(): DictItemFormModel {
   return {
@@ -439,7 +439,7 @@ function handleItemAdd() {
   }
   itemEditingStatus.value = null
   itemForm.value = createDefaultDictItemForm()
-  itemForm.value.dictId = currentDict.value.basicId
+  itemForm.value.dictId = currentDict.value.id
   itemModalVisible.value = true
 }
 
@@ -448,13 +448,13 @@ async function handleItemEdit(row: DictItemListItemDto) {
   // 列表行不含元数据与备注，取详情回填；否则保存时会把两者覆盖为空
   let detail: DictItemDetailDto | null = null
   try {
-    detail = await dictManagementApi.itemDetail(row.basicId)
+    detail = await dictManagementApi.itemDetail(row.id)
   }
   catch {
     detail = null
   }
   itemForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     dictId: detail?.dictId ?? row.dictId,
     isDefault: detail?.isDefault ?? row.isDefault,
     itemCode: detail?.itemCode ?? row.itemCode,
@@ -475,7 +475,7 @@ function validateDictItemForm() {
     toast.warning(t('setting.dict.validate_item_name'))
     return false
   }
-  if (!itemForm.value.basicId && !itemForm.value.itemCode.trim()) {
+  if (!itemForm.value.id && !itemForm.value.itemCode.trim()) {
     toast.warning(t('setting.dict.validate_item_code'))
     return false
   }
@@ -489,9 +489,9 @@ async function handleItemSubmit() {
 
   itemSubmitLoading.value = true
   try {
-    if (itemForm.value.basicId) {
+    if (itemForm.value.id) {
       const updateInput: DictItemUpdateDto = {
-        basicId: itemForm.value.basicId,
+        id: itemForm.value.id,
         isDefault: itemForm.value.isDefault,
         itemDescription: itemForm.value.itemDescription,
         itemName: itemForm.value.itemName.trim(),
@@ -504,7 +504,7 @@ async function handleItemSubmit() {
       await dictManagementApi.itemUpdate(updateInput)
       if (itemEditingStatus.value !== itemForm.value.status) {
         await dictManagementApi.itemUpdateStatus({
-          basicId: itemForm.value.basicId,
+          id: itemForm.value.id,
           remark: t('setting.dict.item_status_update_remark'),
           status: itemForm.value.status,
         })
@@ -539,7 +539,7 @@ async function handleItemSubmit() {
 
 async function handleItemDelete(row: DictItemListItemDto) {
   try {
-    await dictManagementApi.itemDelete(row.basicId)
+    await dictManagementApi.itemDelete(row.id)
     toast.success(t('common.messages.delete_success'))
     reloadItems()
   }
@@ -551,7 +551,7 @@ async function handleItemDelete(row: DictItemListItemDto) {
 async function handleItemToggleStatus(row: DictItemListItemDto) {
   try {
     await dictManagementApi.itemUpdateStatus({
-      basicId: row.basicId,
+      id: row.id,
       remark: row.status === EnableStatus.Enabled ? t('setting.dict.item_disable_remark') : t('setting.dict.item_enable_remark'),
       status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
     })
@@ -599,7 +599,7 @@ async function handleItemToggleStatus(row: DictItemListItemDto) {
                 <XInput
                   v-model:value="dictForm.dictCode"
                   clearable
-                  :disabled="Boolean(dictForm.basicId)"
+                  :disabled="Boolean(dictForm.id)"
                   :placeholder="t('setting.dict.dict_code_placeholder')"
                 />
               </XhFieldControl>
@@ -648,7 +648,7 @@ async function handleItemToggleStatus(row: DictItemListItemDto) {
               <XhFieldErrorText />
             </XhFieldRoot>
           </XhFormFieldGroup>
-          <XhFormFieldGroup v-if="!dictForm.basicId" name="status">
+          <XhFormFieldGroup v-if="!dictForm.id" name="status">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('setting.dict.status') }}</XhFieldLabel>
               <XhFieldControl>
@@ -664,7 +664,7 @@ async function handleItemToggleStatus(row: DictItemListItemDto) {
     <!-- 右栏按当前字典重建：没选字典时不渲染（也就不发请求），换字典即重置条件与分页 -->
     <SchemaPage
       v-if="currentDict"
-      :key="currentDict.basicId"
+      :key="currentDict.id"
       ref="itemPageRef"
       class="dict-mgmt__pane"
       :schema="itemSchema"
@@ -695,7 +695,7 @@ async function handleItemToggleStatus(row: DictItemListItemDto) {
                 <XInput
                   v-model:value="itemForm.itemCode"
                   clearable
-                  :disabled="Boolean(itemForm.basicId)"
+                  :disabled="Boolean(itemForm.id)"
                   :placeholder="t('setting.dict.item_code_placeholder')"
                 />
               </XhFieldControl>
@@ -753,7 +753,7 @@ async function handleItemToggleStatus(row: DictItemListItemDto) {
               <XhFieldErrorText />
             </XhFieldRoot>
           </XhFormFieldGroup>
-          <XhFormFieldGroup v-if="!itemForm.basicId" name="status">
+          <XhFormFieldGroup v-if="!itemForm.id" name="status">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('setting.dict.status') }}</XhFieldLabel>
               <XhFieldControl>

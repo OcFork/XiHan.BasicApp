@@ -28,7 +28,7 @@ import { formatDate, getOptionLabel } from '~/utils'
 defineOptions({ name: 'PlatformConfigPage' })
 
 interface ConfigFormModel {
-  basicId?: string
+  id?: string
   configDescription?: string | null
   configGroup?: string | null
   configKey: string
@@ -93,7 +93,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'isEncrypted', title: t('setting.config.is_encrypted'), dataType: 'boolean', sortable: true, width: 80, order: 8 },
   { key: 'status', title: t('setting.config.status'), dataType: 'enum', sortable: true, searchable: true, searchMultiple: true, importable: true, dictionaryCode: 'EnableStatus', options: statusOptions.value, searchPlaceholder: t('setting.config.status_placeholder'), width: 90, order: 9 },
   { key: 'sort', title: t('setting.config.sort'), dataType: 'number', sortable: true, importable: true, width: 80, order: 10 },
-  { key: 'createdTime', title: t('setting.config.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
+  { key: 'createdAt', title: t('setting.config.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
 ])
 
 // ── 资源适配器：归一化查询参数 → 后端 API（仅放后端支持的搜索字段） ──
@@ -105,7 +105,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'setting.config.delete',
   statusPermission: 'setting.config.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -121,7 +121,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
     remove: id => configManagementApi.delete(id),
-    updateStatus: (id, enabled) => configManagementApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('setting.config.enable_remark') : t('setting.config.disable_remark') }),
+    updateStatus: (id, enabled) => configManagementApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('setting.config.enable_remark') : t('setting.config.disable_remark') }),
     // 导入适配器：importable 字段记录 → CreateDto（缺省值在此兜底）
     create: (record) => {
       const input: ConfigCreateDto = {
@@ -190,7 +190,7 @@ const detailLoading = ref(false)
 const currentDetail = ref<ConfigDetailDto | null>(null)
 const configForm = ref<ConfigFormModel>(createDefaultConfigForm())
 
-const modalTitle = computed(() => (configForm.value.basicId ? t('setting.config.edit_title') : t('setting.config.add_title')))
+const modalTitle = computed(() => (configForm.value.id ? t('setting.config.edit_title') : t('setting.config.add_title')))
 
 function createDefaultConfigForm(): ConfigFormModel {
   return {
@@ -237,14 +237,14 @@ async function handleEdit(row: ConfigListItemDto) {
   // 否则保存时会把值置空（后端更新为整体替换）。加密项详情返回 null，编辑时留空即保留原值（后端约定）。
   let detail: ConfigDetailDto | null = null
   try {
-    detail = await configManagementApi.detail(row.basicId)
+    detail = await configManagementApi.detail(row.id)
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('setting.config.load_detail_failed'))
     return
   }
   configForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     configDescription: row.configDescription ?? null,
     configGroup: row.configGroup ?? null,
     configKey: row.configKey,
@@ -287,7 +287,7 @@ async function handleView(row: ConfigListItemDto) {
   currentDetail.value = null
 
   try {
-    currentDetail.value = await configManagementApi.detail(row.basicId)
+    currentDetail.value = await configManagementApi.detail(row.id)
     if (!currentDetail.value) {
       toast.warning(t('setting.config.detail_not_found'))
     }
@@ -306,7 +306,7 @@ function validateConfigForm() {
     return false
   }
 
-  if (!configForm.value.basicId && !configForm.value.configKey.trim()) {
+  if (!configForm.value.id && !configForm.value.configKey.trim()) {
     toast.warning(t('setting.config.validate_config_key'))
     return false
   }
@@ -322,9 +322,9 @@ async function handleSubmit() {
   submitLoading.value = true
 
   try {
-    if (configForm.value.basicId) {
+    if (configForm.value.id) {
       const updateInput: ConfigUpdateDto = {
-        basicId: configForm.value.basicId,
+        id: configForm.value.id,
         configDescription: configForm.value.configDescription,
         configGroup: configForm.value.configGroup,
         configName: configForm.value.configName.trim(),
@@ -340,7 +340,7 @@ async function handleSubmit() {
       await configManagementApi.update(updateInput)
       if (editingStatus.value !== configForm.value.status) {
         await configManagementApi.updateStatus({
-          basicId: configForm.value.basicId,
+          id: configForm.value.id,
           remark: configForm.value.remark,
           status: configForm.value.status,
         })
@@ -378,14 +378,14 @@ async function handleSubmit() {
 }
 
 async function handleDelete(row: ConfigListItemDto) {
-  await configManagementApi.delete(row.basicId)
+  await configManagementApi.delete(row.id)
   toast.success(t('common.messages.delete_success'))
   reloadConfig()
 }
 
 async function handleToggleStatus(row: ConfigListItemDto) {
   await configManagementApi.updateStatus({
-    basicId: row.basicId,
+    id: row.id,
     remark: row.status === EnableStatus.Enabled ? t('setting.config.frontend_disable_remark') : t('setting.config.frontend_enable_remark'),
     status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
   })
@@ -496,13 +496,13 @@ async function handleToggleStatus(row: ConfigListItemDto) {
                 <XhDescriptionsItem>
                   <XhDescriptionsLabel>{{ t('setting.config.created_time') }}</XhDescriptionsLabel>
                   <XhDescriptionsValue>
-                    {{ formatNullableDate(currentDetail.createdTime) }}
+                    {{ formatNullableDate(currentDetail.createdAt) }}
                   </XhDescriptionsValue>
                 </XhDescriptionsItem>
                 <XhDescriptionsItem>
                   <XhDescriptionsLabel>{{ t('setting.config.modified_time') }}</XhDescriptionsLabel>
                   <XhDescriptionsValue>
-                    {{ formatNullableDate(currentDetail.modifiedTime) }}
+                    {{ formatNullableDate(currentDetail.modifiedAt) }}
                   </XhDescriptionsValue>
                 </XhDescriptionsItem>
                 <XhDescriptionsItem>
@@ -599,7 +599,7 @@ async function handleToggleStatus(row: ConfigListItemDto) {
               <XInput
                 v-model:value="configForm.configKey"
                 clearable
-                :disabled="Boolean(configForm.basicId)"
+                :disabled="Boolean(configForm.id)"
                 :placeholder="t('setting.config.config_key_placeholder')"
               />
             </XhFieldControl>
@@ -641,7 +641,7 @@ async function handleToggleStatus(row: ConfigListItemDto) {
                 v-model:value="configForm.configValue"
                 :rows="5"
                 clearable
-                :placeholder="configForm.isEncrypted && configForm.basicId ? t('setting.config.config_value_encrypted_placeholder') : t('setting.config.config_value_placeholder')"
+                :placeholder="configForm.isEncrypted && configForm.id ? t('setting.config.config_value_encrypted_placeholder') : t('setting.config.config_value_placeholder')"
                 type="textarea"
               />
             </XhFieldControl>
@@ -699,7 +699,7 @@ async function handleToggleStatus(row: ConfigListItemDto) {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!configForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!configForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('setting.config.status') }}</XhFieldLabel>
             <XhFieldControl>

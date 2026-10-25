@@ -35,7 +35,7 @@ import { diffEditionGrants, isEmptyEditionGrantDiff, mergeMappedIntoCatalog, val
 defineOptions({ name: 'TenantEditionPage' })
 
 interface EditionFormModel extends TenantEditionCreateDto {
-  basicId?: ApiId
+  id?: ApiId
 }
 
 const { hasPermission } = usePermission()
@@ -178,7 +178,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'sort', title: t('tenant.edition.sort'), dataType: 'number', sortable: true, width: 80, order: 10 },
-  { key: 'createdTime', title: t('tenant.edition.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
+  { key: 'createdAt', title: t('tenant.edition.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
 ])
 
 function toStr(v: unknown): string | undefined {
@@ -197,7 +197,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'tenant.edition.export',
   pageName: t('tenant.edition.page_name'),
   statusPermission: 'tenant.edition.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -212,7 +212,7 @@ const schema = computed<PageSchema>(() => ({
         isDefault: toBool(f.isDefault) ?? null,
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => tenantEditionApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => tenantEditionApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('tenant.edition.add'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'tenant.edition.create' },
@@ -286,7 +286,7 @@ function onAction(payload: SchemaActionPayload) {
 const modalVisible = ref(false)
 const submitLoading = ref(false)
 const editionForm = ref<EditionFormModel>(createDefaultForm())
-const modalTitle = computed(() => (editionForm.value.basicId ? t('tenant.edition.edit_title') : t('tenant.edition.add_title')))
+const modalTitle = computed(() => (editionForm.value.id ? t('tenant.edition.edit_title') : t('tenant.edition.add_title')))
 
 function createDefaultForm(): EditionFormModel {
   return {
@@ -329,13 +329,13 @@ async function handleEdit(row: TenantEditionListItemDto) {
   // 列表行不含备注，取详情回填；否则保存时会把备注覆盖为空
   let detail: TenantEditionDetailDto | null = null
   try {
-    detail = await tenantEditionApi.detail(row.basicId)
+    detail = await tenantEditionApi.detail(row.id)
   }
   catch {
     detail = null
   }
   editionForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     billingPeriodMonths: detail?.billingPeriodMonths ?? row.billingPeriodMonths ?? null,
     description: detail?.description ?? row.description ?? null,
     editionCode: detail?.editionCode ?? row.editionCode,
@@ -353,7 +353,7 @@ async function handleEdit(row: TenantEditionListItemDto) {
 }
 
 function validateForm() {
-  if (!editionForm.value.basicId && !editionForm.value.editionCode.trim()) {
+  if (!editionForm.value.id && !editionForm.value.editionCode.trim()) {
     toast.warning(t('tenant.edition.validate_edition_code'))
     return false
   }
@@ -371,9 +371,9 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (editionForm.value.basicId) {
+    if (editionForm.value.id) {
       const updateInput: TenantEditionUpdateDto = {
-        basicId: editionForm.value.basicId,
+        id: editionForm.value.id,
         billingPeriodMonths: editionForm.value.billingPeriodMonths ?? null,
         description: normalizeNullable(editionForm.value.description),
         editionName: editionForm.value.editionName.trim(),
@@ -430,7 +430,7 @@ function confirmToggleStatus(row: TenantEditionListItemDto, next: EnableStatus) 
     cancelText: t('tenant.edition.cancel'),
     onOk: async () => {
       try {
-        await tenantEditionApi.updateStatus({ basicId: row.basicId, status: next })
+        await tenantEditionApi.updateStatus({ id: row.id, status: next })
         toast.success(enabling ? t('tenant.edition.enabled') : t('tenant.edition.disabled'))
         reloadList()
       }
@@ -450,7 +450,7 @@ function confirmSetDefault(row: TenantEditionListItemDto) {
     cancelText: t('tenant.edition.cancel'),
     onOk: async () => {
       try {
-        await tenantEditionApi.updateDefault({ basicId: row.basicId })
+        await tenantEditionApi.updateDefault({ id: row.id })
         toast.success(t('tenant.edition.set_default_success'))
         reloadList()
       }
@@ -509,7 +509,7 @@ async function openPermissionDrawer(row: TenantEditionListItemDto) {
   try {
     const [, mappings] = await Promise.all([
       loadPermCatalog(),
-      tenantEditionPermissionApi.list(row.basicId),
+      tenantEditionPermissionApi.list(row.id),
     ])
     permList.value = mappings
     derivePermChecked()
@@ -544,8 +544,8 @@ async function savePermChanges() {
   }
   permLoading.value = true
   try {
-    await tenantEditionPermissionApi.batchUpdate({ editionId: edition.basicId, ...diff })
-    permList.value = await tenantEditionPermissionApi.list(edition.basicId)
+    await tenantEditionPermissionApi.batchUpdate({ editionId: edition.id, ...diff })
+    permList.value = await tenantEditionPermissionApi.list(edition.id)
     derivePermChecked()
     toast.success(t('tenant.edition.perm_saved', {
       grant: diff.grantPermissionIds.length,
@@ -587,14 +587,14 @@ async function savePermChanges() {
             <XhFieldControl>
               <XInput
                 v-model:value="editionForm.editionCode"
-                :disabled="Boolean(editionForm.basicId)"
+                :disabled="Boolean(editionForm.id)"
                 clearable
                 :placeholder="t('tenant.edition.edition_code_placeholder')"
               >
                 <!-- 随机生成触发器仅新增态出现；type="button" 防止把整表提交掉 -->
                 <template #suffix>
                   <button
-                    v-if="!editionForm.basicId"
+                    v-if="!editionForm.id"
                     type="button"
                     class="edition-code-random"
                     :aria-label="t('tenant.edition.edition_code_random')"
@@ -693,7 +693,7 @@ async function savePermChanges() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!editionForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!editionForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('tenant.edition.status') }}</XhFieldLabel>
             <XhFieldControl>
@@ -767,7 +767,7 @@ async function savePermChanges() {
           >
             <template #suffix="{ item, side }">
               <!-- 停用的映射不在白名单里，与未授予同在左栏；移到右栏保存即重新启用 -->
-              <XhTagRoot v-if="side === 'source' && permDisabledIds.has(item.basicId)" variant="subtle" size="sm" tone="warning">
+              <XhTagRoot v-if="side === 'source' && permDisabledIds.has(item.id)" variant="subtle" size="sm" tone="warning">
                 <XhTagLabel>{{ t('tenant.edition.perm_disabled') }}</XhTagLabel>
               </XhTagRoot>
             </template>

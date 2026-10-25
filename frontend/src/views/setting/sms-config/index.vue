@@ -14,7 +14,7 @@ defineOptions({ name: 'SettingSmsConfigPage' })
 interface SmsConfigFormModel {
   accessKeyId: string
   accessKeySecret: string | null
-  basicId?: string
+  id?: string
   configCode: string
   configName: string
   isDefault: boolean
@@ -110,7 +110,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'sort', title: t('message.sms_config.columns.sort'), dataType: 'number', sortable: true, width: 80, order: 7 },
-  { key: 'createdTime', title: t('message.sms_config.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 8 },
+  { key: 'createdAt', title: t('message.sms_config.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 8 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -118,7 +118,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'setting.sms-config.export',
   pageName: t('message.sms_config.page_name'),
   statusPermission: 'setting.sms-config.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -135,7 +135,7 @@ const schema = computed<PageSchema>(() => ({
         // provider 为多选，经 conditions.filters In 下发（不走 DTO 顶层 provider 单值字段）
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => smsConfigApi.updateStatus({ basicId: id, isEnabled: enabled }),
+    updateStatus: (id, enabled) => smsConfigApi.updateStatus({ id, isEnabled: enabled }),
   },
   actions: [
     { key: 'create', title: t('message.sms_config.actions.create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'setting.sms-config.create' },
@@ -196,10 +196,10 @@ const submitLoading = ref(false)
 const editingHasSecret = ref(false)
 const form = ref<SmsConfigFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (form.value.basicId ? t('message.sms_config.form.edit_title') : t('message.sms_config.form.add_title')))
+const modalTitle = computed(() => (form.value.id ? t('message.sms_config.form.edit_title') : t('message.sms_config.form.add_title')))
 const isTencentCloud = computed(() => form.value.provider === SmsProviderType.TencentCloud)
 const secretPlaceholder = computed(() =>
-  form.value.basicId && editingHasSecret.value ? t('message.sms_config.form.secret_configured') : t('message.sms_config.form.secret_placeholder'),
+  form.value.id && editingHasSecret.value ? t('message.sms_config.form.secret_configured') : t('message.sms_config.form.secret_placeholder'),
 )
 
 function createDefaultForm(): SmsConfigFormModel {
@@ -228,7 +228,7 @@ function handleAdd() {
 
 async function handleEdit(row: SmsConfigListItemDto) {
   try {
-    const detail = await smsConfigApi.detail(row.basicId)
+    const detail = await smsConfigApi.detail(row.id)
     if (!detail) {
       toast.warning(t('message.sms_config.message.detail_not_found'))
       return
@@ -238,7 +238,7 @@ async function handleEdit(row: SmsConfigListItemDto) {
     form.value = {
       accessKeyId: detail.accessKeyId,
       accessKeySecret: null,
-      basicId: detail.basicId,
+      id: detail.id,
       configCode: detail.configCode,
       configName: detail.configName,
       isDefault: detail.isDefault,
@@ -259,7 +259,7 @@ async function handleEdit(row: SmsConfigListItemDto) {
 }
 
 function validateForm() {
-  if (!form.value.basicId && !form.value.configCode.trim()) {
+  if (!form.value.id && !form.value.configCode.trim()) {
     toast.warning(t('message.sms_config.message.input_config_code'))
     return false
   }
@@ -274,7 +274,7 @@ function validateForm() {
     return false
   }
 
-  if (!form.value.basicId && !form.value.accessKeySecret?.trim()) {
+  if (!form.value.id && !form.value.accessKeySecret?.trim()) {
     toast.warning(t('message.sms_config.message.input_access_key_secret'))
     return false
   }
@@ -322,11 +322,11 @@ async function handleSubmit() {
   submitLoading.value = true
 
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       await smsConfigApi.update({
         accessKeyId: form.value.accessKeyId.trim(),
         accessKeySecret: form.value.accessKeySecret?.trim() || null,
-        basicId: form.value.basicId,
+        id: form.value.id,
         configName: form.value.configName.trim(),
         provider: form.value.provider,
         region: form.value.region,
@@ -379,7 +379,7 @@ function handleToggleStatus(row: SmsConfigListItemDto) {
     cancelText: t('message.sms_config.form.cancel'),
     onOk: async () => {
       try {
-        await smsConfigApi.updateStatus({ basicId: row.basicId, isEnabled: next })
+        await smsConfigApi.updateStatus({ id: row.id, isEnabled: next })
         toast.success(t('message.sms_config.message.status_updated'))
         reloadList()
       }
@@ -399,7 +399,7 @@ function handleSetDefault(row: SmsConfigListItemDto) {
     cancelText: t('message.sms_config.form.cancel'),
     onOk: async () => {
       try {
-        await smsConfigApi.setDefault({ basicId: row.basicId })
+        await smsConfigApi.setDefault({ id: row.id })
         toast.success(t('message.sms_config.message.set_default_success'))
         reloadList()
       }
@@ -420,7 +420,7 @@ function handleDelete(row: SmsConfigListItemDto) {
     cancelText: t('message.sms_config.form.cancel'),
     onOk: async () => {
       try {
-        await smsConfigApi.delete(row.basicId)
+        await smsConfigApi.delete(row.id)
         toast.success(t('message.sms_config.message.delete_success'))
         reloadList()
       }
@@ -458,7 +458,7 @@ function handleDelete(row: SmsConfigListItemDto) {
               <XInput
                 v-model:value="form.configCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('message.sms_config.form.config_code_placeholder')"
               />
             </XhFieldControl>
@@ -561,7 +561,7 @@ function handleDelete(row: SmsConfigListItemDto) {
           </XhFieldRoot>
         </XhFormFieldGroup>
 
-        <template v-if="!form.basicId">
+        <template v-if="!form.id">
           <XhFormFieldGroup name="isEnabled">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('message.sms_config.form.is_enabled') }}</XhFieldLabel>

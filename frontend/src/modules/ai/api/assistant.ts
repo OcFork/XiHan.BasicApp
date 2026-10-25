@@ -24,7 +24,7 @@ export const aiAssistantApi = {
     return command.put<AiAssistantDetailDto, AiAssistantStatusUpdateDto>('Status', input)
   },
   setDefault(id: ApiId) {
-    return command.post<AiAssistantDetailDto, AiAssistantActionDto>('SetDefault', { basicId: id })
+    return command.post<AiAssistantDetailDto, AiAssistantActionDto>('SetDefault', { id })
   },
   delete(id: ApiId) {
     return command.delete('Delete', { id })

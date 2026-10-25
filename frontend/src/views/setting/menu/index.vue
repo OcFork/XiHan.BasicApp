@@ -35,7 +35,7 @@ function canMaintainMenu(row: unknown): boolean {
 }
 
 interface MenuFormModel extends MenuCreateDto {
-  basicId?: ApiId
+  id?: ApiId
 }
 
 interface MenuTreeItem extends MenuListItemDto {
@@ -95,7 +95,7 @@ const menuForm = ref<MenuFormModel>(createDefaultForm())
 
 const schemaPageRef = ref<InstanceType<typeof SchemaPage> | null>(null)
 
-const modalTitle = computed(() => (menuForm.value.basicId ? t('setting.menu.edit_title') : t('setting.menu.add_title')))
+const modalTitle = computed(() => (menuForm.value.id ? t('setting.menu.edit_title') : t('setting.menu.add_title')))
 
 function toStr(value?: string | null) {
   const normalized = value?.trim()
@@ -153,7 +153,7 @@ function createDefaultForm(): MenuFormModel {
 // --- 上级菜单树选择器 ---
 function buildTreeSelectOptions(nodes: MenuTreeNodeDto[]): TreeSelectOption[] {
   return nodes.map(node => ({
-    value: node.basicId,
+    value: node.id,
     label: t('setting.menu.tree_label', { name: node.menuName, path: node.path }),
     children: node.children?.length ? buildTreeSelectOptions(node.children) : undefined,
   }))
@@ -176,11 +176,11 @@ function buildTree(items: MenuListItemDto[]): MenuTreeItem[] {
   const roots: MenuTreeItem[] = []
 
   for (const item of items) {
-    map.set(item.basicId, { ...item, children: [] })
+    map.set(item.id, { ...item, children: [] })
   }
 
   for (const item of items) {
-    const node = map.get(item.basicId)!
+    const node = map.get(item.id)!
     if (item.parentId && map.has(item.parentId)) {
       map.get(item.parentId)!.children!.push(node)
     }
@@ -199,7 +199,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'setting.menu.delete',
   statusPermission: 'setting.menu.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   tree: { childrenKey: 'children', defaultExpandAll: false },
   resource: {
     tree: (params: SchemaQueryParams) => {
@@ -211,7 +211,7 @@ const schema = computed<PageSchema>(() => ({
       return result.then(items => buildTree(items)) as unknown as Promise<Record<string, unknown>[]>
     },
     remove: (id: ApiId) => menuManagementApi.delete(id),
-    updateStatus: (id, enabled) => menuManagementApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => menuManagementApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   fields: [
     {
@@ -325,12 +325,12 @@ const schema = computed<PageSchema>(() => ({
       order: 8,
     },
     {
-      key: 'createdTime',
+      key: 'createdAt',
       title: t('setting.menu.created_time'),
       dataType: 'datetime',
       minWidth: 170,
       order: 9,
-      render: row => formatDate((row as unknown as MenuListItemDto).createdTime),
+      render: row => formatDate((row as unknown as MenuListItemDto).createdAt),
     },
   ],
   actions: [
@@ -353,7 +353,7 @@ function onAction(payload: SchemaActionPayload) {
   }
   if (scope === 'row' && row) {
     if (key === 'addChild')
-      openCreate(row.basicId)
+      openCreate(row.id)
     else if (key === 'view')
       void openDetail(row)
     else if (key === 'edit')
@@ -377,7 +377,7 @@ function buildFormModel(row: MenuDetailDto | MenuListItemDto): MenuFormModel {
     badge: 'badge' in row ? row.badge ?? null : null,
     badgeDot: 'badgeDot' in row ? row.badgeDot : false,
     badgeType: 'badgeType' in row ? row.badgeType ?? null : null,
-    basicId: row.basicId,
+    id: row.id,
     component: row.component ?? null,
     externalUrl: 'externalUrl' in row ? row.externalUrl ?? null : null,
     icon: row.icon ?? null,
@@ -404,7 +404,7 @@ function buildFormModel(row: MenuDetailDto | MenuListItemDto): MenuFormModel {
 
 async function openEdit(row: MenuListItemDto) {
   try {
-    const detail = await menuManagementApi.detail(row.basicId)
+    const detail = await menuManagementApi.detail(row.id)
     menuForm.value = buildFormModel(detail ?? row)
   }
   catch (error) {
@@ -420,7 +420,7 @@ async function openDetail(row: MenuListItemDto) {
   currentDetail.value = null
 
   try {
-    currentDetail.value = await menuManagementApi.detail(row.basicId)
+    currentDetail.value = await menuManagementApi.detail(row.id)
     if (!currentDetail.value) {
       toast.warning(t('setting.menu.detail_not_found'))
     }
@@ -436,7 +436,7 @@ async function openDetail(row: MenuListItemDto) {
 async function toggleStatus(row: MenuListItemDto) {
   const next = row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled
   try {
-    await menuManagementApi.updateStatus({ basicId: row.basicId, status: next })
+    await menuManagementApi.updateStatus({ id: row.id, status: next })
     toast.success(t('setting.menu.status_update_success'))
     schemaPageRef.value?.reload()
     void loadTree()
@@ -448,7 +448,7 @@ async function toggleStatus(row: MenuListItemDto) {
 
 async function removeRow(row: MenuListItemDto) {
   try {
-    await menuManagementApi.delete(row.basicId)
+    await menuManagementApi.delete(row.id)
     toast.success(t('common.messages.delete_success'))
     schemaPageRef.value?.reload()
     void loadTree()
@@ -464,7 +464,7 @@ function validateForm() {
     toast.warning(t('setting.menu.validate_menu_name'))
     return false
   }
-  if (!form.basicId && !form.menuCode.trim()) {
+  if (!form.id && !form.menuCode.trim()) {
     toast.warning(t('setting.menu.validate_menu_code'))
     return false
   }
@@ -492,12 +492,12 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (menuForm.value.basicId) {
+    if (menuForm.value.id) {
       const updateInput: MenuUpdateDto = {
         badge: toStr(menuForm.value.badge),
         badgeDot: menuForm.value.badgeDot,
         badgeType: toStr(menuForm.value.badgeType),
-        basicId: menuForm.value.basicId,
+        id: menuForm.value.id,
         component: toStr(menuForm.value.component),
         externalUrl: toStr(menuForm.value.externalUrl),
         icon: toStr(menuForm.value.icon),
@@ -585,7 +585,7 @@ const childMenuColumns = computed<XDataTableColumn<MenuTreeNodeDto>[]>(() => [
 
 function findNodeChildren(nodes: MenuTreeNodeDto[], id: ApiId): MenuTreeNodeDto[] {
   for (const node of nodes) {
-    if (node.basicId === id)
+    if (node.id === id)
       return node.children ?? []
     if (node.children?.length) {
       const found = findNodeChildren(node.children, id)
@@ -599,7 +599,7 @@ function findNodeChildren(nodes: MenuTreeNodeDto[], id: ApiId): MenuTreeNodeDto[
 const childMenus = computed(() => {
   if (!currentDetail.value)
     return []
-  return findNodeChildren(treeNodes.value, currentDetail.value.basicId)
+  return findNodeChildren(treeNodes.value, currentDetail.value.id)
 })
 
 onMounted(() => {
@@ -766,7 +766,7 @@ onMounted(() => {
                 <XhDescriptionsItem>
                   <XhDescriptionsLabel>{{ t('setting.menu.created_time') }}</XhDescriptionsLabel>
                   <XhDescriptionsValue>
-                    {{ formatNullableDate(currentDetail.createdTime) }}
+                    {{ formatNullableDate(currentDetail.createdAt) }}
                   </XhDescriptionsValue>
                 </XhDescriptionsItem>
                 <XhDescriptionsItem v-if="currentDetail.remark" style="grid-column: span 2">
@@ -783,7 +783,7 @@ onMounted(() => {
                   v-if="childMenus.length"
                   :columns="childMenuColumns"
                   :data="childMenus"
-                  :row-key="(row: MenuTreeNodeDto) => row.basicId"
+                  :row-key="(row: MenuTreeNodeDto) => row.id"
                 />
                 <XhEmptyStateRoot v-else size="sm" style="padding: 32px 0">
                   <XhEmptyStateIndicator>
@@ -842,7 +842,7 @@ onMounted(() => {
             <XhFieldControl>
               <XInput
                 v-model:value="menuForm.menuCode"
-                :disabled="Boolean(menuForm.basicId)"
+                :disabled="Boolean(menuForm.id)"
                 clearable
                 :placeholder="t('setting.menu.menu_code_input_placeholder')"
               />
@@ -965,7 +965,7 @@ onMounted(() => {
           </XhFieldControl>
           <XhFieldErrorText />
         </XhFieldRoot>
-        <XhFormFieldGroup v-if="!menuForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!menuForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('setting.menu.status') }}</XhFieldLabel>
             <XhFieldControl>

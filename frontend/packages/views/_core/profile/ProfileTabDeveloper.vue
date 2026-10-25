@@ -65,7 +65,7 @@ function handleRotateSecret(cred: ApiCredentialItem) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        newSecret.value = await apis.rotateApiCredentialSecretApi(cred.basicId)
+        newSecret.value = await apis.rotateApiCredentialSecretApi(cred.id)
         toast.success(t('component.profile.developer.msg_secret_rotated'))
         await loadCredentials()
       }
@@ -78,7 +78,7 @@ function handleRotateSecret(cred: ApiCredentialItem) {
 
 async function handleToggleStatus(cred: ApiCredentialItem, enabled: boolean) {
   try {
-    await apis.updateApiCredentialStatusApi(cred.basicId, enabled ? 'Enabled' : 'Disabled')
+    await apis.updateApiCredentialStatusApi(cred.id, enabled ? 'Enabled' : 'Disabled')
     toast.success(enabled ? t('component.profile.developer.msg_credential_enabled') : t('component.profile.developer.msg_credential_disabled'))
     await loadCredentials()
   }
@@ -98,8 +98,8 @@ function handleDeleteCredential(cred: ApiCredentialItem) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await apis.deleteApiCredentialApi(cred.basicId)
-        if (newSecret.value?.basicId === cred.basicId) {
+        await apis.deleteApiCredentialApi(cred.id)
+        if (newSecret.value?.id === cred.id) {
           newSecret.value = null
         }
         toast.success(t('component.profile.developer.msg_credential_deleted'))
@@ -243,7 +243,7 @@ onMounted(() => {
             <XhEmptyStateDescription>{{ t('component.profile.developer.empty_credentials') }}</XhEmptyStateDescription>
           </XhEmptyStateRoot>
           <div v-else class="pf-list">
-            <div v-for="cred in credentials" :key="String(cred.basicId)" class="pf-list-item pf-credential">
+            <div v-for="cred in credentials" :key="String(cred.id)" class="pf-list-item pf-credential">
               <div class="pf-list-body">
                 <div class="pf-list-title pf-credential__name">
                   <span>{{ cred.credentialName }}</span>
@@ -260,7 +260,7 @@ onMounted(() => {
                   </XhButton>
                 </div>
                 <div class="pf-list-desc">
-                  {{ t('component.profile.developer.created_at', { time: formatDate(cred.createdTime) }) }}
+                  {{ t('component.profile.developer.created_at', { time: formatDate(cred.createdAt) }) }}
                   <template v-if="cred.lastUsedTime">
                     · {{ t('component.profile.developer.last_used', { time: formatDate(cred.lastUsedTime) }) }}
                   </template>

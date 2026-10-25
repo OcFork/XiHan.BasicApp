@@ -5,8 +5,8 @@ import { buildRoleParentOptions, diffRoleParents, directParentIds } from './role
 
 const notes = { descendant: '会形成环路', indirectAncestor: '已间接继承', disabledParent: '已停用' }
 
-function role(basicId: string, roleCode: string, roleName: string): RoleSelectItemDto {
-  return { basicId, roleCode, roleName } as RoleSelectItemDto
+function role(id: string, roleCode: string, roleName: string): RoleSelectItemDto {
+  return { id, roleCode, roleName } as RoleSelectItemDto
 }
 
 function chainItem(roleId: string, depth: number, status = EnableStatus.Enabled): RoleInheritanceItemDto {

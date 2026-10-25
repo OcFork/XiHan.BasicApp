@@ -11,8 +11,8 @@ import {
   toDataScopePayload,
 } from './data-scope'
 
-function node(basicId: string, children: DepartmentTreeNodeDto[] = []): DepartmentTreeNodeDto {
-  return { basicId, departmentName: `部门${basicId}`, children } as unknown as DepartmentTreeNodeDto
+function node(id: string, children: DepartmentTreeNodeDto[] = []): DepartmentTreeNodeDto {
+  return { id, departmentName: `部门${id}`, children } as unknown as DepartmentTreeNodeDto
 }
 
 // 1 ─┬─ 2 ── 3

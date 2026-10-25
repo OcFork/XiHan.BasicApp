@@ -25,7 +25,7 @@ defineOptions({ name: 'PlatformJobPage' })
 
 interface JobFormModel {
   allowConcurrent: boolean
-  basicId?: string
+  id?: string
   cronExpression?: string | null
   // 运行统计：非用户编辑字段，仅用于在编辑时回填原值，避免提交时被覆盖（DTO 中为必填）
   executedCount: number
@@ -194,7 +194,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'priority', title: t('setting.job.priority'), dataType: 'number', sortable: true, width: 86, order: 10 },
   { key: 'nextRunTime', title: t('setting.job.next_run'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
   { key: 'lastRunTime', title: t('setting.job.last_run'), dataType: 'datetime', minWidth: 170, order: 12 },
-  { key: 'createdTime', title: t('setting.job.created_time'), dataType: 'datetime', minWidth: 170, order: 13 },
+  { key: 'createdAt', title: t('setting.job.created_time'), dataType: 'datetime', minWidth: 170, order: 13 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -204,7 +204,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'setting.job.delete',
   statusPermission: 'setting.job.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -221,7 +221,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
     remove: id => jobManagementApi.delete(id),
-    updateStatus: (id, enabled) => jobManagementApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => jobManagementApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('setting.job.add'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'setting.job.create' },
@@ -288,7 +288,7 @@ async function handleDetail(row: TaskListItemDto) {
   detailLoading.value = true
   detailData.value = null
   try {
-    detailData.value = await jobManagementApi.detail(row.basicId) ?? null
+    detailData.value = await jobManagementApi.detail(row.id) ?? null
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('setting.job.load_detail_failed'))
@@ -357,7 +357,7 @@ async function loadTaskLogs(page?: number) {
   try {
     const result = await taskLogApi.page({
       ...createPageRequest({ page: { pageIndex: logPagination.value.page, pageSize: logPagination.value.pageSize } }),
-      taskId: logTask.value.basicId,
+      taskId: logTask.value.id,
       taskStatus: logStatusFilter.value ?? undefined,
       batchNumber: logBatchFilter.value.trim() || undefined,
     })
@@ -382,7 +382,7 @@ async function handleLogDetail(row: TaskLogListItemDto) {
   logDetailLoading.value = true
   logDetail.value = null
   try {
-    logDetail.value = await taskLogApi.detail(row.basicId) ?? null
+    logDetail.value = await taskLogApi.detail(row.id) ?? null
   }
   catch (e) {
     toast.danger((e as Error).message || t('setting.job.load_log_detail_failed'))
@@ -412,7 +412,7 @@ function handleTrigger(row: TaskListItemDto) {
     onOk: async () => {
       try {
         // 经调度器真正触发一次执行（旧实现仅改写运行状态字段，不会执行任务）
-        await jobManagementApi.run(row.basicId)
+        await jobManagementApi.run(row.id)
         toast.success(t('setting.job.triggered'))
         reloadJob()
       }
@@ -439,7 +439,7 @@ function handleToggleStatus(row: TaskListItemDto) {
     onOk: async () => {
       try {
         await jobManagementApi.updateStatus({
-          basicId: row.basicId,
+          id: row.id,
           status: newStatus,
         })
         toast.success(newStatus === EnableStatus.Enabled ? t('setting.job.task_enabled') : t('setting.job.task_disabled'))
@@ -458,7 +458,7 @@ async function handleDelete(row: TaskListItemDto) {
     return
   }
   try {
-    await jobManagementApi.delete(row.basicId)
+    await jobManagementApi.delete(row.id)
     toast.success(t('setting.job.task_deleted'))
     reloadJob()
   }
@@ -471,7 +471,7 @@ async function handleDelete(row: TaskListItemDto) {
 const modalVisible = ref(false)
 const submitLoading = ref(false)
 const jobForm = ref<JobFormModel>(createDefaultJobForm())
-const modalTitle = computed(() => (jobForm.value.basicId ? t('setting.job.edit_title') : t('setting.job.add_title')))
+const modalTitle = computed(() => (jobForm.value.id ? t('setting.job.edit_title') : t('setting.job.add_title')))
 
 function createDefaultJobForm(): JobFormModel {
   return {
@@ -506,7 +506,7 @@ async function handleEdit(row: TaskListItemDto) {
   // 取详情以补齐 taskClass/taskMethod/taskParams 等列表未返回字段
   let detail: TaskDetailDto | null = null
   try {
-    detail = await jobManagementApi.detail(row.basicId) ?? null
+    detail = await jobManagementApi.detail(row.id) ?? null
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('setting.job.load_detail_failed'))
@@ -515,7 +515,7 @@ async function handleEdit(row: TaskListItemDto) {
   const src = detail ?? (row as unknown as TaskDetailDto)
   jobForm.value = {
     allowConcurrent: src.allowConcurrent,
-    basicId: src.basicId,
+    id: src.id,
     cronExpression: src.cronExpression ?? null,
     executedCount: src.executedCount,
     intervalSeconds: src.intervalSeconds ?? null,
@@ -542,7 +542,7 @@ function validateJobForm() {
     toast.warning(t('setting.job.validate_task_name'))
     return false
   }
-  if (!jobForm.value.basicId && !jobForm.value.taskCode.trim()) {
+  if (!jobForm.value.id && !jobForm.value.taskCode.trim()) {
     toast.warning(t('setting.job.validate_task_code'))
     return false
   }
@@ -559,10 +559,10 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (jobForm.value.basicId) {
+    if (jobForm.value.id) {
       const updateInput: TaskUpdateDto = {
         allowConcurrent: jobForm.value.allowConcurrent,
-        basicId: jobForm.value.basicId,
+        id: jobForm.value.id,
         cronExpression: jobForm.value.cronExpression,
         // 回填详情原值，避免覆盖服务端运行统计（DTO 中三者为必填）
         executedCount: jobForm.value.executedCount,
@@ -846,13 +846,13 @@ async function handleSubmit() {
                 <XhDescriptionsItem>
                   <XhDescriptionsLabel>{{ t('setting.job.created_time') }}</XhDescriptionsLabel>
                   <XhDescriptionsValue>
-                    {{ formatNullableDate(detailData.createdTime) }}
+                    {{ formatNullableDate(detailData.createdAt) }}
                   </XhDescriptionsValue>
                 </XhDescriptionsItem>
                 <XhDescriptionsItem>
                   <XhDescriptionsLabel>{{ t('setting.job.modified_time') }}</XhDescriptionsLabel>
                   <XhDescriptionsValue>
-                    {{ formatNullableDate(detailData.modifiedTime) }}
+                    {{ formatNullableDate(detailData.modifiedAt) }}
                   </XhDescriptionsValue>
                 </XhDescriptionsItem>
                 <XhDescriptionsItem>
@@ -937,7 +937,7 @@ async function handleSubmit() {
               pageSize: logPagination.pageSize,
               itemCount: logPagination.itemCount,
               onUpdatePage: (p: number) => loadTaskLogs(p) }"
-            :row-key="(row: TaskLogListItemDto) => row.basicId"
+            :row-key="(row: TaskLogListItemDto) => row.id"
             :row-props="taskLogRowProps"
           />
         </div>
@@ -1077,7 +1077,7 @@ async function handleSubmit() {
               <XInput
                 v-model:value="jobForm.taskCode"
                 clearable
-                :disabled="Boolean(jobForm.basicId)"
+                :disabled="Boolean(jobForm.id)"
                 :placeholder="t('setting.job.task_code_input_placeholder')"
               />
             </XhFieldControl>

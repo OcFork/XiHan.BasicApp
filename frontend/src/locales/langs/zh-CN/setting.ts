@@ -627,7 +627,7 @@ export default {
       tip: '只求这一条策略，不看生效期和其他策略。不填的项取你当前的请求与当前用户。',
       ph_user: '默认当前用户',
       label_permission_codes: '端点权限码',
-      ph_permission_codes: '多个用逗号分隔，如 saas:user:export',
+      ph_permission_codes: '多个用逗号分隔，如 saas.user.export',
       load_users_failed: '加载用户失败',
       failed: '试运行失败',
       result_title: '试运行结果',

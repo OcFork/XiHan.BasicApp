@@ -15,7 +15,7 @@ export interface TenantMemberPageQueryDto extends PageRequest {
 }
 
 export interface TenantMemberListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   /** 租户内覆盖名（多数成员为空）；展示请用 resolveMemberName 回退 */
   displayName?: string | null
   effectiveTime?: DateTimeString | null
@@ -26,7 +26,7 @@ export interface TenantMemberListItemDto extends BasicDto {
   isExpired: boolean
   lastActiveTime?: DateTimeString | null
   memberType: TenantMemberType
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   /** 只读，来自 SysUser */
   nickName?: string | null
   /** 只读，来自 SysUser */

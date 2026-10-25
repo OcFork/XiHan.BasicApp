@@ -5,8 +5,8 @@ import type {
 } from './oauth-connect.types'
 import { createDynamicApiClient } from '../../base'
 
-// 与后端 OAuthConsentAppService（RouteTemplate=api/OAuthConnect）对应
-const oauthConnectApi = createDynamicApiClient('OAuthConnect')
+// 与后端 OAuthConsentAppService 的 o-auth-consent 操作对应
+const oauthConnectApi = createDynamicApiClient('OAuthConsent')
 
 export const oauthConsentApi = {
   // 预览：校验授权请求并返回客户端信息与授权范围（POST，携带完整授权参数）

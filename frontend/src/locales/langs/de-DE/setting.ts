@@ -627,7 +627,7 @@ export default {
       tip: 'Nur diese Richtlinie wird ausgewertet, ohne Gültigkeitszeitraum und andere Richtlinien. Leere Felder nehmen Ihre aktuelle Anfrage und Ihren Benutzer.',
       ph_user: 'Standardmäßig der aktuelle Benutzer',
       label_permission_codes: 'Endpunkt-Berechtigungscodes',
-      ph_permission_codes: 'Kommagetrennt, z. B. saas:user:export',
+      ph_permission_codes: 'Kommagetrennt, z. B. saas.user.export',
       load_users_failed: 'Benutzer konnten nicht geladen werden',
       failed: 'Probelauf fehlgeschlagen',
       result_title: 'Ergebnis des Probelaufs',

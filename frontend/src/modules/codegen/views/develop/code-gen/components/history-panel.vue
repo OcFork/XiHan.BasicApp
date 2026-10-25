@@ -155,7 +155,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'code_gen.history',
   pageName: t('develop.code_gen.tabs.history'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -211,7 +211,7 @@ async function handleDetail(row: CodeGenHistoryListItemDto) {
   detailLoading.value = true
   detail.value = null
   try {
-    detail.value = await codeGenHistoryApi.detail(row.basicId)
+    detail.value = await codeGenHistoryApi.detail(row.id)
     if (!detail.value) {
       toast.danger(t('develop.code_gen.history.not_found'))
     }

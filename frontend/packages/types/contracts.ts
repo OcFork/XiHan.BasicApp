@@ -95,7 +95,7 @@ export interface PageResult<TItem> {
 }
 
 export interface BasicDto {
-  basicId: ApiId
+  id: ApiId
 }
 
 /**

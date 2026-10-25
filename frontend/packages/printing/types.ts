@@ -90,12 +90,12 @@ export interface PrintDataSourceDefinition<T = Record<string, unknown>> {
 
 /** 后端按编码解析后的模板。 */
 export interface ResolvedPrintTemplate {
-  basicId: string
+  id: string
   /** 可选代码数据源；null 表示模板按自身字段绑定自由接收数据。 */
   dataSourceCode: null | string
   requestedScope: PrintTemplateScope
   resolvedScope: PrintTemplateScope
-  rowVersion: string
+  concurrencyStamp: string
   templateCode: string
   templateJson: string
   templateName: string

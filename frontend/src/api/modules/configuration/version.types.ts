@@ -13,7 +13,7 @@ export interface VersionPageQueryDto extends PageRequest {
 
 export interface VersionListItemDto extends BasicDto {
   appVersion: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   dbVersion: string
   /** 是否升级中（true = 当前存在进行中的升级） */
   isUpgrading: boolean
@@ -67,7 +67,7 @@ export interface MigrationHistoryPageQueryDto extends PageRequest {
 }
 
 export interface MigrationHistoryListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   executedTime: DateTimeString
   nodeName?: string | null
   scriptName: string

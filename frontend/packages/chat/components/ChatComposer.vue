@@ -278,7 +278,7 @@ async function loadMentionMembers() {
     if (conversationId !== props.conversationId) {
       return
     }
-    const me = userStore.userInfo?.basicId
+    const me = userStore.userInfo?.id
     mentionMembers.value = members.filter(member => member.userId !== me)
   }
   catch {

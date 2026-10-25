@@ -82,13 +82,13 @@ const fields = computed<ListFieldSchema[]>(() => [
       return h(XhTagRoot, { variant: 'subtle', tone: statusTagType(r.status) }, () => h(XhTagLabel, () => getOptionLabel(KNOWLEDGE_INDEX_STATUS_OPTIONS, r.status)))
     },
   },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', minWidth: 170, sortable: true, order: 6 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', minWidth: 170, sortable: true, order: 6 },
 ])
 
 const schema = computed<PageSchema>(() => ({
   pageCode: 'knowledge_base',
   pageName: t('develop.knowledge.tabs.documents'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -139,7 +139,7 @@ function handleReindex(row: KnowledgeListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await knowledgeApi.reindex(row.basicId)
+        await knowledgeApi.reindex(row.id)
         toast.success(t('develop.knowledge.reindex_success'))
         reload()
       }
@@ -160,7 +160,7 @@ function handleDelete(row: KnowledgeListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await knowledgeApi.delete(row.basicId)
+        await knowledgeApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }

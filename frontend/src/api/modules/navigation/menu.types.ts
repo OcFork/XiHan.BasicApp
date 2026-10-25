@@ -36,7 +36,7 @@ export interface MenuListItemDto extends BasicDto {
   badgeDot: boolean
   badgeType?: string | null
   component?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   icon?: string | null
   isAffix: boolean
   isCache: boolean
@@ -46,7 +46,7 @@ export interface MenuListItemDto extends BasicDto {
   menuCode: string
   menuName: string
   menuType: MenuType
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   parentId?: ApiId | null
   path: string
   permissionId?: ApiId | null

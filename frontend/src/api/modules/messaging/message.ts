@@ -22,13 +22,13 @@ const messageCommandApi = createDynamicApiClient('Message')
 
 export const messageApi = {
   // Query
-  emailDetail(id: EmailDetailDto['basicId']) {
+  emailDetail(id: EmailDetailDto['id']) {
     return messageQueryApi.get<EmailDetailDto | null>('EmailDetail', { id })
   },
   emailPage(input: EmailPageQueryDto) {
     return messageQueryApi.post<PageResult<EmailListItemDto>>('EmailPage', input)
   },
-  smsDetail(id: SmsDetailDto['basicId']) {
+  smsDetail(id: SmsDetailDto['id']) {
     return messageQueryApi.get<SmsDetailDto | null>('SmsDetail', { id })
   },
   smsPage(input: SmsPageQueryDto) {
@@ -38,7 +38,7 @@ export const messageApi = {
   createEmail(input: EmailCreateDto) {
     return messageCommandApi.post<EmailDetailDto, EmailCreateDto>('Email', input)
   },
-  deleteEmail(id: EmailDetailDto['basicId']) {
+  deleteEmail(id: EmailDetailDto['id']) {
     return messageCommandApi.delete('Email', { id })
   },
   updateEmail(input: EmailUpdateDto) {
@@ -51,7 +51,7 @@ export const messageApi = {
   createSms(input: SmsCreateDto) {
     return messageCommandApi.post<SmsDetailDto, SmsCreateDto>('Sms', input)
   },
-  deleteSms(id: SmsDetailDto['basicId']) {
+  deleteSms(id: SmsDetailDto['id']) {
     return messageCommandApi.delete('Sms', { id })
   },
   updateSms(input: SmsUpdateDto) {

@@ -78,7 +78,7 @@ async function loadDataSources() {
       { label: t('develop.code_gen.import.data_source_primary'), value: '' },
       ...(dataSources ?? []).map(item => ({
         label: `${item.sourceName}（${item.databaseType} · ${item.databaseName}）`,
-        value: item.basicId,
+        value: item.id,
       })),
     ]
   }

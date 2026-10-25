@@ -18,7 +18,7 @@ export interface PermissionDelegationPageQueryDto extends PageRequest {
 }
 
 export interface PermissionDelegationListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   delegateeDisplayName?: string | null
   delegateeTenantMemberId?: ApiId | null
   delegateeUserId: ApiId
@@ -30,7 +30,7 @@ export interface PermissionDelegationListItemDto extends BasicDto {
   effectiveTime?: DateTimeString | null
   expirationTime: DateTimeString
   isExpired: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   permissionCode?: string | null
   permissionId?: ApiId | null
   permissionName?: string | null

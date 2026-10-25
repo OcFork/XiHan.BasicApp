@@ -61,7 +61,7 @@ function openCreate() {
 }
 
 function openEdit(app: MyOAuthAppItem) {
-  editingId.value = app.basicId
+  editingId.value = app.id
   form.appName = app.appName
   form.clientType = app.clientType
   form.homepage = app.homepage ?? ''
@@ -96,7 +96,7 @@ async function handleSubmit() {
     }
     else {
       await apis.updateMyOAuthAppApi({
-        basicId: editingId.value,
+        id: editingId.value,
         appName: form.appName.trim(),
         homepage: form.homepage.trim() || undefined,
         appDescription: form.appDescription.trim() || undefined,
@@ -127,7 +127,7 @@ function handleRegenerate(app: MyOAuthAppItem) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        newSecret.value = await apis.regenerateMyOAuthAppSecretApi(app.basicId)
+        newSecret.value = await apis.regenerateMyOAuthAppSecretApi(app.id)
         toast.success(t('component.profile.oauth.msg_secret_regenerated'))
         await loadApps()
       }
@@ -140,7 +140,7 @@ function handleRegenerate(app: MyOAuthAppItem) {
 
 async function handleToggleStatus(app: MyOAuthAppItem, enabled: boolean) {
   try {
-    await apis.updateMyOAuthAppStatusApi(app.basicId, enabled ? 'Enabled' : 'Disabled')
+    await apis.updateMyOAuthAppStatusApi(app.id, enabled ? 'Enabled' : 'Disabled')
     toast.success(enabled ? t('component.profile.oauth.msg_enabled') : t('component.profile.oauth.msg_disabled'))
     await loadApps()
   }
@@ -160,8 +160,8 @@ function handleDelete(app: MyOAuthAppItem) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await apis.deleteMyOAuthAppApi(app.basicId)
-        if (newSecret.value?.basicId === app.basicId) {
+        await apis.deleteMyOAuthAppApi(app.id)
+        if (newSecret.value?.id === app.id) {
           newSecret.value = null
         }
         toast.success(t('component.profile.oauth.msg_deleted'))
@@ -248,7 +248,7 @@ onMounted(() => {
             <XhEmptyStateDescription>{{ t('component.profile.oauth.empty') }}</XhEmptyStateDescription>
           </XhEmptyStateRoot>
           <div v-else class="pf-list">
-            <div v-for="app in apps" :key="String(app.basicId)" class="pf-list-item pf-credential">
+            <div v-for="app in apps" :key="String(app.id)" class="pf-list-item pf-credential">
               <div class="pf-list-body">
                 <div class="pf-list-title pf-credential__name">
                   <span>{{ app.appName }}</span>
@@ -273,7 +273,7 @@ onMounted(() => {
                   {{ t('component.profile.oauth.callback_label') }}: {{ app.redirectUris }}
                 </div>
                 <div class="pf-list-desc">
-                  {{ t('component.profile.oauth.created_at', { time: formatDate(app.createdTime) }) }}
+                  {{ t('component.profile.oauth.created_at', { time: formatDate(app.createdAt) }) }}
                 </div>
               </div>
               <div class="pf-credential__actions">

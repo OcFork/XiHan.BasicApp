@@ -515,7 +515,7 @@ export default {
     label_form_remark: '備註',
     label_form_description: '說明',
     ph_permission_name: '請輸入權限名稱',
-    ph_permission_code: '例如: saas:user:read',
+    ph_permission_code: '例如: saas.user.read',
     ph_module_code: '預設取權限編碼的第一段',
     ph_resource: '搜尋並選擇資源',
     ph_operation: '搜尋並選擇操作項目',

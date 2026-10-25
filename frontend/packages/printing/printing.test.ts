@@ -516,14 +516,14 @@ function registerSource(code: string): void {
 }
 
 /** 注入返回指定模板与数据源的稳定解析函数。 */
-function configureFor(code: string, rowVersion = '1', dataSourceCode: null | string = code, templateJson = TemplateJson): void {
+function configureFor(code: string, concurrencyStamp = '1', dataSourceCode: null | string = code, templateJson = TemplateJson): void {
   printing.configurePrinting({
     resolveTemplate: async (_templateCode, scope): Promise<ResolvedPrintTemplate> => ({
-      basicId: '1',
+      id: '1',
       dataSourceCode,
       requestedScope: scope,
       resolvedScope: scope === 'Auto' ? 'Tenant' : scope,
-      rowVersion,
+      concurrencyStamp,
       templateCode: code,
       templateJson,
       templateName: code,
@@ -551,7 +551,7 @@ let originalLocalStorageDescriptor: PropertyDescriptor | undefined
 function installBrowserPreferenceContext(): void {
   piniaModule.setActivePinia(piniaModule.createPinia())
   const userStore = storesModule.useUserStore()
-  userStore.userInfo = { basicId: 'tester', tenantId: 'tenant-7' } as typeof userStore.userInfo
+  userStore.userInfo = { id: 'tester', tenantId: 'tenant-7' } as typeof userStore.userInfo
   const values = new Map<string, string>()
 
   originalLocalStorageDescriptor ??= Object.getOwnPropertyDescriptor(globalThis, 'localStorage')

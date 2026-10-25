@@ -4,7 +4,7 @@ import type { TenantMemberInviteStatus, TenantMemberType } from '../tenant'
 import type { DataPermissionScope, RoleType } from './role.types'
 
 export interface UserRoleListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   effectiveTime?: DateTimeString | null
   expirationTime?: DateTimeString | null
   grantReason?: string | null

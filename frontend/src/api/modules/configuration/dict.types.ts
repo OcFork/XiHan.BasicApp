@@ -12,7 +12,7 @@ export interface DictPageQueryDto extends PageRequest {
 }
 
 export interface DictListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   dictCode: string
   dictDescription?: string | null
   dictName: string
@@ -21,7 +21,7 @@ export interface DictListItemDto extends BasicDto {
   isBuiltIn: boolean
   /** 全局字典：平台维护，租户只读 */
   isGlobal: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   sort: number
   status: EnableStatus
 }
@@ -44,7 +44,7 @@ export interface DictItemPageQueryDto extends PageRequest {
 }
 
 export interface DictItemListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   dictId: ApiId
   hasExtension: boolean
   hasNote: boolean
@@ -53,7 +53,7 @@ export interface DictItemListItemDto extends BasicDto {
   itemDescription?: string | null
   itemName: string
   itemValue?: string | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   parentId?: ApiId | null
   sort: number
   status: EnableStatus

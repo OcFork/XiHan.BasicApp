@@ -69,8 +69,8 @@ export function toPrintTemplateUpdateInput(
   context: PrintTemplateSaveContext,
 ): PrintTemplateUpdateDto {
   return {
-    basicId: detail.basicId,
-    rowVersion: detail.rowVersion,
+    id: detail.id,
+    concurrencyStamp: detail.concurrencyStamp,
     scope: context.scope,
     templateName: form.templateName.trim(),
     dataSourceCode: form.dataSourceCode?.trim() || null,

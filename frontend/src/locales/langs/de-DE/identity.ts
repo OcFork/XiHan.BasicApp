@@ -515,7 +515,7 @@ export default {
     label_form_remark: 'Bemerkung',
     label_form_description: 'Beschreibung',
     ph_permission_name: 'Bitte Berechtigungsnamen eingeben',
-    ph_permission_code: 'z. B. saas:user:read',
+    ph_permission_code: 'z. B. saas.user.read',
     ph_module_code: 'Standardmäßig das erste Segment des Berechtigungscodes',
     ph_resource: 'Ressource suchen und auswählen',
     ph_operation: 'Operation suchen und auswählen',

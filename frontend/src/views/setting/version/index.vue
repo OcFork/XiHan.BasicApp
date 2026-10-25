@@ -56,7 +56,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'upgradeNode', title: t('setting.version.upgrade_node'), dataType: 'string', sortable: true, minWidth: 140, order: 5 },
   { key: 'upgradeStartTime', title: t('setting.version.upgrade_start_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
-  { key: 'createdTime', title: t('setting.version.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 7 },
+  { key: 'createdAt', title: t('setting.version.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 7 },
 ])
 
 // 只读页：版本行由升级引擎写入并把 IsUpgrading 用作分布式锁，页面不再提供任何写操作
@@ -64,7 +64,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'setting.version',
   exportPermission: 'setting.version.export',
   pageName: t('setting.version.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -103,7 +103,7 @@ async function handleDetail(row: VersionListItemDto) {
   detailLoading.value = true
   detailData.value = null
   try {
-    detailData.value = await versionApi.detail(row.basicId) ?? null
+    detailData.value = await versionApi.detail(row.id) ?? null
   }
   catch (e) {
     toast.danger((e as Error).message || t('setting.version.load_detail_failed'))
@@ -185,7 +185,7 @@ async function handleDetail(row: VersionListItemDto) {
               <XhDescriptionsItem>
                 <XhDescriptionsLabel>{{ t('setting.version.created_time') }}</XhDescriptionsLabel>
                 <XhDescriptionsValue>
-                  {{ formatNullableDate(detailData.createdTime) }}
+                  {{ formatNullableDate(detailData.createdAt) }}
                 </XhDescriptionsValue>
               </XhDescriptionsItem>
               <XhDescriptionsItem>

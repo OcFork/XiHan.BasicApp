@@ -172,25 +172,25 @@ export interface UserActivity {
 
 /** 个人 API 凭证（与后端 ProfileApiCredentialDto 对应；Status 经 JsonStringEnumConverter 序列化为字符串） */
 export interface ApiCredentialItem {
-  basicId: number | string
+  id: number | string
   credentialName: string
   appKey: string
   status: 'Disabled' | 'Enabled'
   lastUsedTime?: string | null
   expirationTime?: string | null
-  createdTime: string
+  createdAt: string
 }
 
 /** 个人 API 凭证密钥（明文 Secret 仅创建/滚动时返回一次） */
 export interface ApiCredentialSecret {
-  basicId: number | string
+  id: number | string
   appKey: string
   appSecret: string
 }
 
 /** 我的 OAuth 应用（个人中心开发者设置；与后端 MyOAuthAppItemDto 对应） */
 export interface MyOAuthAppItem {
-  basicId: number | string
+  id: number | string
   clientId: string
   appName: string
   appDescription?: string | null
@@ -201,12 +201,12 @@ export interface MyOAuthAppItem {
   grantTypes: string
   scopes?: string | null
   status: 'Disabled' | 'Enabled'
-  createdTime: string
+  createdAt: string
 }
 
 /** 我的 OAuth 应用密钥（明文仅创建/重置机密客户端时返回一次；公开客户端为空） */
 export interface MyOAuthAppSecret {
-  basicId: number | string
+  id: number | string
   clientId: string
   clientType: 'Confidential' | 'Public'
   clientSecret: string
@@ -224,7 +224,7 @@ export interface MyOAuthAppCreateInput {
 
 /** 更新我的 OAuth 应用入参 */
 export interface MyOAuthAppUpdateInput {
-  basicId: number | string
+  id: number | string
   appName: string
   homepage?: string | null
   appDescription?: string | null

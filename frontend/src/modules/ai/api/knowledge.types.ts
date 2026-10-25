@@ -28,8 +28,8 @@ export interface KnowledgeListItemDto extends BasicDto {
   status: KnowledgeIndexStatus
   errorMessage?: string | null
   sort: number
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
 }
 
 /** 知识文档详情 DTO（含原文） */

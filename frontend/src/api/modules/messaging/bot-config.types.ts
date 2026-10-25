@@ -18,13 +18,13 @@ export interface BotConfigPageQueryDto extends PageRequest {
 export interface BotConfigListItemDto extends BasicDto {
   configCode: string
   configName: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   hasSecret: boolean
   isDefault: boolean
   isEnabled: boolean
   /** 钉钉/飞书安全关键词 */
   keyword?: string | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   provider: BotProviderType
   sort: number
 }

@@ -14,7 +14,7 @@ interface TelegramBotFormModel {
   adminUsers: string | null
   allowedCommands: string | null
   allowedGroupChatIds: string | null
-  basicId?: string
+  id?: string
   botName: string
   enableFallbackReply: boolean
   isEnabled: boolean
@@ -89,7 +89,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'sort', title: t('message.telegram_bot.columns.sort'), dataType: 'number', sortable: true, width: 80, order: 5 },
-  { key: 'createdTime', title: t('message.telegram_bot.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
+  { key: 'createdAt', title: t('message.telegram_bot.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -97,7 +97,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'setting.telegram-bot.export',
   pageName: t('message.telegram_bot.page_name'),
   statusPermission: 'setting.telegram-bot.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -112,7 +112,7 @@ const schema = computed<PageSchema>(() => ({
         keyword: (f.keyword as string | undefined)?.trim() || undefined,
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => telegramBotApi.updateStatus({ basicId: id, isEnabled: enabled }),
+    updateStatus: (id, enabled) => telegramBotApi.updateStatus({ id, isEnabled: enabled }),
   },
   actions: [
     { key: 'create', title: t('message.telegram_bot.actions.create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'setting.telegram-bot.create' },
@@ -152,9 +152,9 @@ const submitLoading = ref(false)
 const editingHasToken = ref(false)
 const form = ref<TelegramBotFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (form.value.basicId ? t('message.telegram_bot.form.edit_title') : t('message.telegram_bot.form.add_title')))
+const modalTitle = computed(() => (form.value.id ? t('message.telegram_bot.form.edit_title') : t('message.telegram_bot.form.add_title')))
 const tokenPlaceholder = computed(() =>
-  form.value.basicId && editingHasToken.value ? t('message.telegram_bot.form.token_configured') : t('message.telegram_bot.form.token_placeholder'),
+  form.value.id && editingHasToken.value ? t('message.telegram_bot.form.token_configured') : t('message.telegram_bot.form.token_placeholder'),
 )
 
 function createDefaultForm(): TelegramBotFormModel {
@@ -179,7 +179,7 @@ function handleAdd() {
 
 async function handleEdit(row: TelegramBotListItemDto) {
   try {
-    const detail = await telegramBotApi.detail(row.basicId)
+    const detail = await telegramBotApi.detail(row.id)
     if (!detail) {
       toast.warning(t('message.telegram_bot.message.detail_not_found'))
       return
@@ -190,7 +190,7 @@ async function handleEdit(row: TelegramBotListItemDto) {
       adminUsers: detail.adminUsers ?? null,
       allowedCommands: detail.allowedCommands ?? null,
       allowedGroupChatIds: detail.allowedGroupChatIds ?? null,
-      basicId: detail.basicId,
+      id: detail.id,
       botName: detail.botName,
       enableFallbackReply: detail.enableFallbackReply,
       isEnabled: detail.isEnabled,
@@ -218,7 +218,7 @@ function validateForm() {
     return false
   }
 
-  if (!form.value.basicId && !form.value.token?.trim()) {
+  if (!form.value.id && !form.value.token?.trim()) {
     toast.warning(t('message.telegram_bot.message.input_token'))
     return false
   }
@@ -244,12 +244,12 @@ async function handleSubmit() {
   submitLoading.value = true
 
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       await telegramBotApi.update({
         adminUsers: form.value.adminUsers?.trim() || null,
         allowedCommands: form.value.allowedCommands?.trim() || null,
         allowedGroupChatIds: form.value.allowedGroupChatIds?.trim() || null,
-        basicId: form.value.basicId,
+        id: form.value.id,
         botName: form.value.botName.trim(),
         enableFallbackReply: form.value.enableFallbackReply,
         remark: form.value.remark,
@@ -295,7 +295,7 @@ function handleToggleStatus(row: TelegramBotListItemDto) {
     cancelText: t('message.telegram_bot.form.cancel'),
     onOk: async () => {
       try {
-        await telegramBotApi.updateStatus({ basicId: row.basicId, isEnabled: next })
+        await telegramBotApi.updateStatus({ id: row.id, isEnabled: next })
         toast.success(t('message.telegram_bot.message.status_updated'))
         reloadList()
       }
@@ -316,7 +316,7 @@ function handleDelete(row: TelegramBotListItemDto) {
     cancelText: t('message.telegram_bot.form.cancel'),
     onOk: async () => {
       try {
-        await telegramBotApi.delete(row.basicId)
+        await telegramBotApi.delete(row.id)
         toast.success(t('message.telegram_bot.message.delete_success'))
         reloadList()
       }
@@ -416,7 +416,7 @@ function handleDelete(row: TelegramBotListItemDto) {
           </XhFieldRoot>
         </XhFormFieldGroup>
 
-        <template v-if="!form.basicId">
+        <template v-if="!form.id">
           <XhFormFieldGroup name="isEnabled">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('message.telegram_bot.form.is_enabled') }}</XhFieldLabel>

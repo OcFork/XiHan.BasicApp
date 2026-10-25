@@ -27,7 +27,7 @@ function attribute(name: string, kind: ConditionValueKind, extra: Partial<Permis
 }
 
 function condition(group: number, id: string): PermissionConditionListItemDto {
-  return { basicId: id, conditionGroup: group } as PermissionConditionListItemDto
+  return { id, conditionGroup: group } as PermissionConditionListItemDto
 }
 
 const catalog = [
@@ -39,9 +39,9 @@ const catalog = [
 describe('permission-condition', () => {
   it('只把有效授权列进条件抽屉，按权限码排序', () => {
     const targets = toGrantConditionTargets('role', [
-      { basicId: '2', permissionId: '20', permissionCode: 'demo:user:read', permissionName: '用户查看', permissionAction: PermissionAction.Grant, conditionCount: 1, status: ValidityStatus.Valid },
-      { basicId: '1', permissionId: '10', permissionCode: 'demo:role:read', permissionName: null, permissionAction: PermissionAction.Deny, conditionCount: 0, status: ValidityStatus.Valid },
-      { basicId: '3', permissionId: '30', permissionCode: 'demo:dept:read', permissionName: '部门', permissionAction: PermissionAction.Grant, conditionCount: 0, status: ValidityStatus.Invalid },
+      { id: '2', permissionId: '20', permissionCode: 'demo:user:read', permissionName: '用户查看', permissionAction: PermissionAction.Grant, conditionCount: 1, status: ValidityStatus.Valid },
+      { id: '1', permissionId: '10', permissionCode: 'demo:role:read', permissionName: null, permissionAction: PermissionAction.Deny, conditionCount: 0, status: ValidityStatus.Valid },
+      { id: '3', permissionId: '30', permissionCode: 'demo:dept:read', permissionName: '部门', permissionAction: PermissionAction.Grant, conditionCount: 0, status: ValidityStatus.Invalid },
     ])
 
     expect(targets.map(target => target.key)).toEqual(['role:1', 'role:2'])
@@ -52,7 +52,7 @@ describe('permission-condition', () => {
     const groups = groupConditions([condition(1, 'a'), condition(0, 'b'), condition(1, 'c')])
 
     expect(groups.map(group => group.group)).toEqual([0, 1])
-    expect(groups[1]?.items.map(item => item.basicId)).toEqual(['a', 'c'])
+    expect(groups[1]?.items.map(item => item.id)).toEqual(['a', 'c'])
     expect(nextGroupNumber([])).toBe(0)
     expect(nextGroupNumber([condition(0, 'a'), condition(3, 'b')])).toBe(4)
   })

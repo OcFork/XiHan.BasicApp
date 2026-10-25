@@ -31,7 +31,7 @@ import {
 defineOptions({ name: 'CodeGenDatasourcePanel' })
 
 interface DatasourceFormModel {
-  basicId?: string
+  id?: string
   sourceName: string
   sourceDescription?: string | null
   databaseType: DatabaseType
@@ -147,7 +147,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'code_gen.datasource',
   pageName: t('develop.code_gen.tabs.datasource'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -198,9 +198,9 @@ function onAction(payload: SchemaActionPayload) {
 }
 
 async function handleTest(row: CodeGenDataSourceListItemDto) {
-  testingId.value = row.basicId
+  testingId.value = row.id
   try {
-    const result = await codeGenDataSourceApi.testConnection(row.basicId)
+    const result = await codeGenDataSourceApi.testConnection(row.id)
     if (result.success) {
       toast.success(t('develop.code_gen.datasource.test_success', { ms: result.elapsedMilliseconds }))
     }
@@ -227,7 +227,7 @@ function handleDelete(row: CodeGenDataSourceListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await codeGenDataSourceApi.delete(row.basicId)
+        await codeGenDataSourceApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }
@@ -243,7 +243,7 @@ const modalVisible = ref(false)
 const submitLoading = ref(false)
 const editingStatus = ref<EnableStatus | null>(null)
 const form = ref<DatasourceFormModel>(createDefaultForm())
-const modalTitle = computed(() => (form.value.basicId ? t('develop.code_gen.datasource.modal_edit_title') : t('develop.code_gen.datasource.modal_add_title')))
+const modalTitle = computed(() => (form.value.id ? t('develop.code_gen.datasource.modal_edit_title') : t('develop.code_gen.datasource.modal_add_title')))
 
 function createDefaultForm(): DatasourceFormModel {
   return {
@@ -273,14 +273,14 @@ function handleAdd() {
 
 async function handleEdit(row: CodeGenDataSourceListItemDto) {
   try {
-    const detail = await codeGenDataSourceApi.detail(row.basicId)
+    const detail = await codeGenDataSourceApi.detail(row.id)
     if (!detail) {
       toast.danger(t('develop.code_gen.datasource.not_found'))
       return
     }
     editingStatus.value = detail.status
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       sourceName: detail.sourceName,
       sourceDescription: detail.sourceDescription ?? null,
       databaseType: detail.databaseType,
@@ -326,9 +326,9 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       const updateInput: CodeGenDataSourceUpdateDto = {
-        basicId: form.value.basicId,
+        id: form.value.id,
         sourceName: form.value.sourceName.trim(),
         sourceDescription: form.value.sourceDescription,
         databaseType: form.value.databaseType,
@@ -347,7 +347,7 @@ async function handleSubmit() {
       await codeGenDataSourceApi.update(updateInput)
       if (editingStatus.value !== form.value.status) {
         await codeGenDataSourceApi.updateStatus({
-          basicId: form.value.basicId,
+          id: form.value.id,
           remark: t('develop.code_gen.datasource.update_status_remark'),
           status: form.value.status,
         })
@@ -457,7 +457,7 @@ async function handleSubmit() {
         </XhFormFieldGroup>
         <XhFormFieldGroup name="password">
           <XhFieldRoot>
-            <XhFieldLabel>{{ form.basicId ? t('develop.code_gen.datasource.form_password_edit') : t('develop.code_gen.datasource.form_password') }}</XhFieldLabel>
+            <XhFieldLabel>{{ form.id ? t('develop.code_gen.datasource.form_password_edit') : t('develop.code_gen.datasource.form_password') }}</XhFieldLabel>
             <XhFieldControl>
               <XInput v-model:value="form.password" clearable type="password" />
             </XhFieldControl>
@@ -491,7 +491,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!form.basicId" name="status">
+        <XhFormFieldGroup v-if="!form.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('common.fields.status') }}</XhFieldLabel>
             <XhFieldControl>

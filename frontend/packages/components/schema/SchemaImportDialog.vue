@@ -328,8 +328,8 @@ function handleClose(): void {
             <div class="xh-import-recent__title">
               {{ t('component.schema_import.recent_title') }}
             </div>
-            <div v-for="item in recentImports" :key="item.basicId" class="xh-import-recent__row">
-              <span class="xh-import-recent__time">{{ formatDate(item.createdTime) }}</span>
+            <div v-for="item in recentImports" :key="item.id" class="xh-import-recent__row">
+              <span class="xh-import-recent__time">{{ formatDate(item.createdAt) }}</span>
               <span class="xh-import-recent__file" :title="item.fileName">{{ item.fileName }}</span>
               <XhTagRoot variant="subtle" size="sm" tone="success">
                 <XhTagLabel>

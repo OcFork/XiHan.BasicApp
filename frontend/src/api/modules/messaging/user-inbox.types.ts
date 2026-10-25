@@ -2,7 +2,7 @@ import type { DateTimeString } from '../../types'
 import type { NotificationContentFormat, NotificationPriority, NotificationStatus, NotificationType } from './notification.types'
 
 export interface UserInboxItemDto {
-  basicId: string
+  id: string
   notificationId: string
   title: string
   content?: string | null
@@ -23,5 +23,5 @@ export interface UserInboxItemDto {
 }
 
 export interface UserInboxUpdateDto {
-  basicId: string
+  id: string
 }

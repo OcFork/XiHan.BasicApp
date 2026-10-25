@@ -39,6 +39,7 @@ import type {
   UserSessionItem,
   VerificationCodeResult,
 } from '~/types'
+import { createDynamicApiClient } from '@/api/base'
 import { ResourceAccessLevel } from '@/api/modules/authorization'
 import { dictApi } from '@/api/modules/configuration'
 import { fileApi } from '@/api/modules/files'
@@ -46,7 +47,6 @@ import { impersonationApi } from '@/api/modules/identity'
 import { enumMetadataApi } from '@/api/modules/metadata/enum-metadata'
 import { tenantApi } from '@/api/modules/tenant'
 import { workbenchApi } from '@/api/modules/workbench'
-import { requestClient } from '@/api/request'
 import { router } from '@/router'
 import { staticRoutes } from '@/router/routes'
 import { registerAppContext } from '~/stores/app-context'
@@ -108,18 +108,29 @@ function mapEnumMetadata(meta: EnumMetadata): AppEnumDefinition {
   }
 }
 
-async function getWithFallback<T>(url: string, fallback: T, config?: Parameters<typeof requestClient.get>[1]): Promise<T> {
+/** 按控制器缓存的动态客户端：context 里的调用都是 4.x 的「控制器/动作」写法，经映射表落到 5.0 操作 */
+const clients = new Map<string, ReturnType<typeof createDynamicApiClient>>()
+function api(controller: string) {
+  let client = clients.get(controller)
+  if (!client) {
+    client = createDynamicApiClient(controller)
+    clients.set(controller, client)
+  }
+  return client
+}
+
+async function getWithFallback<T>(request: () => Promise<T>, fallback: T): Promise<T> {
   try {
-    return await requestClient.get<T>(url, config)
+    return await request()
   }
   catch {
     return fallback
   }
 }
 
-async function postWithFallback<T>(url: string, data: unknown, fallback: T): Promise<T> {
+async function postWithFallback<T>(request: () => Promise<T>, fallback: T): Promise<T> {
   try {
-    return await requestClient.post<T>(url, data)
+    return await request()
   }
   catch {
     return fallback
@@ -129,53 +140,53 @@ async function postWithFallback<T>(url: string, data: unknown, fallback: T): Pro
 function createAuthApis() {
   return {
     getLoginConfigApi() {
-      return getWithFallback<LoginConfig>('/Auth/LoginConfig', defaultLoginConfig)
+      return getWithFallback<LoginConfig>(() => api('Auth').get<LoginConfig>('LoginConfig'), defaultLoginConfig)
     },
     getPermissionsApi() {
-      return requestClient.get<PermissionInfo>('/Auth/Permissions')
+      return api('Auth').get<PermissionInfo>('Permissions')
     },
     getUserInfoApi() {
-      return requestClient.get<UserInfo>('/Auth/UserInfo')
+      return api('Auth').get<UserInfo>('UserInfo')
     },
     loginApi(input: LoginParams) {
-      return requestClient.post<LoginResponse>('/Auth/Login', input)
+      return api('Auth').post<LoginResponse>('Login', input)
     },
     getCaptchaApi() {
-      return requestClient.get<CaptchaChallenge>('/Auth/Captcha')
+      return api('Auth').get<CaptchaChallenge>('Captcha')
     },
     logoutApi() {
-      return postWithFallback('/Auth/Logout', undefined, undefined)
+      return postWithFallback(() => api('Auth').post('Logout'), undefined)
     },
     lockSessionApi(input: { password: string }) {
-      return requestClient.post<unknown>('/Auth/LockSession', input)
+      return api('Auth').post<unknown>('LockSession', input)
     },
     unlockSessionApi(input: { password: string }) {
-      return requestClient.post<unknown>('/Auth/UnlockSession', input)
+      return api('Auth').post<unknown>('UnlockSession', input)
     },
     phoneLoginApi(input: PhoneLoginParams) {
-      return requestClient.post<LoginToken>('/Auth/PhoneLogin', input)
+      return api('Auth').post<LoginToken>('PhoneLogin', input)
     },
     emailLoginApi(input: EmailLoginParams) {
-      return requestClient.post<LoginToken>('/Auth/EmailLogin', input)
+      return api('Auth').post<LoginToken>('EmailLogin', input)
     },
     sendEmailLoginCodeApi(email: string) {
-      return requestClient.post<VerificationCodeResult>('/Auth/EmailLoginCode', { email })
+      return api('Auth').post<VerificationCodeResult>('EmailLoginCode', { email })
     },
     registerApi(input: unknown) {
-      return requestClient.post('/Auth/Register', input)
+      return api('Auth').post('Register', input)
     },
     createOAuthBindTicketApi() {
       // 动态 API 约定会剥离方法名的 Create 前缀，实际路由为 /Auth/OAuthBindTicket
-      return requestClient.post<string>('/Auth/OAuthBindTicket')
+      return api('Auth').post<string>('OAuthBindTicket')
     },
     requestPasswordResetApi(email: string) {
-      return requestClient.post<PasswordResetResult>('/Auth/PasswordResetRequest', { email })
+      return api('Auth').post<PasswordResetResult>('PasswordResetRequest', { email })
     },
     consumePasswordResetTokenApi(token: string, newPassword: string) {
-      return requestClient.post<PasswordResetConfirmResult>('/Auth/ConsumePasswordResetToken', { token, newPassword })
+      return api('Auth').post<PasswordResetConfirmResult>('ConsumePasswordResetToken', { token, newPassword })
     },
     sendPhoneLoginCodeApi(phone: string) {
-      return requestClient.post<VerificationCodeResult>('/Auth/PhoneLoginCode', { phone })
+      return api('Auth').post<VerificationCodeResult>('PhoneLoginCode', { phone })
     },
   }
 }
@@ -183,70 +194,70 @@ function createAuthApis() {
 function createProfileApis() {
   return {
     changePasswordApi(input: ChangePasswordParams) {
-      return requestClient.post('/Profile/ChangePassword', input)
+      return api('Profile').post('ChangePassword', input)
     },
     changeUserNameApi(input: ChangeUserNameParams) {
-      return requestClient.post('/Profile/ChangeUserName', input)
+      return api('Profile').post('ChangeUserName', input)
     },
     confirmChangeEmailApi(code: string) {
-      return requestClient.post('/Profile/ConfirmChangeEmail', { code })
+      return api('Profile').post('ConfirmChangeEmail', { code })
     },
     confirmChangePhoneApi(code: string) {
-      return requestClient.post('/Profile/ConfirmChangePhone', { code })
+      return api('Profile').post('ConfirmChangePhone', { code })
     },
     deactivateAccountApi(password: string) {
-      return requestClient.post('/Profile/DeactivateAccount', { password })
+      return api('Profile').post('DeactivateAccount', { password })
     },
     deleteAccountApi(password: string) {
-      return requestClient.post('/Profile/DeleteAccount', { password })
+      return api('Profile').post('DeleteAccount', { password })
     },
     disable2FAApi(method: number | string, code: string) {
-      return requestClient.post('/Profile/Disable2FA', { code, method })
+      return api('Profile').post('Disable2FA', { code, method })
     },
     enable2FAApi(method: number | string, code: string) {
-      return requestClient.post('/Profile/Enable2FA', { code, method })
+      return api('Profile').post('Enable2FA', { code, method })
     },
     getActivityApi() {
-      return requestClient.get<UserActivity>('/Profile/Activity')
+      return api('Profile').get<UserActivity>('Activity')
     },
     getApiCredentialsApi() {
-      return requestClient.get<ApiCredentialItem[]>('/Profile/ApiCredentials')
+      return api('Profile').get<ApiCredentialItem[]>('ApiCredentials')
     },
     createApiCredentialApi(credentialName?: string) {
-      return requestClient.post<ApiCredentialSecret>('/Profile/ApiCredential', { credentialName })
+      return api('Profile').post<ApiCredentialSecret>('ApiCredential', { credentialName })
     },
     rotateApiCredentialSecretApi(id: number | string) {
-      return requestClient.post<ApiCredentialSecret>('/Profile/RotateApiCredentialSecret', { basicId: id })
+      return api('Profile').post<ApiCredentialSecret>('RotateApiCredentialSecret', { id })
     },
     updateApiCredentialStatusApi(id: number | string, status: 'Disabled' | 'Enabled') {
-      return requestClient.put<ApiCredentialItem>('/Profile/ApiCredentialStatus', { basicId: id, status })
+      return api('Profile').put<ApiCredentialItem>('ApiCredentialStatus', { id, status })
     },
     deleteApiCredentialApi(id: number | string) {
-      return requestClient.delete('/Profile/ApiCredential', { params: { id } })
+      return api('Profile').delete('ApiCredential', { id })
     },
     getMyOAuthAppsApi() {
-      return requestClient.get<MyOAuthAppItem[]>('/MyOAuthApp/MyOAuthApps')
+      return api('MyOAuthApp').get<MyOAuthAppItem[]>('MyOAuthApps')
     },
     createMyOAuthAppApi(input: MyOAuthAppCreateInput) {
-      return requestClient.post<MyOAuthAppSecret>('/MyOAuthApp/MyOAuthApp', input)
+      return api('MyOAuthApp').post<MyOAuthAppSecret>('MyOAuthApp', input)
     },
     updateMyOAuthAppApi(input: MyOAuthAppUpdateInput) {
-      return requestClient.put<MyOAuthAppItem>('/MyOAuthApp/MyOAuthApp', input)
+      return api('MyOAuthApp').put<MyOAuthAppItem>('MyOAuthApp', input)
     },
     regenerateMyOAuthAppSecretApi(id: number | string) {
-      return requestClient.post<MyOAuthAppSecret>('/MyOAuthApp/RegenerateMyOAuthAppSecret', undefined, { params: { id } })
+      return api('MyOAuthApp').post<MyOAuthAppSecret>('RegenerateMyOAuthAppSecret', undefined, { params: { id } })
     },
     updateMyOAuthAppStatusApi(id: number | string, status: 'Disabled' | 'Enabled') {
-      return requestClient.put<MyOAuthAppItem>('/MyOAuthApp/MyOAuthAppStatus', { basicId: id, status })
+      return api('MyOAuthApp').put<MyOAuthAppItem>('MyOAuthAppStatus', { id, status })
     },
     deleteMyOAuthAppApi(id: number | string) {
-      return requestClient.delete('/MyOAuthApp/MyOAuthApp', { params: { id } })
+      return api('MyOAuthApp').delete('MyOAuthApp', { id })
     },
     getNotificationPreferenceApi() {
-      return requestClient.get<NotificationPreference>('/Profile/NotificationPreference')
+      return api('Profile').get<NotificationPreference>('NotificationPreference')
     },
     updateNotificationPreferenceApi(input: NotificationPreference) {
-      return requestClient.put<NotificationPreference>('/Profile/NotificationPreference', input)
+      return api('Profile').put<NotificationPreference>('NotificationPreference', input)
     },
     getFilePresignedUrlApi(fileId: string) {
       return fileApi.generatePresignedUrl(fileId)
@@ -258,56 +269,55 @@ function createProfileApis() {
         { file, accessLevel: ResourceAccessLevel.Public, directory: 'avatars' },
         onProgress,
       )
-      return { fileId: detail.basicId }
+      return { fileId: detail.id }
     },
     getLinkedAccountsApi() {
-      return requestClient.get<ExternalLoginItem[]>('/Profile/LinkedAccounts')
+      return api('Profile').get<ExternalLoginItem[]>('LinkedAccounts')
     },
     getLoginLogsApi(page: number, pageSize: number) {
-      return requestClient.get<LoginLogPage>('/Profile/LoginLogs', { params: { page, pageSize } })
-        .then(result => ({ ...result, page, pageSize }))
+      return api('Profile').get<LoginLogPage>('LoginLogs', { page, pageSize }).then(result => ({ ...result, page, pageSize }))
     },
     getProfileApi() {
-      return requestClient.get<UserProfile>('/Profile/Profile')
+      return api('Profile').get<UserProfile>('Profile')
     },
     getSessionsApi() {
-      return requestClient.get<UserSessionItem[]>('/Profile/Sessions')
+      return api('Profile').get<UserSessionItem[]>('Sessions')
     },
     revokeOtherSessionsApi() {
-      return requestClient.post('/Profile/RevokeOtherSessions')
+      return api('Profile').post('RevokeOtherSessions')
     },
     revokeSessionApi(sessionId: string) {
-      return requestClient.post('/Profile/RevokeSession', { sessionId })
+      return api('Profile').post('RevokeSession', { sessionId })
     },
     send2FASetupCodeApi(method: number | string) {
-      return requestClient.post<VerificationCodeResult>('/Profile/Send2FASetupCode', { method })
+      return api('Profile').post<VerificationCodeResult>('Send2FASetupCode', { method })
     },
     sendChangeEmailCodeApi(input: ChangeEmailParams) {
-      return requestClient.post<VerificationCodeResult>('/Profile/SendChangeEmailCode', input)
+      return api('Profile').post<VerificationCodeResult>('SendChangeEmailCode', input)
     },
     sendChangePhoneCodeApi(input: ChangePhoneParams) {
-      return requestClient.post<VerificationCodeResult>('/Profile/SendChangePhoneCode', input)
+      return api('Profile').post<VerificationCodeResult>('SendChangePhoneCode', input)
     },
     sendEmailVerifyCodeApi() {
-      return requestClient.post<VerificationCodeResult>('/Profile/SendEmailVerifyCode')
+      return api('Profile').post<VerificationCodeResult>('SendEmailVerifyCode')
     },
     sendPhoneVerifyCodeApi() {
-      return requestClient.post<VerificationCodeResult>('/Profile/SendPhoneVerifyCode')
+      return api('Profile').post<VerificationCodeResult>('SendPhoneVerifyCode')
     },
     setup2FAApi() {
-      return requestClient.post<TwoFactorSetupResult>('/Profile/Setup2FA')
+      return api('Profile').post<TwoFactorSetupResult>('Setup2FA')
     },
     unlinkAccountApi(provider: string) {
-      return requestClient.post('/Profile/UnlinkAccount', { provider })
+      return api('Profile').post('UnlinkAccount', { provider })
     },
     updateProfileApi(input: UpdateProfileParams) {
-      return requestClient.put<UserProfile>('/Profile/Profile', input)
+      return api('Profile').put<UserProfile>('Profile', input)
     },
     verifyEmailApi(code: string) {
-      return requestClient.post('/Profile/VerifyEmail', { code })
+      return api('Profile').post('VerifyEmail', { code })
     },
     verifyPhoneApi(code: string) {
-      return requestClient.post('/Profile/VerifyPhone', { code })
+      return api('Profile').post('VerifyPhone', { code })
     },
   }
 }
@@ -354,13 +364,12 @@ function createShellApis() {
     userSettingApi: {
       get(input: { scene: number, settingKey: string }) {
         return getWithFallback<{ scene: number, settingKey: string, settingValue?: null | string }>(
-          '/UserSettingQuery/Get',
+          () => api('UserSettingQuery').get('Get', input),
           { scene: input.scene, settingKey: input.settingKey, settingValue: null },
-          { params: input },
         )
       },
       save(input: { scene: number, settingKey: string, settingValue?: null | string, clientId?: string, origin?: null | string }) {
-        return requestClient.post<{ scene: number, settingKey: string, settingValue?: null | string }>('/UserSetting/Save', input)
+        return api('UserSetting').post<{ scene: number, settingKey: string, settingValue?: null | string }>('Save', input)
       },
     },
     dictApi: {
@@ -371,31 +380,30 @@ function createShellApis() {
     timeZoneApi: {
       options() {
         return getWithFallback<Array<{ id: string, displayName: string, baseUtcOffsetMinutes: number, supportsDaylightSavingTime: boolean }>>(
-          '/TimeZoneMetadata/TimeZoneOptions',
+          () => api('TimeZoneMetadata').get('TimeZoneOptions'),
           [],
         )
       },
     },
     importHistoryApi: {
       create(input: { pageCode: string, resourceCode?: null | string, fileName: string, totalCount: number, successCount: number, failCount: number, errorSummary?: null | string }) {
-        return requestClient.post<unknown>('/ImportHistory/Create', input)
+        return api('ImportHistory').post<unknown>('Create', input)
       },
       recent(pageCode: string, count = 10) {
-        return getWithFallback<Array<{ basicId: number | string, pageCode: string, resourceCode?: null | string, fileName: string, totalCount: number, successCount: number, failCount: number, errorSummary?: null | string, createdTime: string }>>(
-          '/ImportHistoryQuery/Mine',
+        return getWithFallback<Array<{ id: number | string, pageCode: string, resourceCode?: null | string, fileName: string, totalCount: number, successCount: number, failCount: number, errorSummary?: null | string, createdAt: string }>>(
+          () => api('ImportHistoryQuery').get('Mine', { pageCode, count }),
           [],
-          { params: { pageCode, count } },
         )
       },
     },
     exportTaskApi: {
       submit(input: { businessType: string, taskName?: string, scope: number, format: number, querySnapshot?: null | string, columns: Array<{ key: string, title: string, valueMap?: Record<string, string> }> }) {
-        return requestClient.post<unknown>('/ExportTask/Submit', input)
+        return api('ExportTask').post<unknown>('Submit', input)
       },
     },
     serverApi: {
       getNuGetPackages() {
-        return getWithFallback<AppBackendDependency[]>('/Server/NuGetPackages', [])
+        return getWithFallback<AppBackendDependency[]>(() => api('Server').get<AppBackendDependency[]>('NuGetPackages'), [])
       },
     },
     userInboxApi: {

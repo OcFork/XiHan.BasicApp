@@ -36,7 +36,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'conversationId', title: t('chat.audit.conversation_id'), dataType: 'string', visible: false, advancedSearch: true, order: 1 },
   { key: 'senderUserId', title: t('chat.audit.sender_user_id'), dataType: 'string', visible: false, advancedSearch: true, order: 2 },
   // 列
-  { key: 'basicId', title: t('chat.audit.message_id'), dataType: 'string', minWidth: 150, order: 10 },
+  { key: 'id', title: t('chat.audit.message_id'), dataType: 'string', minWidth: 150, order: 10 },
   { key: 'conversationName', title: t('chat.audit.conversation'), dataType: 'string', minWidth: 140, order: 11, render: row => (row as unknown as ChatAuditListItemDto).conversationName || '-' },
   {
     key: 'conversationType',
@@ -82,14 +82,14 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'editedTime', title: t('chat.audit.edited_time'), dataType: 'datetime', minWidth: 170, order: 18 },
-  { key: 'createdTime', title: t('chat.audit.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 19 },
+  { key: 'createdAt', title: t('chat.audit.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 19 },
 ])
 
 function toStr(v: unknown): string | undefined {
   return (v as string | undefined)?.trim() || undefined
 }
 
-/** 查询构建：排序 + 区间(createdTime)/多选(messageType) 走 conditions；会话/发送人主键走显式字段 */
+/** 查询构建：排序 + 区间(createdAt)/多选(messageType) 走 conditions；会话/发送人主键走显式字段 */
 function buildAuditQuery(params: SchemaQueryParams) {
   const f = params.filters
   return {
@@ -106,7 +106,7 @@ function buildAuditQuery(params: SchemaQueryParams) {
 const schema = computed<PageSchema>(() => ({
   pageCode: 'message.chat-audit',
   pageName: t('chat.audit.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: params => chatAuditApi.page(buildAuditQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,

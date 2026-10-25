@@ -58,7 +58,7 @@ function onDetail(item: AppUserInboxDisplayItem): void {
     >
       <Transition name="banner-fade" mode="out-in">
         <div
-          :key="active.basicId"
+          :key="active.id"
           class="notif-banner"
           :class="`notif-banner--${resolveBannerTone(active)}`"
         >
@@ -73,7 +73,7 @@ function onDetail(item: AppUserInboxDisplayItem): void {
           <div v-if="banners.length > 1" class="notif-banner__dots">
             <button
               v-for="(item, index) in banners"
-              :key="item.basicId"
+              :key="item.id"
               type="button"
               class="notif-banner__dot"
               :class="{ 'is-active': index === activeIndex }"

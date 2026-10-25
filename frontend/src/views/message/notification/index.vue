@@ -137,8 +137,8 @@ async function loadTargetOptions() {
       roleApi.enabledList({ limit: 200 }),
       departmentApi.enabledList(),
     ])
-    roleOptions.value = roles.map(r => ({ label: r.roleName, value: String(r.basicId) }))
-    departmentOptions.value = departments.map(d => ({ label: d.departmentName, value: String(d.basicId) }))
+    roleOptions.value = roles.map(r => ({ label: r.roleName, value: String(r.id) }))
+    departmentOptions.value = departments.map(d => ({ label: d.departmentName, value: String(d.id) }))
     targetOptionsLoaded.value = true
   }
   catch (e) {
@@ -148,7 +148,7 @@ async function loadTargetOptions() {
 
 // ── 表单 ─────────────────────────────────────────────────────────
 interface NotificationFormModel {
-  basicId?: ApiId
+  id?: ApiId
   title: string
   content: string | null
   notificationType: NotificationType
@@ -199,7 +199,7 @@ function createDefaultForm(): NotificationFormModel {
 const modalVisible = ref(false)
 const submitLoading = ref(false)
 const notificationForm = ref<NotificationFormModel>(createDefaultForm())
-const modalTitle = computed(() => (notificationForm.value.basicId ? t('message.notification.edit_title') : t('message.notification.add_title')))
+const modalTitle = computed(() => (notificationForm.value.id ? t('message.notification.edit_title') : t('message.notification.add_title')))
 const isUserTarget = computed(() => notificationForm.value.targetType === NotificationTargetType.User)
 const isRoleTarget = computed(() => notificationForm.value.targetType === NotificationTargetType.Role)
 const isDepartmentTarget = computed(() => notificationForm.value.targetType === NotificationTargetType.Department)
@@ -276,7 +276,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'sendTime', title: t('message.notification.col_send_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 15 },
   { key: 'expirationTime', title: t('message.notification.col_expiration_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 16 },
-  { key: 'createdTime', title: t('message.notification.col_created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 17 },
+  { key: 'createdAt', title: t('message.notification.col_created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 17 },
 ])
 
 function toStr(v: unknown): string | undefined {
@@ -287,7 +287,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'message.notification',
   exportPermission: 'message.notification.export',
   pageName: t('message.notification.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -349,7 +349,7 @@ function onAction(payload: SchemaActionPayload) {
 // ── 详情（抽屉） ─────────────────────────────────────────────────
 async function openDetail(row: NotificationListItemDto) {
   try {
-    currentDetail.value = await notificationApi.detail(row.basicId)
+    currentDetail.value = await notificationApi.detail(row.id)
     if (!currentDetail.value) {
       toast.danger(t('message.notification.msg_not_found'))
       return
@@ -364,7 +364,7 @@ async function openDetail(row: NotificationListItemDto) {
 // ── 编辑（未发布才可） ───────────────────────────────────────────
 async function openEdit(row: NotificationListItemDto) {
   try {
-    const detail = await notificationApi.detail(row.basicId)
+    const detail = await notificationApi.detail(row.id)
     if (!detail) {
       toast.danger(t('message.notification.msg_not_found'))
       return
@@ -374,7 +374,7 @@ async function openEdit(row: NotificationListItemDto) {
       return
     }
     notificationForm.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       title: detail.title,
       content: detail.content ?? null,
       notificationType: detail.notificationType,
@@ -416,7 +416,7 @@ function confirmPublish(row: NotificationListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        const result = await notificationApi.publish({ basicId: row.basicId })
+        const result = await notificationApi.publish({ id: row.id })
         toast.success(t('message.notification.msg_publish_success', { count: result.recipientCount }))
         void schemaPageRef.value?.reload()
       }
@@ -430,7 +430,7 @@ function confirmPublish(row: NotificationListItemDto) {
 // ── 删除 ─────────────────────────────────────────────────────────
 async function removeRow(row: NotificationListItemDto) {
   try {
-    await notificationApi.delete(row.basicId)
+    await notificationApi.delete(row.id)
     toast.success(t('message.notification.msg_delete_success'))
     void schemaPageRef.value?.reload()
   }
@@ -477,7 +477,7 @@ async function loadUnreadUsers(id: ApiId, page: number) {
 }
 
 async function openStats(row: NotificationListItemDto) {
-  statsRow.value = { id: row.basicId, title: row.title }
+  statsRow.value = { id: row.id, title: row.title }
   readStats.value = null
   unreadUsers.value = []
   unreadTotal.value = 0
@@ -486,8 +486,8 @@ async function openStats(row: NotificationListItemDto) {
   statsLoading.value = true
   try {
     const [stats] = await Promise.all([
-      notificationApi.readStats(row.basicId),
-      loadUnreadUsers(row.basicId, 1),
+      notificationApi.readStats(row.id),
+      loadUnreadUsers(row.id, 1),
     ])
     readStats.value = stats
   }
@@ -618,9 +618,9 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (form.basicId) {
+    if (form.id) {
       await notificationApi.update({
-        basicId: form.basicId,
+        id: form.id,
         title: form.title.trim(),
         content: toStr(form.content) ?? null,
         notificationType: form.notificationType,
@@ -912,7 +912,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <p v-if="isUserTarget && notificationForm.basicId" class="form-hint xh-span-2">
+        <p v-if="isUserTarget && notificationForm.id" class="form-hint xh-span-2">
           {{ t('message.notification.edit_user_hint') }}
         </p>
       </XhFormRoot>
@@ -1040,7 +1040,7 @@ async function handleSubmit() {
             <XhDescriptionsItem>
               <XhDescriptionsLabel>{{ t('message.notification.detail.label.created_time') }}</XhDescriptionsLabel>
               <XhDescriptionsValue>
-                {{ formatDate(currentDetail.createdTime) }}
+                {{ formatDate(currentDetail.createdAt) }}
               </XhDescriptionsValue>
             </XhDescriptionsItem>
             <XhDescriptionsItem style="grid-column: span 2">

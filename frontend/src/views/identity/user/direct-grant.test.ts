@@ -10,8 +10,8 @@ import { applyPermissionTransfer, diffPermissionGrants, diffRoleGrants } from '.
 
 describe('diffRoleGrants', () => {
   const current = [
-    { basicId: 'ur-1', roleId: 'r-1' },
-    { basicId: 'ur-2', roleId: 'r-2' },
+    { id: 'ur-1', roleId: 'r-1' },
+    { id: 'ur-2', roleId: 'r-2' },
   ]
 
   it('新挪进右栏的按角色主键授予，挪出去的按记录主键撤销', () => {
@@ -63,8 +63,8 @@ describe('applyPermissionTransfer', () => {
 
 describe('diffPermissionGrants', () => {
   const current = [
-    { basicId: 'up-1', permissionId: 'p-1', permissionAction: PermissionAction.Grant },
-    { basicId: 'up-2', permissionId: 'p-2', permissionAction: PermissionAction.Deny },
+    { id: 'up-1', permissionId: 'p-1', permissionAction: PermissionAction.Grant },
+    { id: 'up-2', permissionId: 'p-2', permissionAction: PermissionAction.Deny },
   ]
 
   it('新增与改了动作的下发，动作没变的不重复提交，草稿里没有的按记录主键撤销', () => {

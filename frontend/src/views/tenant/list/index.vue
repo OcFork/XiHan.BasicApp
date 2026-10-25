@@ -41,7 +41,7 @@ import { formatDate, formatFileSize, getOptionLabel } from '~/utils'
 defineOptions({ name: 'PlatformTenantPage' })
 
 interface TenantFormModel extends TenantCreateDto {
-  basicId?: ApiId
+  id?: ApiId
   tenantStatus?: TenantStatus
 }
 
@@ -101,7 +101,7 @@ void loadEditions()
 const editionOptions = computed(() =>
   editions.value.map(e => ({
     label: e.isDefault ? `${e.editionName}${t('tenant.list.edition_default_suffix')}` : e.editionName,
-    value: e.basicId,
+    value: e.id,
   })),
 )
 
@@ -110,7 +110,7 @@ function editionLabel(id?: ApiId | null) {
   if (id === null || id === undefined || id === '') {
     return null
   }
-  return editions.value.find(e => e.basicId === id)?.editionName ?? String(id)
+  return editions.value.find(e => e.id === id)?.editionName ?? String(id)
 }
 
 const schemaPageRef = ref<{ reload: () => Promise<void> } | null>(null)
@@ -124,11 +124,11 @@ const modalVisible = ref(false)
 const submitLoading = ref(false)
 const editingStatus = ref<TenantStatus | null>(null)
 const tenantForm = ref<TenantFormModel>(createDefaultForm())
-const modalTitle = computed(() => (tenantForm.value.basicId ? t('tenant.list.edit_title') : t('tenant.list.add_title')))
+const modalTitle = computed(() => (tenantForm.value.id ? t('tenant.list.edit_title') : t('tenant.list.add_title')))
 /** 库隔离租户建好之后先初始化数据库，再初始化管理员 */
 const isDatabaseIsolation = computed(() => tenantForm.value.isolationMode === TenantIsolationMode.Database)
 /** 表单里的隔离模式：Schema 隔离尚未实装、创建即被拒绝，新建时不提供；编辑时只读展示原值 */
-const formIsolationModeOptions = computed(() => tenantForm.value.basicId
+const formIsolationModeOptions = computed(() => tenantForm.value.id
   ? isolationModeOptions.value
   : isolationModeOptions.value.filter(option => option.value !== TenantIsolationMode.Schema))
 
@@ -141,7 +141,7 @@ const initAdminForm = ref<TenantAdminInitializeDto>(createDefaultInitAdminForm('
 const selectedEdition = computed(() => {
   const id = tenantForm.value.editionId
   if (id) {
-    return editions.value.find(e => e.basicId === id) ?? null
+    return editions.value.find(e => e.id === id) ?? null
   }
   return editions.value.find(e => e.isDefault) ?? null
 })
@@ -370,7 +370,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'sort', title: t('tenant.list.sort'), dataType: 'number', sortable: true, minWidth: 80, order: 12 },
   { key: 'expirationTime', title: t('tenant.list.expiration_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, advancedSearch: true, minWidth: 170, order: 13 },
-  { key: 'createdTime', title: t('tenant.list.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 14 },
+  { key: 'createdAt', title: t('tenant.list.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 14 },
   // 仅高级搜索(不作为列)：版本下拉（值仍为版本 ID）
   { key: 'editionIdFilter', title: t('tenant.list.edition'), dataType: 'enum', visible: false, advancedSearch: true, options: editionOptions.value, searchPlaceholder: t('tenant.list.edition_filter_placeholder'), order: 20 },
 ])
@@ -384,7 +384,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'tenant.list',
   exportPermission: 'tenant.list.export',
   pageName: t('tenant.list.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -570,7 +570,7 @@ function onAction(payload: SchemaActionPayload) {
 async function handleStatusChange(row: TenantListItemDto, tenantStatus: TenantStatus) {
   try {
     await tenantManagementApi.updateStatus({
-      basicId: row.basicId,
+      id: row.id,
       reason: t('tenant.list.status_change_reason'),
       tenantStatus,
     })
@@ -584,7 +584,7 @@ async function handleStatusChange(row: TenantListItemDto, tenantStatus: TenantSt
 
 async function handleDelete(row: TenantListItemDto) {
   try {
-    await tenantManagementApi.remove(row.basicId)
+    await tenantManagementApi.remove(row.id)
     toast.success(t('tenant.list.delete_success'))
     reloadTenant()
   }
@@ -595,7 +595,7 @@ async function handleDelete(row: TenantListItemDto) {
 
 async function handleInitDb(row: TenantListItemDto) {
   try {
-    await tenantManagementApi.initializeDatabase(row.basicId)
+    await tenantManagementApi.initializeDatabase(row.id)
     toast.success(t('tenant.list.init_db_success'))
     reloadTenant()
   }
@@ -614,7 +614,7 @@ function createDefaultInitAdminForm(tenantId: ApiId): TenantAdminInitializeDto {
 }
 
 function handleInitAdmin(row: TenantListItemDto) {
-  initAdminForm.value = createDefaultInitAdminForm(row.basicId)
+  initAdminForm.value = createDefaultInitAdminForm(row.id)
   initAdminVisible.value = true
 }
 
@@ -699,13 +699,13 @@ async function handleEdit(row: TenantListItemDto) {
   // 列表行不含备注，取详情回填；否则保存时会把备注覆盖为空
   let detail: TenantDetailDto | null = null
   try {
-    detail = await tenantManagementApi.detail(row.basicId)
+    detail = await tenantManagementApi.detail(row.id)
   }
   catch {
     detail = null
   }
   tenantForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     // 连接串敏感、绝不回显：编辑时留空表示保持不变
     connectionString: null,
     databaseType: detail?.databaseType ?? row.databaseType ?? null,
@@ -734,7 +734,7 @@ async function handleView(row: TenantListItemDto) {
   memberPage.value = 1
   memberTotal.value = 0
   try {
-    currentDetail.value = await tenantManagementApi.detail(row.basicId)
+    currentDetail.value = await tenantManagementApi.detail(row.id)
     if (!currentDetail.value) {
       toast.warning(t('tenant.list.detail_not_found'))
     }
@@ -769,7 +769,7 @@ async function loadMembers() {
         page: { pageIndex: memberPage.value, pageSize: MEMBER_PAGE_SIZE },
       }),
       // 平台查看某个租户的成员：后端切入该租户只读
-      tenantId: currentDetail.value.basicId,
+      tenantId: currentDetail.value.id,
     })
     members.value = result.items
     memberTotal.value = result.page.totalCount
@@ -813,7 +813,7 @@ async function searchMemberUsers(keyword: string) {
     const items = await userApi.select({ keyword: keyword.trim() || null, limit: MEMBER_USER_PAGE_SIZE })
     memberUserOptions.value = items.map(item => ({
       label: item.realName ? `${item.userName}（${item.realName}）` : item.userName,
-      value: item.basicId as string | number,
+      value: item.id as string | number,
     }))
   }
   catch {
@@ -840,7 +840,7 @@ async function handleSaveSupportMember() {
       effectiveTime: supportMemberForm.value.effectiveTime,
       expirationTime: supportMemberForm.value.expirationTime,
       remark: normalizeNullable(supportMemberForm.value.remark),
-      tenantId: tenant.basicId,
+      tenantId: tenant.id,
       userId: supportMemberForm.value.userId,
     })
     toast.success(t('tenant.list.support_member_add_success'))
@@ -888,7 +888,7 @@ function handleTransferOwner(item: TenantMemberListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await tenantManagementApi.members.transferOwner({ tenantId: tenant.basicId, memberId: item.basicId })
+        await tenantManagementApi.members.transferOwner({ tenantId: tenant.id, memberId: item.id })
         toast.success(t('tenant.list.transfer_owner_success'))
         await loadMembers()
       }
@@ -912,7 +912,7 @@ function handleRemoveSupportMember(item: TenantMemberListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await tenantManagementApi.members.removeSupport(tenant.basicId, item.basicId)
+        await tenantManagementApi.members.removeSupport(tenant.id, item.id)
         toast.success(t('tenant.list.support_member_remove_success'))
         await loadMembers()
       }
@@ -944,7 +944,7 @@ function validateForm() {
     toast.warning(t('tenant.list.validate_tenant_name'))
     return false
   }
-  if (tenantForm.value.basicId) {
+  if (tenantForm.value.id) {
     return true
   }
 
@@ -982,9 +982,9 @@ async function handleSubmit() {
   submitLoading.value = true
   let created: TenantDetailDto | null = null
   try {
-    if (tenantForm.value.basicId) {
+    if (tenantForm.value.id) {
       const updateInput: TenantUpdateDto = {
-        basicId: tenantForm.value.basicId,
+        id: tenantForm.value.id,
         connectionString: normalizeNullable(tenantForm.value.connectionString),
         databaseType: tenantForm.value.databaseType ?? null,
         domain: normalizeNullable(tenantForm.value.domain),
@@ -1003,7 +1003,7 @@ async function handleSubmit() {
 
       if (editingStatus.value !== tenantForm.value.tenantStatus && tenantForm.value.tenantStatus !== undefined) {
         await tenantManagementApi.updateStatus({
-          basicId: tenantForm.value.basicId,
+          id: tenantForm.value.id,
           reason: t('tenant.list.status_change_reason'),
           tenantStatus: tenantForm.value.tenantStatus,
         })
@@ -1180,13 +1180,13 @@ async function handleSubmit() {
                   <XhDescriptionsItem>
                     <XhDescriptionsLabel>{{ t('tenant.list.created_time') }}</XhDescriptionsLabel>
                     <XhDescriptionsValue>
-                      {{ formatNullableDate(currentDetail.createdTime) }}
+                      {{ formatNullableDate(currentDetail.createdAt) }}
                     </XhDescriptionsValue>
                   </XhDescriptionsItem>
                   <XhDescriptionsItem>
                     <XhDescriptionsLabel>{{ t('tenant.list.modified_time') }}</XhDescriptionsLabel>
                     <XhDescriptionsValue>
-                      {{ formatNullableDate(currentDetail.modifiedTime) }}
+                      {{ formatNullableDate(currentDetail.modifiedAt) }}
                     </XhDescriptionsValue>
                   </XhDescriptionsItem>
                 </XhDescriptionsRoot>
@@ -1237,7 +1237,7 @@ async function handleSubmit() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="item in members" :key="item.basicId">
+                        <tr v-for="item in members" :key="item.id">
                           <td>{{ item.userId }}</td>
                           <td>{{ formatNullable(resolveMemberName(item)) }}</td>
                           <td>
@@ -1261,7 +1261,7 @@ async function handleSubmit() {
                               </XhTagLabel>
                             </XhTagRoot>
                           </td>
-                          <td>{{ formatNullableDate(item.createdTime) }}</td>
+                          <td>{{ formatNullableDate(item.createdAt) }}</td>
                           <td>
                             <XhButton
                               v-if="canTransferOwner && isOwnerCandidate(item)"
@@ -1404,7 +1404,7 @@ async function handleSubmit() {
             <XhFieldControl>
               <XInput
                 v-model:value="tenantForm.tenantCode"
-                :disabled="Boolean(tenantForm.basicId)"
+                :disabled="Boolean(tenantForm.id)"
                 clearable
                 :placeholder="t('tenant.list.tenant_code_placeholder')"
               />
@@ -1436,11 +1436,11 @@ async function handleSubmit() {
             <XhFieldControl>
               <XSelect
                 v-model:value="tenantForm.isolationMode"
-                :disabled="Boolean(tenantForm.basicId)"
+                :disabled="Boolean(tenantForm.id)"
                 :options="formIsolationModeOptions"
               />
             </XhFieldControl>
-            <XhFieldDescription v-if="tenantForm.basicId">
+            <XhFieldDescription v-if="tenantForm.id">
               {{ t('tenant.list.isolation_mode_locked') }}
             </XhFieldDescription>
             <XhFieldErrorText />
@@ -1526,7 +1526,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="tenantForm.basicId" name="tenantStatus">
+        <XhFormFieldGroup v-if="tenantForm.id" name="tenantStatus">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('tenant.list.tenant_status') }}</XhFieldLabel>
             <XhFieldControl>
@@ -1573,7 +1573,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <p v-if="!tenantForm.basicId" class="xh-span-2 xh-form-note">
+        <p v-if="!tenantForm.id" class="xh-span-2 xh-form-note">
           {{ isDatabaseIsolation ? t('tenant.list.database_admin_hint') : t('tenant.list.create_admin_hint') }}
         </p>
       </XhFormRoot>

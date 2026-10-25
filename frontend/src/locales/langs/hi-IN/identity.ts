@@ -515,7 +515,7 @@ export default {
     label_form_remark: 'टिप्पणी',
     label_form_description: 'विवरण',
     ph_permission_name: 'अनुमति नाम दर्ज करें',
-    ph_permission_code: 'उदाहरण: saas:user:read',
+    ph_permission_code: 'उदाहरण: saas.user.read',
     ph_module_code: 'डिफ़ॉल्ट रूप से अनुमति कोड का पहला खंड लिया जाता है',
     ph_resource: 'संसाधन खोजकर चुनें',
     ph_operation: 'ऑपरेशन खोजकर चुनें',

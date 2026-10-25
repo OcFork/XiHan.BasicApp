@@ -1,9 +1,9 @@
 /**
  * Dynamic API 底座（src/api/base.ts）单元测试。
  *
- * 职责边界：只验证「控制器名 + 动作名 → URL / HTTP 谓词 / 参数位置」这层拼装契约，
- * 以及 appendDynamicApiParam / formatDynamicApiRouteValue 两个纯函数的全分支行为。
- * 不发真实请求：requestClient 被整体替换为记录器。
+ * 职责边界：facade 的「控制器/动作」经路由表解析成 5.0 操作路由后，HTTP 方法、URL（含实例级 {id}）、
+ * 请求体与查询串各放什么；以及 appendDynamicApiParam / formatDynamicApiRouteValue 两个纯函数的全分支行为。
+ * 路由表被替换成下面的固定样本，不依赖后端源码；不发真实请求：requestClient 被整体替换为记录器。
  */
 import type { DynamicApiParams } from './base'
 import type { AxiosRequestConfig } from '~/request'
@@ -14,6 +14,7 @@ import {
   createDynamicApiClient,
   createReadApi,
   formatDynamicApiRouteValue,
+  resolveOperationRoute,
 } from './base'
 
 interface RecordedCall {
@@ -24,6 +25,29 @@ interface RecordedCall {
 }
 
 const hoisted = vi.hoisted(() => ({ calls: [] as RecordedCall[] }))
+
+vi.mock('./operations.generated', () => ({
+  OPERATIONS: {
+    // 同名动作对应三个操作：按谓词区分
+    'Order/Order': {
+      DELETE: { id: 'order.delete', method: 'DELETE', path: '/api/order/{id}' },
+      POST: { id: 'order.create', method: 'POST', path: '/api/order' },
+      PUT: { id: 'order.update', method: 'PUT', path: '/api/order/{id}' },
+    },
+    // facade 写 POST、方法名前缀推出 GET：唯一候选时谓词不参与判断
+    'OrderQuery/OrderPage': { GET: { id: 'order-query.list-order', method: 'POST', path: '/api/order-query:list-order' } },
+    'OrderQuery/OrderDetail': { GET: { id: 'order-query.get-order-detail', method: 'POST', path: '/api/order-query/{id}:get-order-detail' } },
+    'OrderQuery/Options': { GET: { id: 'order-query.list', method: 'GET', path: '/api/order-query' } },
+    'Order/Cancel': { POST: { id: 'order.cancel', method: 'POST', path: '/api/order/{id}:cancel' } },
+    'Order/Archive': { DELETE: { id: 'order.archive', method: 'DELETE', path: '/api/order/{id}' } },
+    'Order/Purge': { POST: { id: 'order.purge', method: 'DELETE', path: '/api/order/{id}' } },
+    'Order/Export': { POST: { id: 'order.export', method: 'GET', path: '/api/order' } },
+    'Order/Sync': {
+      DELETE: { id: 'order.sync', method: 'POST', path: '/api/order:sync' },
+      POST: { id: 'order.sync-2', method: 'POST', path: '/api/order:sync-2' },
+    },
+  },
+}))
 
 vi.mock('@/api/request', () => ({
   requestClient: {
@@ -56,193 +80,132 @@ function lastCall(): RecordedCall {
   return call
 }
 
-describe('createDynamicApiClient 的路由拼装', () => {
-  it('控制器名与动作名拼成「/控制器/动作」，且两段都不带 api 前缀（前缀由 request 层补）', async () => {
-    const client = createDynamicApiClient('UserQuery')
-    await client.get('UserPage')
-
-    expect(lastCall().url).toBe('/UserQuery/UserPage')
+describe('resolveOperationRoute 的操作解析', () => {
+  it('动作只对应一个操作时直接用它，不看 facade 写的谓词', () => {
+    expect(resolveOperationRoute('POST', 'OrderQuery', 'OrderPage').id).toBe('order-query.list-order')
+    expect(resolveOperationRoute('GET', 'OrderQuery', 'OrderPage').id).toBe('order-query.list-order')
   })
 
-  it('控制器名两端的空白与斜杠被剥离，内部不做大小写改写', async () => {
-    const client = createDynamicApiClient('  //TenantQuery//  ')
-    await client.get('MyAvailableTenants')
-
-    expect(lastCall().url).toBe('/TenantQuery/MyAvailableTenants')
+  it('同名动作对应多个操作时按谓词挑选', () => {
+    expect(resolveOperationRoute('POST', 'Order', 'Order').id).toBe('order.create')
+    expect(resolveOperationRoute('PUT', 'Order', 'Order').id).toBe('order.update')
+    expect(resolveOperationRoute('DELETE', 'Order', 'Order').id).toBe('order.delete')
   })
 
-  it('动作名两端的斜杠被剥离，但动作内部的斜杠保留——路由段拼接依赖它', async () => {
-    const client = createDynamicApiClient('PrintTemplateQuery')
-    await client.get('/PrintTemplateDetail/1024/')
-
-    expect(lastCall().url).toBe('/PrintTemplateQuery/PrintTemplateDetail/1024')
+  it('多个候选里没有该谓词时抛错并列出候选，而不是随便挑一个', () => {
+    expect(() => resolveOperationRoute('GET', 'Order', 'Sync')).toThrow(/order\.sync、order\.sync-2/)
   })
 
-  it('空控制器名在建客户端时立刻抛错，不拖到发请求才暴露', () => {
-    expect(() => createDynamicApiClient('')).toThrow(/不能为空/)
-    expect(() => createDynamicApiClient('   ')).toThrow(/不能为空/)
-    expect(() => createDynamicApiClient('///')).toThrow(/不能为空/)
+  it('路由表里没有的动作直接抛错——对不上就是 404，不能静默拼出旧式 URL', () => {
+    expect(() => resolveOperationRoute('GET', 'Order', 'Missing')).toThrow(/没有对应的 5\.0 操作/)
   })
 
-  it('空动作名在调用时抛错', () => {
-    const client = createDynamicApiClient('Cache')
-
-    expect(() => client.get('')).toThrow(/不能为空/)
-    expect(() => client.post('  ')).toThrow(/不能为空/)
-    expect(() => client.put('/')).toThrow(/不能为空/)
-    expect(() => client.delete('//')).toThrow(/不能为空/)
+  it('控制器名与动作名两端的空白与斜杠被剥离后再查表', () => {
+    expect(resolveOperationRoute('POST', ' /Order/ ', '/Cancel/').id).toBe('order.cancel')
   })
 
-  it('中文与特殊字符的控制器段原样透传，不做 URL 编码（编码是调用方的事）', async () => {
-    const client = createDynamicApiClient('租户 Query')
-    await client.get('列表')
-
-    expect(lastCall().url).toBe('/租户 Query/列表')
+  it('空控制器名在建客户端时立刻抛错，空动作名在调用时抛错', () => {
+    expect(() => createDynamicApiClient('  ')).toThrow('Dynamic API 路由段不能为空')
+    expect(() => createDynamicApiClient('Order').get('')).toThrow('Dynamic API 路由段不能为空')
   })
 })
 
-describe('createDynamicApiClient 的参数位置约定', () => {
-  it('读取类谓词把参数放进 config.params，body 位不占用', async () => {
-    const client = createDynamicApiClient('RoleQuery')
-    await client.get('EnabledRoles', { Limit: 20, Keyword: 'admin' })
-
-    const call = lastCall()
-    expect(call.method).toBe('get')
-    expect(call.config?.params).toEqual({ Limit: 20, Keyword: 'admin' })
-    expect(call.body).toBeUndefined()
+describe('读取类调用（facade 的 GET / DELETE）', () => {
+  it('落到 POST 路由时参数表作 JSON 请求体，保留布尔与数字类型，不进查询串', async () => {
+    await createDynamicApiClient('OrderQuery').get('OrderPage', { Keyword: '张', Limit: 20, OnlyEnabled: false })
+    expect(lastCall()).toEqual({ method: 'post', url: '/api/order-query:list-order', body: { Keyword: '张', Limit: 20, OnlyEnabled: false }, config: {} })
   })
 
-  it('删除谓词同读取：参数走 query，不走 body——后端 DELETE 不收请求体', async () => {
-    const client = createDynamicApiClient('File')
-    await client.delete('File', { basicId: '7', deletePhysical: true })
-
-    const call = lastCall()
-    expect(call.method).toBe('delete')
-    expect(call.config?.params).toEqual({ basicId: '7', deletePhysical: true })
+  it('落到实例级路由时 id 进路径，同时留在请求体里', async () => {
+    await createDynamicApiClient('OrderQuery').get('OrderDetail', { id: '1975' })
+    expect(lastCall()).toMatchObject({ method: 'post', url: '/api/order-query/1975:get-order-detail', body: { id: '1975' } })
   })
 
-  it('写入类谓词把对象整体作为 body 上送，config 原样透传', async () => {
-    const client = createDynamicApiClient('Role')
-    await client.post('Role', { roleName: 'ops' }, { timeout: 5000 })
-    expect(lastCall()).toMatchObject({
-      method: 'post',
-      url: '/Role/Role',
-      body: { roleName: 'ops' },
-      config: { timeout: 5000 },
-    })
-
-    await client.put('RoleStatus', { basicId: '1', status: 'Disabled' })
-    expect(lastCall()).toMatchObject({
-      method: 'put',
-      url: '/Role/RoleStatus',
-      body: { basicId: '1', status: 'Disabled' },
-    })
+  it('落到 GET 路由时参数走查询串，没有请求体', async () => {
+    await createDynamicApiClient('OrderQuery').get('Options', { Keyword: '张' })
+    expect(lastCall()).toEqual({ method: 'get', url: '/api/order-query', config: { params: { Keyword: '张' } } })
   })
 
-  it('写入谓词的 config.params 不被 params 位覆盖——Cancel/Remind 这类「id 走 query 的 POST」依赖它', async () => {
-    const client = createDynamicApiClient('ExportTask')
-    await client.post('Cancel', undefined, { params: { id: '99' } })
-
-    const call = lastCall()
-    expect(call.body).toBeUndefined()
-    expect(call.config?.params).toEqual({ id: '99' })
+  it('落到 DELETE 路由时 id 进路径、其余参数走查询串', async () => {
+    await createDynamicApiClient('Order').delete('Archive', { id: '7', reason: '重复' })
+    expect(lastCall()).toEqual({ method: 'delete', url: '/api/order/7', config: { params: { id: '7', reason: '重复' } } })
   })
 
-  // 回归锚点：修复前 get/delete 写作 `{ ...config, params }`，params 位为 undefined 也会把
-  // config.params 整段覆盖成 undefined，查询条件静默丢失（与 post/put 的透传语义相反）。
-  it('读取谓词不传 params 位时，config.params 照常下发——不再被 undefined 覆盖掉', async () => {
-    const client = createDynamicApiClient('Server')
-    await client.get('ServerInfo', undefined, { params: { IncludeDisk: true } })
-    expect(lastCall().config?.params).toEqual({ IncludeDisk: true })
-
-    await client.delete('ServerCache', undefined, { params: { Scope: 'all' } })
-    expect(lastCall().config?.params).toEqual({ Scope: 'all' })
+  it('params 位与 config.params 按键合并，params 位覆盖同名键；params 位没传时 config.params 不被清掉', async () => {
+    await createDynamicApiClient('OrderQuery').get('Options', { A: 'params' }, { params: { A: 'config', B: 'config' } })
+    expect(lastCall().config?.params).toEqual({ A: 'params', B: 'config' })
+    await createDynamicApiClient('OrderQuery').get('Options', undefined, { params: { B: 'config' } })
+    expect(lastCall().config?.params).toEqual({ B: 'config' })
   })
 
-  it('两条通道同时给值时按键合并，params 位覆盖同名键', async () => {
-    const client = createDynamicApiClient('Server')
-    await client.get('ServerInfo', { IncludeDisk: false, Limit: 10 }, { params: { IncludeDisk: true, IncludeNetwork: true } })
-
-    expect(lastCall().config?.params).toEqual({ IncludeDisk: false, IncludeNetwork: true, Limit: 10 })
+  it('实例级路由缺 id 时在调用前就抛错', () => {
+    expect(() => createDynamicApiClient('Order').delete('Archive', { reason: '重复' })).toThrow(/实例级路由/)
   })
 
-  it('两条通道都不给时 params 保持 undefined，不凭空拼出一个空查询对象', async () => {
-    const client = createDynamicApiClient('Server')
-    await client.get('ServerInfo')
+  it('主键里的斜杠被编码，不会把一个值拆成多个路由段', async () => {
+    await createDynamicApiClient('Order').delete('Archive', { id: 'a/b' })
+    expect(lastCall().url).toBe('/api/order/a%2Fb')
+  })
+})
 
-    expect(lastCall().config?.params).toBeUndefined()
+describe('写入类调用（facade 的 POST / PUT）', () => {
+  it('请求对象整体作 JSON 请求体，config 原样透传', async () => {
+    const onUploadProgress = vi.fn()
+    await createDynamicApiClient('Order').post('Order', { name: '订单' }, { onUploadProgress })
+    expect(lastCall()).toEqual({ method: 'post', url: '/api/order', body: { name: '订单' }, config: { onUploadProgress } })
+  })
+
+  it('实例级路由的 id 取自请求体', async () => {
+    await createDynamicApiClient('Order').put('Order', { id: '3', name: '改名' })
+    expect(lastCall()).toEqual({ method: 'put', url: '/api/order/3', body: { id: '3', name: '改名' }, config: {} })
+  })
+
+  it('请求体没有 id 时取 config.params 里的 id，config.params 照常走查询串', async () => {
+    await createDynamicApiClient('Order').post('Cancel', undefined, { params: { id: '9' } })
+    expect(lastCall()).toEqual({ method: 'post', url: '/api/order/9:cancel', body: undefined, config: { params: { id: '9' } } })
+  })
+
+  it('落到 DELETE / GET 路由（不读请求体）时请求对象的标量字段并进查询串', async () => {
+    await createDynamicApiClient('Order').post('Purge', { id: '5', physical: true })
+    expect(lastCall()).toEqual({ method: 'delete', url: '/api/order/5', config: { params: { id: '5', physical: true } } })
+    await createDynamicApiClient('Order').post('Export', { format: 'xlsx', skipped: null })
+    expect(lastCall()).toEqual({ method: 'get', url: '/api/order', config: { params: { format: 'xlsx' } } })
+  })
+
+  it('落到 DELETE / GET 路由时请求对象里的嵌套对象进不了查询串，直接报错而不是静默丢字段', () => {
+    expect(() => createDynamicApiClient('Order').post('Export', { filter: { a: 1 } })).toThrow(/字段 filter 是对象/)
   })
 
   it('四个谓词把 requestClient 的返回值原样透出，不做二次包装', async () => {
-    const client = createDynamicApiClient('Cache')
-
-    await expect(client.get<string>('Keys')).resolves.toBe('get-result')
-    await expect(client.post<string>('Exists')).resolves.toBe('post-result')
-    await expect(client.put<string>('String')).resolves.toBe('put-result')
-    await expect(client.delete<string>('Remove')).resolves.toBe('delete-result')
+    const api = createDynamicApiClient('Order')
+    await expect(api.post('Order', {})).resolves.toBe('post-result')
+    await expect(api.put('Order', { id: '1' })).resolves.toBe('put-result')
+    await expect(api.delete('Order', { id: '1' })).resolves.toBe('delete-result')
+    await expect(createDynamicApiClient('OrderQuery').get('Options')).resolves.toBe('get-result')
   })
 })
 
-describe('createReadApi 的读侧约定', () => {
-  it('分页统一走 POST，动作名为「资源段 + Page」，整个查询对象作 body', async () => {
-    const api = createReadApi<unknown, unknown>('MenuQuery', 'Menu')
-    const query = { conditions: { filters: [], sorts: [] }, page: { pageIndex: 2, pageSize: 50 } }
-    await api.page(query)
-
-    expect(lastCall()).toMatchObject({
-      method: 'post',
-      url: '/MenuQuery/MenuPage',
-      body: query,
-    })
+describe('createReadApi / createCommandApi 的约定', () => {
+  it('分页的动作名为「资源段 + Page」，整个查询对象作请求体', async () => {
+    const query = { conditions: { filters: [], keyword: null, sorts: [] }, page: { pageIndex: 1, pageSize: 20 } }
+    await createReadApi('OrderQuery', 'Order').page(query)
+    expect(lastCall()).toMatchObject({ method: 'post', url: '/api/order-query:list-order', body: query })
   })
 
-  it('详情走 GET，动作名为「资源段 + Detail」，主键以 id 为查询参数名', async () => {
-    const api = createReadApi<unknown, unknown>('DictQuery', 'DictItem')
-    await api.detail('1975')
-
-    expect(lastCall()).toMatchObject({
-      method: 'get',
-      url: '/DictQuery/DictItemDetail',
-      config: { params: { id: '1975' } },
-    })
-  })
-
-  it('资源段两端的斜杠同样被剥离后才参与拼接', async () => {
-    const api = createReadApi<unknown, unknown>('TenantQuery', '/Tenant/')
-    await api.detail('1')
-
-    expect(lastCall().url).toBe('/TenantQuery/TenantDetail')
+  it('详情的动作名为「资源段 + Detail」，主键进实例级路由', async () => {
+    await createReadApi('OrderQuery', '/Order/').detail('1024')
+    expect(lastCall()).toMatchObject({ method: 'post', url: '/api/order-query/1024:get-order-detail', body: { id: '1024' } })
   })
 
   it('空资源段建读 API 时立刻抛错', () => {
-    expect(() => createReadApi('TenantQuery', '')).toThrow(/不能为空/)
-  })
-})
-
-describe('createCommandApi 的写侧约定', () => {
-  it('新增走 POST、更新走 PUT，两者共用不带动词的资源段路由', async () => {
-    const api = createCommandApi<unknown, unknown, unknown>('Permission', 'Permission')
-
-    await api.create({ permissionCode: 'saas:user:read' })
-    expect(lastCall()).toMatchObject({
-      method: 'post',
-      url: '/Permission/Permission',
-      body: { permissionCode: 'saas:user:read' },
-    })
-
-    await api.update({ basicId: '3', permissionName: '读用户' })
-    expect(lastCall()).toMatchObject({
-      method: 'put',
-      url: '/Permission/Permission',
-      body: { basicId: '3', permissionName: '读用户' },
-    })
+    expect(() => createReadApi('OrderQuery', ' ')).toThrow('Dynamic API 路由段不能为空')
   })
 
-  it('控制器名与资源段可以不同，路由取控制器名在前、资源段在后', async () => {
-    const api = createCommandApi<unknown, unknown, unknown>('Tenant', 'TenantMember')
-    await api.create({ userId: '1' })
-
-    expect(lastCall().url).toBe('/Tenant/TenantMember')
+  it('新增走 POST、更新走 PUT，两者共用不带动词的资源段动作，由谓词区分操作', async () => {
+    const api = createCommandApi<unknown, { id: string }, unknown>('Order', 'Order')
+    await api.create({ name: 'a' })
+    await api.update({ id: '2' })
+    expect(calls.slice(-2).map(call => `${call.method} ${call.url}`)).toEqual(['post /api/order', 'put /api/order/2'])
   })
 })
 

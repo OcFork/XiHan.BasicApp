@@ -73,7 +73,7 @@ const props = withDefaults(defineProps<{
   /** 逐行附加属性（如整行点击） */
   rowProps?: (row: T, index: number) => Record<string, unknown>
 }>(), {
-  rowKey: 'basicId',
+  rowKey: 'id',
   loading: false,
   selectable: false,
   size: 'md',

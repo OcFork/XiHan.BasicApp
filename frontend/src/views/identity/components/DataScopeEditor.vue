@@ -85,7 +85,7 @@ interface DepartmentOption {
 
 function toOptions(nodes: readonly DepartmentTreeNodeDto[]): DepartmentOption[] {
   return nodes.map(node => ({
-    value: node.basicId,
+    value: node.id,
     label: node.departmentName,
     ...(node.children?.length ? { children: toOptions(node.children) } : {}),
   }))
@@ -97,7 +97,7 @@ const nameById = computed(() => {
   const names = new Map<ApiId, string>()
   const walk = (nodes: readonly DepartmentTreeNodeDto[]) => {
     for (const node of nodes) {
-      names.set(node.basicId, node.departmentName)
+      names.set(node.id, node.departmentName)
       if (node.children?.length)
         walk(node.children)
     }
@@ -112,7 +112,7 @@ const covered = computed(() => findCoveredDepartments(draft.value.departments, p
 /** 默认展开第一层，便于直接勾到常用部门 */
 const expandedKeys = ref<string[]>([])
 watch(() => props.departmentTree, (tree) => {
-  expandedKeys.value = tree.map(node => node.basicId)
+  expandedKeys.value = tree.map(node => node.id)
 }, { immediate: true })
 
 function departmentName(departmentId: ApiId) {

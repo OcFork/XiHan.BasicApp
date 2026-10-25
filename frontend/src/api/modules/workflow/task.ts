@@ -44,6 +44,6 @@ export const taskApi = {
   },
   // Run 不在动词剥离表内：路由保留完整方法名（POST RunTask）
   run(id: ApiId) {
-    return taskCommandApi.post<{ instanceId: string }, { basicId: ApiId }>('RunTask', { basicId: id })
+    return taskCommandApi.post<{ instanceId: string }, { id: ApiId }>('RunTask', { id })
   },
 }

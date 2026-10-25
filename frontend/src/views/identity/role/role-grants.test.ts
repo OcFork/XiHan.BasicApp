@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { PermissionAction, ValidityStatus } from '@/api'
 import { diffMenuGrants, mergeGrantedIntoCatalog, summarizeInheritedPermissions } from './role-grants'
 
-function grant(basicId: string, permissionId: string, status = ValidityStatus.Valid): RolePermissionListItemDto {
-  return { basicId, permissionId, status, permissionCode: `saas:${permissionId}:read`, permissionName: permissionId.toUpperCase() } as RolePermissionListItemDto
+function grant(id: string, permissionId: string, status = ValidityStatus.Valid): RolePermissionListItemDto {
+  return { id, permissionId, status, permissionCode: `saas:${permissionId}:read`, permissionName: permissionId.toUpperCase() } as RolePermissionListItemDto
 }
 
-function permission(basicId: string): PermissionListItemDto {
-  return { basicId, permissionCode: `saas:${basicId}:read`, permissionName: basicId.toUpperCase() } as PermissionListItemDto
+function permission(id: string): PermissionListItemDto {
+  return { id, permissionCode: `saas:${id}:read`, permissionName: id.toUpperCase() } as PermissionListItemDto
 }
 
 /** 菜单 m1→p1、m2→p2；p9 没挂任何菜单（撤销类/接口类权限） */
@@ -48,8 +48,8 @@ describe('mergeGrantedIntoCatalog', () => {
       [grant('g1', 'p1'), grant('g8', 'p8'), grant('g7', 'p7', ValidityStatus.Invalid)],
     )
 
-    expect(items.map(item => item.basicId)).toEqual(['p1', 'p8'])
-    expect(items[1]).toMatchObject({ basicId: 'p8', permissionName: 'P8' })
+    expect(items.map(item => item.id)).toEqual(['p1', 'p8'])
+    expect(items[1]).toMatchObject({ id: 'p8', permissionName: 'P8' })
   })
 })
 

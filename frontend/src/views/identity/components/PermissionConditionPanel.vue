@@ -75,7 +75,7 @@ const emit = defineEmits<{
 }>()
 
 interface ConditionFormModel {
-  basicId: ApiId | null
+  id: ApiId | null
   conditionGroup: number
   attribute: string
   familySuffix: string
@@ -130,7 +130,7 @@ const batchColumns = computed<XDataTableColumn<PermissionConditionBatchTrialItem
 
 function emptyForm(group: number): ConditionFormModel {
   return {
-    basicId: null,
+    id: null,
     conditionGroup: group,
     attribute: '',
     familySuffix: '',
@@ -198,7 +198,7 @@ function openCreate(group?: number) {
 function openEdit(item: PermissionConditionListItemDto) {
   const resolution = resolveAttribute(catalog.value, item.attributeName)
   form.value = {
-    basicId: item.basicId,
+    id: item.id,
     conditionGroup: item.conditionGroup,
     attribute: resolution.attribute?.name ?? '',
     familySuffix: resolution.familySuffix ?? '',
@@ -246,8 +246,8 @@ async function submit() {
   }
   submitting.value = true
   try {
-    if (form.value.basicId) {
-      await permissionConditionApi.update({ ...payload, basicId: form.value.basicId })
+    if (form.value.id) {
+      await permissionConditionApi.update({ ...payload, id: form.value.id })
     }
     else {
       await permissionConditionApi.create({ ...payload, status: ValidityStatus.Valid })
@@ -275,7 +275,7 @@ function toggleStatus(item: PermissionConditionListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await permissionConditionApi.updateStatus({ basicId: item.basicId, status: enable ? ValidityStatus.Valid : ValidityStatus.Invalid })
+        await permissionConditionApi.updateStatus({ id: item.id, status: enable ? ValidityStatus.Valid : ValidityStatus.Invalid })
         toast.success(t('identity.condition.msg_status_updated'))
         await load()
         emit('changed')
@@ -297,7 +297,7 @@ function remove(item: PermissionConditionListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await permissionConditionApi.delete(item.basicId)
+        await permissionConditionApi.delete(item.id)
         toast.success(t('identity.condition.msg_deleted'))
         await load()
         emit('changed')
@@ -374,7 +374,7 @@ async function runBatchTrial() {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in group.items" :key="item.basicId" :class="{ 'condition-row--off': item.status !== ValidityStatus.Valid }">
+              <tr v-for="item in group.items" :key="item.id" :class="{ 'condition-row--off': item.status !== ValidityStatus.Valid }">
                 <td>
                   <span class="condition-row__attribute">{{ attributeLabel(item.attributeName) }}</span>
                   <code class="condition-row__name">{{ item.attributeName }}</code>
@@ -432,7 +432,7 @@ async function runBatchTrial() {
 
     <XEditModal
       v-model:show="formVisible"
-      :title="form.basicId ? t('identity.condition.form_title_edit') : t('identity.condition.form_title_create')"
+      :title="form.id ? t('identity.condition.form_title_edit') : t('identity.condition.form_title_create')"
       :loading="submitting"
       :form-id="formId"
     >

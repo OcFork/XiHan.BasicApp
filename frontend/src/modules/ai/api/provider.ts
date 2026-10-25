@@ -25,13 +25,13 @@ export const aiProviderApi = {
     return command.put<AiProviderDetailDto, AiProviderStatusUpdateDto>('Status', input)
   },
   setDefault(id: ApiId) {
-    return command.post<AiProviderDetailDto, AiProviderActionDto>('SetDefault', { basicId: id })
+    return command.post<AiProviderDetailDto, AiProviderActionDto>('SetDefault', { id })
   },
   delete(id: ApiId) {
     return command.delete('Delete', { id })
   },
   testConnection(id: ApiId) {
-    return command.post<AiProviderTestConnectionResultDto, AiProviderActionDto>('TestConnection', { basicId: id })
+    return command.post<AiProviderTestConnectionResultDto, AiProviderActionDto>('TestConnection', { id })
   },
   page(input: AiProviderPageQueryDto) {
     return query.post<PageResult<AiProviderListItemDto>>('Page', input)

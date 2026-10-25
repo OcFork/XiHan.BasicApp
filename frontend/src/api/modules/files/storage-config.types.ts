@@ -21,11 +21,11 @@ export interface StorageConfigListItemDto extends BasicDto {
   bucketName?: string | null
   configCode: string
   configName: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   endpoint?: string | null
   isDefault: boolean
   isEnabled: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   region?: string | null
   sort: number
   storageType: StorageConfigType

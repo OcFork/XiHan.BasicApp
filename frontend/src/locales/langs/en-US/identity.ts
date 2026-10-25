@@ -515,7 +515,7 @@ export default {
     label_form_remark: 'Remark',
     label_form_description: 'Description',
     ph_permission_name: 'Please enter permission name',
-    ph_permission_code: 'e.g. saas:user:read',
+    ph_permission_code: 'e.g. saas.user.read',
     ph_module_code: 'Defaults to the first segment of the permission code',
     ph_resource: 'Search and select a resource',
     ph_operation: 'Search and select an operation',

@@ -58,7 +58,7 @@ const columns = computed<XDataTableColumn<NumberingAllocationListItemDto>[]>(() 
 ])
 
 watch(
-  () => [props.show, props.rule?.basicId, props.scope] as const,
+  () => [props.show, props.rule?.id, props.scope] as const,
   ([show]) => {
     if (!show || !props.rule)
       return
@@ -101,7 +101,7 @@ async function load(): Promise<void> {
       ...createPageRequest({
         page: { pageIndex: pagination.value.page, pageSize: pagination.value.pageSize },
       }),
-      ruleId: props.rule.basicId,
+      ruleId: props.rule.id,
       scope: props.scope,
       keyword: keyword.value.trim() || undefined,
     })
@@ -151,7 +151,7 @@ function changePage(page: number): void {
           :columns="columns"
           :data="items"
           :loading="loading"
-          :row-key="(row: NumberingAllocationListItemDto) => row.basicId"
+          :row-key="(row: NumberingAllocationListItemDto) => row.id"
           :pagination="{
             page: pagination.page,
             pageSize: pagination.pageSize,

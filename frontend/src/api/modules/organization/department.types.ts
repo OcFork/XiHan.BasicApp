@@ -30,7 +30,7 @@ export interface DepartmentPageQueryDto extends PageRequest {
 }
 
 export interface DepartmentListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   departmentCode: string
   departmentName: string
   departmentType: DepartmentType

@@ -72,7 +72,7 @@ export function usePrintTemplateEditor(
   const title = computed(() => t('setting.print_template.design_title', { code: currentDetail.value?.templateCode ?? '' }))
   const canDirectPrint = computed(() => currentDetail.value?.status === EnableStatus.Enabled)
   /** 设计器本机草稿的键：模板 id，不同模板的草稿不串 */
-  const draftKey = computed(() => currentDetail.value?.basicId || undefined)
+  const draftKey = computed(() => currentDetail.value?.id || undefined)
   const printerOptions = computed(() => [
     { label: t('setting.print_template.client_default_printer'), value: '' },
     ...printers.value,

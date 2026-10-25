@@ -72,7 +72,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'description', title: t('log.permission_change.description'), dataType: 'string', minWidth: 220, order: 21 },
   { key: 'operationIp', title: t('log.permission_change.operation_ip'), dataType: 'string', searchable: true, sortable: true, searchPlaceholder: t('log.permission_change.operation_ip_placeholder'), minWidth: 130, order: 22 },
   { key: 'changeTime', title: t('log.permission_change.change_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 23 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 24 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 24 },
   // 仅高级搜索：变更时间区间
   { key: 'changeTime', title: t('log.permission_change.change_time'), dataType: 'datetime', visible: false, advancedSearch: true, searchRange: true, searchPlaceholder: t('log.permission_change.change_time'), order: 40 },
 ])
@@ -102,7 +102,7 @@ function buildQuery(params: SchemaQueryParams) {
 const schema = computed<PageSchema>(() => ({
   pageCode: 'log.permission-change',
   pageName: t('log.permission_change.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, {
     timeField: 'changeTime',
     ipKey: 'operationIp',
@@ -141,7 +141,7 @@ async function handleDetail(row: PermissionChangeLogListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await permissionChangeLogApi.detail(row.basicId) ?? row
+    detailData.value = await permissionChangeLogApi.detail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

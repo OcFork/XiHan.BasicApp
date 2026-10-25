@@ -6,15 +6,6 @@
 // 形状已与后端分叉，且因 `packages/types/index.ts` 导出 './common' 而不导出 './contracts'，
 // `import { PageResult } from '~/types'` 拿到的正是错的那份——已删除，勿再添加。
 
-export interface ApiResponse<T = unknown> {
-  code: number | string
-  message: string
-  data: T
-  isSuccess: boolean
-  traceId?: string
-  timestamp?: string
-}
-
 export type FrontendRequestLogStatus = 'pending' | 'success' | 'error'
 
 export interface FrontendRequestLog {

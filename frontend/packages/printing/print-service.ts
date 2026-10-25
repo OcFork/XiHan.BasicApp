@@ -108,7 +108,7 @@ function ensureExpectedRowVersion(
   const expected = expectedRowVersion.trim()
   if (!expected)
     throw new TypeError('预期打印模板版本不能为空。')
-  if (resolved.rowVersion !== expected)
+  if (resolved.concurrencyStamp !== expected)
     throw new PrintTemplateVersionChangedError()
 }
 

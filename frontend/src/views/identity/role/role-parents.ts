@@ -47,7 +47,7 @@ export function buildRoleParentOptions(
   const options: RoleParentOption[] = []
   const seen = new Set<string>([self])
   for (const role of candidates) {
-    const value = String(role.basicId)
+    const value = String(role.id)
     if (seen.has(value)) {
       continue
     }

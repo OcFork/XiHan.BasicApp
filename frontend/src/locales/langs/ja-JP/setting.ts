@@ -627,7 +627,7 @@ export default {
       tip: 'このポリシーだけを評価し、有効期間や他のポリシーは見ません。空欄は現在のリクエストとユーザーを使います。',
       ph_user: '既定は現在のユーザー',
       label_permission_codes: 'エンドポイントの権限コード',
-      ph_permission_codes: 'カンマ区切り。例：saas:user:export',
+      ph_permission_codes: 'カンマ区切り。例：saas.user.export',
       load_users_failed: 'ユーザーの読み込みに失敗しました',
       failed: '試行に失敗しました',
       result_title: '試行結果',

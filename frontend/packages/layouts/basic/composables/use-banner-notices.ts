@@ -69,7 +69,7 @@ export function useBannerNotices() {
   /** 过滤已关闭 → 按严重度排序 → 截取上限 */
   const banners = computed(() =>
     all.value
-      .filter(item => !dismissed.value[String(item.basicId)])
+      .filter(item => !dismissed.value[String(item.id)])
       .sort((a, b) => severityRank(b) - severityRank(a))
       .slice(0, MAX_BANNERS),
   )
@@ -90,7 +90,7 @@ export function useBannerNotices() {
   }
 
   function dismiss(item: AppUserInboxDisplayItem) {
-    dismissed.value = { ...dismissed.value, [String(item.basicId)]: Date.now() }
+    dismissed.value = { ...dismissed.value, [String(item.id)]: Date.now() }
     try {
       localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed.value))
     }

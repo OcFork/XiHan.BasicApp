@@ -26,7 +26,7 @@ export const tenantEditionApi = {
   create(input: TenantEditionCreateDto) {
     return tenantEditionBaseCommandApi.create(input)
   },
-  detail(id: TenantEditionDetailDto['basicId']) {
+  detail(id: TenantEditionDetailDto['id']) {
     return tenantEditionReadApi.detail(id)
   },
   enabledList() {

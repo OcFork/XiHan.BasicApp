@@ -138,7 +138,7 @@ function itemNeedsAttention(item: NotificationItem) {
 
 function handleItemClick(item: NotificationItem) {
   if (item.notificationStatus === NotificationStatus.Unread) {
-    emit('markRead', item.basicId)
+    emit('markRead', item.id)
   }
 }
 </script>
@@ -229,7 +229,7 @@ function handleItemClick(item: NotificationItem) {
                   </div>
                   <div
                     v-for="item in allItems"
-                    :key="item.basicId"
+                    :key="item.id"
                     class="notification-item"
                     :class="{ 'notification-item--unread': itemNeedsAttention(item) }"
                     @click="handleItemClick(item)"
@@ -254,7 +254,7 @@ function handleItemClick(item: NotificationItem) {
                           size="sm"
                           tone="warning"
                           variant="subtle"
-                          @click.stop="emit('confirm', item.basicId)"
+                          @click.stop="emit('confirm', item.id)"
                         >
                           {{ t('header.notification.confirm') }}
                         </XhButton>
@@ -277,7 +277,7 @@ function handleItemClick(item: NotificationItem) {
                   </div>
                   <div
                     v-for="item in mentionedItems"
-                    :key="item.basicId"
+                    :key="item.id"
                     class="notification-item"
                     :class="{ 'notification-item--unread': itemNeedsAttention(item) }"
                     @click="handleItemClick(item)"
@@ -302,7 +302,7 @@ function handleItemClick(item: NotificationItem) {
                           size="sm"
                           tone="warning"
                           variant="subtle"
-                          @click.stop="emit('confirm', item.basicId)"
+                          @click.stop="emit('confirm', item.id)"
                         >
                           {{ t('header.notification.confirm') }}
                         </XhButton>

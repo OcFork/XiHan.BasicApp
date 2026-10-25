@@ -10,13 +10,13 @@ export interface TenantEditionPageQueryDto extends PageRequest {
 
 export interface TenantEditionListItemDto extends BasicDto {
   billingPeriodMonths?: number | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   editionCode: string
   editionName: string
   isDefault: boolean
   isFree: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   price?: number | null
   sort: number
   status: EnableStatus

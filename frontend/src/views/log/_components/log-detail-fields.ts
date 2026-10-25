@@ -35,7 +35,7 @@ function traceFields(t: Translate, keys: { requestId?: boolean, sessionId?: bool
     { key: 'traceId', label: t('log.common.trace_id'), group: 'trace', mono: true, trace: 'TraceId' },
     ...(sessionId ? [{ key: 'sessionId', label: t('log.common.session_id'), group: 'trace', mono: true, trace: 'SessionId' } satisfies LogDetailField] : []),
     ...(requestId ? [{ key: 'requestId', label: t('log.common.request_id'), group: 'trace', mono: true } satisfies LogDetailField] : []),
-    { key: 'basicId', label: t('log.common.basic_id'), group: 'trace', mono: true },
+    { key: 'id', label: t('log.common.basic_id'), group: 'trace', mono: true },
     ...(userId ? [{ key: 'userId', label: t('log.common.user_id'), group: 'trace', mono: true } satisfies LogDetailField] : []),
   ]
 }
@@ -370,7 +370,7 @@ export function permissionChangeLogDetailSchema(t: Translate): LogDetailSchema {
       { key: 'changeReason', label: t('log.permission_change.change_reason'), span: 'full' },
       { key: 'description', label: t('log.permission_change.description'), span: 'full' },
       { key: 'traceId', label: t('log.common.trace_id'), group: 'trace', mono: true, trace: 'TraceId' },
-      { key: 'basicId', label: t('log.common.basic_id'), group: 'trace', mono: true },
+      { key: 'id', label: t('log.common.basic_id'), group: 'trace', mono: true },
       { key: 'operatorUserId', label: t('log.permission_change.operator_user_id'), group: 'trace', mono: true },
       { key: 'targetUserId', label: t('log.permission_change.target_user_id'), group: 'trace', mono: true },
       { key: 'targetRoleId', label: t('log.permission_change.target_role_id'), group: 'trace', mono: true },

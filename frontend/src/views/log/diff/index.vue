@@ -104,7 +104,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'executionTime', title: t('log.common.execution_time'), dataType: 'number', sortable: true, width: 110, order: 21, render: row => `${(row as unknown as DiffLogListItemDto).executionTime}ms` },
   { key: 'operationIp', title: t('log.diff.operation_ip'), dataType: 'string', searchable: true, sortable: true, searchPlaceholder: t('log.diff.operation_ip_placeholder'), minWidth: 130, order: 22 },
   { key: 'auditTime', title: t('log.diff.audit_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 23 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 24 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 24 },
   // 仅高级搜索
   { key: 'minExecutionTime', title: t('log.common.min_execution_time'), dataType: 'number', visible: false, advancedSearch: true, searchPlaceholder: t('log.common.min_execution_time'), order: 40 },
   { key: 'maxExecutionTime', title: t('log.common.max_execution_time'), dataType: 'number', visible: false, advancedSearch: true, searchPlaceholder: t('log.common.max_execution_time'), order: 41 },
@@ -145,7 +145,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'log.diff',
   exportPermission: 'log.diff.export',
   pageName: t('log.diff.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, { timeField: 'auditTime', ipKey: 'operationIp' }),
   resource: {
     page: params => diffLogApi.page(buildDiffQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
@@ -175,7 +175,7 @@ async function handleDetail(row: DiffLogListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await diffLogApi.detail(row.basicId) ?? row
+    detailData.value = await diffLogApi.detail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

@@ -190,7 +190,7 @@ async function submit(): Promise<void> {
       remark: optional(form.value.remark),
     }
     if (props.detail) {
-      await numberingApi.update({ ...common, basicId: props.detail.basicId } satisfies NumberingRuleUpdateDto)
+      await numberingApi.update({ ...common, id: props.detail.id } satisfies NumberingRuleUpdateDto)
     }
     else {
       await numberingApi.create({

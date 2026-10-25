@@ -47,7 +47,7 @@ export interface OperationLogPageQueryDto extends PageRequest {
 
 export interface OperationLogListItemDto extends BasicDto {
   browser?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   errorMessage?: string | null
   executionTime: NumericString

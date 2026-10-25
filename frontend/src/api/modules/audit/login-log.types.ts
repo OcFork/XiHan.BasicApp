@@ -36,7 +36,7 @@ export interface LoginLogPageQueryDto extends PageRequest {
 
 export interface LoginLogListItemDto extends BasicDto {
   browser?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   device?: string | null
   deviceId?: string | null
   isRiskLogin: boolean

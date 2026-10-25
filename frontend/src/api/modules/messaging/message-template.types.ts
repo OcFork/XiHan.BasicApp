@@ -46,7 +46,7 @@ export interface MessageTemplateCreateDto {
 }
 
 export interface MessageTemplateUpdateDto {
-  basicId: ApiId
+  id: ApiId
   templateName: string
   subject?: string | null
   content: string
@@ -57,7 +57,7 @@ export interface MessageTemplateUpdateDto {
 }
 
 export interface MessageTemplateStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   status: EnableStatus
   remark?: string | null
 }

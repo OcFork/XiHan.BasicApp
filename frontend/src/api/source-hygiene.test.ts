@@ -71,7 +71,8 @@ describe('api 桶文件的模块覆盖', () => {
 
     const orphans = listTypeScriptFiles(apiDir, false)
       .map(file => toPosixRelative(file).replace(/\.ts$/, ''))
-      .filter(name => name !== 'index' && !exported.has(name))
+      // operations.generated 是 base / request 内部用的路由表（脚本生成），不对外转出
+      .filter(name => name !== 'index' && name !== 'operations.generated' && !exported.has(name))
 
     expect(orphans).toEqual([])
   })

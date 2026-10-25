@@ -87,7 +87,7 @@ const columns = computed<XDataTableColumn<PreviewTableRow>[]>(() => [
 ])
 
 watch(
-  () => [props.show, props.rule?.basicId] as const,
+  () => [props.show, props.rule?.id] as const,
   ([show]) => {
     if (!show)
       return

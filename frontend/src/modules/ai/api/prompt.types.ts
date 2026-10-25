@@ -20,8 +20,8 @@ export interface AiPromptListItemDto extends BasicDto {
   isEnabled: boolean
   sort: number
   status: EnableStatus
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
 }
 
 /** AI 提示词详情 DTO（含正文） */

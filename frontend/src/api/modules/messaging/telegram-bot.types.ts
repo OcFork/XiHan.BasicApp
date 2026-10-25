@@ -8,11 +8,11 @@ export interface TelegramBotPageQueryDto extends PageRequest {
 /** Token 为敏感字段不下发，仅以 hasToken 标识是否已配置 */
 export interface TelegramBotListItemDto extends BasicDto {
   botName: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   enableFallbackReply: boolean
   hasToken: boolean
   isEnabled: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   sort: number
 }
 

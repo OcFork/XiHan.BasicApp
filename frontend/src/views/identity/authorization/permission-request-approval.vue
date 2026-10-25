@@ -78,7 +78,7 @@ function formatNullableDate(value?: string | null) {
     </XhDescriptionsItem>
     <XhDescriptionsItem>
       <XhDescriptionsLabel>{{ t('identity.authorization.req_col_create_time') }}</XhDescriptionsLabel>
-      <XhDescriptionsValue>{{ formatDate(data.createdTime) }}</XhDescriptionsValue>
+      <XhDescriptionsValue>{{ formatDate(data.createdAt) }}</XhDescriptionsValue>
     </XhDescriptionsItem>
     <XhDescriptionsItem :span="2">
       <XhDescriptionsLabel>{{ t('identity.authorization.req_col_reason') }}</XhDescriptionsLabel>

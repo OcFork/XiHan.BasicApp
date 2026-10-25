@@ -63,9 +63,9 @@ it('签名覆盖拼接后的完整路径与序列化后的查询参数', async (
   expect(config?.headers.get('X-Signature')).toBe(await hmacHex(SECRET, canonical))
 })
 
-it('开关打开时成功响应先解密再拆业务信封', async () => {
+it('开关打开时成功响应先解密再返回载荷', async () => {
   enableSecurity()
-  const envelope = await encryptEnvelope(JSON.stringify({ isSuccess: true, code: 200, data: { id: 42 } }))
+  const envelope = await encryptEnvelope(JSON.stringify({ id: 42 }))
   const client = new RequestClient({
     adapter: ((config: InternalAxiosRequestConfig) => Promise.resolve({
       config,
@@ -81,7 +81,7 @@ it('开关打开时成功响应先解密再拆业务信封', async () => {
 
 it('开关打开时错误响应也先解密，业务错误消息因此能被读出来', async () => {
   enableSecurity()
-  const envelope = await encryptEnvelope(JSON.stringify({ code: 400, message: '通用码描述', data: '库存不足' }))
+  const envelope = await encryptEnvelope(JSON.stringify({ title: 'VALIDATION', status: 400, detail: '库存不足', code: 'BASICAPP_VALIDATION_001' }))
   const client = new RequestClient({
     adapter: ((config: InternalAxiosRequestConfig) => Promise.reject(new AxiosError(
       'Request failed with status code 400',
@@ -131,9 +131,9 @@ it('错误响应解密失败时不中断原始错误流程，且不把密文当�
   expect(error?.message).toBe('服务暂时不可用')
 })
 
-it('明文错误响应里的 data 仍然优先当作后端业务消息，信封判定不误伤', async () => {
+it('明文错误响应里的 detail 照常当作后端业务消息，安全信封判定不误伤', async () => {
   // 与上一条配对：跳过的只能是 { alg|iv, data: 密文 } 这种信封形态，
-  // 普通错误体（后端把具体错误写在 data 里）必须照常透出
+  // 普通 Problem Details（具体错误写在 detail 里）必须照常透出
   enableSecurity()
   const client = new RequestClient({
     adapter: ((config: InternalAxiosRequestConfig) => Promise.reject(new AxiosError(
@@ -143,7 +143,7 @@ it('明文错误响应里的 data 仍然优先当作后端业务消息，信封�
       null,
       {
         config,
-        data: { code: 400, message: '通用码描述', data: '库存不足' },
+        data: { title: 'VALIDATION', status: 400, detail: '库存不足', code: 'BASICAPP_VALIDATION_001' },
         headers: new AxiosHeaders(),
         status: 400,
         statusText: '',
@@ -179,7 +179,7 @@ it('未标记 X-Secure-Response 的响应在开关打开时也按明文处理', 
   const client = new RequestClient({
     adapter: ((config: InternalAxiosRequestConfig) => Promise.resolve({
       config,
-      data: { isSuccess: true, code: 200, data: '明文直出' },
+      data: '明文直出',
       headers: {},
       status: 200,
       statusText: 'OK',
@@ -215,7 +215,7 @@ function capturingAdapter(calls: InternalAxiosRequestConfig[]): AxiosAdapter {
     calls.push(config)
     return Promise.resolve<AxiosResponse>({
       config,
-      data: { isSuccess: true, code: 200, data: null },
+      data: null,
       headers: new AxiosHeaders(),
       status: 200,
       statusText: 'OK',

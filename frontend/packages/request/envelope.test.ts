@@ -1,14 +1,13 @@
 /**
- * 响应信封拆包与 URL 拼接单元测试。
+ * 响应载荷与 URL 拼接单元测试。
  *
- * 职责边界：锁定 `RequestClient.request` 如何判定「这是不是后端统一信封」、
- * 成功时返回哪一层数据、失败时抛什么消息，以及 get/post/put/delete/patch 与 flat
+ * 职责边界：锁定 `RequestClient.request` 把成功响应的载荷原样返回（5.0 没有统一信封），以及 get/post/put/delete/patch 与 flat
  * 快捷方法的 URL 前缀拼接与请求体传递规则。错误文案映射、令牌刷新、请求日志、
  * 安全签名分别在同目录其它测试文件里。
  */
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios'
 import type { Router } from 'vue-router'
-import { AxiosHeaders } from 'axios'
+import { AxiosError, AxiosHeaders } from 'axios'
 import { beforeEach, expect, it } from 'vitest'
 import { bindLockHook, bindLogoutHook, bindRouter, createRequestClient, RequestClient } from './index'
 
@@ -18,77 +17,24 @@ beforeEach(() => {
   bindLockHook(() => {})
 })
 
-it('isSuccess 为 true 时只返回信封里的 data 层', async () => {
-  const client = clientReturning({ isSuccess: true, code: 200, message: 'ok', data: { id: 7, name: '曦寒' } })
-
-  await expect(client.get('/Sys/Detail')).resolves.toEqual({ id: 7, name: '曦寒' })
+it('成功响应的 JSON 载荷原样返回：5.0 不再包 code / data 信封', async () => {
+  const client = clientReturning({ id: 7, name: '曦寒' })
+  await expect(client.get('/api/sys:detail')).resolves.toEqual({ id: 7, name: '曦寒' })
 })
 
-it('后端省略 data 字段时按 null 返回，而不是把整个信封当业务数据吐出去', async () => {
-  // 回归锚点：序列化 WhenWritingNull 会整段省略 data，判据必须是 isSuccess 而不是 data 是否存在
-  const client = clientReturning({ isSuccess: true, code: 200, message: '秒传未命中' })
-
-  await expect(client.get('/File/FastUpload')).resolves.toBeNull()
+it('载荷本身恰好带 code / data / isSuccess 字段时也原样返回，不被当成信封拆开', async () => {
+  // 回归锚点：拆信封的逻辑一旦残留，业务 DTO 里同名字段会被吞掉、只剩 data 层
+  const payload = { code: 'DEMO-01', data: ['a', 'b'], isSuccess: false, message: '业务字段' }
+  const client = clientReturning(payload)
+  await expect(client.get('/api/sys:detail')).resolves.toEqual(payload)
 })
 
-it('data 显式为 null 时返回 null', async () => {
-  const client = clientReturning({ isSuccess: true, code: 200, data: null })
-
-  await expect(client.get('/Sys/Empty')).resolves.toBeNull()
+it('2xx 不再按业务码判失败：失败只看 HTTP 状态码与 Problem Details', async () => {
+  const client = clientReturning({ code: 400, message: '看起来像失败的业务载荷' })
+  await expect(client.post('/api/role', {})).resolves.toEqual({ code: 400, message: '看起来像失败的业务载荷' })
 })
 
-it('缺少 isSuccess 但同时有 data 与 code 时仍按信封解析', async () => {
-  const client = clientReturning({ code: 200, data: ['a', 'b'] })
-
-  await expect(client.get('/Sys/List')).resolves.toEqual(['a', 'b'])
-})
-
-it('code 为 0 同样视为成功', async () => {
-  const client = clientReturning({ code: 0, data: 'zero-is-success' })
-
-  await expect(client.get('/Sys/Zero')).resolves.toBe('zero-is-success')
-})
-
-it('isSuccess 为 false 时以后端 message 抛错', async () => {
-  const client = clientReturning({ isSuccess: false, code: 400, message: '角色编码已存在', data: null })
-
-  await expect(client.post('/Role/Create', {})).rejects.toThrow('角色编码已存在')
-})
-
-it('失败信封没有 message 时抛通用「请求失败」', async () => {
-  const client = clientReturning({ isSuccess: false, code: 400, data: null })
-
-  await expect(client.post('/Role/Create', {})).rejects.toThrow('请求失败')
-})
-
-it('失败信封的 message 不是字符串时同样抛通用「请求失败」', async () => {
-  const client = clientReturning({ isSuccess: false, code: 400, message: { zh: '坏了' }, data: null })
-
-  await expect(client.post('/Role/Create', {})).rejects.toThrow('请求失败')
-})
-
-it('code 为字符串 "200" / "0" 时同样判为成功并返回 data 层', async () => {
-  // 回归锚点：ApiResponse 把 code 声明为 number | string，判据一旦退回严格比数字 200，
-  // 网关或第三方后端返回字符串码的接口会整条链路被判业务失败、业务数据被丢弃
-  const stringSuccess = clientReturning({ code: '200', message: '字符串状态码', data: { id: 1 } })
-  const stringZero = clientReturning({ code: ' 0 ', data: 'zero-as-text' })
-
-  await expect(stringSuccess.get('/Sys/StringCode')).resolves.toEqual({ id: 1 })
-  await expect(stringZero.get('/Sys/StringZero')).resolves.toBe('zero-as-text')
-})
-
-it('code 为空串或非数字串时仍按业务失败，不被 Number 归零后误判为成功', async () => {
-  // 回归锚点：Number('') 与 Number(null) 都是 0，直接 Number(code) 会把它们当成成功码
-  const emptyCode = clientReturning({ code: '', message: '空业务码', data: { id: 1 } })
-  const wordCode = clientReturning({ code: 'OK', message: '非数字业务码', data: { id: 1 } })
-  const nullCode = clientReturning({ isSuccess: false, code: null, message: '空业务码对象' })
-
-  await expect(emptyCode.get('/Sys/EmptyCode')).rejects.toThrow('空业务码')
-  await expect(wordCode.get('/Sys/WordCode')).rejects.toThrow('非数字业务码')
-  await expect(nullCode.get('/Sys/NullCode')).rejects.toThrow('空业务码对象')
-})
-
-it('不含 isSuccess/code/data 的普通对象整体原样返回', async () => {
+it('普通对象整体原样返回', async () => {
   const client = clientReturning({ token: 'abc', expiresIn: 7200 })
 
   await expect(client.get('/Third/Party')).resolves.toEqual({ token: 'abc', expiresIn: 7200 })
@@ -254,13 +200,21 @@ it('默认超时为 30 秒且可被构造参数覆盖', async () => {
 })
 
 it('flat 模式成功时返回 data 且 error 为 null', async () => {
-  const client = clientReturning({ isSuccess: true, code: 200, data: { total: 3 } })
+  const client = clientReturning({ total: 3 })
 
   await expect(client.getFlat('/Sys/Page')).resolves.toEqual({ data: { total: 3 }, error: null })
 })
 
-it('flat 模式在业务失败时返回后端消息且 data 为 null', async () => {
-  const client = clientReturning({ isSuccess: false, code: 400, message: '租户已停用' })
+it('flat 模式在 HTTP 失败时返回 Problem Details 的说明且 data 为 null', async () => {
+  const client = new RequestClient({
+    adapter: ((config: InternalAxiosRequestConfig) => Promise.reject(new AxiosError(
+      'Request failed with status code 400',
+      AxiosError.ERR_BAD_REQUEST,
+      config,
+      null,
+      { config, data: { title: 'VALIDATION', status: 400, detail: '租户已停用', code: 'BASICAPP_VALIDATION_001' }, headers: new AxiosHeaders(), status: 400, statusText: '' },
+    ))) as AxiosAdapter,
+  })
 
   const result = await client.getFlat('/Sys/Page')
 
@@ -306,7 +260,7 @@ function clientCapturing(
       calls.push(config)
       return Promise.resolve({
         config,
-        data: { isSuccess: true, code: 200, data: null },
+        data: null,
         headers: new AxiosHeaders(),
         status: 200,
         statusText: 'OK',
@@ -322,7 +276,7 @@ function installAdapter(client: RequestClient, calls: InternalAxiosRequestConfig
     calls.push(config)
     return Promise.resolve({
       config,
-      data: { isSuccess: true, code: 200, data: null },
+      data: null,
       headers: new AxiosHeaders(),
       status: 200,
       statusText: 'OK',

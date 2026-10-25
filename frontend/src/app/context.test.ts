@@ -63,23 +63,23 @@ async function apis() {
   return createApplicationApis()
 }
 
-describe('主键走查询串', () => {
-  it('删除 API 凭证：DELETE /Profile/ApiCredential?id=', async () => {
+describe('主键进实例级路由的路径', () => {
+  it('删除 API 凭证：POST /api/profile/{id}:delete-api-credential', async () => {
     await (await apis()).deleteApiCredentialApi('213681228308811793')
 
-    expect(only()).toEqual({ method: 'DELETE', url: '/Profile/ApiCredential', params: { id: '213681228308811793' } })
+    expect(only()).toEqual({ method: 'POST', url: '/api/profile/213681228308811793:delete-api-credential', body: { id: '213681228308811793' }, params: undefined })
   })
 
-  it('重置我的 OAuth 应用密钥：POST /MyOAuthApp/RegenerateMyOAuthAppSecret?id=，没有请求体', async () => {
+  it('重置我的 OAuth 应用密钥：POST /api/my-o-auth-app/{id}:regenerate-secret，没有请求体', async () => {
     await (await apis()).regenerateMyOAuthAppSecretApi('1975')
 
-    expect(only()).toEqual({ method: 'POST', url: '/MyOAuthApp/RegenerateMyOAuthAppSecret', body: undefined, params: { id: '1975' } })
+    expect(only()).toEqual({ method: 'POST', url: '/api/my-o-auth-app/1975:regenerate-secret', body: undefined, params: { id: '1975' } })
   })
 
-  it('删除我的 OAuth 应用：DELETE /MyOAuthApp/MyOAuthApp?id=', async () => {
+  it('删除我的 OAuth 应用：DELETE /api/my-o-auth-app/{id}', async () => {
     await (await apis()).deleteMyOAuthAppApi('1975')
 
-    expect(only()).toEqual({ method: 'DELETE', url: '/MyOAuthApp/MyOAuthApp', params: { id: '1975' } })
+    expect(only()).toEqual({ method: 'DELETE', url: '/api/my-o-auth-app/1975', params: { id: '1975' } })
   })
 })
 

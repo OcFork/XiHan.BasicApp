@@ -6,7 +6,7 @@ import type { PermissionAction } from './role-permission.types'
 export interface UserPermissionListItemDto extends BasicDto {
   /** 启用的条件条数（大于 0 即「有条件」） */
   conditionCount: number
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   effectiveTime?: DateTimeString | null
   expirationTime?: DateTimeString | null
   grantReason?: string | null

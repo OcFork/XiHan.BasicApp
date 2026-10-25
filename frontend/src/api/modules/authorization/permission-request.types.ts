@@ -19,11 +19,11 @@ export interface PermissionRequestPageQueryDto extends PageRequest {
 }
 
 export interface PermissionRequestListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   expectedEffectiveTime?: DateTimeString | null
   expectedExpirationTime?: DateTimeString | null
   isExpectedExpired: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   permissionCode?: string | null
   permissionId?: ApiId | null
   permissionName?: string | null

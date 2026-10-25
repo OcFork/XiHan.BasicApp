@@ -36,10 +36,10 @@ const currentPopup = computed<AppUserInboxDisplayItem | null>(() => popupList.va
 const popupVisible = computed(() => !mandatoryVisible.value && currentPopup.value !== null)
 
 async function onMandatoryRead(item: AppUserInboxDisplayItem): Promise<void> {
-  markingId.value = item.basicId
+  markingId.value = item.id
   try {
-    await appContext.apis.userInboxApi.markRead(item.basicId)
-    mandatoryList.value = mandatoryList.value.filter(i => i.basicId !== item.basicId)
+    await appContext.apis.userInboxApi.markRead(item.id)
+    mandatoryList.value = mandatoryList.value.filter(i => i.id !== item.id)
   }
   catch {
     // 标记失败静默：保留该条，用户可重试
@@ -51,7 +51,7 @@ async function onMandatoryRead(item: AppUserInboxDisplayItem): Promise<void> {
 
 async function onPopupConfirm(item: AppUserInboxDisplayItem): Promise<void> {
   try {
-    await appContext.apis.userInboxApi.markPopupShown(item.basicId)
+    await appContext.apis.userInboxApi.markPopupShown(item.id)
   }
   catch {
     // 标记失败静默：仍前进到下一条，避免卡住
@@ -101,7 +101,7 @@ onMounted(async () => {
         <XhButton
           size="sm"
           variant="solid"
-          :loading="markingId === currentMandatory.basicId"
+          :loading="markingId === currentMandatory.id"
           @click="onMandatoryRead(currentMandatory)"
         >
           <XhButtonIndicator />

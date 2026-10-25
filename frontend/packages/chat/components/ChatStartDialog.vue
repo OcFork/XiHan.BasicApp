@@ -75,7 +75,7 @@ const title = computed(() => {
   }
 })
 
-const currentUserId = computed(() => userStore.userInfo?.basicId ?? '')
+const currentUserId = computed(() => userStore.userInfo?.id ?? '')
 
 function mapDepartment(node: ChatDepartmentPickerNode): TreeSelectOption {
   return {

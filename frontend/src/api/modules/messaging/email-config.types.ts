@@ -10,13 +10,13 @@ export interface EmailConfigPageQueryDto extends PageRequest {
 export interface EmailConfigListItemDto extends BasicDto {
   configCode: string
   configName: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   fromEmail: string
   fromName: string
   hasPassword: boolean
   isDefault: boolean
   isEnabled: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   smtpHost: string
   smtpPort: number
   sort: number

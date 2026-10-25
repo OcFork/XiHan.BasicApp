@@ -44,7 +44,7 @@ export interface ApiLogListItemDto extends BasicDto {
   browser?: string | null
   clientId?: string | null
   controllerName?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   errorMessage?: string | null
   executionTime: NumericString
   exceptionStackTrace?: string | null

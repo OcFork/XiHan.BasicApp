@@ -30,7 +30,7 @@ import {
 defineOptions({ name: 'DevelopAiProviderPage' })
 
 interface ProviderFormModel {
-  basicId?: string
+  id?: string
   configCode: string
   configName: string
   provider: string
@@ -131,7 +131,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'ai_provider',
   pageName: t('develop.ai_provider.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -201,7 +201,7 @@ function describeProbe(label: string, probe: AiProviderProbeResultDto) {
 async function handleTest(row: AiProviderListItemDto) {
   const reset = toast.loading(t('develop.ai_provider.testing'), { duration: 0 })
   try {
-    const result = await aiProviderApi.testConnection(row.basicId)
+    const result = await aiProviderApi.testConnection(row.id)
     reset.destroy()
     const lines = [describeProbe(t('develop.ai_provider.probe_chat'), result.chat)]
     lines.push(result.embedding
@@ -222,7 +222,7 @@ async function handleTest(row: AiProviderListItemDto) {
 
 async function handleSetDefault(row: AiProviderListItemDto) {
   try {
-    await aiProviderApi.setDefault(row.basicId)
+    await aiProviderApi.setDefault(row.id)
     toast.success(t('develop.ai_provider.set_default_success'))
     reload()
   }
@@ -241,7 +241,7 @@ function handleDelete(row: AiProviderListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await aiProviderApi.delete(row.basicId)
+        await aiProviderApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }
@@ -257,7 +257,7 @@ const modalVisible = ref(false)
 const submitLoading = ref(false)
 const editingStatus = ref<EnableStatus | null>(null)
 const form = ref<ProviderFormModel>(createDefaultForm())
-const modalTitle = computed(() => (form.value.basicId ? t('develop.ai_provider.modal_edit_title') : t('develop.ai_provider.modal_add_title')))
+const modalTitle = computed(() => (form.value.id ? t('develop.ai_provider.modal_edit_title') : t('develop.ai_provider.modal_add_title')))
 
 function createDefaultForm(): ProviderFormModel {
   return {
@@ -288,14 +288,14 @@ function handleAdd() {
 
 async function handleEdit(row: AiProviderListItemDto) {
   try {
-    const detail = await aiProviderApi.detail(row.basicId)
+    const detail = await aiProviderApi.detail(row.id)
     if (!detail) {
       toast.danger(t('develop.ai_provider.not_found'))
       return
     }
     editingStatus.value = detail.status
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       configCode: detail.configCode,
       configName: detail.configName,
       provider: detail.provider,
@@ -326,7 +326,7 @@ function validateForm() {
     toast.warning(t('develop.ai_provider.validate_config_name'))
     return false
   }
-  if (!form.value.basicId && !form.value.configCode.trim()) {
+  if (!form.value.id && !form.value.configCode.trim()) {
     toast.warning(t('develop.ai_provider.validate_config_code'))
     return false
   }
@@ -343,9 +343,9 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       const updateInput: AiProviderUpdateDto = {
-        basicId: form.value.basicId,
+        id: form.value.id,
         configName: form.value.configName.trim(),
         provider: form.value.provider.trim(),
         model: form.value.model.trim(),
@@ -364,7 +364,7 @@ async function handleSubmit() {
       await aiProviderApi.update(updateInput)
       if (editingStatus.value !== form.value.status) {
         await aiProviderApi.updateStatus({
-          basicId: form.value.basicId,
+          id: form.value.id,
           remark: t('develop.ai_provider.update_status_remark'),
           status: form.value.status,
         })
@@ -426,7 +426,7 @@ async function handleSubmit() {
               <XInput
                 v-model:value="form.configCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('develop.ai_provider.form_config_code_placeholder')"
               />
             </XhFieldControl>
@@ -486,7 +486,7 @@ async function handleSubmit() {
         </XhFormFieldGroup>
         <XhFormFieldGroup name="apiKey" class="xh-span-2">
           <XhFieldRoot>
-            <XhFieldLabel>{{ form.basicId ? t('develop.ai_provider.form_api_key_edit') : t('develop.ai_provider.form_api_key') }}</XhFieldLabel>
+            <XhFieldLabel>{{ form.id ? t('develop.ai_provider.form_api_key_edit') : t('develop.ai_provider.form_api_key') }}</XhFieldLabel>
             <XhFieldControl>
               <XInput
                 v-model:value="form.apiKey"
@@ -553,7 +553,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!form.basicId" name="status">
+        <XhFormFieldGroup v-if="!form.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('common.fields.status') }}</XhFieldLabel>
             <XhFieldControl>

@@ -627,7 +627,7 @@ export default {
       tip: '只求這一條策略，不看生效期和其他策略。不填的項取你目前的請求與目前使用者。',
       ph_user: '預設目前使用者',
       label_permission_codes: '端點權限碼',
-      ph_permission_codes: '多個用逗號分隔，如 saas:user:export',
+      ph_permission_codes: '多個用逗號分隔，如 saas.user.export',
       load_users_failed: '載入使用者失敗',
       failed: '試運行失敗',
       result_title: '試運行結果',

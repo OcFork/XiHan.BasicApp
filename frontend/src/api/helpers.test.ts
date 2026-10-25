@@ -70,7 +70,7 @@ describe('createPageRequest 的分页默认值', () => {
   it('conditions 缺省时补齐为默认三件套，传入时按字段合并', () => {
     expect(createPageRequest().conditions).toEqual({ filters: [], keyword: null, sorts: [] })
 
-    const sorts = [querySort('createdTime', SortDirection.Descending)]
+    const sorts = [querySort('createdAt', SortDirection.Descending)]
     expect(createPageRequest({ conditions: { sorts } }).conditions.sorts).toBe(sorts)
   })
 })
@@ -112,8 +112,8 @@ describe('queryFilter 与 querySort 的结构', () => {
   })
 
   it('排序默认优先级为 0，即主排序', () => {
-    expect(querySort('createdTime', SortDirection.Descending))
-      .toEqual({ field: 'createdTime', direction: SortDirection.Descending, priority: 0 })
+    expect(querySort('createdAt', SortDirection.Descending))
+      .toEqual({ field: 'createdAt', direction: SortDirection.Descending, priority: 0 })
   })
 
   it('显式优先级原样保留，用于多字段排序', () => {
@@ -130,11 +130,11 @@ describe('querySortsFromSchema 的多字段排序映射', () => {
   it('数组下标即优先级：0 为主排序，依次递增', () => {
     expect(querySortsFromSchema([
       { field: 'status', order: 'asc' },
-      { field: 'createdTime', order: 'desc' },
+      { field: 'createdAt', order: 'desc' },
       { field: 'sortOrder', order: 'asc' },
     ])).toEqual([
       { field: 'status', direction: SortDirection.Ascending, priority: 0 },
-      { field: 'createdTime', direction: SortDirection.Descending, priority: 1 },
+      { field: 'createdAt', direction: SortDirection.Descending, priority: 1 },
       { field: 'sortOrder', direction: SortDirection.Ascending, priority: 2 },
     ])
   })
@@ -193,7 +193,7 @@ describe('分页请求组合出的完整契约形状', () => {
     const conditions: QueryConditions = {
       filters: [queryFilter('status', 'Enabled', QueryOperator.Equal)],
       keyword: queryKeyword(' admin ', ['userName', 'realName']),
-      sorts: querySortsFromSchema([{ field: 'createdTime', order: 'desc' }]),
+      sorts: querySortsFromSchema([{ field: 'createdAt', order: 'desc' }]),
     }
     const request = createPageRequest({ conditions, page: { pageIndex: 2 } })
 
@@ -201,7 +201,7 @@ describe('分页请求组合出的完整契约形状', () => {
       conditions: {
         filters: [{ field: 'status', operator: QueryOperator.Equal, value: 'Enabled' }],
         keyword: { fields: ['userName', 'realName'], value: 'admin' },
-        sorts: [{ field: 'createdTime', direction: SortDirection.Descending, priority: 0 }],
+        sorts: [{ field: 'createdAt', direction: SortDirection.Descending, priority: 0 }],
       },
       page: { pageIndex: 2, pageSize: 20 },
     })

@@ -39,7 +39,7 @@ const props = withDefaults(defineProps<{
   /** 可授予的全集 */
   items: T[]
   /** 已授予的主键；两侧的归属由它决定 */
-  value: T['basicId'][]
+  value: T['id'][]
   /** 分段（顺序由全集决定、两侧共用）；不分段时传一个无名段 */
   groups: GrantTransferGroup<T>[]
   /** 条目主文本 */
@@ -57,7 +57,7 @@ const props = withDefaults(defineProps<{
   disabled: false,
 })
 
-const emit = defineEmits<{ 'update:value': [value: T['basicId'][]] }>()
+const emit = defineEmits<{ 'update:value': [value: T['id'][]] }>()
 
 defineSlots<{
   /** 行尾一格：只放徽标、计数这类非交互内容 */
@@ -76,13 +76,13 @@ const translations = computed(() => ({
 }))
 
 /**
- * 穿梭框的值域是字符串，条目主键未必是串（T['basicId']）。
+ * 穿梭框的值域是字符串，条目主键未必是串（T['id']）。
  * 这里按字符串出入、回写时查回条目原本的主键，不把主键的类型悄悄换掉。
  */
 const itemByKey = computed(() => {
   const map = new Map<string, T>()
   for (const item of props.items) {
-    map.set(String(item.basicId), item)
+    map.set(String(item.id), item)
   }
   return map
 })
@@ -90,7 +90,7 @@ const itemByKey = computed(() => {
 /** label 同时是搜索取字来源：主文本与第 2 行都拼进去，按名或按码都搜得到 */
 const collection = computed(() =>
   props.items.map(item => ({
-    value: String(item.basicId),
+    value: String(item.id),
     label: [props.getLabel(item), props.getDescription?.(item)].filter(Boolean).join(' '),
   })),
 )
@@ -99,14 +99,14 @@ const selectedKeys = computed({
   get: () => props.value.map(String),
   set: (next: string[]) => emit('update:value', next.flatMap((key) => {
     const item = itemByKey.value.get(key)
-    return item ? [item.basicId] : []
+    return item ? [item.id] : []
   })),
 })
 
 const keysByGroup = computed(() => {
   const map = new Map<string, Set<string>>()
   for (const group of props.groups) {
-    map.set(group.key, new Set(group.items.map(item => String(item.basicId))))
+    map.set(group.key, new Set(group.items.map(item => String(item.id))))
   }
   return map
 })

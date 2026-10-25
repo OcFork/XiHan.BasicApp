@@ -83,7 +83,7 @@ async function save(): Promise<void> {
   saving.value = true
   try {
     const saved = detail
-      ? await workflowDefinitionApi.updateDraft({ basicId: detail.basicId, definitionJson: applyDefinitionMetadata(detail.definitionJson, form.value) })
+      ? await workflowDefinitionApi.updateDraft({ id: detail.id, definitionJson: applyDefinitionMetadata(detail.definitionJson, form.value) })
       : await workflowDefinitionApi.create({ definitionJson: createDefinitionJson(form.value, props.businessTypes) })
     toast.success(detail ? t('workflow.definition.msg_updated') : t('workflow.definition.msg_created'))
     emit('update:show', false)

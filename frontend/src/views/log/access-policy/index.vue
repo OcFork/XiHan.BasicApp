@@ -131,7 +131,7 @@ function buildQuery(params: SchemaQueryParams) {
 const schema = computed<PageSchema>(() => ({
   pageCode: 'log.access-policy',
   pageName: t('log.access_policy.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, {
     timeField: 'hitTime',
     ipKey: 'ip',

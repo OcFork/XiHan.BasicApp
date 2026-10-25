@@ -102,39 +102,39 @@ it('切换到 en-US 后同一状态码返回英文文案', async () => {
     .toBe('Network connection failed, please check and retry')
 })
 
-it('后端业务消息优先于状态码文案，且优先取 data 而非 message', async () => {
-  const body = { code: 500, message: '服务器内部错误', data: '订单已被锁定，无法重复提交' }
+it('problem Details 的 detail 优先于状态码文案与 title', async () => {
+  const body = { type: 'urn:xihan:error:BASICAPP_VALIDATION_004', title: 'VALIDATION', status: 500, detail: '订单已被锁定，无法重复提交', code: 'BASICAPP_VALIDATION_004' }
 
   expect(await messageOf(config => httpError(500, body, config))).toBe('订单已被锁定，无法重复提交')
 })
 
-it('data 不是字符串时退回 message 字段', async () => {
-  const body = { code: 400, message: '参数 orderNo 不能为空', data: { field: 'orderNo' } }
+it('没有 detail 时退回 message 字段（承接的 ASP.NET 端点仍可能返回 message）', async () => {
+  const body = { code: 400, message: '参数 orderNo 不能为空', details: { field: 'orderNo' } }
 
   expect(await messageOf(config => httpError(400, body, config))).toBe('参数 orderNo 不能为空')
 })
 
-it('data 与 message 都是空白字符串时退回状态码文案', async () => {
-  const body = { code: 400, message: '   ', data: '' }
+it('detail 与 message 都是空白字符串时退回状态码文案', async () => {
+  const body = { code: 400, message: '   ', detail: '' }
 
   expect(await messageOf(config => httpError(400, body, config))).toBe('请求参数有误')
 })
 
 it('后端消息两端空白被裁剪后返回', async () => {
-  const body = { data: '  租户配额已用尽  ' }
+  const body = { detail: '  租户配额已用尽  ' }
 
   expect(await messageOf(config => httpError(409, body, config))).toBe('租户配额已用尽')
 })
 
 it('中文、emoji 与超长后端消息原样透出不被截断', async () => {
   const long = `边界用例：${'长'.repeat(600)}🚀`
-  const body = { data: long }
+  const body = { detail: long }
 
   expect(await messageOf(config => httpError(400, body, config))).toBe(long)
 })
 
 it('二进制 Blob 响应体不被当作业务消息解析，回落到状态码文案', async () => {
-  const blob = new Blob(['{"data":"不该被读出来"}'], { type: 'application/json' })
+  const blob = new Blob(['{"detail":"不该被读出来"}'], { type: 'application/json' })
 
   expect(await messageOf(config => httpError(404, blob, config))).toBe('请求的资源不存在')
 })
@@ -143,7 +143,7 @@ it('字符串响应体不是对象，回落到状态码文案', async () => {
   expect(await messageOf(config => httpError(502, 'Bad Gateway', config))).toBe('网关错误')
 })
 
-it('数组响应体没有 data/message 字段，回落到状态码文案', async () => {
+it('数组响应体没有 detail/message 字段，回落到状态码文案', async () => {
   expect(await messageOf(config => httpError(503, [1, 2, 3], config))).toBe('服务暂时不可用')
 })
 
@@ -271,7 +271,7 @@ function timeoutError(config: InternalAxiosRequestConfig) {
 function okResponse(config: InternalAxiosRequestConfig) {
   return {
     config,
-    data: { isSuccess: true, data: null },
+    data: null,
     headers: new AxiosHeaders(),
     status: 200,
     statusText: 'OK',

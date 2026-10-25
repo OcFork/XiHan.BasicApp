@@ -56,7 +56,7 @@ async function handleUpload(request: FileUploadRequest) {
       directory: props.directory,
     })
     // 仅落库文件主键：展示地址由读取侧按需解析，避免持久化会过期的签名地址
-    emit('update:modelValue', String(detail.basicId))
+    emit('update:modelValue', String(detail.id))
     toast.success(t('component.logo_upload.success'))
   }
   catch (error) {

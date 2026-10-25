@@ -52,7 +52,7 @@ const statusOptions = computed(() => [
 ])
 
 interface TemplateFormModel {
-  basicId?: ApiId
+  id?: ApiId
   templateCode: string
   channel: MessageChannel
   templateName: string
@@ -83,7 +83,7 @@ function createDefaultForm(): TemplateFormModel {
 const modalVisible = ref(false)
 const submitLoading = ref(false)
 const templateForm = ref<TemplateFormModel>(createDefaultForm())
-const modalTitle = computed(() => (templateForm.value.basicId ? t('message.template.edit_title') : t('message.template.add_title')))
+const modalTitle = computed(() => (templateForm.value.id ? t('message.template.edit_title') : t('message.template.add_title')))
 
 const detailVisible = ref(false)
 const currentDetail = ref<MessageTemplateDetailDto | null>(null)
@@ -154,7 +154,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'message.template.export',
   pageName: t('message.template.page_name'),
   statusPermission: 'message.template.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -169,7 +169,7 @@ const schema = computed<PageSchema>(() => ({
         // channel/status 改为多选，经 conditions.filters In 下发（不再走 DTO 顶层单值字段）
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => messageTemplateApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => messageTemplateApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('message.template.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'message.template.create' },
@@ -201,7 +201,7 @@ function onAction(payload: SchemaActionPayload) {
 
 async function openDetail(row: MessageTemplateListItemDto) {
   try {
-    currentDetail.value = await messageTemplateApi.detail(row.basicId)
+    currentDetail.value = await messageTemplateApi.detail(row.id)
     detailVisible.value = true
   }
   catch (e: unknown) {
@@ -211,13 +211,13 @@ async function openDetail(row: MessageTemplateListItemDto) {
 
 async function openEdit(row: MessageTemplateListItemDto) {
   try {
-    const detail = await messageTemplateApi.detail(row.basicId)
+    const detail = await messageTemplateApi.detail(row.id)
     if (!detail) {
       toast.danger(t('message.template.msg_not_found'))
       return
     }
     templateForm.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       templateCode: detail.templateCode,
       channel: detail.channel,
       templateName: detail.templateName,
@@ -239,7 +239,7 @@ async function openEdit(row: MessageTemplateListItemDto) {
 async function toggleStatus(row: MessageTemplateListItemDto) {
   try {
     await messageTemplateApi.updateStatus({
-      basicId: row.basicId,
+      id: row.id,
       status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
     })
     toast.success(t('message.template.msg_status_updated'))
@@ -252,7 +252,7 @@ async function toggleStatus(row: MessageTemplateListItemDto) {
 
 async function removeRow(row: MessageTemplateListItemDto) {
   try {
-    await messageTemplateApi.delete(row.basicId)
+    await messageTemplateApi.delete(row.id)
     toast.success(t('message.template.msg_delete_success'))
     schemaPageRef.value?.reload()
   }
@@ -263,7 +263,7 @@ async function removeRow(row: MessageTemplateListItemDto) {
 
 async function handleSubmit() {
   const form = templateForm.value
-  if (!form.templateCode.trim() && !form.basicId) {
+  if (!form.templateCode.trim() && !form.id) {
     toast.warning(t('message.template.msg_code_required'))
     return
   }
@@ -278,9 +278,9 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (form.basicId) {
+    if (form.id) {
       await messageTemplateApi.update({
-        basicId: form.basicId,
+        id: form.id,
         templateName: form.templateName.trim(),
         subject: toStr(form.subject) ?? null,
         content: form.content,
@@ -340,7 +340,7 @@ async function handleSubmit() {
             <XhFieldControl>
               <XInput
                 v-model:value="templateForm.templateCode"
-                :disabled="Boolean(templateForm.basicId)"
+                :disabled="Boolean(templateForm.id)"
                 clearable
                 :placeholder="t('message.template.form_template_code_placeholder')"
               />
@@ -354,7 +354,7 @@ async function handleSubmit() {
             <XhFieldControl>
               <XSelect
                 v-model:value="templateForm.channel"
-                :disabled="Boolean(templateForm.basicId)"
+                :disabled="Boolean(templateForm.id)"
                 :options="channelOptions"
               />
             </XhFieldControl>
@@ -423,7 +423,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!templateForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!templateForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('message.template.form_status') }}</XhFieldLabel>
             <XhFieldControl>

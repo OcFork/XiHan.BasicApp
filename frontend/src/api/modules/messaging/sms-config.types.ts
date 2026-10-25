@@ -17,11 +17,11 @@ export interface SmsConfigPageQueryDto extends PageRequest {
 export interface SmsConfigListItemDto extends BasicDto {
   configCode: string
   configName: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   hasAccessKeySecret: boolean
   isDefault: boolean
   isEnabled: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   provider: SmsProviderType
   /** 腾讯云 SmsSdkAppId */
   sdkAppId?: string | null

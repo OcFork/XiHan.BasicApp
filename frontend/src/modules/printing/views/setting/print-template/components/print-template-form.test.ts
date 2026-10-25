@@ -19,7 +19,7 @@ import {
 vi.mock('@/api', () => ({ EnableStatus: { Enabled: 1, Disabled: 0 } }))
 
 const detail = {
-  basicId: 'tpl-9',
+  id: 'tpl-9',
   templateCode: 'invoice',
   templateName: '发票',
   templateJson: '{"pages":[]}',
@@ -29,7 +29,7 @@ const detail = {
   allowTenantUse: true,
   sort: 5,
   remark: null,
-  rowVersion: '7',
+  concurrencyStamp: '7',
 } as unknown as PrintTemplateDetailDto
 
 describe('新增', () => {
@@ -69,8 +69,8 @@ describe('编辑', () => {
     const form = { ...toPrintTemplateForm(detail), templateName: ' 销售发票 ', dataSourceCode: null, sort: 8, remark: ' 季度版 ' }
 
     expect(toPrintTemplateUpdateInput(detail, form, detail.templateJson, { scope: PrintTemplateScope.Global, globalMode: true })).toEqual({
-      basicId: 'tpl-9',
-      rowVersion: '7',
+      id: 'tpl-9',
+      concurrencyStamp: '7',
       scope: PrintTemplateScope.Global,
       templateName: '销售发票',
       dataSourceCode: null,

@@ -36,7 +36,7 @@ import {
 defineOptions({ name: 'CodeGenTemplatePanel' })
 
 interface TemplateFormModel {
-  basicId?: string
+  id?: string
   templateCode: string
   templateName: string
   templateDescription?: string | null
@@ -141,13 +141,13 @@ const fields = computed<ListFieldSchema[]>(() => [
       return h(XhTagRoot, { variant: 'subtle', tone: r.status === EnableStatus.Enabled ? 'success' : 'danger' }, () => h(XhTagLabel, () => getOptionLabel(statusEnumOptions.value, r.status)))
     },
   },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', minWidth: 170, sortable: true, order: 10 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', minWidth: 170, sortable: true, order: 10 },
 ])
 
 const schema = computed<PageSchema>(() => ({
   pageCode: 'code_gen.template',
   pageName: t('develop.code_gen.tabs.template'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -209,7 +209,7 @@ function handleDelete(row: CodeGenTemplateListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await codeGenTemplateApi.delete(row.basicId)
+        await codeGenTemplateApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }
@@ -226,7 +226,7 @@ const submitLoading = ref(false)
 const validating = ref(false)
 const editingStatus = ref<EnableStatus | null>(null)
 const form = ref<TemplateFormModel>(createDefaultForm())
-const modalTitle = computed(() => (form.value.basicId ? t('develop.code_gen.template.modal_edit_title') : t('develop.code_gen.template.modal_add_title')))
+const modalTitle = computed(() => (form.value.id ? t('develop.code_gen.template.modal_edit_title') : t('develop.code_gen.template.modal_add_title')))
 
 /** 模板编辑器语言：按目标文件扩展名推断（.sbn 产出 .cs/.ts/.vue，据此高亮字面代码部分） */
 /** 编辑器统一收发 string；表单 templateContent 为 string|null，做空值适配 */
@@ -272,14 +272,14 @@ function handleAdd() {
 
 async function handleEdit(row: CodeGenTemplateListItemDto) {
   try {
-    const detail = await codeGenTemplateApi.detail(row.basicId)
+    const detail = await codeGenTemplateApi.detail(row.id)
     if (!detail) {
       toast.danger(t('develop.code_gen.template.not_found'))
       return
     }
     editingStatus.value = detail.status
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       templateCode: detail.templateCode,
       templateName: detail.templateName,
       templateDescription: detail.templateDescription ?? null,
@@ -334,7 +334,7 @@ function validateForm() {
     toast.warning(t('develop.code_gen.template.validate_name_required'))
     return false
   }
-  if (!form.value.basicId && !form.value.templateCode.trim()) {
+  if (!form.value.id && !form.value.templateCode.trim()) {
     toast.warning(t('develop.code_gen.template.validate_code_required'))
     return false
   }
@@ -347,9 +347,9 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       const updateInput: CodeGenTemplateUpdateDto = {
-        basicId: form.value.basicId,
+        id: form.value.id,
         templateName: form.value.templateName.trim(),
         templateDescription: form.value.templateDescription,
         templateGroup: form.value.templateGroup,
@@ -367,7 +367,7 @@ async function handleSubmit() {
       await codeGenTemplateApi.update(updateInput)
       if (editingStatus.value !== form.value.status) {
         await codeGenTemplateApi.updateStatus({
-          basicId: form.value.basicId,
+          id: form.value.id,
           remark: t('develop.code_gen.template.update_status_remark'),
           status: form.value.status,
         })
@@ -428,7 +428,7 @@ async function handleSubmit() {
               <XInput
                 v-model:value="form.templateCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('develop.code_gen.template.form_template_code_placeholder')"
               />
             </XhFieldControl>
@@ -516,7 +516,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!form.basicId" name="status">
+        <XhFormFieldGroup v-if="!form.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('common.fields.status') }}</XhFieldLabel>
             <XhFieldControl>

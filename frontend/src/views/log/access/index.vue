@@ -91,7 +91,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'device', title: t('log.common.device'), dataType: 'string', minWidth: 120, order: 24 },
   { key: 'executionTime', title: t('log.common.execution_time'), dataType: 'number', sortable: true, width: 110, order: 25, render: row => `${(row as unknown as AccessLogListItemDto).executionTime}ms` },
   { key: 'accessTime', title: t('log.access.access_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, advancedSearch: true, minWidth: 170, order: 26 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 27 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 27 },
   // 仅高级搜索（不作为列，范围条件置于高级区末尾）
   { key: 'minExecutionTime', title: t('log.common.min_execution_time'), dataType: 'number', visible: false, advancedSearch: true, searchPlaceholder: t('log.common.min_execution_time'), order: 40 },
   { key: 'maxExecutionTime', title: t('log.common.max_execution_time'), dataType: 'number', visible: false, advancedSearch: true, searchPlaceholder: t('log.common.max_execution_time'), order: 41 },
@@ -132,7 +132,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'log.access',
   exportPermission: 'log.access.export',
   pageName: t('log.access.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, { timeField: 'accessTime', ipKey: 'accessIp' }),
   resource: {
     page: params => logManagementApi.access.page(buildAccessQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
@@ -162,7 +162,7 @@ async function handleDetail(row: AccessLogListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await logManagementApi.access.detail(row.basicId) ?? row
+    detailData.value = await logManagementApi.access.detail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

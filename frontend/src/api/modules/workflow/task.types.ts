@@ -37,14 +37,14 @@ export interface TaskPageQueryDto extends PageRequest {
 
 export interface TaskListItemDto extends BasicDto {
   allowConcurrent: boolean
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   cronExpression?: string | null
   endTime?: DateTimeString | null
   executedCount: number
   intervalSeconds?: number | null
   lastRunTime?: DateTimeString | null
   maxRetryCount: number
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   nextRunTime?: DateTimeString | null
   priority: number
   repeatCount: number
@@ -125,13 +125,13 @@ export interface TaskUpdateDto extends BasicDto {
 }
 
 export interface TaskStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   status: EnableStatus
   remark?: string | null
 }
 
 export interface TaskRunStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   runTaskStatus: RunTaskStatus
   nextRunTime?: DateTimeString | null
   lastRunTime?: DateTimeString | null

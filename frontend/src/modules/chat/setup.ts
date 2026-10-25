@@ -12,7 +12,7 @@ import { chatApi } from './api/chat'
 
 function mapDepartmentNode(node: DepartmentTreeNodeDto): ChatDepartmentPickerNode {
   return {
-    departmentId: node.basicId,
+    departmentId: node.id,
     departmentName: node.departmentName,
     children: node.children?.map(mapDepartmentNode) ?? null,
   }
@@ -23,10 +23,10 @@ export default function setupChat(): void {
   const composed: ChatApiContract = {
     ...chatApi,
     async selectUsers(keyword: string, limit = 20) {
-      // 走聊天专属选人端点（仅需 chat:read）；用户管理的 UserSelect 端点要求 saas:user:read，普通聊天用户会 403
+      // 走聊天专属选人端点（仅需 chat.read）；用户管理的 UserSelect 端点要求 saas.user.read，普通聊天用户会 403
       const items = await chatApi.userOptions(keyword, limit)
       return items.map(u => ({
-        userId: u.basicId,
+        userId: u.id,
         userName: u.userName,
         nickName: u.nickName ?? u.realName,
         avatar: u.avatar,
@@ -55,7 +55,7 @@ export default function setupChat(): void {
           if (fast) {
             onProgress?.(100)
             return {
-              fileId: fast.basicId,
+              fileId: fast.id,
               fileName: fast.originalName || fast.fileName,
               fileSize: fast.fileSize,
             }
@@ -67,7 +67,7 @@ export default function setupChat(): void {
       }
       const detail = await fileApi.upload({ file, directory: 'chat' }, onProgress)
       return {
-        fileId: detail.basicId,
+        fileId: detail.id,
         fileName: detail.originalName || detail.fileName,
         fileSize: detail.fileSize,
       }

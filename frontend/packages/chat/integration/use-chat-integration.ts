@@ -28,7 +28,7 @@ const CHAT_RECONNECT_INTERVAL_MS = 15000
 /**
  * 在 BasicLayout 中初始化聊天实时链路（/hubs/chat 独立连接）：
  * 订阅四类推送回灌 chat store，并预取会话列表供顶栏未读角标。
- * 无 chat:read 权限的用户整条链路静默关闭。
+ * 无 chat.read 权限的用户整条链路静默关闭。
  */
 export function useChatIntegration() {
   const accessStore = useAccessStore()
@@ -46,7 +46,7 @@ export function useChatIntegration() {
    */
   function notifyIncomingMessage(payload: ChatMessagePushPayload) {
     const { message, conversation } = payload
-    if (message.senderUserId === userStore.userInfo?.basicId || message.messageType === 'System') {
+    if (message.senderUserId === userStore.userInfo?.id || message.messageType === 'System') {
       return
     }
 

@@ -44,7 +44,7 @@ interface ConstraintItemFormModel {
 }
 
 interface ConstraintRuleFormModel {
-  basicId?: ApiId
+  id?: ApiId
   constraintType: ConstraintType
   description: string | null
   effectiveTime: number | null
@@ -182,13 +182,13 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'description', title: t('approval.constraint.description'), dataType: 'string', minWidth: 200, order: 10 },
   {
-    key: 'createdTime',
+    key: 'createdAt',
     title: t('approval.constraint.created_time'),
     dataType: 'datetime',
     sortable: true,
     minWidth: 170,
     order: 11,
-    render: row => h('span', { style: 'font-size:13px;color:hsl(var(--muted-foreground));' }, formatDate((row as unknown as ConstraintRuleListItemDto).createdTime)),
+    render: row => h('span', { style: 'font-size:13px;color:hsl(var(--muted-foreground));' }, formatDate((row as unknown as ConstraintRuleListItemDto).createdAt)),
   },
 ])
 
@@ -198,7 +198,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'approval.constraint.export',
   pageName: t('approval.constraint.page_name'),
   statusPermission: 'approval.constraint.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -213,7 +213,7 @@ const schema = computed<PageSchema>(() => ({
         // constraintType / status 改为多选，经 conditions.filters In 下发（不再走 DTO 顶层单值字段）
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => constraintRuleApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('approval.constraint.remark_batch_enable') : t('approval.constraint.remark_batch_disable') }),
+    updateStatus: (id, enabled) => constraintRuleApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('approval.constraint.remark_batch_enable') : t('approval.constraint.remark_batch_disable') }),
   },
   actions: [
     { key: 'create', title: t('approval.constraint.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'approval.constraint.create' },
@@ -283,7 +283,7 @@ async function loadTargetOptions(type: ConstraintTargetType, keyword = '') {
     let next: TargetOption[] = []
     if (type === ConstraintTargetType.Role) {
       const roles = await roleApi.enabledList({ limit: 50, keyword: normalizeNullable(keyword) })
-      next = roles.map(role => ({ label: `${role.roleName} (${role.roleCode})`, value: role.basicId }))
+      next = roles.map(role => ({ label: `${role.roleName} (${role.roleCode})`, value: role.id }))
     }
     else if (type === ConstraintTargetType.Permission) {
       const result = await permissionApi.page({
@@ -291,7 +291,7 @@ async function loadTargetOptions(type: ConstraintTargetType, keyword = '') {
         keyword: normalizeNullable(keyword),
         status: EnableStatus.Enabled,
       })
-      next = result.items.map(permission => ({ label: `${permission.permissionName} (${permission.permissionCode})`, value: permission.basicId }))
+      next = result.items.map(permission => ({ label: `${permission.permissionName} (${permission.permissionCode})`, value: permission.id }))
     }
     else {
       const result = await tenantMemberApi.page({
@@ -347,7 +347,7 @@ async function handleView(row: ConstraintRuleListItemDto) {
   detailLoading.value = true
   currentDetail.value = null
   try {
-    currentDetail.value = await constraintRuleApi.detail(row.basicId)
+    currentDetail.value = await constraintRuleApi.detail(row.id)
     if (!currentDetail.value) {
       toast.warning(t('approval.constraint.warn_detail_not_found'))
     }
@@ -366,7 +366,7 @@ const submitLoading = ref(false)
 const editingStatus = ref<EnableStatus | null>(null)
 const ruleForm = ref<ConstraintRuleFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (ruleForm.value.basicId ? t('approval.constraint.modal_title_edit') : t('approval.constraint.modal_title_add')))
+const modalTitle = computed(() => (ruleForm.value.id ? t('approval.constraint.modal_title_edit') : t('approval.constraint.modal_title_add')))
 const isPrerequisite = computed(() => ruleForm.value.constraintType === ConstraintType.Prerequisite)
 const itemHint = computed(() => ITEM_HINTS.value[ruleForm.value.constraintType] ?? t('approval.constraint.hint_default'))
 
@@ -401,7 +401,7 @@ function handleAdd() {
 
 async function handleEdit(row: ConstraintRuleListItemDto) {
   try {
-    const detail = await constraintRuleApi.detail(row.basicId)
+    const detail = await constraintRuleApi.detail(row.id)
     if (!detail) {
       toast.warning(t('approval.constraint.warn_detail_not_found'))
       return
@@ -411,7 +411,7 @@ async function handleEdit(row: ConstraintRuleListItemDto) {
     }
     editingStatus.value = detail.status
     ruleForm.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       constraintType: detail.constraintType,
       description: detail.description ?? null,
       effectiveTime: detail.effectiveTime ? new Date(detail.effectiveTime).getTime() : null,
@@ -478,7 +478,7 @@ function onItemTargetTypeChange(item: ConstraintItemFormModel) {
 // ── 提交 ────────────────────────────────────────────────────────
 function validateForm(): boolean {
   const form = ruleForm.value
-  if (!form.basicId && !form.ruleCode.trim()) {
+  if (!form.id && !form.ruleCode.trim()) {
     toast.warning(t('approval.constraint.warn_input_rule_code'))
     return false
   }
@@ -559,11 +559,11 @@ async function handleSubmit() {
       targetType: form.targetType,
       violationAction: form.violationAction,
     }
-    if (form.basicId) {
-      await constraintRuleApi.update({ basicId: form.basicId, ...shared })
+    if (form.id) {
+      await constraintRuleApi.update({ id: form.id, ...shared })
       if (editingStatus.value !== form.status) {
         await constraintRuleApi.updateStatus({
-          basicId: form.basicId,
+          id: form.id,
           remark: shared.remark,
           status: form.status,
         })
@@ -600,7 +600,7 @@ function confirmToggleStatus(row: ConstraintRuleListItemDto) {
     onOk: async () => {
       try {
         await constraintRuleApi.updateStatus({
-          basicId: row.basicId,
+          id: row.id,
           remark: enable ? t('approval.constraint.remark_fe_enable') : t('approval.constraint.remark_fe_disable'),
           status: enable ? EnableStatus.Enabled : EnableStatus.Disabled,
         })
@@ -624,7 +624,7 @@ function confirmDelete(row: ConstraintRuleListItemDto) {
     cancelText: t('approval.constraint.cancel'),
     onOk: async () => {
       try {
-        await constraintRuleApi.delete(row.basicId)
+        await constraintRuleApi.delete(row.id)
         toast.success(t('approval.constraint.msg_delete_success'))
         reload()
       }
@@ -735,13 +735,13 @@ function confirmDelete(row: ConstraintRuleListItemDto) {
               <XhDescriptionsItem>
                 <XhDescriptionsLabel>{{ t('approval.constraint.created') }}</XhDescriptionsLabel>
                 <XhDescriptionsValue>
-                  {{ formatNullable(currentDetail.createdBy) }} · {{ formatNullableDate(currentDetail.createdTime) }}
+                  {{ formatNullable(currentDetail.createdBy) }} · {{ formatNullableDate(currentDetail.createdAt) }}
                 </XhDescriptionsValue>
               </XhDescriptionsItem>
               <XhDescriptionsItem>
                 <XhDescriptionsLabel>{{ t('approval.constraint.last_modified') }}</XhDescriptionsLabel>
                 <XhDescriptionsValue>
-                  {{ formatNullable(currentDetail.modifiedBy) }} · {{ formatNullableDate(currentDetail.modifiedTime) }}
+                  {{ formatNullable(currentDetail.modifiedBy) }} · {{ formatNullableDate(currentDetail.modifiedAt) }}
                 </XhDescriptionsValue>
               </XhDescriptionsItem>
             </XhDescriptionsRoot>
@@ -768,13 +768,13 @@ function confirmDelete(row: ConstraintRuleListItemDto) {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in currentDetail.items" :key="String(item.basicId)">
+                <tr v-for="item in currentDetail.items" :key="String(item.id)">
                   <td>{{ formatItemGroup(item) }}</td>
                   <td>{{ getOptionLabel(targetTypeOptions, item.targetType) }}</td>
                   <td>{{ item.targetName || `#${item.targetId}` }}</td>
                   <td>{{ formatNullable(item.targetCode) }}</td>
                   <td>{{ formatNullable(item.remark) }}</td>
-                  <td>{{ formatNullableDate(item.createdTime) }}</td>
+                  <td>{{ formatNullableDate(item.createdAt) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -811,7 +811,7 @@ function confirmDelete(row: ConstraintRuleListItemDto) {
               <XInput
                 v-model:value="ruleForm.ruleCode"
                 clearable
-                :disabled="Boolean(ruleForm.basicId)"
+                :disabled="Boolean(ruleForm.id)"
                 :placeholder="t('approval.constraint.placeholder_rule_code')"
               />
             </XhFieldControl>
@@ -876,7 +876,7 @@ function confirmDelete(row: ConstraintRuleListItemDto) {
             <XhFieldLabel>{{ t('approval.constraint.label_status') }}</XhFieldLabel>
             <XhFieldControl>
               <!-- 新建时状态随创建提交；编辑时改状态走启停接口，没有启停按钮就不让改，免得规则存了一半再被拒 -->
-              <XSelect v-model:value="ruleForm.status" :options="statusOptions" :disabled="!!ruleForm.basicId && !hasPermission('approval.constraint.status')" />
+              <XSelect v-model:value="ruleForm.status" :options="statusOptions" :disabled="!!ruleForm.id && !hasPermission('approval.constraint.status')" />
             </XhFieldControl>
             <XhFieldErrorText />
           </XhFieldRoot>

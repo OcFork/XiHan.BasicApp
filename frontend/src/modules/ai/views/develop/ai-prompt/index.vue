@@ -28,7 +28,7 @@ import {
 defineOptions({ name: 'DevelopAiPromptPage' })
 
 interface PromptFormModel {
-  basicId?: string
+  id?: string
   promptCode: string
   promptName: string
   category?: string | null
@@ -93,7 +93,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'ai_prompt',
   pageName: t('develop.ai_prompt.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -145,7 +145,7 @@ function handleDelete(row: AiPromptListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await aiPromptApi.delete(row.basicId)
+        await aiPromptApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }
@@ -161,7 +161,7 @@ const modalVisible = ref(false)
 const submitLoading = ref(false)
 const editingStatus = ref<EnableStatus | null>(null)
 const form = ref<PromptFormModel>(createDefaultForm())
-const modalTitle = computed(() => (form.value.basicId ? t('develop.ai_prompt.modal_edit_title') : t('develop.ai_prompt.modal_add_title')))
+const modalTitle = computed(() => (form.value.id ? t('develop.ai_prompt.modal_edit_title') : t('develop.ai_prompt.modal_add_title')))
 
 function createDefaultForm(): PromptFormModel {
   return {
@@ -185,14 +185,14 @@ function handleAdd() {
 
 async function handleEdit(row: AiPromptListItemDto) {
   try {
-    const detail = await aiPromptApi.detail(row.basicId)
+    const detail = await aiPromptApi.detail(row.id)
     if (!detail) {
       toast.danger(t('develop.ai_prompt.not_found'))
       return
     }
     editingStatus.value = detail.status
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       promptCode: detail.promptCode,
       promptName: detail.promptName,
       category: detail.category ?? null,
@@ -215,7 +215,7 @@ function validateForm() {
     toast.warning(t('develop.ai_prompt.validate_name'))
     return false
   }
-  if (!form.value.basicId && !form.value.promptCode.trim()) {
+  if (!form.value.id && !form.value.promptCode.trim()) {
     toast.warning(t('develop.ai_prompt.validate_code'))
     return false
   }
@@ -232,9 +232,9 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       const updateInput: AiPromptUpdateDto = {
-        basicId: form.value.basicId,
+        id: form.value.id,
         promptName: form.value.promptName.trim(),
         category: form.value.category?.trim() || null,
         version: form.value.version?.trim() || null,
@@ -246,7 +246,7 @@ async function handleSubmit() {
       await aiPromptApi.update(updateInput)
       if (editingStatus.value !== form.value.status) {
         await aiPromptApi.updateStatus({
-          basicId: form.value.basicId,
+          id: form.value.id,
           remark: t('develop.ai_prompt.update_status_remark'),
           status: form.value.status,
         })
@@ -301,7 +301,7 @@ async function handleSubmit() {
               <XInput
                 v-model:value="form.promptCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('develop.ai_prompt.form_prompt_code_placeholder')"
               />
             </XhFieldControl>
@@ -353,7 +353,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!form.basicId" name="status">
+        <XhFormFieldGroup v-if="!form.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('common.fields.status') }}</XhFieldLabel>
             <XhFieldControl>

@@ -26,11 +26,11 @@ export interface RolePageQueryDto extends PageRequest {
 }
 
 export interface RoleListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   dataScope: DataPermissionScope
   isGlobal: boolean
   maxMembers: number
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   roleCode: string
   roleDescription?: string | null
   roleName: string

@@ -15,15 +15,15 @@ import type { TreeSelectOption } from '~/types'
  *    未挂载的 id，与 getParentIds 对环的处置（就地截断而非假装无环）保持同一态度。
  * 3. **显式传入 parentId 时不做提升**。那是「只构建这棵子树」的语义，只取该父下的直属子级。
  *
- * 另外，递归沿祖先链记录已出现过的 basicId：列表里存在重复 basicId 且其中一份自引用时
- * （如 `[{ basicId: 'a' }, { basicId: 'a', parentId: 'a' }]`），原实现会用同一个 id 反复
+ * 另外，递归沿祖先链记录已出现过的 id：列表里存在重复 id 且其中一份自引用时
+ * （如 `[{ id: 'a' }, { id: 'a', parentId: 'a' }]`），原实现会用同一个 id 反复
  * 递归同一集合，直接 RangeError 爆栈、整棵树渲染失败。祖先链上再次遇到同一 id 即截断为叶子。
  */
-export function listToTree<T extends { basicId: string, parentId?: string, children?: T[] }>(
+export function listToTree<T extends { id: string, parentId?: string, children?: T[] }>(
   list: T[],
   parentId: string | null = null,
 ): T[] {
-  const knownIds = new Set(list.map(item => item.basicId))
+  const knownIds = new Set(list.map(item => item.id))
   const mountedIds = new Set<string>()
 
   const asLeaf = (node: T): T => {
@@ -33,14 +33,14 @@ export function listToTree<T extends { basicId: string, parentId?: string, child
 
   const attach = (nodes: T[], ancestors: Set<string>): T[] =>
     nodes.map((node) => {
-      mountedIds.add(node.basicId)
-      // 祖先链上已出现过同一 basicId：继续下钻会在同一集合上无限重入
-      if (ancestors.has(node.basicId)) {
+      mountedIds.add(node.id)
+      // 祖先链上已出现过同一 id：继续下钻会在同一集合上无限重入
+      if (ancestors.has(node.id)) {
         return asLeaf(node)
       }
       const children = attach(
-        list.filter(item => item.parentId === node.basicId),
-        new Set(ancestors).add(node.basicId),
+        list.filter(item => item.parentId === node.id),
+        new Set(ancestors).add(node.id),
       )
       return children.length > 0 ? { ...node, children } : asLeaf(node)
     })
@@ -71,11 +71,11 @@ export function listToTree<T extends { basicId: string, parentId?: string, child
 export function relationOptionsToTree(
   options: ReadonlyArray<{ label: string, value: string, parentValue?: null | string, disabled?: boolean }>,
 ): TreeSelectOption[] {
-  interface Node { basicId: string, parentId?: string, label: string, disabled?: boolean, children?: Node[] }
-  const nodes: Node[] = options.map(option => ({ basicId: option.value, parentId: option.parentValue ?? undefined, label: option.label, disabled: option.disabled }))
+  interface Node { id: string, parentId?: string, label: string, disabled?: boolean, children?: Node[] }
+  const nodes: Node[] = options.map(option => ({ id: option.value, parentId: option.parentValue ?? undefined, label: option.label, disabled: option.disabled }))
   const toOption = (node: Node): TreeSelectOption => ({
     label: node.label,
-    value: node.basicId,
+    value: node.id,
     ...(node.disabled ? { disabled: true } : {}),
     ...(node.children?.length ? { children: node.children.map(toOption) } : {}),
   })
@@ -102,15 +102,15 @@ export function treeToList<T extends { children?: T[] }>(tree: T[]): Omit<T, 'ch
 /**
  * 在树中查找节点
  */
-export function findTreeNode<T extends { basicId: string, children?: T[] }>(
+export function findTreeNode<T extends { id: string, children?: T[] }>(
   tree: T[],
-  basicId: string,
+  id: string,
 ): T | null {
   for (const node of tree) {
-    if (node.basicId === basicId)
+    if (node.id === id)
       return node
     if (node.children) {
-      const found = findTreeNode(node.children, basicId)
+      const found = findTreeNode(node.children, id)
       if (found)
         return found
     }
@@ -169,14 +169,14 @@ export function filterTree<T extends { children?: T[] }>(
  * 一旦配成环（a 的父是 b、b 的父是 a），无记录的上溯会在环上无限交替取值，
  * result 一直增长到内存耗尽，主线程直接卡死。命中环时就地截断，返回已求得的那段。
  */
-export function getParentIds<T extends { basicId: string, parentId?: string }>(
+export function getParentIds<T extends { id: string, parentId?: string }>(
   list: T[],
-  basicId: string,
+  id: string,
 ): string[] {
-  const map = new Map(list.map(item => [item.basicId, item]))
+  const map = new Map(list.map(item => [item.id, item]))
   const result: string[] = []
-  const visited = new Set<string>([basicId])
-  let current = map.get(basicId)
+  const visited = new Set<string>([id])
+  let current = map.get(id)
   while (current?.parentId) {
     const { parentId } = current
     if (visited.has(parentId)) {

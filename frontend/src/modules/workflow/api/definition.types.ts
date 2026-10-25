@@ -23,7 +23,7 @@ export interface WorkflowDefinitionListItemDto extends BasicDto {
   status: WorkflowDefinitionStatus
   enableCompensation: boolean
   publishTime?: DateTimeString | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
 }
 
 export interface WorkflowDefinitionDetailDto extends WorkflowDefinitionListItemDto {
@@ -35,12 +35,12 @@ export interface WorkflowDefinitionCreateDto {
 }
 
 export interface WorkflowDefinitionUpdateDraftDto {
-  basicId: ApiId
+  id: ApiId
   definitionJson: string
 }
 
 export interface WorkflowDefinitionIdDto {
-  basicId: ApiId
+  id: ApiId
 }
 
 export interface WorkflowDefinitionNewVersionDto {

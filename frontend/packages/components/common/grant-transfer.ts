@@ -1,6 +1,6 @@
 /** 授权穿梭框条目最小契约：主键即穿梭框的值 */
 export interface GrantTransferItem {
-  basicId: number | string
+  id: number | string
 }
 
 /** 穿梭框的一段；name 为空时不出段标题 */

@@ -26,7 +26,7 @@ export interface CodeGenDataSourceListItemDto extends BasicDto {
   status: EnableStatus
   sort: number
   remark?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
 }
 
 /** 代码生成数据源详情 DTO（含连接明细，密码字段输出时须脱敏） */

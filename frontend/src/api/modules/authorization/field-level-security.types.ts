@@ -12,7 +12,7 @@ export interface FieldLevelSecurityPageQueryDto extends PageRequest {
 }
 
 export interface FieldLevelSecurityListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   /** 实体已不再支持字段安全时为空 */
   entityDisplayName?: string | null
   entityName: string
@@ -26,7 +26,7 @@ export interface FieldLevelSecurityListItemDto extends BasicDto {
   maskKeepTail?: number | null
   maskReplacement?: string | null
   maskStrategy: FieldMaskStrategy
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   remark?: string | null
   status: EnableStatus
   targetCode?: string | null

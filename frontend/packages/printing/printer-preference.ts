@@ -45,7 +45,7 @@ function createPreferenceKey(templateCode: string): string {
   if (!normalizedCode)
     throw new Error('打印模板编码不能为空。')
   const user = useUserStore().userInfo
-  const userId = user?.basicId || 'anonymous'
+  const userId = user?.id || 'anonymous'
   const tenantId = user?.tenantId || 'platform'
   return `${PREFERENCE_PREFIX}:${encodeURIComponent(tenantId)}:${encodeURIComponent(userId)}:${encodeURIComponent(normalizedCode)}`
 }

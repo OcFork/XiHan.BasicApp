@@ -361,7 +361,7 @@ async function openDetail(item: TraceTimelineItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    const record = await detailFetchers[item.logType](item.basicId)
+    const record = await detailFetchers[item.logType](item.id)
     detailData.value = (record as Record<string, unknown> | null) ?? (item as unknown as Record<string, unknown>)
   }
   catch (error) {
@@ -487,7 +487,7 @@ watch(tracePreset, (preset) => {
                   <div class="trace-grp__cards">
                     <div
                       v-for="item in grp.items"
-                      :key="`${item.logType}-${item.basicId}`"
+                      :key="`${item.logType}-${item.id}`"
                       class="trace-card"
                       :class="`is-${statusKind(item)}`"
                       @click="openDetail(item)"

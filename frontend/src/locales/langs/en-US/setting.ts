@@ -627,7 +627,7 @@ export default {
       tip: 'Only this policy is evaluated, ignoring its effective period and other policies. Empty fields use your current request and user.',
       ph_user: 'Current user by default',
       label_permission_codes: 'Endpoint permission codes',
-      ph_permission_codes: 'Comma separated, e.g. saas:user:export',
+      ph_permission_codes: 'Comma separated, e.g. saas.user.export',
       load_users_failed: 'Failed to load users',
       failed: 'Trial run failed',
       result_title: 'Trial run result',

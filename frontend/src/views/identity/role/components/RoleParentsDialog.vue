@@ -51,10 +51,10 @@ async function load(role: RoleListItemDto) {
   try {
     const [candidates, ancestors, descendants] = await Promise.all([
       roleApi.enabledList({ limit: CANDIDATE_LIMIT }),
-      roleHierarchyApi.ancestors(role.basicId),
-      roleHierarchyApi.descendants(role.basicId),
+      roleHierarchyApi.ancestors(role.id),
+      roleHierarchyApi.descendants(role.id),
     ])
-    options.value = buildRoleParentOptions(role.basicId, candidates, ancestors, descendants, {
+    options.value = buildRoleParentOptions(role.id, candidates, ancestors, descendants, {
       descendant: t('identity.role.parent_note_descendant'),
       indirectAncestor: t('identity.role.parent_note_indirect'),
       disabledParent: t('identity.role.parent_note_disabled'),
@@ -71,7 +71,7 @@ async function load(role: RoleListItemDto) {
 }
 
 watch(
-  () => [props.show, props.role?.basicId] as const,
+  () => [props.show, props.role?.id] as const,
   ([show]) => {
     if (show && props.role) {
       void load(props.role)
@@ -98,7 +98,7 @@ async function save() {
 
   saving.value = true
   try {
-    await roleHierarchyApi.batchUpdateParents({ roleId: role.basicId, addParentRoleIds, removeParentRoleIds })
+    await roleHierarchyApi.batchUpdateParents({ roleId: role.id, addParentRoleIds, removeParentRoleIds })
     toast.success(t('common.messages.save_success'))
     emit('saved')
     close()

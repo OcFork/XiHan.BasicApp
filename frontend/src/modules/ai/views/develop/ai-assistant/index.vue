@@ -28,7 +28,7 @@ import {
 defineOptions({ name: 'DevelopAiAssistantPage' })
 
 interface AssistantFormModel {
-  basicId?: string
+  id?: string
   assistantCode: string
   assistantName: string
   avatar?: string | null
@@ -124,7 +124,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'ai_assistant',
   pageName: t('develop.ai_assistant.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   batchRemovable: true,
   fields: fields.value,
   resource: {
@@ -174,7 +174,7 @@ function onAction(payload: SchemaActionPayload) {
 
 async function handleSetDefault(row: AiAssistantListItemDto) {
   try {
-    await aiAssistantApi.setDefault(row.basicId)
+    await aiAssistantApi.setDefault(row.id)
     toast.success(t('develop.ai_assistant.set_default_success'))
     reload()
   }
@@ -193,7 +193,7 @@ function handleDelete(row: AiAssistantListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await aiAssistantApi.delete(row.basicId)
+        await aiAssistantApi.delete(row.id)
         toast.success(t('common.messages.delete_success'))
         reload()
       }
@@ -209,7 +209,7 @@ const modalVisible = ref(false)
 const submitLoading = ref(false)
 const editingStatus = ref<EnableStatus | null>(null)
 const form = ref<AssistantFormModel>(createDefaultForm())
-const modalTitle = computed(() => (form.value.basicId ? t('develop.ai_assistant.modal_edit_title') : t('develop.ai_assistant.modal_add_title')))
+const modalTitle = computed(() => (form.value.id ? t('develop.ai_assistant.modal_edit_title') : t('develop.ai_assistant.modal_add_title')))
 
 function createDefaultForm(): AssistantFormModel {
   return {
@@ -240,14 +240,14 @@ function handleAdd() {
 
 async function handleEdit(row: AiAssistantListItemDto) {
   try {
-    const detail = await aiAssistantApi.detail(row.basicId)
+    const detail = await aiAssistantApi.detail(row.id)
     if (!detail) {
       toast.danger(t('develop.ai_assistant.not_found'))
       return
     }
     editingStatus.value = detail.status
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       assistantCode: detail.assistantCode,
       assistantName: detail.assistantName,
       avatar: detail.avatar ?? null,
@@ -277,7 +277,7 @@ function validateForm() {
     toast.warning(t('develop.ai_assistant.validate_name'))
     return false
   }
-  if (!form.value.basicId && !form.value.assistantCode.trim()) {
+  if (!form.value.id && !form.value.assistantCode.trim()) {
     toast.warning(t('develop.ai_assistant.validate_code'))
     return false
   }
@@ -290,9 +290,9 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       const updateInput: AiAssistantUpdateDto = {
-        basicId: form.value.basicId,
+        id: form.value.id,
         assistantName: form.value.assistantName.trim(),
         avatar: form.value.avatar?.trim() || null,
         description: form.value.description?.trim() || null,
@@ -311,7 +311,7 @@ async function handleSubmit() {
       await aiAssistantApi.update(updateInput)
       if (editingStatus.value !== form.value.status) {
         await aiAssistantApi.updateStatus({
-          basicId: form.value.basicId,
+          id: form.value.id,
           remark: t('develop.ai_assistant.update_status_remark'),
           status: form.value.status,
         })
@@ -373,7 +373,7 @@ async function handleSubmit() {
               <XInput
                 v-model:value="form.assistantCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('develop.ai_assistant.form_assistant_code_placeholder')"
               />
             </XhFieldControl>
@@ -479,7 +479,7 @@ async function handleSubmit() {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!form.basicId" name="status">
+        <XhFormFieldGroup v-if="!form.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('common.fields.status') }}</XhFieldLabel>
             <XhFieldControl>

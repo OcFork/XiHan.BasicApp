@@ -45,7 +45,7 @@ const editFormId = useId()
 
 /** 作用侧没有默认值：新建时必须明确选平台 / 租户 / 两侧，选错会把平台能力放进租户或反之 */
 interface PermissionFormModel extends Omit<PermissionCreateDto, 'side'> {
-  basicId?: ApiId
+  id?: ApiId
   side: PermissionSide | null
 }
 
@@ -100,7 +100,7 @@ const auditOptions = computed(() => [
   { label: t('identity.permission.no_audit'), value: 0 },
 ])
 
-const modalTitle = computed(() => (permissionForm.value.basicId ? t('identity.permission.form_edit_title') : t('identity.permission.form_create_title')))
+const modalTitle = computed(() => (permissionForm.value.id ? t('identity.permission.form_edit_title') : t('identity.permission.form_create_title')))
 const isResourceBasedForm = computed(() => permissionForm.value.permissionType === PermissionType.ResourceBased)
 
 const schemaPageRef = ref<{ reload: () => Promise<void> } | null>(null)
@@ -254,7 +254,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     width: 90,
     order: 12,
   },
-  { key: 'createdTime', title: t('identity.permission.col_create_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 13 },
+  { key: 'createdAt', title: t('identity.permission.col_create_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 13 },
 ])
 
 // ── 资源适配器：归一化查询参数 → 后端 API ──────────────────────
@@ -265,7 +265,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'identity.permission.delete',
   statusPermission: 'identity.permission.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -273,7 +273,7 @@ const schema = computed<PageSchema>(() => ({
       return permissionCenterApi.page({
         ...createPageRequest({
           page: { pageIndex: params.page, pageSize: params.pageSize },
-          // 排序 + 区间(createdTime)/多选(permissionType、side、status) 统一走 conditions
+          // 排序 + 区间(createdAt)/多选(permissionType、side、status) 统一走 conditions
           conditions: { sorts: querySortsFromSchema(params.sorts), filters: params.conditionFilters ?? [] },
         }),
         isGlobal: toBool(isGlobal),
@@ -284,7 +284,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
     remove: id => permissionCenterApi.delete(id),
-    updateStatus: (id, enabled) => permissionCenterApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('identity.permission.batch_enable_remark') : t('identity.permission.batch_disable_remark') }),
+    updateStatus: (id, enabled) => permissionCenterApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('identity.permission.batch_enable_remark') : t('identity.permission.batch_disable_remark') }),
   },
   actions: [
     { key: 'create', title: t('identity.permission.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'identity.permission.create' },
@@ -344,13 +344,13 @@ async function handleEdit(row: PermissionListItemDto) {
   // 列表行不含备注与标签，取详情回填；否则保存时会把两者覆盖为空
   let detail: PermissionDetailDto | null = null
   try {
-    detail = await permissionCenterApi.detail(row.basicId)
+    detail = await permissionCenterApi.detail(row.id)
   }
   catch {
     detail = null
   }
   permissionForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     isRequireAudit: detail?.isRequireAudit ?? row.isRequireAudit,
     moduleCode: detail?.moduleCode ?? row.moduleCode ?? null,
     operationId: detail?.operationId ?? row.operationId ?? null,
@@ -377,7 +377,7 @@ async function handleView(row: PermissionListItemDto) {
   currentDetail.value = null
 
   try {
-    currentDetail.value = await permissionCenterApi.detailView(row.basicId)
+    currentDetail.value = await permissionCenterApi.detailView(row.id)
     if (!currentDetail.value) {
       toast.warning(t('identity.permission.msg_detail_not_found'))
     }
@@ -435,14 +435,14 @@ function handleOperationSearch(keyword: string) {
 function toResourceOption(item: ResourceSelectItemDto): NumericSelectOption {
   return {
     label: `${item.resourceName} (${item.resourceCode})`,
-    value: item.basicId,
+    value: item.id,
   }
 }
 
 function toOperationOption(item: OperationSelectItemDto): NumericSelectOption {
   return {
     label: `${item.operationName} (${item.operationCode})`,
-    value: item.basicId,
+    value: item.id,
   }
 }
 
@@ -514,12 +514,12 @@ function validateForm() {
     return false
   }
 
-  if (!form.basicId && !form.permissionCode.trim()) {
+  if (!form.id && !form.permissionCode.trim()) {
     toast.warning(t('identity.permission.msg_permission_code_required'))
     return false
   }
 
-  if (!form.basicId && form.permissionType === PermissionType.ResourceBased && (!form.resourceId || !form.operationId)) {
+  if (!form.id && form.permissionType === PermissionType.ResourceBased && (!form.resourceId || !form.operationId)) {
     toast.warning(t('identity.permission.msg_resource_operation_required'))
     return false
   }
@@ -545,9 +545,9 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (permissionForm.value.basicId) {
+    if (permissionForm.value.id) {
       const updateInput: PermissionUpdateDto = {
-        basicId: permissionForm.value.basicId,
+        id: permissionForm.value.id,
         isRequireAudit: permissionForm.value.isRequireAudit,
         permissionDescription: normalizeNullable(permissionForm.value.permissionDescription),
         permissionName: permissionForm.value.permissionName.trim(),
@@ -594,14 +594,14 @@ async function handleSubmit() {
 }
 
 async function handleDelete(row: PermissionListItemDto) {
-  await permissionCenterApi.delete(row.basicId)
+  await permissionCenterApi.delete(row.id)
   toast.success(t('common.messages.delete_success'))
   reloadPermission()
 }
 
 async function handleToggleStatus(row: PermissionListItemDto) {
   await permissionCenterApi.updateStatus({
-    basicId: row.basicId,
+    id: row.id,
     remark: row.status === EnableStatus.Enabled ? t('identity.permission.front_disable_remark') : t('identity.permission.front_enable_remark'),
     status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
   })
@@ -784,7 +784,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
                   <XhDescriptionsItem>
                     <XhDescriptionsLabel>{{ t('identity.permission.label_create_time') }}</XhDescriptionsLabel>
                     <XhDescriptionsValue>
-                      {{ formatNullableDate(currentDetail.permission.createdTime) }}
+                      {{ formatNullableDate(currentDetail.permission.createdAt) }}
                     </XhDescriptionsValue>
                   </XhDescriptionsItem>
                   <XhDescriptionsItem>
@@ -808,7 +808,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in currentDetail.conditions" :key="item.basicId">
+                    <tr v-for="item in currentDetail.conditions" :key="item.id">
                       <td>{{ item.attributeName }}</td>
                       <td>{{ item.isNegated ? t('identity.permission.negated_prefix') : '' }}{{ getOptionLabel(conditionOperatorOptions, item.operator) }}</td>
                       <td>{{ formatNullable(item.conditionValue) }}</td>
@@ -837,7 +837,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in currentDetail.delegations" :key="item.basicId">
+                    <tr v-for="item in currentDetail.delegations" :key="item.id">
                       <td>{{ formatNullable(item.delegatorDisplayName || item.delegatorUserId) }}</td>
                       <td>{{ formatNullable(item.delegateeDisplayName || item.delegateeUserId) }}</td>
                       <td>{{ getOptionLabel(delegationStatusOptions, item.delegationStatus) }}</td>
@@ -866,7 +866,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in currentDetail.requests" :key="item.basicId">
+                    <tr v-for="item in currentDetail.requests" :key="item.id">
                       <td>{{ formatNullable(item.requestUserDisplayName || item.requestUserId) }}</td>
                       <td>{{ getOptionLabel(requestStatusOptions, item.requestStatus) }}</td>
                       <td>{{ formatNullable(item.permissionName || item.roleName) }}</td>
@@ -896,7 +896,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in currentDetail.changeLogs" :key="item.basicId">
+                    <tr v-for="item in currentDetail.changeLogs" :key="item.id">
                       <td>{{ formatNullableDate(item.changeTime) }}</td>
                       <td>{{ getOptionLabel(changeTypeOptions, item.changeType) }}</td>
                       <td>{{ formatNullable(item.targetUserName || item.targetUserId) }}</td>
@@ -947,7 +947,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
             <XhFieldControl>
               <XInput
                 v-model:value="permissionForm.permissionCode"
-                :disabled="Boolean(permissionForm.basicId)"
+                :disabled="Boolean(permissionForm.id)"
                 clearable
                 :placeholder="t('identity.permission.ph_permission_code')"
               />
@@ -961,7 +961,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
             <XhFieldControl>
               <XInput
                 v-model:value="permissionForm.moduleCode"
-                :disabled="Boolean(permissionForm.basicId)"
+                :disabled="Boolean(permissionForm.id)"
                 clearable
                 :placeholder="t('identity.permission.ph_module_code')"
               />
@@ -975,7 +975,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
             <XhFieldControl>
               <XSelect
                 v-model:value="permissionForm.permissionType"
-                :disabled="Boolean(permissionForm.basicId)"
+                :disabled="Boolean(permissionForm.id)"
                 :options="permissionTypeOptions"
               />
             </XhFieldControl>
@@ -988,7 +988,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
             <XhFieldControl>
               <XCombobox
                 v-model:value="permissionForm.resourceId"
-                :disabled="Boolean(permissionForm.basicId)"
+                :disabled="Boolean(permissionForm.id)"
                 :options="resourceOptions"
                 :loading="resourceLoading"
                 clearable
@@ -1006,7 +1006,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
             <XhFieldControl>
               <XCombobox
                 v-model:value="permissionForm.operationId"
-                :disabled="Boolean(permissionForm.basicId)"
+                :disabled="Boolean(permissionForm.id)"
                 :options="operationOptions"
                 :loading="operationLoading"
                 clearable
@@ -1040,7 +1040,7 @@ async function handleToggleStatus(row: PermissionListItemDto) {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!permissionForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!permissionForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('identity.permission.label_form_status') }}</XhFieldLabel>
             <XhFieldControl>

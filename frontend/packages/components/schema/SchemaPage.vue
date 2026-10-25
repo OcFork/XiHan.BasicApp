@@ -218,7 +218,7 @@ const batchActions = computed(() =>
 
 /** 选中的行对象 */
 const selectedRows = computed(() => {
-  const rowKey = props.schema.rowKey ?? 'basicId'
+  const rowKey = props.schema.rowKey ?? 'id'
   const keySet = new Set(checkedKeys.value)
   return rows.value.filter(row => keySet.has((row as Record<string, unknown>)[rowKey] as string | number))
 })
@@ -337,7 +337,7 @@ function handleBatchRemove() {
   if (targets.length === 0 || !removeFn) {
     return
   }
-  const rowKey = props.schema.rowKey ?? 'basicId'
+  const rowKey = props.schema.rowKey ?? 'id'
   void dialog.confirm({
     title: t('component.schema_page.batch_delete_title'),
     content: t('component.schema_page.batch_delete_content', { count: targets.length }),
@@ -375,7 +375,7 @@ function handleBatchStatus(enabled: boolean) {
   if (targets.length === 0 || !updateFn) {
     return
   }
-  const rowKey = props.schema.rowKey ?? 'basicId'
+  const rowKey = props.schema.rowKey ?? 'id'
   const label = enabled ? t('component.schema_page.label_enable') : t('component.schema_page.label_disable')
   void dialog.confirm({
     title: t('component.schema_page.batch_action_title', { label }),
@@ -781,7 +781,7 @@ const skeletonColumns = computed(() => {
             :loading="loading"
             :page="page"
             :page-size="pageSize"
-            :row-key="schema.rowKey ?? 'basicId'"
+            :row-key="schema.rowKey ?? 'id'"
             :selectable="settings.selectable.value"
             :sorts="sorts"
             :total="total"

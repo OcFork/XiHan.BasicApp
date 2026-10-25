@@ -89,7 +89,7 @@ async function searchUsers(keyword = '') {
   userLoading.value = true
   try {
     const page = await userManagementApi.page({ ...createPageRequest({ page: { pageIndex: 1, pageSize: 20 } }), keyword: keyword || null })
-    userOptions.value = page.items.map(user => ({ label: `${user.realName || user.nickName || user.userName} (@${user.userName})`, value: user.basicId }))
+    userOptions.value = page.items.map(user => ({ label: `${user.realName || user.nickName || user.userName} (@${user.userName})`, value: user.id }))
   }
   catch (error) {
     toast.danger((error as Error).message || t('identity.condition.msg_load_failed'))

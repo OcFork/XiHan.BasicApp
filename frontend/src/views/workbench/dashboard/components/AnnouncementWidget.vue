@@ -92,7 +92,7 @@ onMounted(async () => {
       <XhCarouselList>
         <XhCarouselItem
           v-for="(item, slideIndex) in announcements"
-          :key="item.basicId"
+          :key="item.id"
           :index="slideIndex"
         >
           <div

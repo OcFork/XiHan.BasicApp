@@ -57,8 +57,8 @@ export interface NumberingRuleListItemDto extends BasicDto {
 
 /** 规则详情。 */
 export interface NumberingRuleDetailDto extends NumberingRuleListItemDto {
-  createdTime: string
-  modifiedTime?: string | null
+  createdAt: string
+  modifiedAt?: string | null
 }
 
 /** 创建规则参数；不允许传入任意租户 ID。 */
@@ -80,12 +80,12 @@ export interface NumberingRuleCreateDto {
 
 /** 更新规则参数；规则编码与归属不可修改。 */
 export interface NumberingRuleUpdateDto extends Omit<NumberingRuleCreateDto, 'ruleCode' | 'status'> {
-  basicId: ApiId
+  id: ApiId
 }
 
 /** 更新规则状态参数。 */
 export interface NumberingRuleStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   scope: NumberingScope
   status: EnableStatus
   remark?: string | null
@@ -93,7 +93,7 @@ export interface NumberingRuleStatusUpdateDto {
 
 /** 安全重置参数。 */
 export interface NumberingRuleResetDto {
-  basicId: ApiId
+  id: ApiId
   scope: NumberingScope
   /** 十进制字符串，避免 18 位流水精度丢失。 */
   nextValue: string

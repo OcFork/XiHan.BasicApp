@@ -4,7 +4,7 @@ import { TraceDimension, TraceLogType } from '@/api'
 import { buildTraceFlow, buildTraceTimeBuckets, pickTraceBucketMinutes, traceModuleOf, traceTypesWithoutDimension } from './trace-analysis'
 
 function log(partial: Partial<TraceTimelineItemDto>): TraceTimelineItemDto {
-  return { basicId: '1', logType: TraceLogType.Access, status: 'success', time: '2026-09-30T10:00:00', ...partial } as TraceTimelineItemDto
+  return { id: '1', logType: TraceLogType.Access, status: 'success', time: '2026-09-30T10:00:00', ...partial } as TraceTimelineItemDto
 }
 
 const labels = {

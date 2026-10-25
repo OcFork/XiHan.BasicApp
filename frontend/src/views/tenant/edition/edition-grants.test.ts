@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { ValidityStatus } from '@/api'
 import { diffEditionGrants, isEmptyEditionGrantDiff, mergeMappedIntoCatalog, validEditionPermissionIds } from './edition-grants'
 
-function mapping(basicId: string, permissionId: string, status = ValidityStatus.Valid): TenantEditionPermissionListItemDto {
-  return { basicId, permissionId, status, permissionCode: `saas:${permissionId}:read`, permissionName: permissionId.toUpperCase() } as TenantEditionPermissionListItemDto
+function mapping(id: string, permissionId: string, status = ValidityStatus.Valid): TenantEditionPermissionListItemDto {
+  return { id, permissionId, status, permissionCode: `saas:${permissionId}:read`, permissionName: permissionId.toUpperCase() } as TenantEditionPermissionListItemDto
 }
 
-function permission(basicId: string): PermissionListItemDto {
-  return { basicId, permissionCode: `saas:${basicId}:read`, permissionName: basicId.toUpperCase() } as PermissionListItemDto
+function permission(id: string): PermissionListItemDto {
+  return { id, permissionCode: `saas:${id}:read`, permissionName: id.toUpperCase() } as PermissionListItemDto
 }
 
 describe('validEditionPermissionIds', () => {
@@ -41,7 +41,7 @@ describe('diffEditionGrants', () => {
     expect(diff).toEqual({
       grantPermissionIds: [],
       revokeEditionPermissionIds: [],
-      statusChanges: [{ basicId: 'e2', status: ValidityStatus.Valid }],
+      statusChanges: [{ id: 'e2', status: ValidityStatus.Valid }],
     })
     expect(isEmptyEditionGrantDiff(diff)).toBe(false)
   })
@@ -59,7 +59,7 @@ describe('mergeMappedIntoCatalog', () => {
       [mapping('e1', 'p1'), outside, mapping('e7', 'p7', ValidityStatus.Invalid)],
     )
 
-    expect(items.map(item => item.basicId)).toEqual(['p1', 'p8'])
+    expect(items.map(item => item.id)).toEqual(['p1', 'p8'])
     expect(items[1]).toMatchObject({ permissionCode: outside.permissionCode, permissionName: outside.permissionName })
   })
 })

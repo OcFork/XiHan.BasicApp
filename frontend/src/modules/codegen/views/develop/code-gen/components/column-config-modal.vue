@@ -87,7 +87,7 @@ async function loadTables() {
 function relationTableOptionsFor(row: CodeGenTableColumnListItemDto) {
   const candidates = tables.value
     .filter(table => row.dictSelectorType !== DictSelectorType.TreeSelector || table.templateType === TemplateType.Tree)
-    .map(table => ({ label: table.tableComment ? `${table.tableComment}（${table.tableName}）` : table.tableName, value: table.basicId }))
+    .map(table => ({ label: table.tableComment ? `${table.tableComment}（${table.tableName}）` : table.tableName, value: table.id }))
   const current = row.relationTableId
   if (!current || candidates.some(option => option.value === current)) {
     return candidates
@@ -396,7 +396,7 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     const payload: CodeGenTableColumnUpdateDto[] = rows.value.map(row => ({
-      basicId: row.basicId,
+      id: row.id,
       columnComment: row.columnComment,
       cSharpType: row.cSharpType,
       cSharpProperty: row.cSharpProperty,
@@ -449,7 +449,7 @@ async function handleSubmit() {
       :data="rows"
       :loading="loading"
       max-height="60vh"
-      :row-key="(row: CodeGenTableColumnListItemDto) => row.basicId"
+      :row-key="(row: CodeGenTableColumnListItemDto) => row.id"
     />
   </XEditModal>
 </template>

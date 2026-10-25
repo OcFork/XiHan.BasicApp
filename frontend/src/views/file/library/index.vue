@@ -329,14 +329,14 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'mimeType', title: t('file.library.columns.mime_type'), dataType: 'string', sortable: true, advancedSearch: true, searchPlaceholder: t('file.library.columns.mime_type_placeholder'), minWidth: 160, order: 10 },
   { key: 'downloadCount', title: t('file.library.columns.download_count'), dataType: 'number', sortable: true, minWidth: 90, order: 11 },
   { key: 'viewCount', title: t('file.library.columns.view_count'), dataType: 'number', sortable: true, minWidth: 90, order: 12 },
-  { key: 'createdTime', title: t('file.library.columns.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 13 },
+  { key: 'createdAt', title: t('file.library.columns.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 13 },
 ])
 
 const schema = computed<PageSchema>(() => ({
   pageCode: 'file.library',
   exportPermission: 'file.library.export',
   pageName: t('file.library.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -344,7 +344,7 @@ const schema = computed<PageSchema>(() => ({
       return fileManagementApi.page({
         ...createPageRequest({
           page: { pageIndex: params.page, pageSize: params.pageSize },
-          // 排序 + 区间(createdTime)/多选(fileType/status/accessLevel) 等通用过滤统一走 conditions
+          // 排序 + 区间(createdAt)/多选(fileType/status/accessLevel) 等通用过滤统一走 conditions
           conditions: { sorts: querySortsFromSchema(params.sorts), filters: params.conditionFilters ?? [] },
         }),
         keyword: toStr(f.keyword),
@@ -507,8 +507,8 @@ async function openMetadataDrawer(row: FileListItemDto) {
   metadataVisible.value = true
   // 取详情回填标签/备注/访问权限，避免编辑时看不到原值、保存被清空
   try {
-    const detail = await fileManagementApi.detail(row.basicId)
-    if (detail && metadataRow.value?.basicId === row.basicId) {
+    const detail = await fileManagementApi.detail(row.id)
+    if (detail && metadataRow.value?.id === row.id) {
       metadataForm.accessPermissions = detail.accessPermissions ?? ''
       metadataForm.tags = detail.tags ?? ''
       metadataForm.remark = detail.remark ?? ''
@@ -530,7 +530,7 @@ async function handleSaveMetadata() {
   metadataLoading.value = true
   try {
     await fileManagementApi.updateMetadata({
-      basicId: row.basicId,
+      id: row.id,
       accessLevel: metadataForm.accessLevel,
       accessPermissions: normalizeNullable(metadataForm.accessPermissions),
       isEncrypted: metadataForm.isEncrypted,
@@ -555,7 +555,7 @@ async function handleSaveMetadata() {
 async function handleUpdateFileStatus(row: FileListItemDto, status: FileStatus, successText = t('file.library.message.file_status_updated')) {
   actionLoading.value = true
   try {
-    await fileManagementApi.updateStatus({ basicId: row.basicId, status })
+    await fileManagementApi.updateStatus({ id: row.id, status })
     toast.success(successText)
     reload()
   }
@@ -579,7 +579,7 @@ function handleDestroyFile(row: FileListItemDto) {
     onOk: async () => {
       actionLoading.value = true
       try {
-        await fileManagementApi.destroy({ basicId: row.basicId, deletePhysical: true })
+        await fileManagementApi.destroy({ id: row.id, deletePhysical: true })
         toast.success(t('file.library.message.destroyed'))
         reload()
       }
@@ -641,7 +641,7 @@ async function handleFileDetail(row: FileListItemDto) {
   detailLoading.value = true
   currentStorageDetail.value = null
   try {
-    currentFileDetail.value = await fileManagementApi.detail(row.basicId)
+    currentFileDetail.value = await fileManagementApi.detail(row.id)
   }
   catch (error) {
     currentFileDetail.value = null
@@ -712,7 +712,7 @@ async function handlePreview(row: FileListItemDto) {
       previewTextError.value = t('file.library.preview.text_too_large')
       return
     }
-    const blob = await fileManagementApi.download(row.basicId)
+    const blob = await fileManagementApi.download(row.id)
     if (kind === 'markdown' || kind === 'text') {
       previewText.value = await blob.text()
     }
@@ -767,7 +767,7 @@ watch(previewVisible, (visible) => {
 /** 经鉴权下载接口取文件流，交由通用下载器触发浏览器下载 */
 async function handleDownload(row: FileListItemDto) {
   try {
-    const blob = await fileManagementApi.download(row.basicId)
+    const blob = await fileManagementApi.download(row.id)
     downloadBlob(blob, row.originalName)
   }
   catch (error) {
@@ -817,7 +817,7 @@ async function loadStorageRows() {
   }
   storageListLoading.value = true
   try {
-    storageRows.value = await fileManagementApi.storageList(file.basicId)
+    storageRows.value = await fileManagementApi.storageList(file.id)
   }
   catch (error) {
     storageRows.value = []
@@ -855,7 +855,7 @@ async function handleSwitchPrimary(storage: FileStorageListItemDto) {
   }
   actionLoading.value = true
   try {
-    await fileManagementApi.switchPrimaryStorage({ basicId: file.basicId, storageId: storage.basicId })
+    await fileManagementApi.switchPrimaryStorage({ id: file.id, storageId: storage.id })
     toast.success(t('file.library.message.set_primary'))
     await loadStorageRows()
   }
@@ -871,7 +871,7 @@ async function handleSwitchPrimary(storage: FileStorageListItemDto) {
 async function handleVerifyStorage(storage: FileStorageListItemDto) {
   actionLoading.value = true
   try {
-    await fileManagementApi.verifyStorage({ basicId: storage.basicId })
+    await fileManagementApi.verifyStorage({ id: storage.id })
     toast.success(t('file.library.message.verify_triggered'))
     await loadStorageRows()
   }
@@ -890,7 +890,7 @@ async function handleToggleStorageStatus(storage: FileStorageListItemDto) {
     : FileStorageStatus.Normal
   actionLoading.value = true
   try {
-    await fileManagementApi.updateStorageStatus({ basicId: storage.basicId, status: nextStatus })
+    await fileManagementApi.updateStorageStatus({ id: storage.id, status: nextStatus })
     toast.success(t('file.library.message.storage_status_updated'))
     await loadStorageRows()
   }
@@ -948,7 +948,7 @@ const storageColumns = computed<XDataTableColumn<FileStorageListItemDto>[]>(() =
     fixed: 'right',
     render: row => h('div', { style: 'display:flex;align-items:center;gap:2px;' }, [
       // 图标钮的说明文字走原生 title：气泡触发器本身是按钮，按钮里再套按钮不合法
-      h(XhButton, { 'iconOnly': true, 'size': 'sm', 'variant': 'ghost', 'aria-label': t('file.library.storage_list.tooltip.detail'), 'title': t('file.library.storage_list.tooltip.detail'), 'onClick': () => viewStorageDetail(row.basicId) }, () => h(Icon, { icon: 'lucide:eye' })),
+      h(XhButton, { 'iconOnly': true, 'size': 'sm', 'variant': 'ghost', 'aria-label': t('file.library.storage_list.tooltip.detail'), 'title': t('file.library.storage_list.tooltip.detail'), 'onClick': () => viewStorageDetail(row.id) }, () => h(Icon, { icon: 'lucide:eye' })),
       canUpdateFile.value && h(XhButton, { 'iconOnly': true, 'size': 'sm', 'variant': 'ghost', 'tone': 'brand', 'disabled': row.isPrimary, 'aria-label': row.isPrimary ? t('file.library.storage_list.tooltip.is_primary') : t('file.library.storage_list.tooltip.set_primary'), 'title': row.isPrimary ? t('file.library.storage_list.tooltip.is_primary') : t('file.library.storage_list.tooltip.set_primary'), 'onClick': () => handleSwitchPrimary(row) }, () => h(Icon, { icon: 'lucide:star' })),
       canMaintainStorage.value && h(XhButton, { 'iconOnly': true, 'size': 'sm', 'variant': 'ghost', 'tone': 'info', 'aria-label': t('file.library.storage_list.tooltip.verify'), 'title': t('file.library.storage_list.tooltip.verify'), 'onClick': () => handleVerifyStorage(row) }, () => h(Icon, { icon: 'lucide:shield-check' })),
       // 确认文案走 description 属性：浮层没有标题时以它为名
@@ -1212,13 +1212,13 @@ const storageColumns = computed<XDataTableColumn<FileStorageListItemDto>[]>(() =
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('file.library.detail.created_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ formatDateTime(currentFileDetail.createdTime) }}
+              {{ formatDateTime(currentFileDetail.createdAt) }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('file.library.detail.modified_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ formatDateTime(currentFileDetail.modifiedTime) }}
+              {{ formatDateTime(currentFileDetail.modifiedAt) }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
           <XhDescriptionsItem v-if="currentFileDetail.isTemporary" style="grid-column: span 2">
@@ -1272,7 +1272,7 @@ const storageColumns = computed<XDataTableColumn<FileStorageListItemDto>[]>(() =
           <XhDescriptionsItem style="grid-column: span 2">
             <XhDescriptionsLabel>{{ t('file.library.detail.basic_id') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ currentFileDetail.basicId }}
+              {{ currentFileDetail.id }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
         </XhDescriptionsRoot>
@@ -1281,7 +1281,7 @@ const storageColumns = computed<XDataTableColumn<FileStorageListItemDto>[]>(() =
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('file.library.detail.storage_basic_id') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ currentStorageDetail.basicId }}
+              {{ currentStorageDetail.id }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
           <XhDescriptionsItem>
@@ -1419,13 +1419,13 @@ const storageColumns = computed<XDataTableColumn<FileStorageListItemDto>[]>(() =
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('file.library.detail.created_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ formatDateTime(currentStorageDetail.createdTime) }}
+              {{ formatDateTime(currentStorageDetail.createdAt) }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('file.library.detail.modified_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ formatDateTime(currentStorageDetail.modifiedTime) }}
+              {{ formatDateTime(currentStorageDetail.modifiedAt) }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
         </XhDescriptionsRoot>
@@ -1454,7 +1454,7 @@ const storageColumns = computed<XDataTableColumn<FileStorageListItemDto>[]>(() =
             :columns="storageColumns"
             :data="storageRows"
             :loading="storageListLoading"
-            :row-key="(row: FileStorageListItemDto) => row.basicId"
+            :row-key="(row: FileStorageListItemDto) => row.id"
           />
         </XhFlex>
       </XhDrawerContent>

@@ -78,7 +78,7 @@ let tickTimer: ReturnType<typeof setInterval> | null = null
 
 const conversation = computed(() => chatStore.activeConversation)
 const conversationId = computed(() => chatStore.activeConversationId)
-const currentUserId = computed(() => userStore.userInfo?.basicId ?? '')
+const currentUserId = computed(() => userStore.userInfo?.id ?? '')
 const isGroupLike = computed(() =>
   conversation.value?.conversationType === ChatConversationType.Group
   || conversation.value?.conversationType === ChatConversationType.Department,
@@ -114,7 +114,7 @@ function canRecall(item: ChatLocalMessage): boolean {
   if (!userStore.hasPermission(CHAT_PERMISSIONS.send)) {
     return false
   }
-  const created = Date.parse(item.createdTime)
+  const created = Date.parse(item.createdAt)
   return !Number.isNaN(created) && nowTick.value - created <= CHAT_RECALL_WINDOW_MINUTES * 60 * 1000
 }
 
@@ -125,7 +125,7 @@ function canEdit(item: ChatLocalMessage): boolean {
   if (item.senderUserId !== currentUserId.value || !userStore.hasPermission(CHAT_PERMISSIONS.send)) {
     return false
   }
-  const created = Date.parse(item.createdTime)
+  const created = Date.parse(item.createdAt)
   return !Number.isNaN(created) && nowTick.value - created <= CHAT_EDIT_WINDOW_MINUTES * 60 * 1000
 }
 
@@ -626,7 +626,7 @@ onBeforeUnmount(() => {
           @click="handleLocate(hit)"
         >
           <span class="flex items-center justify-between gap-2">
-            <span class="text-[11px] text-muted-foreground">{{ hit.senderUserName }} · {{ formatMessageTime(hit.createdTime) }}</span>
+            <span class="text-[11px] text-muted-foreground">{{ hit.senderUserName }} · {{ formatMessageTime(hit.createdAt) }}</span>
             <span class="text-[11px] text-primary">{{ t('chat.thread.locate') }}</span>
           </span>
           <span class="block truncate text-left text-xs text-foreground">{{ messageBodyLabel(hit) }}</span>
@@ -690,7 +690,7 @@ onBeforeUnmount(() => {
               >
                 <div class="min-w-0 flex-1">
                   <div class="text-[11px] text-muted-foreground">
-                    {{ pinnedItem.senderUserName }} · {{ formatMessageTime(pinnedItem.createdTime) }}
+                    {{ pinnedItem.senderUserName }} · {{ formatMessageTime(pinnedItem.createdAt) }}
                   </div>
                   <div class="truncate text-xs text-foreground">
                     {{ messageBodyLabel(pinnedItem) }}

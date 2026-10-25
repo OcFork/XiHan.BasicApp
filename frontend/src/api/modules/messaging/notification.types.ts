@@ -33,7 +33,7 @@ export interface NotificationListItemDto extends BasicDto {
   businessType?: string | null
   content?: string | null
   contentFormat: NotificationContentFormat
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   /** 投递渠道（MessageChannel [Flags] 按位组合；必含站内信，可叠加邮箱/短信/机器人） */
   deliveryChannels: MessageChannel
   expirationTime?: DateTimeString | null
@@ -43,7 +43,7 @@ export interface NotificationListItemDto extends BasicDto {
   isPopup: boolean
   isPublished: boolean
   link?: string | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   needConfirm: boolean
   notificationType: NotificationType
   priority: NotificationPriority
@@ -95,7 +95,7 @@ export interface NotificationCreateDto {
 }
 
 export interface NotificationUpdateDto {
-  basicId: ApiId
+  id: ApiId
   businessId?: ApiId | null
   businessType?: string | null
   content?: string | null
@@ -121,7 +121,7 @@ export interface NotificationUpdateDto {
 }
 
 export interface NotificationPublishDto {
-  basicId: ApiId
+  id: ApiId
   /** 留空沿用创建时设定的目标类型 */
   targetType?: NotificationTargetType | null
   /** 留空沿用创建时设定的指定用户列表 */
@@ -129,7 +129,7 @@ export interface NotificationPublishDto {
 }
 
 export interface NotificationPublishResultDto {
-  basicId: ApiId
+  id: ApiId
   recipientCount: number
   sendTime: DateTimeString
 }
@@ -167,7 +167,7 @@ export interface UserNotificationPageQueryDto extends PageRequest {
 export interface UserNotificationListItemDto extends BasicDto {
   confirmTime?: DateTimeString | null
   content?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   icon?: string | null
   link?: string | null
   needConfirm: boolean

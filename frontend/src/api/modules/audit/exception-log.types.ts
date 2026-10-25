@@ -32,7 +32,7 @@ export interface ExceptionLogListItemDto extends BasicDto {
   applicationVersion?: string | null
   browser?: string | null
   controllerName?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   deviceInfo?: string | null
   deviceType: DeviceType
   environmentName?: string | null

@@ -48,7 +48,7 @@ const isAnnouncement = computed(() => isSystem.value && props.message.senderUser
 const isImage = computed(() => props.message.messageType === ChatMessageType.Image)
 const isVoice = computed(() => props.message.messageType === ChatMessageType.Voice)
 const isFile = computed(() => props.message.messageType === ChatMessageType.File)
-const currentUserId = computed(() => userStore.userInfo?.basicId ?? '')
+const currentUserId = computed(() => userStore.userInfo?.id ?? '')
 
 /** 被 @ 到我：气泡高亮 */
 const mentionsMe = computed(() =>
@@ -375,7 +375,7 @@ async function handleDownload(fileId: string) {
           <span>{{ t('chat.thread.sending') }}</span>
         </template>
         <template v-else>
-          <span>{{ formatMessageTime(message.createdTime) }}</span>
+          <span>{{ formatMessageTime(message.createdAt) }}</span>
           <span v-if="message.editedTime" class="opacity-70">{{ t('chat.thread.edited') }}</span>
           <span v-if="readReceiptLabel" class="text-primary/70">{{ readReceiptLabel }}</span>
         </template>

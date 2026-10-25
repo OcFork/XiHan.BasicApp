@@ -5,11 +5,9 @@ import type {
   InternalAxiosRequestConfig,
 } from 'axios'
 import type { Router } from 'vue-router'
-import type { ApiResponse } from '~/types'
 import axios from 'axios'
 import {
   APP_TIMEZONE_KEY,
-  BIZ_CODE,
   HTTP_STATUS,
   LOGIN_PATH,
   REFRESH_TOKEN_KEY,
@@ -43,11 +41,18 @@ function asRecord(value: unknown): AnyRecord | undefined {
   return value && typeof value === 'object' ? value as AnyRecord : undefined
 }
 
+/**
+ * 从 RFC 9457 Problem Details 读日志字段：错误码在 code，面向人的说明在 detail（title 只是错误种类）。
+ * 成功响应是业务载荷本身，没有这些字段。
+ */
 function readResponseLogFields(payload: unknown) {
   const record = asRecord(payload)
+  const detail = typeof record?.detail === 'string' ? record.detail : undefined
+  const message = typeof record?.message === 'string' ? record.message : undefined
+  const title = typeof record?.title === 'string' ? record.title : undefined
   return {
     code: record?.code as string | number | undefined,
-    message: typeof record?.message === 'string' ? record.message : undefined,
+    message: detail ?? message ?? title,
     traceId: typeof record?.traceId === 'string' ? record.traceId : undefined,
   }
 }
@@ -61,8 +66,10 @@ function readResponseLogFields(payload: unknown) {
  * `reason` 由应用侧定义（框架只透传）：锁定不等于锁屏——锁屏只是原因之一，
  * 将来可能有风控挂起、强制改密等，客户端据此决定引导哪种解锁方式。
  */
+/** 423 的锁定信息：5.0 放在 Problem Details 的 details 扩展里（兼容旧信封的 data） */
 function readLockPayload(payload: unknown) {
-  const data = asRecord(asRecord(payload)?.data)
+  const record = asRecord(payload)
+  const data = asRecord(record?.details) ?? asRecord(record?.data)
   return {
     reason: typeof data?.reason === 'string' ? data.reason : null,
     displayName: typeof data?.displayName === 'string' ? data.displayName : null,
@@ -167,8 +174,9 @@ function extractBackendMessage(data: unknown): string | undefined {
     if (isSecureEnvelope(record)) {
       return undefined
     }
-    // 后端错误工厂把具体错误放在 data（message 仅为通用码描述，如「服务器内部错误」），故优先取 data，其次 message
-    for (const candidate of [record.data, record.message]) {
+    // 5.0 错误是 RFC 9457 Problem Details：面向人的说明在 detail，title 只是错误种类；
+    // 承接的 ASP.NET 端点（OAuth 回调等）仍可能返回 message，放在最后兜底
+    for (const candidate of [record.detail, record.message]) {
       if (typeof candidate === 'string' && candidate.trim()) {
         return candidate.trim()
       }
@@ -203,26 +211,6 @@ function resolveRequestErrorMessage(error: unknown): string {
 }
 
 /**
- * 判定信封业务码是否代表成功。
- *
- * 本仓库后端的 ApiResponse.Code 走 NumericEnumConverter，序列化恒为 int；但 `~/types` 的
- * ApiResponse 把 code 声明成 `number | string`，网关或第三方后端把它改写成字符串码是可能的，
- * 故数字与"数字字符串"都接受。
- * 不直接用 Number(code)：空串、null、空数组都会被 Number 归零而误判为成功码 0，
- * 这里只放行真正的数字与非空数字串。
- */
-function isSuccessEnvelopeCode(code: unknown): boolean {
-  if (typeof code === 'number') {
-    return code === BIZ_CODE.SUCCESS || code === 0
-  }
-  if (typeof code !== 'string' || code.trim() === '') {
-    return false
-  }
-  const numeric = Number(code)
-  return Number.isFinite(numeric) && (numeric === BIZ_CODE.SUCCESS || numeric === 0)
-}
-
-/**
  * 把非 Error 的拒绝值转成可读文案。
  *
  * 适配器或拦截器以普通对象拒绝时，拦截器已经把归一化后的中文文案写进该对象的 message，
@@ -253,7 +241,7 @@ export class RequestClient {
   constructor(config?: AxiosRequestConfig & { apiPrefix?: string, refreshTokenUrl?: string }) {
     this.apiPrefix = config?.apiPrefix ?? '/api'
     // 刷新令牌端点路径可配置（request 层不可反向依赖 api/modules，故以构造选项集中管理，避免散落硬编码）
-    this.refreshTokenUrl = config?.refreshTokenUrl ?? '/Auth/RefreshToken'
+    this.refreshTokenUrl = config?.refreshTokenUrl ?? '/auth:refresh-token'
     this.instance = axios.create({
       timeout: 30000,
       ...config,
@@ -381,7 +369,7 @@ export class RequestClient {
     )
 
     this.instance.interceptors.response.use(
-      async (response: AxiosResponse<ApiResponse>) => {
+      async (response: AxiosResponse<unknown>) => {
         if (this.securityConfig.enabled) {
           await tryDecryptSecureResponse(response, this.securityConfig)
         }
@@ -389,15 +377,12 @@ export class RequestClient {
         const meta = this.tryExtractMeta(response.config)
         if (meta) {
           const now = Date.now()
-          const payload = readResponseLogFields(response.data)
+          // 成功响应是业务载荷本身：其中的 code / message 是业务字段，不是响应元信息，不进请求日志
           updateRequestLog(meta.requestId, {
             finishedAt: now,
             duration: Math.max(0, now - meta.startedAt),
             status: 'success',
             statusCode: response.status,
-            responseCode: payload.code,
-            message: payload.message,
-            traceId: payload.traceId,
           })
         }
         return response
@@ -445,8 +430,7 @@ export class RequestClient {
             return Promise.reject(error)
           }
 
-          // 这里比的是 HTTP 状态码，必须用 HTTP_STATUS 族（与上面的 HTTP_STATUS.LOCKED 同族）：
-          // BIZ_CODE 是业务码，里面还有 TOKEN_EXPIRED: 4001 这类永远不可能等于 HTTP status 的值
+          // 这里比的是 HTTP 状态码（与上面的 HTTP_STATUS.LOCKED 同族），不看 Problem Details 里的字符串错误码
           if (status === HTTP_STATUS.UNAUTHORIZED) {
             const originalRequest = error.config as InternalAxiosRequestConfig & {
               _retry?: boolean
@@ -512,7 +496,7 @@ export class RequestClient {
         { accessToken, refreshToken },
         { _isRefresh: true } as Record<string, unknown>,
       )
-      const payload = (data?.data ?? data) as {
+      const payload = data as {
         accessToken?: string
         refreshToken?: string
       }
@@ -554,43 +538,13 @@ export class RequestClient {
     }
   }
 
+  /**
+   * 发请求并返回业务载荷：5.0 的成功响应就是载荷本身（没有 code / data 信封），失败走 HTTP 状态码 + Problem Details，
+   * 在响应拦截器里翻译成错误消息；这里只透传数据。
+   */
   async request<T = unknown>(config: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.request<ApiResponse<T> | T>(config)
-    const { data } = response
-    const typed = asRecord(data)
-    const meta = this.tryExtractMeta(response.config)
-
-    if (typed) {
-      const responseData = typed.data
-      const responseCode = typed.code
-      const responseSuccess = typed.isSuccess
-      const responseMessage = typed.message
-      const traceId = typeof typed.traceId === 'string' ? typed.traceId : undefined
-      // 信封判定不能依赖 data 字段存在：后端序列化 WhenWritingNull 会把 data=null 整个省略
-      // （如秒传探测未命中）；isSuccess 是非空布尔、信封必写，作为主判据
-      const hasEnvelope = typeof responseSuccess === 'boolean' || (responseData !== undefined && responseCode !== undefined)
-
-      if (hasEnvelope) {
-        if (responseSuccess === true || isSuccessEnvelopeCode(responseCode)) {
-          return (responseData ?? null) as T
-        }
-        if (meta) {
-          const now = Date.now()
-          updateRequestLog(meta.requestId, {
-            finishedAt: now,
-            duration: Math.max(0, now - meta.startedAt),
-            status: 'error',
-            statusCode: response.status,
-            responseCode: typeof responseCode === 'string' || typeof responseCode === 'number' ? responseCode : undefined,
-            message: typeof responseMessage === 'string' ? responseMessage : '请求失败',
-            traceId,
-          })
-        }
-        return Promise.reject(new Error(typeof responseMessage === 'string' ? responseMessage : '请求失败'))
-      }
-    }
-
-    return data as T
+    const response = await this.instance.request<T>(config)
+    return response.data
   }
 
   get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> {
@@ -645,6 +599,6 @@ export class RequestClient {
   }
 }
 
-export function createRequestClient(baseURL: string, apiPrefix = '/api') {
-  return new RequestClient({ baseURL, apiPrefix })
+export function createRequestClient(baseURL: string, apiPrefix = '/api', refreshTokenUrl?: string) {
+  return new RequestClient({ baseURL, apiPrefix, refreshTokenUrl })
 }

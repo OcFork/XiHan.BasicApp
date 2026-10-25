@@ -40,14 +40,14 @@ export interface ConstraintRulePageQueryDto extends PageRequest {
 
 export interface ConstraintRuleListItemDto extends BasicDto {
   constraintType: ConstraintType
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   effectiveTime?: DateTimeString | null
   expirationTime?: DateTimeString | null
   isActive: boolean
   isGlobal: boolean
   itemCount: number
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   priority: number
   ruleCode: string
   ruleName: string
@@ -58,7 +58,7 @@ export interface ConstraintRuleListItemDto extends BasicDto {
 
 export interface ConstraintRuleItemDto extends BasicDto {
   constraintGroup: number
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   remark?: string | null
   targetCode?: string | null
   targetId: ApiId

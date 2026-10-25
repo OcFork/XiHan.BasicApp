@@ -8,7 +8,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NotificationType, TenantMemberType } from '~/types/enums'
-import { BIZ_CODE, HTTP_STATUS } from './http'
+import { HTTP_STATUS } from './http'
 import * as barrel from './index'
 import {
   LAYOUT_EVENT_LOCK_SCREEN,
@@ -63,27 +63,9 @@ describe('状态码契约（HTTP 与业务码）', () => {
     expect(HTTP_STATUS.LOCKED).not.toBe(HTTP_STATUS.UNAUTHORIZED)
   })
 
-  it('业务码中的锁屏与 HTTP 423 对齐', () => {
-    expect(BIZ_CODE.LOCKED).toBe(HTTP_STATUS.LOCKED)
-  })
-
-  it('业务码里与 HTTP 同名的三项取值一致，避免两套语义', () => {
-    expect(BIZ_CODE.UNAUTHORIZED).toBe(HTTP_STATUS.UNAUTHORIZED)
-    expect(BIZ_CODE.FORBIDDEN).toBe(HTTP_STATUS.FORBIDDEN)
-    expect(BIZ_CODE.SUCCESS).toBe(HTTP_STATUS.OK)
-  })
-
-  it('令牌过期与刷新令牌过期是两个不同的业务码，拦截器据此决定刷新还是登出', () => {
-    expect(BIZ_CODE.TOKEN_EXPIRED).toBe(4001)
-    expect(BIZ_CODE.REFRESH_TOKEN_EXPIRED).toBe(4002)
-    expect(BIZ_CODE.TOKEN_EXPIRED).not.toBe(BIZ_CODE.REFRESH_TOKEN_EXPIRED)
-  })
-
-  it('两组状态码内部各自取值唯一', () => {
+  it('hTTP 状态码取值唯一', () => {
     const httpValues = Object.values(HTTP_STATUS)
-    const bizValues = Object.values(BIZ_CODE)
     expect(new Set(httpValues).size).toBe(httpValues.length)
-    expect(new Set(bizValues).size).toBe(bizValues.length)
   })
 })
 

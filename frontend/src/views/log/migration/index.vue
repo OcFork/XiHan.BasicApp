@@ -42,7 +42,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'executedTime', title: t('log.migration.executed_time'), dataType: 'datetime', sortable: true, searchRange: true, advancedSearch: true, minWidth: 170, order: 13 },
   { key: 'nodeName', title: t('log.migration.node_name'), dataType: 'string', advancedSearch: true, searchPlaceholder: t('log.migration.node_name_placeholder'), minWidth: 150, order: 14 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 15 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 15 },
 ])
 
 function toStr(v: unknown): string | undefined {
@@ -70,7 +70,7 @@ function buildMigrationQuery(params: SchemaQueryParams) {
 const schema = computed<PageSchema>(() => ({
   pageCode: 'log.migration',
   pageName: t('log.migration.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: params => versionApi.migrationHistoryPage(buildMigrationQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
@@ -93,7 +93,7 @@ async function handleDetail(row: MigrationHistoryListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await versionApi.migrationHistoryDetail(row.basicId) ?? row
+    detailData.value = await versionApi.migrationHistoryDetail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

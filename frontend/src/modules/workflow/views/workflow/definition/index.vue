@@ -115,7 +115,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     const r = row as unknown as WorkflowDefinitionListItemDto
     return r.publishTime ? formatDate(r.publishTime) : '-'
   } },
-  { key: 'createdTime', title: t('workflow.definition.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, advancedSearch: true, minWidth: 170, order: 16 },
+  { key: 'createdAt', title: t('workflow.definition.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, advancedSearch: true, minWidth: 170, order: 16 },
 ])
 
 /** 确认框里的流程名：名称 + 版本，发布、停用、归档都按版本走 */
@@ -127,7 +127,7 @@ function definitionName(row: unknown) {
 const schema = computed<PageSchema>(() => ({
   pageCode: 'workflow_definition',
   pageName: t('workflow.definition.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -168,7 +168,7 @@ async function handleDetail(row: WorkflowDefinitionListItemDto) {
   detailLoading.value = true
   detailData.value = null
   try {
-    detailData.value = await workflowDefinitionApi.detail(row.basicId) ?? null
+    detailData.value = await workflowDefinitionApi.detail(row.id) ?? null
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('workflow.definition.err_load_detail'))
@@ -191,7 +191,7 @@ function openCreate() {
 /** 读出最新的草稿详情再开编辑弹窗：改的是整份定义 JSON 里的几项 */
 async function openMetadata(row: WorkflowDefinitionListItemDto) {
   try {
-    const detail = await workflowDefinitionApi.detail(row.basicId)
+    const detail = await workflowDefinitionApi.detail(row.id)
     if (!detail)
       throw new Error(t('workflow.definition.err_load_detail'))
     metadataDetail.value = detail
@@ -218,7 +218,7 @@ const designerKey = ref(0)
 const workflowDesignerRef = ref<InstanceType<typeof WorkflowDesigner> | null>(null)
 
 function openDesigner(detail: WorkflowDefinitionDetailDto) {
-  editTargetId.value = detail.basicId
+  editTargetId.value = detail.id
   editJson.value = detail.definitionJson
   designerKey.value++
   editVisible.value = true
@@ -226,7 +226,7 @@ function openDesigner(detail: WorkflowDefinitionDetailDto) {
 
 async function openDesign(row: WorkflowDefinitionListItemDto) {
   try {
-    const detail = await workflowDefinitionApi.detail(row.basicId)
+    const detail = await workflowDefinitionApi.detail(row.id)
     if (!detail)
       throw new Error(t('workflow.definition.err_load_detail'))
     openDesigner(detail)
@@ -241,7 +241,7 @@ async function handleDesignerSave(json: string) {
     return
   editLoading.value = true
   try {
-    await workflowDefinitionApi.updateDraft({ basicId: editTargetId.value, definitionJson: json })
+    await workflowDefinitionApi.updateDraft({ id: editTargetId.value, definitionJson: json })
     toast.success(t('workflow.definition.msg_updated'))
     // 记为已保存再关：设计器删掉本机草稿，下次打开这个流程不再提示恢复
     workflowDesignerRef.value?.markSaved()
@@ -294,7 +294,7 @@ async function runLifecycle(action: 'publish' | 'newVersion' | 'disable' | 'arch
   try {
     switch (action) {
       case 'publish':
-        await workflowDefinitionApi.publish({ basicId: row.basicId })
+        await workflowDefinitionApi.publish({ id: row.id })
         toast.success(t('workflow.definition.msg_published'))
         break
       case 'newVersion':
@@ -302,15 +302,15 @@ async function runLifecycle(action: 'publish' | 'newVersion' | 'disable' | 'arch
         toast.success(t('workflow.definition.msg_new_version'))
         break
       case 'disable':
-        await workflowDefinitionApi.disable({ basicId: row.basicId })
+        await workflowDefinitionApi.disable({ id: row.id })
         toast.success(t('workflow.definition.msg_disabled'))
         break
       case 'archive':
-        await workflowDefinitionApi.archive({ basicId: row.basicId })
+        await workflowDefinitionApi.archive({ id: row.id })
         toast.success(t('workflow.definition.msg_archived'))
         break
       case 'delete':
-        await workflowDefinitionApi.delete(row.basicId)
+        await workflowDefinitionApi.delete(row.id)
         toast.success(t('workflow.definition.msg_deleted'))
         break
     }

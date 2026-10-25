@@ -132,7 +132,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'workflow_instance',
   pageName: t('workflow.instance.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -200,7 +200,7 @@ async function loadDefinitionJson(code: string, version: number): Promise<string
   const match = res.items.find(item => item.code === code && item.version === version)
   if (!match)
     return null
-  const detail = await workflowDefinitionApi.detail(match.basicId)
+  const detail = await workflowDefinitionApi.detail(match.id)
   return detail?.definitionJson ?? null
 }
 
@@ -210,7 +210,7 @@ async function handleDetail(row: WorkflowInstanceListItemDto) {
   detailData.value = null
   detailDefinitionJson.value = null
   try {
-    detailData.value = await workflowInstanceApi.detail(row.basicId) ?? null
+    detailData.value = await workflowInstanceApi.detail(row.id) ?? null
     if (detailData.value) {
       // 定义回查失败不阻断详情，仅隐藏轨迹图
       try {
@@ -260,7 +260,7 @@ async function handleReasonConfirm() {
   if (!reasonTarget.value)
     return
   reasonLoading.value = true
-  const input = { basicId: reasonTarget.value.basicId, reason: reasonText.value.trim() || undefined }
+  const input = { id: reasonTarget.value.id, reason: reasonText.value.trim() || undefined }
   try {
     if (reasonAction.value === 'cancel')
       await workflowInstanceApi.cancel(input)
@@ -283,9 +283,9 @@ async function handleReasonConfirm() {
 async function handleSimple(action: 'retry' | 'resume', row: WorkflowInstanceListItemDto) {
   try {
     if (action === 'retry')
-      await workflowInstanceApi.retry({ basicId: row.basicId })
+      await workflowInstanceApi.retry({ id: row.id })
     else
-      await workflowInstanceApi.resume({ basicId: row.basicId })
+      await workflowInstanceApi.resume({ id: row.id })
     toast.success(t('workflow.instance.msg_operated'))
     reload()
   }

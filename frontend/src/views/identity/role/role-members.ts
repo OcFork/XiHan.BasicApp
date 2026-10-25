@@ -2,7 +2,7 @@ import type { ApiId, RoleMemberDto, UserSelectItemDto } from '@/api'
 
 /** 角色成员穿梭框的一项：主键即用户主键 */
 export interface RoleMemberCandidate {
-  basicId: ApiId
+  id: ApiId
   displayName: string
   userName: string
   isExternalMember: boolean
@@ -22,16 +22,16 @@ export function mergeMemberCandidates(
 ): RoleMemberCandidate[] {
   const external = new Map(members.map(member => [member.userId, member.isExternalMember]))
   const items: RoleMemberCandidate[] = candidates.map(user => ({
-    basicId: user.basicId,
+    id: user.id,
     displayName: displayNameOf(user),
     userName: user.userName,
-    isExternalMember: external.get(user.basicId) ?? false,
+    isExternalMember: external.get(user.id) ?? false,
   }))
-  const known = new Set(items.map(item => item.basicId))
+  const known = new Set(items.map(item => item.id))
   for (const member of members) {
     if (!known.has(member.userId)) {
       items.push({
-        basicId: member.userId,
+        id: member.userId,
         displayName: displayNameOf(member),
         userName: member.userName,
         isExternalMember: member.isExternalMember,

@@ -111,7 +111,7 @@ function iconStyle(item: UserInboxItemDto) {
 
 function syncHeaderStore(list = items.value) {
   notificationStore.setItems(list.map(item => ({
-    basicId: item.basicId,
+    id: item.id,
     confirmTime: item.confirmTime ?? undefined,
     content: item.content ?? undefined,
     contentFormat: item.contentFormat,
@@ -148,10 +148,10 @@ async function handleMarkRead(item: UserInboxItemDto) {
   }
 
   try {
-    await workbenchApi.inbox.markRead(item.basicId)
+    await workbenchApi.inbox.markRead(item.id)
     item.notificationStatus = NotificationStatus.Read
     item.readTime = item.readTime ?? new Date().toISOString()
-    notificationStore.markItemRead(item.basicId)
+    notificationStore.markItemRead(item.id)
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('workbench.inbox.mark_read_failed'))
@@ -160,12 +160,12 @@ async function handleMarkRead(item: UserInboxItemDto) {
 
 async function handleConfirm(item: UserInboxItemDto) {
   try {
-    await workbenchApi.inbox.confirm(item.basicId)
+    await workbenchApi.inbox.confirm(item.id)
     const now = new Date().toISOString()
     item.notificationStatus = NotificationStatus.Read
     item.readTime = item.readTime ?? now
     item.confirmTime = item.confirmTime ?? now
-    notificationStore.markItemConfirmed(item.basicId)
+    notificationStore.markItemConfirmed(item.id)
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('workbench.inbox.confirm_failed'))
@@ -281,7 +281,7 @@ onMounted(loadNotifications)
     <div v-else class="inbox-list">
       <article
         v-for="item in visibleItems"
-        :key="item.basicId"
+        :key="item.id"
         class="inbox-item"
         :class="{ 'inbox-item--attention': needsAttention(item) }"
       >

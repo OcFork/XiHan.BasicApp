@@ -65,7 +65,7 @@ function setup(overrides: Partial<ChatApiContract> = {}) {
   setActivePinia(createPinia())
   const userStore = useUserStore()
   userStore.userInfo = {
-    basicId: 'me',
+    id: 'me',
     userName: 'me',
     nickName: '我',
     roles: [],
@@ -321,7 +321,7 @@ describe('打开与关闭会话', () => {
       senderUserId: 'other',
       messageType: 'Text' as never,
       isRecalled: false,
-      createdTime: '2026-08-27T00:00:00Z',
+      createdAt: '2026-08-27T00:00:00Z',
       mentionedUserIds: [],
       isPinned: false,
       reactions: [],

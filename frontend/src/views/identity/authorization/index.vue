@@ -132,7 +132,7 @@ async function loadUserOptions(keyword = '') {
     })
     userOptions.value = mergeOptions(
       userOptions.value,
-      result.items.map(u => ({ label: `${u.realName || u.nickName || u.userName} (@${u.userName})`, value: u.basicId })),
+      result.items.map(u => ({ label: `${u.realName || u.nickName || u.userName} (@${u.userName})`, value: u.id })),
     )
   }
   catch (error) {
@@ -147,7 +147,7 @@ async function loadRoleOptions(keyword = '') {
   roleLoading.value = true
   try {
     const roles = await roleApi.enabledList({ limit: 50, keyword: normalizeNullable(keyword) })
-    roleOptions.value = mergeOptions(roleOptions.value, roles.map(r => ({ label: `${r.roleName} (${r.roleCode})`, value: r.basicId })))
+    roleOptions.value = mergeOptions(roleOptions.value, roles.map(r => ({ label: `${r.roleName} (${r.roleCode})`, value: r.id })))
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('identity.authorization.msg_load_role_failed'))
@@ -161,7 +161,7 @@ async function loadPermissionOptions(keyword = '') {
   permissionLoading.value = true
   try {
     const perms = await permissionApi.availableGlobal({ limit: 50, keyword: normalizeNullable(keyword) })
-    permissionOptions.value = mergeOptions(permissionOptions.value, perms.map(p => ({ label: `${p.permissionName} (${p.permissionCode})`, value: p.basicId })))
+    permissionOptions.value = mergeOptions(permissionOptions.value, perms.map(p => ({ label: `${p.permissionName} (${p.permissionCode})`, value: p.id })))
   }
   catch (error) {
     toast.danger((error as Error)?.message || t('identity.authorization.msg_load_permission_failed'))
@@ -237,7 +237,7 @@ const requestFields = computed<ListFieldSchema[]>(() => [
         : workflowProgressText(t, progress)
     },
   },
-  { key: 'createdTime', title: t('identity.authorization.req_col_create_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
+  { key: 'createdAt', title: t('identity.authorization.req_col_create_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
 ])
 
 /** 确认框里的申请名：申请人 · 申请的角色或权限 */
@@ -254,7 +254,7 @@ const requestSchema = computed<PageSchema>(() => ({
   pageCode: 'identity.authorization.request',
   exportPermission: 'identity.authorization.export',
   pageName: t('identity.authorization.req_page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: requestFields.value,
   resource: {
     page: (params) => {
@@ -364,7 +364,7 @@ function onRequestAction(payload: SchemaActionPayload) {
 }
 
 async function handleDeleteRequest(row: PermissionRequestListItemDto) {
-  await permissionRequestApi.delete(row.basicId)
+  await permissionRequestApi.delete(row.id)
   toast.success(t('common.messages.delete_success'))
   reloadRequest()
 }
@@ -431,7 +431,7 @@ const delegationFields = computed<ListFieldSchema[]>(() => [
       return t('identity.authorization.validity_range', { from: formatNullableDate(r.effectiveTime), to: formatNullableDate(r.expirationTime) })
     },
   },
-  { key: 'createdTime', title: t('identity.authorization.del_col_create_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
+  { key: 'createdAt', title: t('identity.authorization.del_col_create_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 6 },
 ])
 
 /** 确认框里的委托名：委托人 → 受托人 · 委托的角色或权限 */
@@ -449,7 +449,7 @@ function canRevoke(row: unknown) {
 const delegationSchema = computed<PageSchema>(() => ({
   pageCode: 'identity.authorization.delegation',
   pageName: t('identity.authorization.del_page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: delegationFields.value,
   resource: {
     page: (params) => {
@@ -516,7 +516,7 @@ function openDelegationModal() {
 async function revokeDelegation(row: PermissionDelegationListItemDto) {
   try {
     await permissionDelegationApi.updateStatus({
-      basicId: row.basicId,
+      id: row.id,
       delegationStatus: DelegationStatus.Revoked,
       remark: t('identity.authorization.del_revoke_remark'),
     })
@@ -529,7 +529,7 @@ async function revokeDelegation(row: PermissionDelegationListItemDto) {
 }
 
 async function handleDeleteDelegation(row: PermissionDelegationListItemDto) {
-  await permissionDelegationApi.delete(row.basicId)
+  await permissionDelegationApi.delete(row.id)
   toast.success(t('common.messages.delete_success'))
   reloadDelegation()
 }

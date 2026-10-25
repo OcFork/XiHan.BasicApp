@@ -82,7 +82,7 @@ const props = withDefaults(defineProps<{
   rowProps?: (row: TRow, rowIndex: number) => Record<string, unknown>
 }>(), {
   loading: false,
-  rowKey: 'basicId',
+  rowKey: 'id',
   total: 0,
   page: 1,
   pageSize: 20,

@@ -83,11 +83,11 @@ export interface WorkflowInstanceStartDto {
 }
 
 export interface WorkflowInstanceIdDto {
-  basicId: ApiId
+  id: ApiId
 }
 
 export interface WorkflowInstanceOperationDto {
-  basicId: ApiId
+  id: ApiId
   reason?: string | null
 }
 

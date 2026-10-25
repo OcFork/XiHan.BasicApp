@@ -627,7 +627,7 @@ export default {
       tip: 'केवल यही नीति जाँची जाती है, प्रभावी अवधि और अन्य नीतियाँ नहीं। खाली फ़ील्ड आपके वर्तमान अनुरोध और उपयोगकर्ता से भरे जाते हैं।',
       ph_user: 'डिफ़ॉल्ट: वर्तमान उपयोगकर्ता',
       label_permission_codes: 'एंडपॉइंट अनुमति कोड',
-      ph_permission_codes: 'अल्पविराम से अलग, जैसे saas:user:export',
+      ph_permission_codes: 'अल्पविराम से अलग, जैसे saas.user.export',
       load_users_failed: 'उपयोगकर्ता लोड नहीं हो सके',
       failed: 'परीक्षण विफल रहा',
       result_title: 'परीक्षण परिणाम',

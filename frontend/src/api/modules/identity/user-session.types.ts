@@ -35,7 +35,7 @@ export interface UserSessionPageQueryDto extends PageRequest {
 
 export interface UserSessionListItemDto extends BasicDto {
   browser?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   deviceIdMasked?: string | null
   deviceName?: string | null
   deviceType: DeviceType
@@ -45,7 +45,7 @@ export interface UserSessionListItemDto extends BasicDto {
   lastActivityTime: DateTimeString
   loginTime: DateTimeString
   logoutTime?: DateTimeString | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   nickName?: string | null
   operatingSystem?: string | null
   realName?: string | null

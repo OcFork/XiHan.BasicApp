@@ -32,8 +32,8 @@ export interface CodeGenTableListItemDto extends BasicDto {
   genStatus: GenStatus
   lastGenTime?: DateTimeString | null
   status: EnableStatus
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
 }
 
 /**

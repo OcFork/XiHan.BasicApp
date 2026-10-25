@@ -30,8 +30,8 @@ export const fileApi = {
    * 后端 DeleteFileAsync 的 Delete 前缀被 DynamicApi 当 HTTP 谓词剥离，实际路由为 DELETE /api/File/File；
    * 且框架约定 DELETE 不收 body，FileDeleteDto 经 query 绑定。
    */
-  destroy(input: { basicId: ApiId, deletePhysical: boolean, reason?: string }) {
-    return fileCommandApi.delete<void>('File', { basicId: input.basicId, deletePhysical: input.deletePhysical, reason: input.reason })
+  destroy(input: { id: ApiId, deletePhysical: boolean, reason?: string }) {
+    return fileCommandApi.delete<void>('File', { id: input.id, deletePhysical: input.deletePhysical, reason: input.reason })
   },
   download(fileId: ApiId) {
     // 后端 DownloadFileAsync：Download 前缀不在动词约定表，默认 POST；fileId（简单类型）在 POST 下绑定 Query。

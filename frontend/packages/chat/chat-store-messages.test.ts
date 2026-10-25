@@ -39,7 +39,7 @@ function message(patch: Partial<ChatMessageItem> & { messageId: string }): ChatM
     messageType: ChatMessageType.Text,
     content: `正文 ${patch.messageId}`,
     isRecalled: false,
-    createdTime: '2026-08-27T00:00:00Z',
+    createdAt: '2026-08-27T00:00:00Z',
     mentionedUserIds: [],
     isPinned: false,
     reactions: [],
@@ -80,7 +80,7 @@ function createApi(overrides: Partial<ChatApiContract> = {}): ChatApiContract {
 function setup(overrides: Partial<ChatApiContract> = {}) {
   setActivePinia(createPinia())
   const userStore = useUserStore()
-  userStore.userInfo = { basicId: 'me', userName: 'me', nickName: '我', roles: [], permissions: [] }
+  userStore.userInfo = { id: 'me', userName: 'me', nickName: '我', roles: [], permissions: [] }
   setChatApi(createApi(overrides))
   return useChatStore()
 }
@@ -404,7 +404,7 @@ describe('乐观上屏与回执收敛', () => {
         messageId: '902',
         senderUserId: 'me',
         content: long,
-        createdTime: '2026-08-27T12:00:00Z',
+        createdAt: '2026-08-27T12:00:00Z',
       })),
     })
     await store.loadConversations()
@@ -809,7 +809,7 @@ describe('语音已听本地记录', () => {
     store.markVoicePlayed('m1')
     expect(store.isVoicePlayed('m1')).toBe(true)
 
-    useUserStore().userInfo = { basicId: 'other', userName: 'other', roles: [], permissions: [] }
+    useUserStore().userInfo = { id: 'other', userName: 'other', roles: [], permissions: [] }
     expect(store.isVoicePlayed('m1')).toBe(false)
   })
 

@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
   /** 权限目录全集 */
   items: T[]
   /** 已授予的权限主键；两侧的归属由它决定 */
-  value: T['basicId'][]
+  value: T['id'][]
   loading?: boolean
   disabled?: boolean
   sourceTitle?: string
@@ -34,7 +34,7 @@ const props = withDefaults(defineProps<{
   otherGroupLabel: undefined,
 })
 
-const emit = defineEmits<{ 'update:value': [value: T['basicId'][]] }>()
+const emit = defineEmits<{ 'update:value': [value: T['id'][]] }>()
 
 defineSlots<{
   /** 行尾一格：只放徽标、计数这类非交互内容 */

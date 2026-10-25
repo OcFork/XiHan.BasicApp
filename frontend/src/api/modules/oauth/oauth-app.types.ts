@@ -23,9 +23,9 @@ export interface OAuthAppListItemDto extends BasicDto {
   appType: OAuthAppType
   authorizationCodeLifetime: number
   clientId: string
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   grantTypes: string
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   refreshTokenLifetime: number
   scopes?: string | null
   skipConsent: boolean
@@ -81,13 +81,13 @@ export interface OAuthAppUpdateDto extends BasicDto {
 }
 
 export interface OAuthAppStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   status: EnableStatus
   remark?: string | null
 }
 
 export interface OAuthAppSecretDto {
-  basicId: ApiId
+  id: ApiId
   clientId: string
   clientSecret: string
 }

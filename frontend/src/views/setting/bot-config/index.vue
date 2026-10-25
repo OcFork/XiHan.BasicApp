@@ -12,7 +12,7 @@ import { getOptionLabel } from '~/utils'
 defineOptions({ name: 'SettingBotConfigPage' })
 
 interface BotConfigFormModel {
-  basicId?: string
+  id?: string
   configCode: string
   configName: string
   isDefault: boolean
@@ -107,7 +107,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'sort', title: t('message.bot_config.columns.sort'), dataType: 'number', sortable: true, width: 80, order: 6 },
-  { key: 'createdTime', title: t('message.bot_config.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 7 },
+  { key: 'createdAt', title: t('message.bot_config.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 7 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -115,7 +115,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'setting.bot-config.export',
   pageName: t('message.bot_config.page_name'),
   statusPermission: 'setting.bot-config.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -132,7 +132,7 @@ const schema = computed<PageSchema>(() => ({
         // provider 为多选，经 conditions.filters In 下发（不走 DTO 顶层 provider 单值字段）
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => botConfigApi.updateStatus({ basicId: id, isEnabled: enabled }),
+    updateStatus: (id, enabled) => botConfigApi.updateStatus({ id, isEnabled: enabled }),
   },
   actions: [
     { key: 'create', title: t('message.bot_config.actions.create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'setting.bot-config.create' },
@@ -193,7 +193,7 @@ const submitLoading = ref(false)
 const editingHasSecret = ref(false)
 const form = ref<BotConfigFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (form.value.basicId ? t('message.bot_config.form.edit_title') : t('message.bot_config.form.add_title')))
+const modalTitle = computed(() => (form.value.id ? t('message.bot_config.form.edit_title') : t('message.bot_config.form.add_title')))
 // 企业微信的 key 在 Webhook 地址里，无独立签名秘钥；关键词仅钉钉/飞书支持
 const isWeCom = computed(() => form.value.provider === BotProviderType.WeCom)
 const webhookPlaceholder = computed(() => {
@@ -207,7 +207,7 @@ const webhookPlaceholder = computed(() => {
   }
 })
 const secretPlaceholder = computed(() =>
-  form.value.basicId && editingHasSecret.value ? t('message.bot_config.form.secret_configured') : t('message.bot_config.form.secret_placeholder'),
+  form.value.id && editingHasSecret.value ? t('message.bot_config.form.secret_configured') : t('message.bot_config.form.secret_placeholder'),
 )
 
 function createDefaultForm(): BotConfigFormModel {
@@ -233,7 +233,7 @@ function handleAdd() {
 
 async function handleEdit(row: BotConfigListItemDto) {
   try {
-    const detail = await botConfigApi.detail(row.basicId)
+    const detail = await botConfigApi.detail(row.id)
     if (!detail) {
       toast.warning(t('message.bot_config.message.detail_not_found'))
       return
@@ -241,7 +241,7 @@ async function handleEdit(row: BotConfigListItemDto) {
 
     editingHasSecret.value = detail.hasSecret
     form.value = {
-      basicId: detail.basicId,
+      id: detail.id,
       configCode: detail.configCode,
       configName: detail.configName,
       isDefault: detail.isDefault,
@@ -261,7 +261,7 @@ async function handleEdit(row: BotConfigListItemDto) {
 }
 
 function validateForm() {
-  if (!form.value.basicId && !form.value.configCode.trim()) {
+  if (!form.value.id && !form.value.configCode.trim()) {
     toast.warning(t('message.bot_config.message.input_config_code'))
     return false
   }
@@ -290,9 +290,9 @@ async function handleSubmit() {
     // 企业微信无独立秘钥/关键词，切到企微时不下发这两个字段
     const secret = isWeCom.value ? null : form.value.secret?.trim() || null
     const keyword = isWeCom.value ? null : form.value.keyword?.trim() || null
-    if (form.value.basicId) {
+    if (form.value.id) {
       await botConfigApi.update({
-        basicId: form.value.basicId,
+        id: form.value.id,
         configName: form.value.configName.trim(),
         keyword,
         provider: form.value.provider,
@@ -341,7 +341,7 @@ function handleToggleStatus(row: BotConfigListItemDto) {
     cancelText: t('message.bot_config.form.cancel'),
     onOk: async () => {
       try {
-        await botConfigApi.updateStatus({ basicId: row.basicId, isEnabled: next })
+        await botConfigApi.updateStatus({ id: row.id, isEnabled: next })
         toast.success(t('message.bot_config.message.status_updated'))
         reloadList()
       }
@@ -361,7 +361,7 @@ function handleSetDefault(row: BotConfigListItemDto) {
     cancelText: t('message.bot_config.form.cancel'),
     onOk: async () => {
       try {
-        await botConfigApi.setDefault({ basicId: row.basicId })
+        await botConfigApi.setDefault({ id: row.id })
         toast.success(t('message.bot_config.message.set_default_success'))
         reloadList()
       }
@@ -382,7 +382,7 @@ function handleDelete(row: BotConfigListItemDto) {
     cancelText: t('message.bot_config.form.cancel'),
     onOk: async () => {
       try {
-        await botConfigApi.delete(row.basicId)
+        await botConfigApi.delete(row.id)
         toast.success(t('message.bot_config.message.delete_success'))
         reloadList()
       }
@@ -420,7 +420,7 @@ function handleDelete(row: BotConfigListItemDto) {
               <XInput
                 v-model:value="form.configCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('message.bot_config.form.config_code_placeholder')"
               />
             </XhFieldControl>
@@ -490,7 +490,7 @@ function handleDelete(row: BotConfigListItemDto) {
           </XhFormFieldGroup>
         </template>
 
-        <template v-if="!form.basicId">
+        <template v-if="!form.id">
           <XhFormFieldGroup name="isEnabled">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('message.bot_config.form.is_enabled') }}</XhFieldLabel>

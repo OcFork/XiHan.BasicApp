@@ -81,7 +81,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     render: row => h(XhTagRoot, { variant: 'subtle', tone: operationResultTone((row as unknown as OperationLogListItemDto).result) }, () => h(XhTagLabel, () => getOptionLabel(resultOptions.value, (row as unknown as OperationLogListItemDto).result))),
   },
   { key: 'operationTime', title: t('log.operation.operation_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 27 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 28 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 28 },
   // 仅高级搜索（不作为列，范围条件置于高级区末尾）
   { key: 'minExecutionTime', title: t('log.common.min_execution_time'), dataType: 'number', visible: false, advancedSearch: true, searchPlaceholder: t('log.common.min_execution_time'), order: 40 },
   { key: 'maxExecutionTime', title: t('log.common.max_execution_time'), dataType: 'number', visible: false, advancedSearch: true, searchPlaceholder: t('log.common.max_execution_time'), order: 41 },
@@ -125,7 +125,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'log.operation',
   exportPermission: 'log.operation.export',
   pageName: t('log.operation.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, { timeField: 'operationTime', ipKey: 'operationIp' }),
   resource: {
     page: params => logManagementApi.operation.page(buildOperationQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
@@ -155,7 +155,7 @@ async function handleDetail(row: OperationLogListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await logManagementApi.operation.detail(row.basicId) ?? row
+    detailData.value = await logManagementApi.operation.detail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

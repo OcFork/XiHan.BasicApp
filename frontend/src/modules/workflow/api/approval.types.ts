@@ -40,7 +40,7 @@ export interface WorkflowApprovalRecordItemDto extends BasicDto {
   action: WorkflowTaskRecordAction
   outcome?: string | null
   comment?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   businessName?: string | null
   starterId?: string | null
   starterName?: string | null

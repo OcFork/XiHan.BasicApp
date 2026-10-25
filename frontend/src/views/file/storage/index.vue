@@ -13,7 +13,7 @@ defineOptions({ name: 'FileStoragePage' })
 
 interface StorageConfigFormModel {
   accessKeyId: string | null
-  basicId?: string
+  id?: string
   bucketName: string | null
   configCode: string
   configName: string
@@ -124,7 +124,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     },
   },
   { key: 'sort', title: t('file.storage.columns.sort'), dataType: 'number', sortable: true, width: 80, order: 7 },
-  { key: 'createdTime', title: t('file.storage.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 8 },
+  { key: 'createdAt', title: t('file.storage.columns.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 8 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -132,7 +132,7 @@ const schema = computed<PageSchema>(() => ({
   exportPermission: 'file.storage.export',
   pageName: t('file.storage.page_name'),
   statusPermission: 'file.storage.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -149,7 +149,7 @@ const schema = computed<PageSchema>(() => ({
         // storageType 改为多选，经 conditions.filters In 下发（不再走 DTO 顶层 storageType 单值字段）
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => storageConfigApi.updateStatus({ basicId: id, isEnabled: enabled }),
+    updateStatus: (id, enabled) => storageConfigApi.updateStatus({ id, isEnabled: enabled }),
   },
   actions: [
     { key: 'create', title: t('file.storage.actions.create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'file.storage.create' },
@@ -210,10 +210,10 @@ const submitLoading = ref(false)
 const editingHasSecret = ref(false)
 const form = ref<StorageConfigFormModel>(createDefaultForm())
 
-const modalTitle = computed(() => (form.value.basicId ? t('file.storage.form.edit_title') : t('file.storage.form.add_title')))
+const modalTitle = computed(() => (form.value.id ? t('file.storage.form.edit_title') : t('file.storage.form.add_title')))
 const isObjectStorage = computed(() => form.value.storageType !== StorageConfigType.Local)
 const secretPlaceholder = computed(() =>
-  form.value.basicId && editingHasSecret.value ? t('file.storage.form.secret_configured') : t('file.storage.form.secret_placeholder'),
+  form.value.id && editingHasSecret.value ? t('file.storage.form.secret_configured') : t('file.storage.form.secret_placeholder'),
 )
 
 function createDefaultForm(): StorageConfigFormModel {
@@ -241,7 +241,7 @@ function handleAdd() {
 
 async function handleEdit(row: StorageConfigListItemDto) {
   try {
-    const detail = await storageConfigApi.detail(row.basicId)
+    const detail = await storageConfigApi.detail(row.id)
     if (!detail) {
       toast.warning(t('file.storage.message.detail_not_found'))
       return
@@ -250,7 +250,7 @@ async function handleEdit(row: StorageConfigListItemDto) {
     editingHasSecret.value = detail.hasSecretAccessKey
     form.value = {
       accessKeyId: detail.accessKeyId ?? null,
-      basicId: detail.basicId,
+      id: detail.id,
       bucketName: detail.bucketName ?? null,
       configCode: detail.configCode,
       configName: detail.configName,
@@ -271,7 +271,7 @@ async function handleEdit(row: StorageConfigListItemDto) {
 }
 
 function validateForm() {
-  if (!form.value.basicId && !form.value.configCode.trim()) {
+  if (!form.value.id && !form.value.configCode.trim()) {
     toast.warning(t('file.storage.message.input_config_code'))
     return false
   }
@@ -292,7 +292,7 @@ function validateForm() {
       return false
     }
 
-    if (!form.value.basicId && !form.value.secretAccessKey?.trim()) {
+    if (!form.value.id && !form.value.secretAccessKey?.trim()) {
       toast.warning(t('file.storage.message.input_secret_access_key'))
       return false
     }
@@ -309,10 +309,10 @@ async function handleSubmit() {
   submitLoading.value = true
 
   try {
-    if (form.value.basicId) {
+    if (form.value.id) {
       await storageConfigApi.update({
         accessKeyId: form.value.accessKeyId,
-        basicId: form.value.basicId,
+        id: form.value.id,
         bucketName: form.value.bucketName,
         configName: form.value.configName.trim(),
         endpoint: form.value.endpoint,
@@ -364,7 +364,7 @@ function handleToggleStatus(row: StorageConfigListItemDto) {
     cancelText: t('file.storage.form.cancel'),
     onOk: async () => {
       try {
-        await storageConfigApi.updateStatus({ basicId: row.basicId, isEnabled: next })
+        await storageConfigApi.updateStatus({ id: row.id, isEnabled: next })
         toast.success(t('file.storage.message.status_updated'))
         reloadList()
       }
@@ -384,7 +384,7 @@ function handleSetDefault(row: StorageConfigListItemDto) {
     cancelText: t('file.storage.form.cancel'),
     onOk: async () => {
       try {
-        await storageConfigApi.setDefault({ basicId: row.basicId })
+        await storageConfigApi.setDefault({ id: row.id })
         toast.success(t('file.storage.message.set_default_success'))
         reloadList()
       }
@@ -405,7 +405,7 @@ function handleDelete(row: StorageConfigListItemDto) {
     cancelText: t('file.storage.form.cancel'),
     onOk: async () => {
       try {
-        await storageConfigApi.delete(row.basicId)
+        await storageConfigApi.delete(row.id)
         toast.success(t('file.storage.message.delete_success'))
         reloadList()
       }
@@ -443,7 +443,7 @@ function handleDelete(row: StorageConfigListItemDto) {
               <XInput
                 v-model:value="form.configCode"
                 clearable
-                :disabled="Boolean(form.basicId)"
+                :disabled="Boolean(form.id)"
                 :placeholder="t('file.storage.form.config_code_placeholder')"
               />
             </XhFieldControl>
@@ -542,7 +542,7 @@ function handleDelete(row: StorageConfigListItemDto) {
           </XhFormFieldGroup>
         </template>
 
-        <template v-if="!form.basicId">
+        <template v-if="!form.id">
           <XhFormFieldGroup name="isEnabled">
             <XhFieldRoot>
               <XhFieldLabel>{{ t('file.storage.form.is_enabled') }}</XhFieldLabel>

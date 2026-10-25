@@ -33,7 +33,7 @@ export type ConditionTone = 'danger' | 'info' | 'neutral' | 'success' | 'warning
 
 /** 授权列表里能挂条件的一行（角色权限与用户直授共有的字段） */
 export interface ConditionableGrant {
-  basicId: ApiId
+  id: ApiId
   permissionId: ApiId
   permissionCode?: string | null
   permissionName?: string | null
@@ -47,9 +47,9 @@ export function toGrantConditionTargets(kind: GrantConditionTarget['kind'], gran
   return grants
     .filter(grant => grant.status === ValidityStatus.Valid)
     .map(grant => ({
-      key: `${kind}:${grant.basicId}`,
+      key: `${kind}:${grant.id}`,
       kind,
-      bindingId: grant.basicId,
+      bindingId: grant.id,
       permissionCode: grant.permissionCode ?? '',
       permissionName: grant.permissionName || grant.permissionCode || String(grant.permissionId),
       action: grant.permissionAction,

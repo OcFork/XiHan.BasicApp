@@ -22,7 +22,7 @@ export interface UserPageQueryDto extends PageRequest {
 export interface UserListItemDto extends BasicDto {
   avatar?: string | null
   country?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   departmentName?: string | null
   gender: UserGender
   /** 外部成员：注册在别的租户、以成员身份加入本租户；身份类操作由其注册地维护，这里只管成员关系 */
@@ -31,7 +31,7 @@ export interface UserListItemDto extends BasicDto {
   isSystemAccount: boolean
   lastLoginIp?: string | null
   lastLoginTime?: DateTimeString | null
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   nickName?: string | null
   realName?: string | null
   roleNames: string[]

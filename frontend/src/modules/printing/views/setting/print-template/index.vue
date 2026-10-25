@@ -133,7 +133,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: PRINT_TEMPLATE_PAGE_CODE,
   pageName: t('setting.print_template.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -191,7 +191,7 @@ function onAction(payload: SchemaActionPayload): void {
 /** 加载最新详情（行版本）后打开编辑弹窗。 */
 async function openMetadata(row: PrintTemplateListItemDto): Promise<void> {
   try {
-    metadataDetail.value = await printTemplateApi.detail(row.basicId, activeScope.value)
+    metadataDetail.value = await printTemplateApi.detail(row.id, activeScope.value)
     if (!metadataDetail.value)
       throw new Error(t('setting.print_template.not_found'))
     metadataVisible.value = true
@@ -213,7 +213,7 @@ function onMetadataSaved(detail: PrintTemplateDetailDto, created: boolean): void
 /** 加载完整 JSON 后打开全屏设计器。 */
 async function openEditor(row: PrintTemplateListItemDto): Promise<void> {
   try {
-    editorDetail.value = await printTemplateApi.detail(row.basicId, activeScope.value)
+    editorDetail.value = await printTemplateApi.detail(row.id, activeScope.value)
     if (!editorDetail.value)
       throw new Error(t('setting.print_template.not_found'))
     editorVisible.value = true
@@ -230,7 +230,7 @@ async function openSamplePreview(row: PrintTemplateListItemDto): Promise<void> {
   actionLoading.value = true
   try {
     const scope = activeScope.value
-    const detail = await printTemplateApi.detail(row.basicId, scope)
+    const detail = await printTemplateApi.detail(row.id, scope)
     if (!detail)
       throw new Error(t('setting.print_template.not_found'))
 
@@ -266,7 +266,7 @@ async function previewSampleData(sample: Record<string, unknown> | Record<string
     await previewPrintByCode(context.detail.templateCode, sample, {
       scope: context.scope,
       title: context.detail.templateName,
-      expectedRowVersion: context.detail.rowVersion,
+      expectedRowVersion: context.detail.concurrencyStamp,
     })
     samplePreviewVisible.value = false
   }
@@ -286,7 +286,7 @@ async function direct(row: PrintTemplateListItemDto): Promise<void> {
     return
   actionLoading.value = true
   try {
-    const detail = await printTemplateApi.detail(row.basicId, activeScope.value)
+    const detail = await printTemplateApi.detail(row.id, activeScope.value)
     if (!detail)
       throw new Error(t('setting.print_template.not_found'))
     // 样例生成读取数据源注册表，先确保后端目录已加载
@@ -310,9 +310,9 @@ async function toggleStatus(row: PrintTemplateListItemDto): Promise<void> {
   actionLoading.value = true
   try {
     await printTemplateApi.updateStatus({
-      basicId: row.basicId,
+      id: row.id,
       scope: activeScope.value,
-      rowVersion: row.rowVersion,
+      concurrencyStamp: row.concurrencyStamp,
       status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
     })
     toast.success(t('setting.print_template.status_success'))
@@ -340,7 +340,7 @@ function remove(row: PrintTemplateListItemDto): void {
         return false
       actionLoading.value = true
       try {
-        await printTemplateApi.delete({ basicId: row.basicId, scope: activeScope.value, rowVersion: row.rowVersion })
+        await printTemplateApi.delete({ id: row.id, scope: activeScope.value, concurrencyStamp: row.concurrencyStamp })
         toast.success(t('setting.print_template.delete_success'))
         void schemaPageRef.value?.reload()
         return true

@@ -41,7 +41,7 @@ const editFormId = useId()
 const MAX_MASK_KEEP = 32
 
 interface FlsFormModel extends FieldLevelSecurityCreateDto {
-  basicId?: ApiId
+  id?: ApiId
 }
 
 /** 组合框候选：value 一律是字符串 */
@@ -103,14 +103,14 @@ const targetLoading = ref(false)
 let targetRequestSeq = 0
 
 function flattenDepartments(
-  nodes: { basicId: ApiId, departmentName: string, departmentCode?: string | null, children?: unknown }[],
+  nodes: { id: ApiId, departmentName: string, departmentCode?: string | null, children?: unknown }[],
   path: string[] = [],
 ): ComboOption[] {
   return nodes.flatMap((node) => {
     const trail = [...path, node.departmentName]
     const children = (node.children ?? []) as typeof nodes
     return [
-      { value: String(node.basicId), label: node.departmentName, description: trail.join(' / ') },
+      { value: String(node.id), label: node.departmentName, description: trail.join(' / ') },
       ...flattenDepartments(children, trail),
     ]
   })
@@ -128,7 +128,7 @@ async function loadTargetOptions(keyword: string) {
           ...createPageRequest({ page: { pageIndex: 1, pageSize: 50 } }),
           keyword: kw ?? undefined,
         })
-        next = result.items.map(user => ({ value: String(user.basicId), label: user.realName || user.nickName || user.userName, description: `@${user.userName}` }))
+        next = result.items.map(user => ({ value: String(user.id), label: user.realName || user.nickName || user.userName, description: `@${user.userName}` }))
         break
       }
       case FieldSecurityTargetType.Department: {
@@ -138,7 +138,7 @@ async function loadTargetOptions(keyword: string) {
       }
       default: {
         const roles = await roleApi.enabledList({ limit: 50, keyword: kw })
-        next = roles.map(role => ({ value: String(role.basicId), label: role.roleName, description: role.roleCode }))
+        next = roles.map(role => ({ value: String(role.id), label: role.roleName, description: role.roleCode }))
         break
       }
     }
@@ -175,7 +175,7 @@ const targetPlaceholder = computed(() => {
 
 // ── 表单联动 ───────────────────────────────────────────────────
 const isMasked = computed(() => flsForm.value.maskStrategy !== FieldMaskStrategy.None)
-const modalTitle = computed(() => (flsForm.value.basicId ? t('identity.field_security.form_edit_title') : t('identity.field_security.form_create_title')))
+const modalTitle = computed(() => (flsForm.value.id ? t('identity.field_security.form_edit_title') : t('identity.field_security.form_create_title')))
 
 // 联动只响应用户操作：打开编辑时整体回填表单，不能被联动清掉目标与字段
 
@@ -380,7 +380,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     width: 90,
     order: 8,
   },
-  { key: 'createdTime', title: t('identity.field_security.col_create_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 9 },
+  { key: 'createdAt', title: t('identity.field_security.col_create_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 9 },
 ])
 
 const schema = computed<PageSchema>(() => ({
@@ -390,7 +390,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'identity.field-security.delete',
   statusPermission: 'identity.field-security.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -405,7 +405,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
     remove: id => fieldLevelSecurityApi.delete(id),
-    updateStatus: (id, enabled) => fieldLevelSecurityApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('identity.field_security.batch_enable_remark') : t('identity.field_security.batch_disable_remark') }),
+    updateStatus: (id, enabled) => fieldLevelSecurityApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled, remark: enabled ? t('identity.field_security.batch_enable_remark') : t('identity.field_security.batch_disable_remark') }),
   },
   actions: [
     { key: 'create', title: t('identity.field_security.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'identity.field-security.create' },
@@ -448,7 +448,7 @@ function handleAdd() {
 
 function handleEdit(row: FieldLevelSecurityListItemDto) {
   flsForm.value = {
-    basicId: row.basicId,
+    id: row.id,
     entityName: row.entityName,
     fieldName: row.fieldName,
     isEditable: row.isEditable,
@@ -521,8 +521,8 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (flsForm.value.basicId) {
-      const updateInput: FieldLevelSecurityUpdateDto = { basicId: flsForm.value.basicId, ...buildDefinition() }
+    if (flsForm.value.id) {
+      const updateInput: FieldLevelSecurityUpdateDto = { id: flsForm.value.id, ...buildDefinition() }
       await fieldLevelSecurityApi.update(updateInput)
     }
     else {
@@ -542,14 +542,14 @@ async function handleSubmit() {
 }
 
 async function handleDelete(row: FieldLevelSecurityListItemDto) {
-  await fieldLevelSecurityApi.delete(row.basicId)
+  await fieldLevelSecurityApi.delete(row.id)
   toast.success(t('common.messages.delete_success'))
   reloadList()
 }
 
 async function handleToggleStatus(row: FieldLevelSecurityListItemDto) {
   await fieldLevelSecurityApi.updateStatus({
-    basicId: row.basicId,
+    id: row.id,
     remark: row.status === EnableStatus.Enabled ? t('identity.field_security.front_disable_remark') : t('identity.field_security.front_enable_remark'),
     status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled,
   })
@@ -685,7 +685,7 @@ async function handleToggleStatus(row: FieldLevelSecurityListItemDto) {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!flsForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!flsForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('identity.field_security.label_status') }}</XhFieldLabel>
             <XhFieldControl>

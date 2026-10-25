@@ -166,7 +166,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'scope', title: t('file.export_center.columns.scope'), dataType: 'enum', searchable: true, searchMultiple: true, options: scopeOptions.value, searchPlaceholder: t('file.export_center.columns.scope_placeholder'), width: 100, order: 14, render: row => getOptionLabel(scopeOptions.value, (row as unknown as ExportTaskDto).scope) },
   { key: 'format', title: t('file.export_center.columns.format'), dataType: 'enum', searchable: true, searchMultiple: true, options: formatOptions, searchPlaceholder: t('file.export_center.columns.format_placeholder'), width: 90, order: 15, render: row => getOptionLabel(formatOptions, (row as unknown as ExportTaskDto).format) },
   { key: 'fileSize', title: t('file.export_center.columns.file_size'), dataType: 'string', width: 110, order: 16, render: row => formatBytes((row as unknown as ExportTaskDto).fileSize) },
-  { key: 'createdTime', title: t('file.export_center.columns.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 17 },
+  { key: 'createdAt', title: t('file.export_center.columns.created_time'), dataType: 'datetime', sortable: true, searchable: true, searchRange: true, minWidth: 170, order: 17 },
   { key: 'finishedTime', title: t('file.export_center.columns.finished_time'), dataType: 'datetime', advancedSearch: true, searchRange: true, minWidth: 170, order: 18 },
   { key: 'errorMessage', title: t('file.export_center.columns.error_message'), dataType: 'text', visible: false, order: 30 },
 ])
@@ -174,12 +174,12 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'file.export-center',
   pageName: t('file.export_center.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
       return exportTaskApi.mine({
-        // 排序 + 区间(createdTime/finishedTime)/多选(businessType/status/scope/format) 统一走 conditions
+        // 排序 + 区间(createdAt/finishedTime)/多选(businessType/status/scope/format) 统一走 conditions
         ...createPageRequest({
           page: { pageIndex: params.page, pageSize: params.pageSize },
           conditions: { sorts: querySortsFromSchema(params.sorts), filters: params.conditionFilters ?? [] },
@@ -227,7 +227,7 @@ async function handleDownload(row: ExportTaskDto) {
 
 async function handleCancel(row: ExportTaskDto) {
   try {
-    await exportTaskApi.cancel(row.basicId)
+    await exportTaskApi.cancel(row.id)
     toast.success(t('file.export_center.canceled'))
     reload()
   }
@@ -246,7 +246,7 @@ function handleDelete(row: ExportTaskDto) {
     cancelText: t('file.export_center.actions.cancel'),
     onOk: async () => {
       try {
-        await exportTaskApi.remove(row.basicId)
+        await exportTaskApi.remove(row.id)
         toast.success(t('file.export_center.deleted'))
         reload()
       }

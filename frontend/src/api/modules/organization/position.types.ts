@@ -7,8 +7,8 @@ export interface PositionPageQueryDto extends PageRequest {
 }
 
 export interface PositionListItemDto extends BasicDto {
-  createdTime: DateTimeString
-  modifiedTime?: DateTimeString | null
+  createdAt: DateTimeString
+  modifiedAt?: DateTimeString | null
   positionCode: string
   positionName: string
   sort: number

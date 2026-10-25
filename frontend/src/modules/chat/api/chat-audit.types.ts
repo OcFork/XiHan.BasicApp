@@ -1,7 +1,7 @@
 import type { ChatConversationType, ChatMessageType } from './chat.types'
 import type { ApiId, DateTimeString, PageRequest } from '@/api/types'
 
-/** 聊天审计分页查询 DTO（管理侧跨会话，权限 chat:audit） */
+/** 聊天审计分页查询 DTO（管理侧跨会话，权限 chat.audit） */
 export interface ChatAuditPageQueryDto extends PageRequest {
   keyword?: string
   conversationId?: ApiId
@@ -14,7 +14,7 @@ export interface ChatAuditPageQueryDto extends PageRequest {
 
 /** 聊天审计列表项 DTO */
 export interface ChatAuditListItemDto {
-  basicId: ApiId
+  id: ApiId
   conversationId: ApiId
   conversationName?: null | string
   conversationType: ChatConversationType
@@ -25,5 +25,5 @@ export interface ChatAuditListItemDto {
   fileName?: null | string
   isRecalled: boolean
   editedTime?: DateTimeString | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
 }

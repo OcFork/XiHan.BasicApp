@@ -74,7 +74,7 @@ function createGuardedRouter(): Router {
 
 function userInfoFixture(overrides: Partial<UserInfo> = {}): UserInfo {
   return {
-    basicId: 'u-1',
+    id: 'u-1',
     userName: 'tester',
     roles: ['admin'],
     permissions: ['sys:view'],
@@ -264,10 +264,10 @@ describe('用户上下文失效后的重新拉取', () => {
     expect(getPermissionsApi).toHaveBeenCalledTimes(1)
   })
 
-  it('用户信息缺 basicId 时视为上下文无效，重新拉取', async () => {
+  it('用户信息缺 id 时视为上下文无效，重新拉取', async () => {
     const accessStore = useAccessStore()
     accessStore.setAccessToken('token-abc')
-    useUserStore().setUserInfo({ basicId: '', userName: 'ghost', roles: [], permissions: [] })
+    useUserStore().setUserInfo({ id: '', userName: 'ghost', roles: [], permissions: [] })
     const getUserInfoApi = vi.fn(async () => userInfoFixture())
     registerApis({
       getUserInfoApi,

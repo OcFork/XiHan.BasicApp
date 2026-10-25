@@ -51,7 +51,7 @@ const infoSaving = ref(false)
 const avatarUploading = ref(false)
 const avatarInputRef = ref<HTMLInputElement>()
 
-const currentUserId = computed(() => userStore.userInfo?.basicId ?? '')
+const currentUserId = computed(() => userStore.userInfo?.id ?? '')
 const myRole = computed(() => props.conversation?.memberRole ?? ChatMemberRole.Member)
 const canManage = computed(() =>
   userStore.hasPermission(CHAT_PERMISSIONS.manage)

@@ -13,7 +13,7 @@ import { i18n } from '~/locales'
 import XDataTable from './XDataTable.vue'
 
 const columns = [{ key: 'name', title: '名称' }]
-const data = [{ basicId: '1', name: '甲' }, { basicId: '2', name: '乙' }]
+const data = [{ id: '1', name: '甲' }, { id: '2', name: '乙' }]
 
 function mountTable(props: Record<string, unknown> = {}) {
   return mount(XDataTable, { props: { columns, data, ...props }, global: { plugins: [i18n] } })

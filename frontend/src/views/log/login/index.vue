@@ -73,7 +73,7 @@ const fields = computed<ListFieldSchema[]>(() => [
   },
   { key: 'message', title: t('log.login.message'), dataType: 'string', minWidth: 220, order: 22 },
   { key: 'loginTime', title: t('log.login.login_time'), dataType: 'datetime', sortable: true, searchRange: true, advancedSearch: true, minWidth: 170, order: 23 },
-  { key: 'createdTime', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 24 },
+  { key: 'createdAt', title: t('common.fields.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 24 },
 ])
 
 function toStr(v: unknown): string | undefined {
@@ -105,7 +105,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'log.login',
   exportPermission: 'log.login.export',
   pageName: t('log.login.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: decorateTraceFields(fields.value, router, { timeField: 'loginTime', ipKey: 'loginIp' }),
   resource: {
     page: params => logManagementApi.login.page(buildLoginQuery(params)) as unknown as Promise<PageResult<Record<string, unknown>>>,
@@ -135,7 +135,7 @@ async function handleDetail(row: LoginLogListItemDto) {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    detailData.value = await logManagementApi.login.detail(row.basicId) ?? row
+    detailData.value = await logManagementApi.login.detail(row.id) ?? row
   }
   catch (error) {
     detailData.value = row

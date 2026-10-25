@@ -7,8 +7,8 @@ export const userInboxApi = {
   banner() {
     return userInboxDynamicApi.get<UserInboxItemDto[]>('Banner')
   },
-  confirm(basicId: string) {
-    return userInboxDynamicApi.post<void, UserInboxUpdateDto>('Confirm', toUpdateDto(basicId))
+  confirm(id: string) {
+    return userInboxDynamicApi.post<void, UserInboxUpdateDto>('Confirm', toUpdateDto(id))
   },
   list(unreadOnly = false) {
     return userInboxDynamicApi.get<UserInboxItemDto[]>('List', { unreadOnly })
@@ -19,17 +19,17 @@ export const userInboxApi = {
   markAllRead() {
     return userInboxDynamicApi.post<void>('MarkAllRead')
   },
-  markPopupShown(basicId: string) {
-    return userInboxDynamicApi.post<void, UserInboxUpdateDto>('MarkPopupShown', toUpdateDto(basicId))
+  markPopupShown(id: string) {
+    return userInboxDynamicApi.post<void, UserInboxUpdateDto>('MarkPopupShown', toUpdateDto(id))
   },
-  markRead(basicId: string) {
-    return userInboxDynamicApi.post<void, UserInboxUpdateDto>('MarkRead', toUpdateDto(basicId))
+  markRead(id: string) {
+    return userInboxDynamicApi.post<void, UserInboxUpdateDto>('MarkRead', toUpdateDto(id))
   },
   popup() {
     return userInboxDynamicApi.get<UserInboxItemDto[]>('Popup')
   },
 }
 
-function toUpdateDto(basicId: string): UserInboxUpdateDto {
-  return { basicId }
+function toUpdateDto(id: string): UserInboxUpdateDto {
+  return { id }
 }

@@ -31,7 +31,7 @@ export interface ConfigListItemDto extends BasicDto {
   configKey: string
   configName: string
   configType: ConfigType
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   dataType: ConfigDataType
   hasCurrentValue: boolean
   hasFallbackValue: boolean
@@ -39,7 +39,7 @@ export interface ConfigListItemDto extends BasicDto {
   isBuiltIn: boolean
   isEncrypted: boolean
   isGlobal: boolean
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   sort: number
   status: EnableStatus
 }

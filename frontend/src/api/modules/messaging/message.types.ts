@@ -54,12 +54,12 @@ export interface EmailPageQueryDto extends PageRequest {
 export interface EmailListItemDto extends BasicDto {
   businessId?: ApiId | null
   businessType?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   emailStatus: EmailStatus
   emailType: EmailType
   isHtml: boolean
   maxRetryCount: number
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   receiveUserId?: ApiId | null
   retryCount: number
   scheduledTime?: DateTimeString | null
@@ -98,9 +98,9 @@ export interface SmsListItemDto extends BasicDto {
   businessId?: ApiId | null
   businessType?: string | null
   cost?: number | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   maxRetryCount: number
-  modifiedTime?: DateTimeString | null
+  modifiedAt?: DateTimeString | null
   provider?: string | null
   receiverId?: ApiId | null
   retryCount: number
@@ -168,7 +168,7 @@ export interface EmailUpdateDto extends BasicDto {
 }
 
 export interface EmailStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   emailStatus: EmailStatus
   sendTime?: DateTimeString | null
   retryCount?: number | null
@@ -210,7 +210,7 @@ export interface SmsUpdateDto extends BasicDto {
 }
 
 export interface SmsStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   smsStatus: SmsStatus
   sendTime?: DateTimeString | null
   providerMessageId?: string | null

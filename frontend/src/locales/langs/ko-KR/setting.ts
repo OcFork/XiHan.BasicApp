@@ -627,7 +627,7 @@ export default {
       tip: '이 정책만 평가하며 적용 기간과 다른 정책은 보지 않습니다. 비워 둔 항목은 현재 요청과 현재 사용자를 씁니다.',
       ph_user: '기본값은 현재 사용자',
       label_permission_codes: '엔드포인트 권한 코드',
-      ph_permission_codes: '쉼표로 구분, 예: saas:user:export',
+      ph_permission_codes: '쉼표로 구분, 예: saas.user.export',
       load_users_failed: '사용자를 불러오지 못했습니다',
       failed: '시험 실행에 실패했습니다',
       result_title: '시험 실행 결과',

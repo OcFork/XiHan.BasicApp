@@ -25,7 +25,7 @@ interface AppFormModel {
   appName: string
   appType: OAuthAppType
   authorizationCodeLifetime: number
-  basicId?: string
+  id?: string
   clientId: string
   grantTypes: string
   homepage?: string | null
@@ -133,7 +133,7 @@ const fields = computed<ListFieldSchema[]>(() => [
     width: 90,
     order: 8,
   },
-  { key: 'createdTime', title: t('openapi.app.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 9 },
+  { key: 'createdAt', title: t('openapi.app.created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 9 },
 ])
 
 // ── 资源适配器：归一化查询参数 → 后端 API ──────────────────────
@@ -144,7 +144,7 @@ const schema = computed<PageSchema>(() => ({
   batchRemovable: true,
   removePermission: 'openapi.app.delete',
   statusPermission: 'openapi.app.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -162,7 +162,7 @@ const schema = computed<PageSchema>(() => ({
       }) as unknown as Promise<import('@/api').PageResult<Record<string, unknown>>>
     },
     remove: id => appManagementApi.delete(id),
-    updateStatus: (id, enabled) => appManagementApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => appManagementApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('openapi.app.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'openapi.app.create' },
@@ -198,7 +198,7 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'secret':
       if (row) {
-        void handleRegenerateSecret(row.basicId)
+        void handleRegenerateSecret(row.id)
       }
       break
     case 'delete':
@@ -222,7 +222,7 @@ const currentSecret = ref<OAuthAppSecretDto | null>(null)
 const modalVisible = ref(false)
 const submitLoading = ref(false)
 const appForm = ref<AppFormModel>(createDefaultForm())
-const modalTitle = computed(() => (appForm.value.basicId ? t('openapi.app.modal_edit') : t('openapi.app.modal_add')))
+const modalTitle = computed(() => (appForm.value.id ? t('openapi.app.modal_edit') : t('openapi.app.modal_add')))
 
 function createDefaultForm(): AppFormModel {
   return {
@@ -249,7 +249,7 @@ async function handleView(row: OAuthAppListItemDto) {
   detailLoading.value = true
   currentDetail.value = null
   try {
-    currentDetail.value = await appManagementApi.detail(row.basicId)
+    currentDetail.value = await appManagementApi.detail(row.id)
   }
   catch (error) {
     currentDetail.value = null
@@ -267,7 +267,7 @@ function handleAdd() {
 
 async function handleEdit(row: OAuthAppListItemDto) {
   try {
-    const detail = await appManagementApi.detail(row.basicId)
+    const detail = await appManagementApi.detail(row.id)
     if (!detail) {
       toast.danger(t('openapi.app.msg_load_app_detail_failed'))
       return
@@ -278,7 +278,7 @@ async function handleEdit(row: OAuthAppListItemDto) {
       appName: detail.appName,
       appType: detail.appType,
       authorizationCodeLifetime: detail.authorizationCodeLifetime,
-      basicId: detail.basicId,
+      id: detail.id,
       clientId: detail.clientId,
       grantTypes: detail.grantTypes,
       homepage: detail.homepage ?? null,
@@ -302,7 +302,7 @@ function validateForm() {
     toast.warning(t('openapi.app.msg_input_app_name'))
     return false
   }
-  if (!appForm.value.basicId && !appForm.value.clientId.trim()) {
+  if (!appForm.value.id && !appForm.value.clientId.trim()) {
     toast.warning(t('openapi.app.msg_input_client_id'))
     return false
   }
@@ -323,14 +323,14 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (appForm.value.basicId) {
+    if (appForm.value.id) {
       const updateInput: OAuthAppUpdateDto = {
         accessTokenLifetime: appForm.value.accessTokenLifetime,
         appDescription: appForm.value.appDescription,
         appName: appForm.value.appName.trim(),
         appType: appForm.value.appType,
         authorizationCodeLifetime: appForm.value.authorizationCodeLifetime,
-        basicId: appForm.value.basicId,
+        id: appForm.value.id,
         grantTypes: appForm.value.grantTypes.trim(),
         homepage: appForm.value.homepage,
         logo: appForm.value.logo,
@@ -407,7 +407,7 @@ async function handleToggleStatus(row: OAuthAppListItemDto) {
   const newStatus = row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled
   try {
     await appManagementApi.updateStatus({
-      basicId: row.basicId,
+      id: row.id,
       status: newStatus,
     })
     toast.success(newStatus === EnableStatus.Enabled ? t('openapi.app.msg_app_enabled') : t('openapi.app.msg_app_disabled'))
@@ -420,7 +420,7 @@ async function handleToggleStatus(row: OAuthAppListItemDto) {
 
 async function handleDelete(row: OAuthAppListItemDto) {
   try {
-    await appManagementApi.delete(row.basicId)
+    await appManagementApi.delete(row.id)
     toast.success(t('openapi.app.msg_app_deleted'))
     reloadApp()
   }
@@ -547,13 +547,13 @@ async function handleDelete(row: OAuthAppListItemDto) {
               <XhDescriptionsItem>
                 <XhDescriptionsLabel>{{ t('openapi.app.detail_created_time') }}</XhDescriptionsLabel>
                 <XhDescriptionsValue>
-                  {{ formatNullableDate(currentDetail.createdTime) }}
+                  {{ formatNullableDate(currentDetail.createdAt) }}
                 </XhDescriptionsValue>
               </XhDescriptionsItem>
               <XhDescriptionsItem>
                 <XhDescriptionsLabel>{{ t('openapi.app.detail_modified_time') }}</XhDescriptionsLabel>
                 <XhDescriptionsValue>
-                  {{ formatNullableDate(currentDetail.modifiedTime) }}
+                  {{ formatNullableDate(currentDetail.modifiedAt) }}
                 </XhDescriptionsValue>
               </XhDescriptionsItem>
             </XhDescriptionsRoot>
@@ -585,7 +585,7 @@ async function handleDelete(row: OAuthAppListItemDto) {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!appForm.basicId" name="clientId">
+        <XhFormFieldGroup v-if="!appForm.id" name="clientId">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('openapi.app.form_client_id') }}</XhFieldLabel>
             <XhFieldControl>
@@ -603,7 +603,7 @@ async function handleDelete(row: OAuthAppListItemDto) {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!appForm.basicId" name="appType">
+        <XhFormFieldGroup v-if="!appForm.id" name="appType">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('openapi.app.form_app_type') }}</XhFieldLabel>
             <XhFieldControl>
@@ -693,7 +693,7 @@ async function handleDelete(row: OAuthAppListItemDto) {
             <XhFieldErrorText />
           </XhFieldRoot>
         </XhFormFieldGroup>
-        <XhFormFieldGroup v-if="!appForm.basicId" name="status">
+        <XhFormFieldGroup v-if="!appForm.id" name="status">
           <XhFieldRoot>
             <XhFieldLabel>{{ t('openapi.app.form_status') }}</XhFieldLabel>
             <XhFieldControl>

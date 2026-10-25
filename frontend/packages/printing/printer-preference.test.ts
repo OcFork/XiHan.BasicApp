@@ -13,10 +13,10 @@ import { getPreferredPrinter, savePreferredPrinter } from './printer-preference'
 
 const PREFIX = 'xihan:printing:preferred-printer'
 
-function signIn(basicId: string, tenantId: null | string) {
+function signIn(id: string, tenantId: null | string) {
   useUserStore().userInfo = {
-    basicId,
-    userName: basicId,
+    id,
+    userName: id,
     tenantId,
     roles: [],
     permissions: [],

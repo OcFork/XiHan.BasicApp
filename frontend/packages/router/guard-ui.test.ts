@@ -70,7 +70,7 @@ function createGuardedRouter(): Router {
 }
 
 function userInfoFixture(): UserInfo {
-  return { basicId: 'u-1', userName: 'tester', roles: ['admin'], permissions: ['*'] }
+  return { id: 'u-1', userName: 'tester', roles: ['admin'], permissions: ['*'] }
 }
 
 function permissionFixture(): PermissionInfo {
@@ -156,7 +156,7 @@ describe('顶部进度条', () => {
 
   it('无权限被弹到 403 这条异常路径同样收尾', async () => {
     signInWithLoadedRoutes()
-    useUserStore().setUserInfo({ basicId: 'u-1', userName: 't', roles: ['guest'], permissions: ['other'] })
+    useUserStore().setUserInfo({ id: 'u-1', userName: 't', roles: ['guest'], permissions: ['other'] })
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [

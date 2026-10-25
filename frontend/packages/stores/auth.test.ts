@@ -86,7 +86,7 @@ function token(overrides?: Partial<LoginToken>): LoginToken {
 
 function user(overrides?: Partial<UserInfo>): UserInfo {
   return {
-    basicId: 'u-1',
+    id: 'u-1',
     userName: 'admin',
     appTitle: '租户甲',
     appLogo: '/tenant-a.png',
@@ -723,7 +723,7 @@ describe('模仿登录', () => {
   })
 
   it('候选查询透传关键词与租户', async () => {
-    impersonationCandidates.mockResolvedValue([{ basicId: 'u-2', userName: 'bob' }])
+    impersonationCandidates.mockResolvedValue([{ id: 'u-2', userName: 'bob' }])
     const auth = useAuthStore()
 
     const items = await auth.impersonationCandidates({ keyword: 'bo', tenantId: '7' })

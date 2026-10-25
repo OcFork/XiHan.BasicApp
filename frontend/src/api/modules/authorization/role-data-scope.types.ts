@@ -4,7 +4,7 @@ import type { EnableStatus, ValidityStatus } from '../shared'
 import type { DataPermissionScope } from './role.types'
 
 export interface RoleDataScopeListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   departmentCode?: string | null
   departmentId: ApiId
   departmentName?: string | null

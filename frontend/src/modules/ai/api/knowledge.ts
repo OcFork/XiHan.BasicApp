@@ -18,7 +18,7 @@ export const knowledgeApi = {
     return command.post<KnowledgeDetailDto, KnowledgeIngestDto>('Ingest', input)
   },
   reindex(id: ApiId) {
-    return command.post<KnowledgeDetailDto, { basicId: ApiId }>('Reindex', { basicId: id })
+    return command.post<KnowledgeDetailDto, { id: ApiId }>('Reindex', { id })
   },
   delete(id: ApiId) {
     return command.delete('Delete', { id })

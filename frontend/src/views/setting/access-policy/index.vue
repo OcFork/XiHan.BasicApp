@@ -53,7 +53,7 @@ import LoginBanDrawer from './components/LoginBanDrawer.vue'
 defineOptions({ name: 'SettingAccessPolicyPage' })
 
 interface PolicyFormModel {
-  basicId?: ApiId
+  id?: ApiId
   policyCode: string
   policyName: string
   description: string | null
@@ -170,14 +170,14 @@ const fields = computed<ListFieldSchema[]>(() => [
   { key: 'effectiveTime', title: t('setting.access_policy.effective_time'), dataType: 'datetime', minWidth: 170, order: 10 },
   { key: 'expirationTime', title: t('setting.access_policy.expiration_time'), dataType: 'datetime', minWidth: 170, order: 11 },
   { key: 'description', title: t('setting.access_policy.description'), dataType: 'string', minWidth: 220, order: 12 },
-  { key: 'modifiedTime', title: t('setting.access_policy.modified_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 13 },
+  { key: 'modifiedAt', title: t('setting.access_policy.modified_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 13 },
 ])
 
 const schema = computed<PageSchema>(() => ({
   pageCode: 'setting.access-policy',
   pageName: t('setting.access_policy.page_name'),
   statusPermission: 'setting.access-policy.status',
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -190,7 +190,7 @@ const schema = computed<PageSchema>(() => ({
         keyword: toStr(f.keyword) ?? null,
       }) as unknown as Promise<PageResult<Record<string, unknown>>>
     },
-    updateStatus: (id, enabled) => accessPolicyApi.updateStatus({ basicId: id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
+    updateStatus: (id, enabled) => accessPolicyApi.updateStatus({ id, status: enabled ? EnableStatus.Enabled : EnableStatus.Disabled }),
   },
   actions: [
     { key: 'create', title: t('setting.access_policy.action_create'), scope: 'page', tone: 'brand', icon: 'lucide:plus', permission: 'setting.access-policy.create' },
@@ -254,7 +254,7 @@ function onAction(payload: SchemaActionPayload) {
       break
     case 'trial':
       if (row) {
-        openTrial({ title: row.policyName, policyId: row.basicId, conditions: null, action: row.action })
+        openTrial({ title: row.policyName, policyId: row.id, conditions: null, action: row.action })
       }
       break
     case 'enable-blocking':
@@ -296,7 +296,7 @@ const detail = ref<AccessPolicyDetailDto | null>(null)
 
 async function openDetail(row: AccessPolicyListItemDto) {
   try {
-    detail.value = await accessPolicyApi.detail(row.basicId)
+    detail.value = await accessPolicyApi.detail(row.id)
     if (!detail.value) {
       toast.warning(t('setting.access_policy.not_found'))
       return
@@ -334,7 +334,7 @@ const modalVisible = ref(false)
 const submitLoading = ref(false)
 const form = ref<PolicyFormModel>(emptyForm())
 const groups = ref<ConditionGroupModel[]>([])
-const modalTitle = computed(() => form.value.basicId ? t('setting.access_policy.modal_title_edit') : t('setting.access_policy.modal_title_add'))
+const modalTitle = computed(() => form.value.id ? t('setting.access_policy.modal_title_edit') : t('setting.access_policy.modal_title_add'))
 const usesPlaceholderNetwork = computed(() => toConditions(groups.value, catalog.value).some(condition => condition.conditionValue.includes('203.0.113.0/24')))
 
 function emptyForm(): PolicyFormModel {
@@ -367,13 +367,13 @@ async function openEdit(row: AccessPolicyListItemDto) {
     return
   }
   try {
-    const current = await accessPolicyApi.detail(row.basicId)
+    const current = await accessPolicyApi.detail(row.id)
     if (!current) {
       toast.warning(t('setting.access_policy.not_found'))
       return
     }
     form.value = {
-      basicId: current.basicId,
+      id: current.id,
       policyCode: current.policyCode,
       policyName: current.policyName,
       description: current.description ?? null,
@@ -394,11 +394,11 @@ async function openEdit(row: AccessPolicyListItemDto) {
 
 function validate() {
   const current = form.value
-  if (!current.basicId && !current.policyCode.trim()) {
+  if (!current.id && !current.policyCode.trim()) {
     toast.warning(t('setting.access_policy.warn_code_required'))
     return false
   }
-  if (!current.basicId && /\s/.test(current.policyCode.trim())) {
+  if (!current.id && /\s/.test(current.policyCode.trim())) {
     toast.warning(t('setting.access_policy.warn_code_whitespace'))
     return false
   }
@@ -434,8 +434,8 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    if (current.basicId) {
-      await accessPolicyApi.update({ basicId: current.basicId, ...shared })
+    if (current.id) {
+      await accessPolicyApi.update({ id: current.id, ...shared })
     }
     else {
       await accessPolicyApi.create({ ...shared, policyCode: current.policyCode.trim(), status: current.status, templateCode: current.templateCode })
@@ -496,7 +496,7 @@ function confirmAction(row: AccessPolicyListItemDto, action: AccessPolicyAction)
     cancelText: t('setting.access_policy.cancel'),
     onOk: async () => {
       try {
-        await accessPolicyApi.updateAction({ basicId: row.basicId, action })
+        await accessPolicyApi.updateAction({ id: row.id, action })
         toast.success(t('setting.access_policy.action_changed'))
         reload()
       }
@@ -517,7 +517,7 @@ function confirmToggle(row: AccessPolicyListItemDto) {
     cancelText: t('setting.access_policy.cancel'),
     onOk: async () => {
       try {
-        await accessPolicyApi.updateStatus({ basicId: row.basicId, status: enable ? EnableStatus.Enabled : EnableStatus.Disabled })
+        await accessPolicyApi.updateStatus({ id: row.id, status: enable ? EnableStatus.Enabled : EnableStatus.Disabled })
         toast.success(t('setting.access_policy.status_changed'))
         reload()
       }
@@ -538,7 +538,7 @@ function confirmDelete(row: AccessPolicyListItemDto) {
     cancelText: t('setting.access_policy.cancel'),
     onOk: async () => {
       try {
-        await accessPolicyApi.delete(row.basicId)
+        await accessPolicyApi.delete(row.id)
         toast.success(t('setting.access_policy.deleted'))
         reload()
       }
@@ -669,7 +669,7 @@ function openBans() {
 
     <!-- 新增 / 编辑 -->
     <XEditModal v-model:show="modalVisible" :title="modalTitle" :loading="submitLoading" :form-id="editFormId" width="1080px">
-      <XhAlertRoot v-if="!form.basicId" tone="info" variant="subtle" class="policy-form__alert">
+      <XhAlertRoot v-if="!form.id" tone="info" variant="subtle" class="policy-form__alert">
         <XhAlertIndicator>
           <Icon icon="lucide:info" width="16" />
         </XhAlertIndicator>
@@ -690,7 +690,7 @@ function openBans() {
           <XhFieldRoot>
             <XhFieldLabel>{{ t('setting.access_policy.policy_code') }}</XhFieldLabel>
             <XhFieldControl>
-              <XInput v-model:value="form.policyCode" clearable :disabled="Boolean(form.basicId)" :placeholder="t('setting.access_policy.ph_policy_code')" />
+              <XInput v-model:value="form.policyCode" clearable :disabled="Boolean(form.id)" :placeholder="t('setting.access_policy.ph_policy_code')" />
             </XhFieldControl>
           </XhFieldRoot>
         </XhFormFieldGroup>
@@ -715,7 +715,7 @@ function openBans() {
             <XhFieldLabel>{{ t('setting.access_policy.status') }}</XhFieldLabel>
             <XhFieldControl>
               <!-- 编辑时启停走单独的操作 -->
-              <XSelect v-model:value="form.status" :options="statusOptions" :disabled="Boolean(form.basicId)" />
+              <XSelect v-model:value="form.status" :options="statusOptions" :disabled="Boolean(form.id)" />
             </XhFieldControl>
           </XhFieldRoot>
         </XhFormFieldGroup>

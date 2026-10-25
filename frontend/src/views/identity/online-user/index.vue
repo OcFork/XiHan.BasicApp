@@ -146,7 +146,7 @@ const schema = computed<PageSchema>(() => ({
   pageCode: 'identity.online-user',
   exportPermission: 'identity.online-user.export',
   pageName: t('identity.online_user.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -186,7 +186,7 @@ function confirmRevoke(row: OnlineUserListItemDto) {
     cancelText: t('common.actions.cancel'),
     onOk: async () => {
       try {
-        await userSessionApi.revokeSession({ basicId: row.basicId, reason: t('identity.online_user.revoke_reason') })
+        await userSessionApi.revokeSession({ id: row.id, reason: t('identity.online_user.revoke_reason') })
         toast.success(t('identity.online_user.revoke_done'))
         void loadSummary()
         void schemaPageRef.value?.reload()

@@ -12,7 +12,7 @@ import { usePermission } from './usePermission'
 
 function makeUser(permissions: string[], roles: string[] = []): UserInfo {
   return {
-    basicId: 'u-1',
+    id: 'u-1',
     userName: 'tester',
     roles,
     permissions,
@@ -45,8 +45,8 @@ describe('usePermission.hasPermission 与 store 判定一致', () => {
   })
 
   it('平台超管的 * 不放行服务端没下发的按钮码：租户侧按钮在平台态判为无', () => {
-    useUserStore().setUserInfo(makeUser(['*', 'saas:user:read']))
-    useAccessStore().setAccessCodes(['*', 'saas:user:read'])
+    useUserStore().setUserInfo(makeUser(['*', 'saas.user.read']))
+    useAccessStore().setAccessCodes(['*', 'saas.user.read'])
     useAccessStore().setAccessButtons(['identity.user.create'])
 
     expect(usePermission().hasPermission('identity.user.create')).toBe(true)

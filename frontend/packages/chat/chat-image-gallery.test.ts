@@ -24,7 +24,7 @@ function message(messageId: string, patch: Partial<ChatMessageItem> = {}): ChatM
     messageType: ChatMessageType.Image,
     content: '',
     isRecalled: false,
-    createdTime: '2026-10-13T00:00:00Z',
+    createdAt: '2026-10-13T00:00:00Z',
     mentionedUserIds: [],
     isPinned: false,
     reactions: [],

@@ -135,14 +135,14 @@ const emailFields = computed<ListFieldSchema[]>(() => [
   { key: 'templateCode', title: t('message.record.col_template_code'), dataType: 'string', searchable: true, sortable: true, searchPlaceholder: t('message.record.search_template_code_placeholder'), minWidth: 130, order: 8 },
   { key: 'retryCount', title: t('message.record.col_retry'), dataType: 'string', sortable: true, minWidth: 90, order: 9, render: row => formatRetry(row as unknown as EmailListItemDto) },
   { key: 'sendTime', title: t('message.record.col_send_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 10 },
-  { key: 'createdTime', title: t('message.record.col_created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
+  { key: 'createdAt', title: t('message.record.col_created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
 ])
 
 const emailSchema = computed<PageSchema>(() => ({
   pageCode: 'message.record.email',
   exportPermission: 'message.record.export',
   pageName: t('message.record.email_page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: emailFields.value,
   resource: {
     page: (params) => {
@@ -192,7 +192,7 @@ async function openEmailDetail(row: EmailListItemDto) {
   detailLoading.value = true
   currentSmsDetail.value = null
   try {
-    currentEmailDetail.value = await messageCenterApi.emailDetail(row.basicId)
+    currentEmailDetail.value = await messageCenterApi.emailDetail(row.id)
   }
   catch (error) {
     currentEmailDetail.value = null
@@ -205,7 +205,7 @@ async function openEmailDetail(row: EmailListItemDto) {
 
 async function resendEmail(row: EmailListItemDto) {
   try {
-    await messageCenterApi.updateEmailStatus({ basicId: row.basicId, emailStatus: EmailStatus.Pending })
+    await messageCenterApi.updateEmailStatus({ id: row.id, emailStatus: EmailStatus.Pending })
     toast.success(t('message.record.msg_email_requeued'))
     void emailPageRef.value?.reload()
   }
@@ -228,7 +228,7 @@ function confirmDeleteEmail(row: EmailListItemDto) {
 
 async function deleteEmail(row: EmailListItemDto) {
   try {
-    await messageCenterApi.deleteEmail(row.basicId)
+    await messageCenterApi.deleteEmail(row.id)
     toast.success(t('message.record.msg_email_deleted'))
     void emailPageRef.value?.reload()
   }
@@ -279,14 +279,14 @@ const smsFields = computed<ListFieldSchema[]>(() => [
   { key: 'cost', title: t('message.record.col_cost'), dataType: 'string', sortable: true, minWidth: 90, order: 8 },
   { key: 'retryCount', title: t('message.record.col_retry'), dataType: 'string', sortable: true, minWidth: 90, order: 9, render: row => formatRetry(row as unknown as SmsListItemDto) },
   { key: 'sendTime', title: t('message.record.col_send_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 10 },
-  { key: 'createdTime', title: t('message.record.col_created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
+  { key: 'createdAt', title: t('message.record.col_created_time'), dataType: 'datetime', sortable: true, minWidth: 170, order: 11 },
 ])
 
 const smsSchema = computed<PageSchema>(() => ({
   pageCode: 'message.record.sms',
   exportPermission: 'message.record.export',
   pageName: t('message.record.sms_page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: smsFields.value,
   resource: {
     page: (params) => {
@@ -310,7 +310,7 @@ const smsSchema = computed<PageSchema>(() => ({
   },
   actions: [
     { key: 'detail', title: t('message.record.action_detail'), scope: 'row', tone: 'brand', icon: 'lucide:eye' },
-    { key: 'resend', title: t('message.record.action_resend'), scope: 'row', tone: 'warning', icon: 'lucide:refresh-cw', confirm: true, confirmText: row => actionConfirmText(t, t('message.record.action_resend'), (row as unknown as SmsListItemDto).templateCode || String((row as unknown as SmsListItemDto).basicId)), visible: row => canResend((row as unknown as SmsListItemDto).smsStatus), permission: 'message.record.resend' },
+    { key: 'resend', title: t('message.record.action_resend'), scope: 'row', tone: 'warning', icon: 'lucide:refresh-cw', confirm: true, confirmText: row => actionConfirmText(t, t('message.record.action_resend'), (row as unknown as SmsListItemDto).templateCode || String((row as unknown as SmsListItemDto).id)), visible: row => canResend((row as unknown as SmsListItemDto).smsStatus), permission: 'message.record.resend' },
     { key: 'delete', title: t('message.record.action_delete'), scope: 'row', tone: 'danger', icon: 'lucide:trash-2', permission: 'message.record.delete' },
   ],
 }))
@@ -337,7 +337,7 @@ async function openSmsDetail(row: SmsListItemDto) {
   detailLoading.value = true
   currentEmailDetail.value = null
   try {
-    currentSmsDetail.value = await messageCenterApi.smsDetail(row.basicId)
+    currentSmsDetail.value = await messageCenterApi.smsDetail(row.id)
   }
   catch (error) {
     currentSmsDetail.value = null
@@ -350,7 +350,7 @@ async function openSmsDetail(row: SmsListItemDto) {
 
 async function resendSms(row: SmsListItemDto) {
   try {
-    await messageCenterApi.updateSmsStatus({ basicId: row.basicId, smsStatus: SmsStatus.Pending })
+    await messageCenterApi.updateSmsStatus({ id: row.id, smsStatus: SmsStatus.Pending })
     toast.success(t('message.record.msg_sms_requeued'))
     void smsPageRef.value?.reload()
   }
@@ -373,7 +373,7 @@ function confirmDeleteSms(row: SmsListItemDto) {
 
 async function deleteSms(row: SmsListItemDto) {
   try {
-    await messageCenterApi.deleteSms(row.basicId)
+    await messageCenterApi.deleteSms(row.id)
     toast.success(t('message.record.msg_sms_deleted'))
     void smsPageRef.value?.reload()
   }
@@ -470,13 +470,13 @@ async function deleteSms(row: SmsListItemDto) {
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('message.record.detail_created_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ formatDate(currentEmailDetail.createdTime) }}
+              {{ formatDate(currentEmailDetail.createdAt) }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('message.record.detail_modified_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ currentEmailDetail.modifiedTime ? formatDate(currentEmailDetail.modifiedTime) : '-' }}
+              {{ currentEmailDetail.modifiedAt ? formatDate(currentEmailDetail.modifiedAt) : '-' }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
         </XhDescriptionsRoot>
@@ -545,13 +545,13 @@ async function deleteSms(row: SmsListItemDto) {
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('message.record.detail_created_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ formatDate(currentSmsDetail.createdTime) }}
+              {{ formatDate(currentSmsDetail.createdAt) }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
           <XhDescriptionsItem>
             <XhDescriptionsLabel>{{ t('message.record.detail_modified_time') }}</XhDescriptionsLabel>
             <XhDescriptionsValue>
-              {{ currentSmsDetail.modifiedTime ? formatDate(currentSmsDetail.modifiedTime) : '-' }}
+              {{ currentSmsDetail.modifiedAt ? formatDate(currentSmsDetail.modifiedAt) : '-' }}
             </XhDescriptionsValue>
           </XhDescriptionsItem>
         </XhDescriptionsRoot>

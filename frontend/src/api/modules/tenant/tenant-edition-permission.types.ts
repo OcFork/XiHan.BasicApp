@@ -2,7 +2,7 @@ import type { ApiId, BasicDto, DateTimeString } from '../../types'
 import type { EnableStatus, PermissionType, ValidityStatus } from '../shared'
 
 export interface TenantEditionPermissionListItemDto extends BasicDto {
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   editionId: ApiId
   isGlobalPermission?: boolean | null
   isRequireAudit?: boolean | null
@@ -36,7 +36,7 @@ export interface TenantEditionPermissionStatusUpdateDto extends BasicDto {
 }
 
 export interface TenantEditionPermissionStatusItemDto {
-  basicId: ApiId
+  id: ApiId
   status: ValidityStatus
 }
 

@@ -19,7 +19,7 @@ export interface TaskLogPageQueryDto extends PageRequest {
 
 export interface TaskLogListItemDto extends BasicDto {
   batchNumber?: string | null
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   endTime?: DateTimeString | null
   /** 执行时长（毫秒，后端 long 序列化为字符串） */
   executionTime: NumericString

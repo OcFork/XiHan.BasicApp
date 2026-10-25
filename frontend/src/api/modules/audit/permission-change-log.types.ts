@@ -33,7 +33,7 @@ export interface PermissionChangeLogListItemDto extends BasicDto {
   changeReason?: string | null
   changeTime: DateTimeString
   changeType: PermissionChangeType
-  createdTime: DateTimeString
+  createdAt: DateTimeString
   description?: string | null
   operationIp?: string | null
   operatorUserId?: ApiId | null

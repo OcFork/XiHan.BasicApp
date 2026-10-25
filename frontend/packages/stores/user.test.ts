@@ -11,7 +11,7 @@ import { useUserStore } from './user'
 
 function makeUser(overrides?: Partial<UserInfo>): UserInfo {
   return {
-    basicId: 'u-1',
+    id: 'u-1',
     userName: 'admin',
     nickName: '管理员',
     avatar: 'https://example.com/a.png',
@@ -54,20 +54,20 @@ describe('初始状态与本地还原', () => {
   })
 })
 
-describe('登录态判定以 basicId 为准', () => {
-  it('basicId 为空串时判为未登录，即使用户名存在', () => {
+describe('登录态判定以 id 为准', () => {
+  it('id 为空串时判为未登录，即使用户名存在', () => {
     const store = useUserStore()
 
-    store.setUserInfo(makeUser({ basicId: '' }))
+    store.setUserInfo(makeUser({ id: '' }))
 
     expect(store.username).toBe('admin')
     expect(store.isLoggedIn).toBe(false)
   })
 
-  it('basicId 非空即视为已登录', () => {
+  it('id 非空即视为已登录', () => {
     const store = useUserStore()
 
-    store.setUserInfo(makeUser({ basicId: '0' }))
+    store.setUserInfo(makeUser({ id: '0' }))
 
     expect(store.isLoggedIn).toBe(true)
   })
@@ -77,7 +77,7 @@ describe('getter 的缺省兜底', () => {
   it('昵称/头像缺省时返回空串而非 undefined，模板可直接渲染', () => {
     const store = useUserStore()
 
-    store.setUserInfo({ basicId: 'u', userName: 'u', roles: [], permissions: [] })
+    store.setUserInfo({ id: 'u', userName: 'u', roles: [], permissions: [] })
 
     expect(store.nickname).toBe('')
     expect(store.avatar).toBe('')
@@ -125,7 +125,7 @@ describe('用户信息落地与清除', () => {
     const store = useUserStore()
     store.setUserInfo(makeUser({ nickName: '旧昵称', roles: ['admin'] }))
 
-    store.setUserInfo({ basicId: 'u-2', userName: 'guest', roles: [], permissions: [] })
+    store.setUserInfo({ id: 'u-2', userName: 'guest', roles: [], permissions: [] })
 
     expect(store.nickname).toBe('')
     expect(store.roles).toEqual([])
@@ -152,10 +152,10 @@ describe('角色与权限判定', () => {
   it('hasPermission 不把超管带着的 "*" 当通配：只认服务端展开下发的码', () => {
     const store = useUserStore()
     // 平台超管：服务端下发 * 与平台生效的全部码，租户侧的码（如部门查看）不在其中、鉴权也拒
-    store.setUserInfo(makeUser({ permissions: ['*', 'saas:user:read'] }))
+    store.setUserInfo(makeUser({ permissions: ['*', 'saas.user.read'] }))
 
-    expect(store.hasPermission('saas:user:read')).toBe(true)
-    expect(store.hasPermission('saas:department:read')).toBe(false)
+    expect(store.hasPermission('saas.user.read')).toBe(true)
+    expect(store.hasPermission('saas.department.read')).toBe(false)
     expect(store.hasPermission('')).toBe(false)
   })
 

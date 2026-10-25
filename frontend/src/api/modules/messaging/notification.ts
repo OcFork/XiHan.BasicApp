@@ -26,7 +26,7 @@ export const notificationApi = {
   delete(id: ApiId) {
     return notificationCommandApi.delete('Notification', { id })
   },
-  detail(id: NotificationDetailDto['basicId']) {
+  detail(id: NotificationDetailDto['id']) {
     return notificationQueryApi.get<NotificationDetailDto | null>(
       'NotificationDetail',
       { id },
@@ -52,7 +52,7 @@ export const notificationApi = {
   update(input: NotificationUpdateDto) {
     return notificationCommandApi.put<NotificationDetailDto, NotificationUpdateDto>('Notification', input)
   },
-  userDetail(id: UserNotificationDetailDto['basicId']) {
+  userDetail(id: UserNotificationDetailDto['id']) {
     return notificationQueryApi.get<UserNotificationDetailDto | null>(
       'UserNotificationDetail',
       { id },

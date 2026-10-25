@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import { NotificationStatus as NotificationStatusEnum } from '~/types/enums'
 
 export interface NotificationItem {
-  basicId: string
+  id: string
   title: string
   content?: string
   contentFormat?: NotificationContentFormat
@@ -60,7 +60,7 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function markItemRead(id: string) {
-    const item = items.value.find(n => n.basicId === id)
+    const item = items.value.find(n => n.id === id)
     if (item) {
       item.notificationStatus = NotificationStatusEnum.Read
       item.readTime = new Date().toISOString()
@@ -68,7 +68,7 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function markItemConfirmed(id: string) {
-    const item = items.value.find(n => n.basicId === id)
+    const item = items.value.find(n => n.id === id)
     if (item) {
       item.notificationStatus = NotificationStatusEnum.Read
       item.readTime = item.readTime ?? new Date().toISOString()

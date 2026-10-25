@@ -59,7 +59,7 @@ function message(patch: Partial<ChatMessageItem> & { messageId: string }): ChatM
     messageType: ChatMessageType.Text,
     content: '问一句',
     isRecalled: false,
-    createdTime: '2026-08-27T00:00:00Z',
+    createdAt: '2026-08-27T00:00:00Z',
     mentionedUserIds: [],
     isPinned: false,
     reactions: [],
@@ -86,7 +86,7 @@ function createApi(overrides: Partial<ChatApiContract> = {}): ChatApiContract {
 function setup(overrides: Partial<ChatApiContract> = {}) {
   setActivePinia(createPinia())
   const userStore = useUserStore()
-  userStore.userInfo = { basicId: 'me', userName: 'me', nickName: '我', roles: [], permissions: [] }
+  userStore.userInfo = { id: 'me', userName: 'me', nickName: '我', roles: [], permissions: [] }
   setChatApi(createApi(overrides))
   return useChatStore()
 }

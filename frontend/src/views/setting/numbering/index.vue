@@ -143,7 +143,7 @@ const fields = computed<ListFieldSchema[]>(() => [
 const schema = computed<PageSchema>(() => ({
   pageCode: 'setting.numbering',
   pageName: t('setting.numbering.page_name'),
-  rowKey: 'basicId',
+  rowKey: 'id',
   fields: fields.value,
   resource: {
     page: (params) => {
@@ -237,7 +237,7 @@ function onAction(payload: SchemaActionPayload): void {
 /** 加载并打开只读详情。 */
 async function openDetail(row: NumberingRuleListItemDto): Promise<void> {
   try {
-    detail.value = await numberingApi.detail(row.basicId, activeScope.value)
+    detail.value = await numberingApi.detail(row.id, activeScope.value)
     if (!detail.value) {
       toast.danger(t('setting.numbering.not_found'))
       return
@@ -252,7 +252,7 @@ async function openDetail(row: NumberingRuleListItemDto): Promise<void> {
 /** 加载并打开编辑器。 */
 async function openEditor(row: NumberingRuleListItemDto): Promise<void> {
   try {
-    editorDetail.value = await numberingApi.detail(row.basicId, activeScope.value)
+    editorDetail.value = await numberingApi.detail(row.id, activeScope.value)
     if (!editorDetail.value) {
       toast.danger(t('setting.numbering.not_found'))
       return
@@ -270,7 +270,7 @@ async function toggleStatus(row: NumberingRuleListItemDto): Promise<void> {
     return
   actionLoading.value = true
   try {
-    await numberingApi.updateStatus({ basicId: row.basicId, scope: activeScope.value, status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled })
+    await numberingApi.updateStatus({ id: row.id, scope: activeScope.value, status: row.status === EnableStatus.Enabled ? EnableStatus.Disabled : EnableStatus.Enabled })
     toast.success(t('setting.numbering.status_success'))
     void schemaPageRef.value?.reload()
   }
@@ -300,7 +300,7 @@ async function submitReset(): Promise<void> {
   actionLoading.value = true
   try {
     await numberingApi.reset({
-      basicId: resetTarget.value.basicId,
+      id: resetTarget.value.id,
       scope: activeScope.value,
       nextValue: resetForm.value.nextValue,
       reason: resetForm.value.reason.trim(),
@@ -332,7 +332,7 @@ function remove(row: NumberingRuleListItemDto): void {
         return false
       actionLoading.value = true
       try {
-        await numberingApi.delete(row.basicId, activeScope.value)
+        await numberingApi.delete(row.id, activeScope.value)
         toast.success(t('setting.numbering.delete_success'))
         void schemaPageRef.value?.reload()
         return true

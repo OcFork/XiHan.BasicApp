@@ -20,7 +20,7 @@ export interface PrintTemplateListItemDto extends BasicDto {
   isGlobal: boolean
   remark?: null | string
   /** 十进制字符串，避免 JavaScript 整数精度问题。 */
-  rowVersion: string
+  concurrencyStamp: string
   sort: number
   status: EnableStatus
   templateCode: string
@@ -29,18 +29,18 @@ export interface PrintTemplateListItemDto extends BasicDto {
 
 /** 打印模板详情。 */
 export interface PrintTemplateDetailDto extends PrintTemplateListItemDto {
-  createdTime: string
-  modifiedTime?: null | string
+  createdAt: string
+  modifiedAt?: null | string
   templateJson: string
 }
 
 /** 按编码解析后的可打印模板。 */
 export interface ResolvedPrintTemplateDto {
-  basicId: ApiId
+  id: ApiId
   dataSourceCode: null | string
   requestedScope: PrintTemplateScope
   resolvedScope: PrintTemplateScope
-  rowVersion: string
+  concurrencyStamp: string
   templateCode: string
   templateJson: string
   templateName: string
@@ -62,10 +62,10 @@ export interface PrintTemplateCreateDto {
 /** 更新打印模板；模板编码不可修改，可切换可选数据源。 */
 export interface PrintTemplateUpdateDto {
   allowTenantUse: boolean
-  basicId: ApiId
+  id: ApiId
   dataSourceCode?: null | string
   remark?: null | string
-  rowVersion: string
+  concurrencyStamp: string
   scope: PrintTemplateScope
   sort: number
   templateJson: string
@@ -74,17 +74,17 @@ export interface PrintTemplateUpdateDto {
 
 /** 启停打印模板。 */
 export interface PrintTemplateStatusUpdateDto {
-  basicId: ApiId
+  id: ApiId
   remark?: null | string
-  rowVersion: string
+  concurrencyStamp: string
   scope: PrintTemplateScope
   status: EnableStatus
 }
 
 /** 删除已停用模板。 */
 export interface PrintTemplateDeleteDto {
-  basicId: ApiId
-  rowVersion: string
+  id: ApiId
+  concurrencyStamp: string
   scope: PrintTemplateScope
 }
 
