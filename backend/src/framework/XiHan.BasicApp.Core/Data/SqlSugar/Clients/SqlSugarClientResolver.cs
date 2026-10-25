@@ -1,14 +1,19 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.Extensions.Options;
 using SqlSugar;
-using XiHan.BasicApp.Core.Exceptions;
 using XiHan.BasicApp.Core.Data.SqlSugar.Options;
 using XiHan.BasicApp.Core.Data.SqlSugar.Routing;
 using XiHan.BasicApp.Core.Data.SqlSugar.Tenanting;
+using XiHan.BasicApp.Core.Data;
+using XiHan.BasicApp.Core.Exceptions;
 using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Core.Tenancy;
-using XiHan.BasicApp.Core.Data;
+using XiHan.Framework.Kernel.Pipeline;
+using XiHan.Framework.Kernel.Security;
+using XiHan.Framework.MultiTenancy.Abstractions.Sharding;
+using XiHan.Framework.Primitives;
 
 namespace XiHan.BasicApp.Core.Data;
 
@@ -37,7 +42,9 @@ public sealed class SqlSugarClientResolver : ISqlSugarClientResolver
     private readonly IModuleDataSourceConnectionResolver _moduleDataSourceConnectionResolver;
     private readonly ICurrentTenant _currentTenant;
     private readonly ISqlSugarConnectionConfigurator _connectionConfigurator;
-    private readonly ISqlSugarTenantConnectionProvider? _connectionProvider;
+    private readonly IOptions<XiHanSqlSugarCoreOptions> _options;
+    private readonly IInvocationAccessor _invocationAccessor;
+    private readonly ITenantShardResolver? _shardResolver;
 
     /// <summary>
     /// 构造函数
@@ -48,7 +55,9 @@ public sealed class SqlSugarClientResolver : ISqlSugarClientResolver
     /// <param name="moduleDataSourceConnectionResolver">模块数据源连接解析器</param>
     /// <param name="currentTenant">当前租户</param>
     /// <param name="connectionConfigurator">连接配置器</param>
-    /// <param name="connectionProviders">租户连接提供器（可选，业务层实现库隔离时注册；未注册则退化为静态 ConfigId 解析）</param>
+    /// <param name="options">SqlSugarCore 选项（租户连接的 ConfigId 前缀）</param>
+    /// <param name="invocationAccessor">当前调用访问器：Tenant 阶段解析好的分片在调用上下文里</param>
+    /// <param name="shardResolvers">5.0 租户分片解析器（可选，业务层实现库隔离时注册，取最后一个登记；未注册则退化为静态 ConfigId 解析）</param>
     public SqlSugarClientResolver(
         SqlSugarScope sqlSugarScope,
         ISqlSugarTenantConnectionResolver tenantConnectionResolver,
@@ -56,7 +65,9 @@ public sealed class SqlSugarClientResolver : ISqlSugarClientResolver
         IModuleDataSourceConnectionResolver moduleDataSourceConnectionResolver,
         ICurrentTenant currentTenant,
         ISqlSugarConnectionConfigurator connectionConfigurator,
-        IEnumerable<ISqlSugarTenantConnectionProvider> connectionProviders)
+        IOptions<XiHanSqlSugarCoreOptions> options,
+        IInvocationAccessor invocationAccessor,
+        IEnumerable<ITenantShardResolver> shardResolvers)
     {
         _sqlSugarScope = sqlSugarScope;
         _tenantConnectionResolver = tenantConnectionResolver;
@@ -64,7 +75,10 @@ public sealed class SqlSugarClientResolver : ISqlSugarClientResolver
         _moduleDataSourceConnectionResolver = moduleDataSourceConnectionResolver;
         _currentTenant = currentTenant;
         _connectionConfigurator = connectionConfigurator;
-        _connectionProvider = connectionProviders.FirstOrDefault();
+        _options = options;
+        _invocationAccessor = invocationAccessor;
+        // 与内核中间件的 GetService 一致：多个登记时最后一个生效（应用的解析器顶替画像默认的）
+        _shardResolver = shardResolvers.LastOrDefault();
     }
 
     /// <summary>
@@ -99,19 +113,35 @@ public sealed class SqlSugarClientResolver : ISqlSugarClientResolver
     /// <returns>父连接 ConfigId 与该租户自带的模块库配置（无则为 null）</returns>
     private (string ParentConfigId, List<SqlSugarModuleDataSourceConfigOptions>? ModuleConfigs) ResolveCurrentLayout()
     {
-        // 库隔离：存在租户连接提供器且处于业务租户上下文时，优先解析该租户的独立布局（平台就是 0 号租户，走默认布局）
-        // 提供器返回 null → 走静态 ConfigId 解析（字段/行隔离）；抛异常 → fail-closed
-        if (_connectionProvider is not null && _currentTenant.Id is { } tenantId && !TenantIds.IsPlatform(tenantId))
+        // 库隔离：装配了分片解析器且处于业务租户上下文时，优先解析该租户的独立布局（平台就是 0 号租户，走默认布局）
+        // 无分片 → 走静态 ConfigId 解析（字段/行隔离）；解析失败或抛异常 → fail-closed
+        if (_shardResolver is not null && _currentTenant.Id is { } tenantId && !TenantIds.IsPlatform(tenantId)
+            && ResolveShard(tenantId).TryGetValue(out var shard))
         {
-            var descriptor = _connectionProvider.Resolve(tenantId, _currentTenant.Name);
-            if (descriptor is not null)
-            {
-                _ = _connectionConfigurator.EnsureTenantConnection(_sqlSugarScope, descriptor);
-                return (descriptor.ConfigId.Trim(), descriptor.ModuleDataSourceConfigs);
-            }
+            var descriptor = TenantShardConnections.ToConnection(shard, _options.Value);
+            _ = _connectionConfigurator.EnsureTenantConnection(_sqlSugarScope, descriptor);
+            return (descriptor.ConfigId.Trim(), descriptor.ModuleDataSourceConfigs);
         }
 
         return (_tenantConnectionResolver.ResolveCurrentConfigId(), null);
+    }
+
+    /// <summary>
+    /// 取租户的分片：当前调用就是这个租户时直接读 Tenant 阶段写进上下文的分片（不触存储）；
+    /// 否则（ICurrentTenant.Change 切到了别的租户，或不在调用管道里）向解析器要，失败按 fail-closed 抛出
+    /// </summary>
+    /// <param name="tenantId">租户标识</param>
+    /// <returns>分片；无需独立连接时为无值</returns>
+    private Maybe<TenantShard> ResolveShard(string tenantId)
+    {
+        if (_invocationAccessor.Current.TryGetValue(out var context)
+            && TenantIds.AreSame(context.GetSecurity().Tenant?.Id, tenantId))
+        {
+            return context.GetTenantShard();
+        }
+
+        // 解析器按租户缓存，这里的同步等待只在切换租户的少数路径上发生
+        return _shardResolver!.ResolveAsync(tenantId, CancellationToken.None).AsTask().GetAwaiter().GetResult().ValueOrThrow();
     }
 
     /// <summary>

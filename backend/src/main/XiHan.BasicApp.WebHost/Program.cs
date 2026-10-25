@@ -18,8 +18,11 @@ using XiHan.BasicApp.WebHost;
 using XiHan.Framework.Caching.Redis;
 using XiHan.Framework.Hosting.AspNetCore;
 using XiHan.Framework.Kernel.Hosting;
+using XiHan.Framework.ObjectStorage.S3;
 using XiHan.Framework.Persistence.SqlSugar;
 using XiHan.Framework.Profiles.Full;
+using XiHan.Framework.Protocols.Http.OpenApi;
+using XiHan.Framework.Protocols.Http.Routing;
 using XiHan.Framework.Protocols.Http;
 using XiHan.Framework.Security.Jwt;
 
@@ -55,6 +58,12 @@ builder.AddXiHan(xihan =>
     if (redisEnabled)
     {
         xihan.UseFeature<RedisCachingFeature>();
+    }
+
+    // S3 兼容对象存储 Provider：配置了 XiHan:ObjectStorage:S3 时顶替画像里的文件系统对象存储（MinIO / OSS / COS 都走它）；落库的存储配置仍然优先
+    if (builder.Configuration.GetSection(S3ObjectStorageOptions.ConfigurationSection).Exists())
+    {
+        xihan.UseFeature<S3ObjectStorageFeature>();
     }
 
     xihan.UseFeature(new SqlSugarPersistenceFeature())

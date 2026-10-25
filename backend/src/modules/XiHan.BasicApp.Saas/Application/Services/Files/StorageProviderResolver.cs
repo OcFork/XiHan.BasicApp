@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using XiHan.BasicApp.Core.ObjectStorage.Options;
 using XiHan.BasicApp.Core.ObjectStorage.Providers;
 using XiHan.BasicApp.Core.ObjectStorage;
@@ -11,6 +10,7 @@ using XiHan.BasicApp.Core.Security;
 using XiHan.BasicApp.Saas.Domain.DomainServices;
 using XiHan.BasicApp.Saas.Domain.Entities;
 using XiHan.BasicApp.Saas.Domain.Repositories;
+using XiHan.Framework.ObjectStorage.S3;
 
 namespace XiHan.BasicApp.Saas.Application.Services;
 
@@ -104,7 +104,17 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
         var entry = _cache.AddOrUpdate(
             config.Id,
             _ => new CachedProvider(fingerprint, Build(config)),
-            (_, existing) => existing.Fingerprint == fingerprint ? existing : new CachedProvider(fingerprint, Build(config)));
+            (_, existing) =>
+            {
+                if (existing.Fingerprint == fingerprint)
+                {
+                    return existing;
+                }
+
+                // 配置变了才重建；旧实例自己持有 S3 客户端，换掉时释放连接
+                (existing.Provider as IDisposable)?.Dispose();
+                return new CachedProvider(fingerprint, Build(config));
+            });
         return entry.Provider;
     }
 
@@ -112,34 +122,20 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
     {
         var secret = _secretProtector.Unprotect(config.SecretAccessKey) ?? string.Empty;
         var bucket = config.BucketName ?? string.Empty;
-        var endpoint = config.Endpoint ?? string.Empty;
-
+        var endpoint = (config.Endpoint ?? string.Empty).Trim();
         return config.StorageType switch
         {
-            StorageConfigType.S3 => new MinioFileStorageProvider(Options.Create(new MinioStorageOptions
-            {
-                Endpoint = StripScheme(endpoint),
-                AccessKey = config.AccessKeyId ?? string.Empty,
-                SecretKey = secret,
-                DefaultBucket = bucket,
-                Region = config.Region,
-                UseSSL = endpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase)
-            })),
-            StorageConfigType.OSS => new AliyunOssStorageProvider(Options.Create(new AliyunOssStorageOptions
-            {
-                AccessKeyId = config.AccessKeyId ?? string.Empty,
-                AccessKeySecret = secret,
-                Endpoint = endpoint,
-                DefaultBucket = bucket
-            })),
-            StorageConfigType.COS => new TencentCosStorageProvider(Options.Create(new TencentCosStorageOptions
-            {
-                SecretId = config.AccessKeyId ?? string.Empty,
-                SecretKey = secret,
-                Region = config.Region ?? string.Empty,
-                DefaultBucket = bucket
-                // 注：SysStorageConfig 无 AppId 字段；腾讯云 COS 桶名通常已含 appid 后缀，必要时另补字段
-            })),
+            // S3、MinIO、OSS、COS 都经 5.0 的 S3 Provider：自建 / MinIO 走路径式寻址，云厂商的 S3 兼容端点要求虚拟主机式（桶名进主机名）
+            StorageConfigType.S3 or StorageConfigType.MinIO or StorageConfigType.OSS or StorageConfigType.COS => S3FileStorageProvider.Create(
+                new S3ObjectStorageOptions
+                {
+                    ServiceUrl = endpoint.Length == 0 ? null : WithScheme(endpoint),
+                    Region = string.IsNullOrWhiteSpace(config.Region) ? "us-east-1" : config.Region.Trim(),
+                    AccessKey = config.AccessKeyId,
+                    SecretKey = secret,
+                    ForcePathStyle = config.StorageType is StorageConfigType.S3 or StorageConfigType.MinIO,
+                },
+                new S3StorageOptions { DefaultBucket = bucket }),
             _ => throw new InvalidOperationException($"不支持由存储配置构建的存储类型：{config.StorageType}")
         };
     }
@@ -164,10 +160,9 @@ public sealed class StorageProviderResolver : IStorageProviderResolver
             config.IsEnabled);
     }
 
-    private static string StripScheme(string endpoint)
+    private static string WithScheme(string endpoint)
     {
-        var index = endpoint.IndexOf("://", StringComparison.Ordinal);
-        return index >= 0 ? endpoint[(index + 3)..] : endpoint;
+        return endpoint.Contains("://", StringComparison.Ordinal) ? endpoint : "https://" + endpoint;
     }
 
     private sealed record CachedProvider(string Fingerprint, IFileStorageProvider Provider);

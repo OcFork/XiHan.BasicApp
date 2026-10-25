@@ -53,6 +53,8 @@ SysFile（文件元数据，业务只认它）
 
 本地存储另有一份基础设施级配置在 `appsettings` 的 `XiHan:ObjectStorage:Local`（`RootPath` 默认 `wwwroot/uploads`、`UrlPrefix` 默认 `/uploads`）。
 
+S3 / OSS / COS / MinIO 都经同一个 S3 兼容提供程序（框架 5.0 的 `ObjectStorage.S3`，AWS SDK）访问：落库配置里的端点、区域、桶与凭据运行期构建客户端，OSS / COS 走各自的 S3 兼容端点（虚拟主机式寻址），MinIO 与自建服务走路径式。也可以在 `appsettings` 的 `XiHan:ObjectStorage:S3` 配一份基础设施级的（`ServiceUrl`、`Region`、`AccessKey`、`SecretKey`、`ForcePathStyle`、`DefaultBucket`、`PublicUrl`），并把 `XiHan:ObjectStorage:DefaultProvider` 设为 `S3`。
+
 ::: warning 本地存储的 URL 是根相对路径
 本地存储返回 `/uploads/...` 这样的**根相对路径**，静态文件中间件挂在鉴权之前所以能匿名直链。
 

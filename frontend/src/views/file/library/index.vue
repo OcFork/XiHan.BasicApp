@@ -83,6 +83,7 @@ const storageTypeOptions = computed(() => [
   { label: t('file.library.storage_type.aliyun_oss'), value: FileStorageType.AliyunOss },
   { label: t('file.library.storage_type.tencent_cos'), value: FileStorageType.TencentCos },
   { label: t('file.library.storage_type.minio'), value: FileStorageType.Minio },
+  { label: t('file.library.storage_type.s3'), value: FileStorageType.S3 },
   { label: t('file.library.storage_type.ftp'), value: FileStorageType.Ftp },
   { label: t('file.library.storage_type.sftp'), value: FileStorageType.Sftp },
   { label: t('file.library.storage_type.webdav'), value: FileStorageType.WebDav },

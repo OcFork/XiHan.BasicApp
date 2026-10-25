@@ -154,6 +154,7 @@ public sealed class FileStorageDomainService : IFileStorageDomainService
         return providerName.Trim() switch
         {
             ObjectStorageProviderNames.Local => FileStorageType.Local,
+            ObjectStorageProviderNames.S3 => FileStorageType.S3,
             ObjectStorageProviderNames.Minio => FileStorageType.Minio,
             ObjectStorageProviderNames.AliyunOss => FileStorageType.AliyunOss,
             ObjectStorageProviderNames.TencentCos => FileStorageType.TencentCos,

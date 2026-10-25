@@ -101,6 +101,12 @@ public enum FileStorageType
     Minio = 3,
 
     /// <summary>
+    /// S3 兼容对象存储（Amazon S3、MinIO、OSS、COS 等经同一个 S3 提供程序）
+    /// </summary>
+    [Description("S3 兼容对象存储")]
+    S3 = 4,
+
+    /// <summary>
     /// FTP
     /// </summary>
     [Description("FTP")]

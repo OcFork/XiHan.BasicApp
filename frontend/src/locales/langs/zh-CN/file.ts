@@ -89,6 +89,7 @@ export default {
       aliyun_oss: '阿里云OSS',
       tencent_cos: '腾讯云COS',
       minio: 'MinIO',
+      s3: 'S3 兼容存储',
       ftp: 'FTP',
       sftp: 'SFTP',
       webdav: 'WebDAV',

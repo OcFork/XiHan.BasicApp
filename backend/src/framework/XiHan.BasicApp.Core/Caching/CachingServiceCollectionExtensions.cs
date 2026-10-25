@@ -1,11 +1,9 @@
 // Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using StackExchange.Redis;
 
 namespace XiHan.BasicApp.Core.Caching;
 
@@ -15,14 +13,13 @@ namespace XiHan.BasicApp.Core.Caching;
 public static class CachingServiceCollectionExtensions
 {
     /// <summary>
-    /// Redis 配置节（与 5.0 <c>RedisCachingFeature</c> 同一节：<c>XiHan:Caching:Redis</c>）
+    /// 注册按缓存项类型分区的 <see cref="IDistributedCache{TCacheItem, TCacheKey}"/>（架在 5.0 共享缓存上）与资源锁
     /// </summary>
-    public const string RedisSectionName = "XiHan:Caching:Redis";
-
-    /// <summary>
-    /// 注册按缓存项类型分区的 <see cref="IDistributedCache{TCacheItem, TCacheKey}"/>（架在 5.0 共享缓存上）、资源锁，
-    /// 以及承接代码直接消费的 Microsoft <c>IDistributedCache</c>（启用 Redis 时复用 5.0 缓存特性建立的连接，否则进程内内存）
-    /// </summary>
+    /// <remarks>
+    /// 承接代码直接消费的 Microsoft <c>IDistributedCache</c> 不在这里登记：5.0 的 <c>caching.distributed</c> Provider
+    /// （画像里的内存缓存，或开关打开时的 <c>RedisCachingFeature</c>）被选中时登记 <c>CacheStoreDistributedCache</c>，
+    /// 它架在同一个 <c>ICacheStore</c> 上，键须满足 <c>CacheKey</c> 文法（无空白与控制字符、不超过 512 字符）。
+    /// </remarks>
     /// <param name="services">服务集合</param>
     /// <param name="configuration">配置</param>
     /// <param name="configure">选项</param>
@@ -30,6 +27,7 @@ public static class CachingServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
+
         var builder = services.AddOptions<DistributedCacheOptions>();
         if (configure is not null)
         {
@@ -40,25 +38,6 @@ public static class CachingServiceCollectionExtensions
         services.TryAddSingleton<IDistributedCacheKeyNormalizer, DefaultDistributedCacheKeyNormalizer>();
         services.TryAddSingleton(typeof(IDistributedCache<,>), typeof(SharedCacheDistributedCache<,>));
         services.TryAddSingleton<IResourceLock, SharedResourceLock>();
-
-        // Microsoft IDistributedCache：一次性验证码、刷新令牌、访问策略快照等承接代码直接消费它；
-        // 与 4.x 一样按 Redis 开关选实现，Redis 下不另开连接，复用 5.0 RedisCachingFeature 注册的 IConnectionMultiplexer
-        var redis = configuration.GetSection(RedisSectionName);
-        if (redis.GetValue<bool>("IsEnabled"))
-        {
-            services.AddStackExchangeRedisCache(static _ => { });
-            services.AddOptions<RedisCacheOptions>()
-                .Configure<IServiceProvider>((options, provider) =>
-                {
-                    options.InstanceName = redis["InstanceName"];
-                    options.ConnectionMultiplexerFactory = () => Task.FromResult(provider.GetRequiredService<IConnectionMultiplexer>());
-                });
-        }
-        else
-        {
-            services.AddDistributedMemoryCache();
-        }
-
         return services;
     }
 }

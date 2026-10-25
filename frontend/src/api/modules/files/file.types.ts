@@ -44,6 +44,7 @@ export enum FileStorageType {
   AliyunOss = 'AliyunOss',
   TencentCos = 'TencentCos',
   Minio = 'Minio',
+  S3 = 'S3',
   Ftp = 'Ftp',
   Sftp = 'Sftp',
   WebDav = 'WebDav',

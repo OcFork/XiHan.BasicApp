@@ -11,8 +11,8 @@ namespace XiHan.BasicApp.Core.Data.SqlSugar.Routing;
 /// <remarks>
 /// 这是「模块分库」与「租户分库」两条维度的交汇点。
 /// 业务层要自定义整套路由策略时用 <c>services.Replace</c> 替换本服务；
-/// 只想给某些租户配独立库，在 <c>ISqlSugarTenantConnectionProvider</c> 返回的描述符里
-/// 带上该租户的模块库即可，不必替换本服务。
+/// 只想给某些租户配独立库，实现 5.0 的 <c>ITenantShardResolver</c> 给出该租户的分片即可，
+/// 模块库由约定从主库派生，不必替换本服务。
 /// </remarks>
 public interface IModuleDataSourceConnectionResolver
 {

@@ -61,6 +61,7 @@ using XiHan.BasicApp.Web.Core.Session;
 using XiHan.Framework.Messaging.Abstractions;
 using XiHan.BasicApp.Core.Caching;
 using XiHan.BasicApp.Saas.Infrastructure.Caching;
+using XiHan.Framework.MultiTenancy.Abstractions.Sharding;
 
 namespace XiHan.BasicApp.Saas.Extensions;
 
@@ -113,11 +114,12 @@ public static class ServiceCollectionExtensions
         // 用户 OpenAPI 凭证密钥保护器（Data Protection，独立 Purpose；创建/滚动写侧加密，网关鉴权读侧解密）
         services.AddSingleton<IUserApiCredentialSecretProtector, DataProtectionUserApiCredentialSecretProtector>();
 
-        // 租户库隔离：连接串保护器 + 运行时连接提供器（框架据此按 SysTenant 动态建连）
+        // 租户库隔离：连接串保护器 + 5.0 租户分片解析器（Tenant 阶段按 SysTenant 解析分片，Core 据此动态建连）；
+        // 用 AddSingleton 而不是 TryAdd：画像里的内存多租户也登记了按租户属性推分片的默认解析器，最后登记的生效
         services.AddSingleton<ITenantConnectionSecretProtector, DataProtectionTenantConnectionSecretProtector>();
-        services.AddSingleton<SaasTenantConnectionProvider>();
-        services.AddSingleton<ISqlSugarTenantConnectionProvider>(sp => sp.GetRequiredService<SaasTenantConnectionProvider>());
-        services.AddSingleton<ITenantConnectionCacheInvalidator>(sp => sp.GetRequiredService<SaasTenantConnectionProvider>());
+        services.AddSingleton<SaasTenantShardResolver>();
+        services.AddSingleton<ITenantShardResolver>(sp => sp.GetRequiredService<SaasTenantShardResolver>());
+        services.AddSingleton<ITenantConnectionCacheInvalidator>(sp => sp.GetRequiredService<SaasTenantShardResolver>());
         // 跨租户后台作业逐作用域（平台与每个数据可达的租户）切入执行，不靠「无租户上下文看全部」
         services.AddScoped<ITenantDataScopeRunner, TenantDataScopeRunner>();
         services.AddScoped<IConfigDomainService, ConfigDomainService>();

@@ -127,7 +127,7 @@ public static class TenantModuleConnectionStringDeriver
     {
         return new NotSupportedException(
             $"无法为模块数据源 [{moduleDataSource}] 派生租户模块库：{dbType} 的连接串里没有可识别的{missingPart}字段。" +
-            $"请由 {nameof(ISqlSugarTenantConnectionProvider)} 显式给出该租户的 ModuleDataSourceConfigs，" +
+            "请在 XiHanSqlSugarCoreOptions.ConfigureConnectionConfigs 里为该租户连接显式给出模块库，" +
             $"或关闭 {nameof(Options.XiHanSqlSugarCoreOptions)}.{nameof(Options.XiHanSqlSugarCoreOptions.EnableTenantModuleDatabaseConvention)}。");
     }
 }

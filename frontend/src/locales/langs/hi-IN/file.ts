@@ -89,6 +89,7 @@ export default {
       aliyun_oss: 'Alibaba Cloud OSS',
       tencent_cos: 'Tencent COS',
       minio: 'MinIO',
+      s3: 'S3-संगत स्टोरेज',
       ftp: 'FTP',
       sftp: 'SFTP',
       webdav: 'WebDAV',
