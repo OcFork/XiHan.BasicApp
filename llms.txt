@@ -1,0 +1,81 @@
+# 曦寒基础应用
+
+> 后端基于 .NET 10 与 XiHan.Framework 的能力包与操作契约（一份契约同时服务 HTTP / gRPC / MCP），前端基于 Vue 与 XiHan.UI，契约层由后端 openapi.json 生成；内置多租户、RBAC + Deny + 继承委托 + 数据范围 + 字段安全 + ABAC 的权限体系。
+
+本文件由文档站构建期生成，内容与仓库文档同源。
+
+## 机读资产
+
+- [llms-full.txt](https://basicapp.docs.xihanfun.com/llms-full.txt): 全部 57 页正文
+- [llms-backend.txt](https://basicapp.docs.xihanfun.com/llms-backend.txt): 29 页后端手册
+- [llms-frontend.txt](https://basicapp.docs.xihanfun.com/llms-frontend.txt): 11 页前端手册
+- 每页 Markdown：把站点地址后缀成 `.md`，如 https://basicapp.docs.xihanfun.com/ai/agents.md
+
+## 开始
+
+- [接口对接指南](https://basicapp.docs.xihanfun.com/api-guide): 本页说明如何通过 HTTP 调用后端接口，适用于前端以外的对接方与集成开发者。
+- [更新日志](https://basicapp.docs.xihanfun.com/changelog): 本页记录各版本中使用者与运维可感知的变化，每条标注 新增 / 修复 / 优化 / 调整 类别，适用于评估与升级版本的读者；仓库自身的 CI、测试与构建脚本不列入。
+- [配置参考](https://basicapp.docs.xihanfun.com/configuration): 本页说明宿主与前端的全部配置项、缺省值与含义，适用于开发、部署与运维时查阅。
+- [部署](https://basicapp.docs.xihanfun.com/deployment): 本页说明后端与前端的发布、首次初始化、反向代理、读写分离、备份还原与多实例部署，适用于部署人员。
+- [开发环境](https://basicapp.docs.xihanfun.com/dev-environment): 本页说明本机开发所需的工具、框架引用、数据库准备、端口与常用命令，适用于参与后端或前端开发的开发者。
+- [常见问题](https://basicapp.docs.xihanfun.com/faq): 本页说明运行、认证、权限与接口联调中的常见问题，适用于开发与运维排查。
+- [功能清单](https://basicapp.docs.xihanfun.com/features): 本页按功能分区列出现有功能，适用于评估功能覆盖。
+- [快速开始](https://basicapp.docs.xihanfun.com/getting-started): 本页说明如何在本机运行：后端连接本地 PostgreSQL，前端开发服务器代理到后端，再以初始超级管理员登录。
+- [曦寒基础应用](https://basicapp.docs.xihanfun.com/): XiHan.BasicApp 文档
+- [应用简介](https://basicapp.docs.xihanfun.com/introduction): 本页说明 XiHan.BasicApp 的定位、核心约定、技术栈与阅读路径，适用于初次了解本项目的读者。
+- [系统概述](https://basicapp.docs.xihanfun.com/overview): 本页说明部署形态、分层、请求路径与技术栈，适用于需要建立全局认识的开发者与架构评审者。
+- [功能预览](https://basicapp.docs.xihanfun.com/preview): 本页说明界面截图与在本机查看各个页面的方法，适用于希望直观了解功能的读者。
+- [目录结构与代码地图](https://basicapp.docs.xihanfun.com/project-structure): 本页说明仓库、后端与前端的目录结构，并列出常见改动对应的代码位置，适用于开始修改代码之前查阅。
+- [设计取舍](https://basicapp.docs.xihanfun.com/why): 本页说明本项目的架构选择、设计原则与已知限制，适用于评估是否采用本项目的技术负责人与开发者。
+
+## AI 辅助开发
+
+- [For Agents](https://basicapp.docs.xihanfun.com/ai/agents): 本页说明使用 Claude Code、Codex、Cursor、GitHub Copilot 等 AI 编程工具时，如何让生成的代码符合项目约定，适用于借助 AI 工具开发 BasicApp 的开发者。
+- [LLMs.txt](https://basicapp.docs.xihanfun.com/ai/llms): 本页说明文档站在构建时产出的机读资产及其用法，适用于为 AI 工具提供项目文档的开发者。
+- [MCP Server](https://basicapp.docs.xihanfun.com/ai/mcp): 本页说明宿主自带的 MCP 端点与开发时可用的 MCP 服务端，适用于把 BasicApp 接入 AI 客户端或用 AI 工具开发 BasicApp 的开发者。
+
+## 后端手册
+
+- [访问策略与权限条件](https://basicapp.docs.xihanfun.com/backend/access-policy): 本页说明访问策略、登录失败自动封禁与权限条件的规则、操作与命中记录，适用于后端开发者与安全配置人员。
+- [AI 能力](https://basicapp.docs.xihanfun.com/backend/ai): 本页说明 AI 模块的提供商、Provider 目录、提示词、知识库、助手、操作作为工具与模块开关，适用于接入或配置模型的后端与前端开发者。
+- [约束规则与审批](https://basicapp.docs.xihanfun.com/backend/approval): 本页说明约束规则、会话角色激活与授权申请，适用于后端开发者与权限配置人员。
+- [统一认证](https://basicapp.docs.xihanfun.com/backend/authentication): 本页说明账号模型、令牌与会话、登录方式、锁屏与模仿登录，适用于后端开发者与接口对接方。
+- [缓存与异步](https://basicapp.docs.xihanfun.com/backend/caching): 本页说明缓存接口、缓存时长与失效、缓存管理，以及定时作业、后台循环、日志队列、发件箱与提交后推送等异步机制，适用于后端开发者。
+- [在线聊天](https://basicapp.docs.xihanfun.com/backend/chat): 本页说明在线聊天的会话与消息规则、推送、附件、部门群同步、聊天审计、策略参数与保留清理，适用于后端与前端开发者。
+- [代码生成](https://basicapp.docs.xihanfun.com/backend/code-generation): 本页说明代码生成的数据源、表与列配置、模板与生成的代码、交付、零代码运行时和退出验证，适用于用它生成业务包的开发者与维护模板的人。
+- [数据模型](https://basicapp.docs.xihanfun.com/backend/data-model): 本页说明各包实体落在平台库还是租户库、各自实现哪些协议接口，以及索引与唯一性规则，适用于需要了解表结构归属的后端开发者。
+- [数据权限与字段安全](https://basicapp.docs.xihanfun.com/backend/data-permission): 本页说明数据范围与字段安全的规则、登记方式与管理操作，适用于后端开发者与权限配置人员。
+- [数据库配置](https://basicapp.docs.xihanfun.com/backend/database): 本页说明数据库连接、从库与 SQL 日志、多库落点、数据访问方式与建表策略，适用于后端开发者与部署人员。
+- [开发流程](https://basicapp.docs.xihanfun.com/backend/development): 本页以 Settings 包的「新建参数」为例，说明在后端新增一个接口的完整步骤，适用于后端开发者。
+- [实体基类](https://basicapp.docs.xihanfun.com/backend/entity): 本页说明应用的实体基类、字段约定、平台数据的建模规则与领域事件，适用于新增实体的后端开发者。
+- [文件与存储](https://basicapp.docs.xihanfun.com/backend/file): 本页说明存储配置、文件与副本、上传下载、导出中心与存储配额，适用于后端开发者与运维人员。
+- [健康与可观测性](https://basicapp.docs.xihanfun.com/backend/health-observability): 本页说明健康检查、维护模式、服务监控、链路关联与弹性限制，适用于运维人员与后端开发者。
+- [架构总览](https://basicapp.docs.xihanfun.com/backend/introduction): 本页说明能力包的组成、包之间的分层与宿主的装配方式，适用于开始阅读或修改后端代码的开发者。
+- [日志审计](https://basicapp.docs.xihanfun.com/backend/logging): 本页说明八类日志的来源与内容、链路追踪、写入方式与保留清理，适用于后端开发者与运维、审计人员。
+- [消息通知](https://basicapp.docs.xihanfun.com/backend/messaging): 本页说明站内通知与收件箱、消息模板、邮件与短信、群机器人与 Telegram 机器人，适用于后端开发者与运营配置人员。
+- [多租户 SaaS](https://basicapp.docs.xihanfun.com/backend/multi-tenancy): 本页说明租户的标识与上下文、租户目录、开通流程、成员、套餐与配额，适用于后端开发者与平台运维人员。
+- [开放平台](https://basicapp.docs.xihanfun.com/backend/open-api): 本页说明 OpenPlatform 包（Tier 2）提供的两种对外接入方式，适用于后端开发者与第三方对接方。
+- [组织架构](https://basicapp.docs.xihanfun.com/backend/organization): 本页说明 Organization 包（Tier 1，依赖 Identity 与 Tenancy）提供的部门、岗位与部门成员，适用于后端开发者。
+- [权限管理](https://basicapp.docs.xihanfun.com/backend/permission): 本页说明权限码、角色、授权规则、套餐门控与菜单，适用于后端开发者与权限配置人员。
+- [打印模板](https://basicapp.docs.xihanfun.com/backend/printing): 本页说明打印模板的作用域、数据源登记、操作与权限、演示数据和模块开关，适用于接入单据打印的后端与前端开发者。
+- [实时推送](https://basicapp.docs.xihanfun.com/backend/realtime): 本页说明 Hub 的登记、推送方法、推送契约、在线状态与跨实例，适用于后端开发者。
+- [请求生命周期](https://basicapp.docs.xihanfun.com/backend/request-lifecycle): 本页说明一次调用从进入宿主到返回响应所经过的各个阶段，以及 BasicApp 在各阶段贡献的中间件，适用于排查认证、权限与审计问题的后端开发者。
+- [定时任务](https://basicapp.docs.xihanfun.com/backend/scheduling): 本页说明作业的登记方式、内建作业、计划写法与管理操作，适用于后端开发者与运维人员。
+- [系统设置](https://basicapp.docs.xihanfun.com/backend/settings): 本页说明参数配置、字典与业务编号，适用于后端开发者与运营配置人员。
+- [表结构升级](https://basicapp.docs.xihanfun.com/backend/upgrade): 本页说明正式库的表结构如何建立与升级、升级脚本怎么写，以及版本与升级记录的查看方式，适用于部署人员与修改实体的后端开发者。
+- [工作台](https://basicapp.docs.xihanfun.com/backend/workbench): 本页说明工作台小组件的提供者契约、操作、已登记的小组件与布局同步，适用于为能力包添加小组件的后端开发者。
+- [工作流](https://basicapp.docs.xihanfun.com/backend/workflow): 本页说明工作流的引擎与存储、流程定义与实例的操作和权限、组织类受理人、待办与审批中心、审批业务的接入、通知、演示流程与模块开关，适用于设计流程、接入审批的后端与前端开发者。
+
+## 前端手册
+
+- [常用组件](https://basicapp.docs.xihanfun.com/frontend/components): 本页列出前端常用的组件及其用途，适用于前端开发者。
+- [开发流程](https://basicapp.docs.xihanfun.com/frontend/development): 本页以 Settings 模块的参数页为例，说明前端新增页面的步骤，适用于前端开发者。
+- [国际化与时区](https://basicapp.docs.xihanfun.com/frontend/i18n): 本页说明前端的区域、文案组织、文案门禁与时区处理，适用于前端开发者。
+- [字体图标](https://basicapp.docs.xihanfun.com/frontend/icon): 本页说明前端的图标写法、离线图标集与图标选择器，适用于前端开发者。
+- [框架简介](https://basicapp.docs.xihanfun.com/frontend/introduction): 本页说明前端的技术栈、目录结构、模块划分与启动流程，适用于前端开发者。
+- [权限与脱敏](https://basicapp.docs.xihanfun.com/frontend/permission): 本页说明前端如何使用后端下发的权限与字段安全结果，适用于前端开发者。
+- [实时通信](https://basicapp.docs.xihanfun.com/frontend/realtime): 本页说明前端的 SignalR 连接、重连与推送处理，适用于前端开发者。
+- [契约与请求](https://basicapp.docs.xihanfun.com/frontend/request): 本页说明前端的契约生成物、操作调用、请求头与错误处理，适用于前端开发者与修改后端契约的开发者。
+- [菜单与路由](https://basicapp.docs.xihanfun.com/frontend/routing): 本页说明前端的路由组成、菜单来源、组件解析与路由守卫，适用于前端开发者。
+- [Schema 驱动页面](https://basicapp.docs.xihanfun.com/frontend/schema-page): 本页说明列表页引擎 SchemaPage 的页面定义、资源适配器与导入导出，适用于编写列表页的前端开发者。
+- [布局与主题](https://basicapp.docs.xihanfun.com/frontend/theme): 本页说明前端的设计令牌、样式约束、布局与偏好同步，适用于前端开发者。
